@@ -1,13 +1,15 @@
 hadoopPath: /opt/hadoop
-app: minimac.yaml
+app: minimac-vcf.yaml
 outputPath: output
 tempPath: tmp
-localWorkspace: clodugene-workspace
+localWorkspace: cloudgene-workspace
 hdfsWorkspace: cloudgene-workspace
+name: UM Imputationserver
+removeHdfsWorkspace: true
 
 mail:
-  smtp: smtp.i-med.ac.at
-  port: 587
-  user: qf0783
-  password: lalalalala
-  name: genepi@i-med.ac.at
+  smtp: localhost
+  port: 25
+  user: 
+  password: 
+  name: noreply@imputationserver.sph.umich.edu
