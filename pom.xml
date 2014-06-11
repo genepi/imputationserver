@@ -4,7 +4,7 @@
 
 	<groupId>genepi</groupId>
 	<artifactId>minimac-cloud</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.5.0</version>
 	<packaging>jar</packaging>
 
 	<name>minimac-cloud</name>
@@ -23,6 +23,17 @@
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
+		
+		<repository>
+			<id>genepi-hadoop</id>
+			<url>https://raw.github.com/genepi/maven/genepi-hadoop</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		
+		
 
 		<repository>
 			<id>hadoop-bam-sourceforge</id>
