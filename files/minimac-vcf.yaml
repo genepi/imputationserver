@@ -1,0 +1,197 @@
+name:  Minimac
+description: <a href="http://genome.sph.umich.edu/wiki/Minimac">Minimac</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
+version: 0.1.0
+website: http://genepi.i-med.ac.at
+category: MiniMac
+
+cluster:
+
+  image: us-east-1/ami-7341831a
+  type: m1.large
+  ports: 80,50030,50070
+  user: ec2-user
+  creationOnly: false
+  installMapred: true
+  service: hadoop
+ 
+mapred:
+
+  setup:
+    name: Input Validation
+    jar: minimac-cloud.jar
+    classname: genepi.minicloudmac.hadoop.validation.VcfInputFileCheck
+
+  steps:
+
+    - name: Input Preprocessing
+      jar: minimac-cloud.jar
+      classname: genepi.minicloudmac.hadoop.validation.VcfInputFileSplitter
+      params: $files $chunksize
+      generates: $chunkfile
+
+    - name: Quality Control (Preprocessing)
+      jar: minimac-cloud.jar
+      params: maf-vcf --input $chunkfile --output $outputmaf --reference $refpanel --population $population --output-manifest $mafchunkfile --qcstat $qcstat
+      generates: $outputmaf $mafchunkfile $qcstat
+
+    - name: Quality Control Statistics
+      jar: minimac-cloud.jar
+      classname: genepi.minicloudmac.hadoop.preprocessing.vcf.FilePrinter
+      params: $qcstat
+
+#if( $population != "mixed")
+
+    - name: Quality Control (Report)
+      rmd: qc-report.Rmd
+      params: $outputmaf
+      output: ${qcreport}.html
+      
+#end
+
+#if( $mode == "all")
+
+    - name: Pre-phasing and Imputation
+      jar: minimac-cloud.jar
+      classname: genepi.minicloudmac.hadoop.imputation.ImputationVcfStep
+      params: $mafchunkfile $refpanel $chunksize $window $phasing      
+      generates: $local $outputimputation $logfile
+
+    - name: Imputation (Report)
+      rmd: report.Rmd
+      params: $local/results
+      output: $report
+      generates: $report
+
+    - name: Data Compression and Encryption
+      jar: minimac-cloud.jar
+      classname: genepi.minicloudmac.hadoop.compression.Compression
+      params: $local $report $encryption
+
+#end
+
+  inputs:
+
+     - id: refpanel
+       description: Reference Panel
+       type: list
+       value: giant
+       values:
+         giant: GIANT ALL reference panel
+         phase3: 1000G Phase 3 pre-release - chr 20 only
+
+     - id: chunksize
+       description: chunksize
+       value: 5000000
+       type: number
+       visible: false
+
+     - id: window
+       description: window
+       value: 500000
+       type: number
+       visible: false
+
+     - id: files
+       description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
+       type: hdfs-folder
+
+     - id: phasing
+       description: Phasing
+       type: list
+       value: hapiur
+       values:
+         hapiur: HapiUR
+         shapeit: SHAPEIT
+
+     - id: population
+       description: Population
+       type: list
+       value: eur
+       values:
+         eur: EUR
+         afr: AFR
+         asn: ASN
+         amr: AMR
+         mixed: Mixed
+
+     - id: mode
+       description: Mode
+       type: list
+       value: all
+       visible: false
+       values:
+         qc: Quality Control
+         all: Quality Control + Imputation
+
+     - id: encryption
+       description: Result Encryption
+       type: checkbox
+       value: yes
+       values:
+         true: yes
+         false: no
+       visible: false
+
+  outputs:
+
+    - id: outputimputation
+      description: Imputated Genotypes
+      type: hdfs-folder
+      download: false
+      temp: true
+      zip: false
+      removeHeader: false
+      mergeOutput: false
+
+    - id: qcreport
+      description: Quality-Control Results
+      type: local-file
+      download: true
+      temp: false
+
+    - id: qcstat
+      description: Quality-Control Statistics
+      type: local-file
+      download: false
+      temp: true
+
+    - id: report
+      description: Imputation Report
+      type: local-file
+      download: false
+      temp: ftrue
+
+
+    - id: outputmaf
+      description: Output MAF
+      type: hdfs-folder
+      download: false
+      temp: true
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+       
+    - id: local
+      description: Imputation Results
+      type: local-folder
+      download: true
+      temp: true
+
+    - id: chunkfile
+      description: Chunk File
+      type: hdfs-folder
+      download: false
+      temp: true
+
+    - id: mafchunkfile
+      description: Chunk File Maf
+      type: hdfs-folder
+      download: false
+      temp: true
+      mergeOutput: false
+
+    - id: logfile
+      description: Logs
+      type: local-folder
+      download: true
+      temp: false

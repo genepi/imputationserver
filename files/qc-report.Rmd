@@ -1,0 +1,57 @@
+QC-Report
+========================================================
+
+```{r echo=FALSE}
+
+args<-commandArgs(TRUE)
+input=args[1]
+
+suppressPackageStartupMessages(library(ggplot2))
+data = read.table(input, header = FALSE, sep="\t")
+miss = data[which(data$V11 > 300),];
+
+
+
+```
+
+
+## Allele-Frequency Correlation
+
+
+### Uploaded Samples vs. Reference Panel
+
+
+```{r echo=FALSE}
+
+
+lm_eqn = function(df){
+    m = lm(V9 ~ V5, df);
+    eq <- substitute(italic(r)^2~"="~r2, 
+         list(r2 = format(summary(m)$r.squared, digits = 3)))
+    as.character(as.expression(eq));                 
+}
+
+ggplot() + geom_point(data=data, aes(x=V5, y=V9)) + scale_x_continuous(limits = c(0, 1)) + scale_y_continuous(limits = c(0, 1)) + xlab("Ref Allele Frequency (Uploaded Samples)") + ylab("Ref Allele Frequency (Reference Panel)") + geom_text(aes(x = 0.1, y = 1, label = lm_eqn(data)), parse = TRUE)
+
+#ggplot() + geom_point(data=data[which(data$V11 > 100),], aes(x=V5, y=V9,color='blue')) + geom_point(data=data[which(data$V11 <= 100),], aes(x=V5, y=V9)) + scale_x_continuous(limits = c(0, 1)) + scale_y_continuous(limits = c(0, 1)) + xlab("MAF Upload Samples") + ylab("Allele Frequency Reference Panel") + geom_text(aes(x = 0.1, y = 1, label = lm_eqn(data)), parse = TRUE)
+
+```
+
+
+### Potential Frequency Mismatches
+
+Markers where chisq is greater than 300.
+
+```{r echo=FALSE}
+
+if (length(miss[,11]) > 0) {
+
+for (i in 1:length(miss[,11])){
+
+ cat("Mismatched frequencies for '", as.character(miss[i,2]),"' f[", as.character(miss[i,3]) ,",", as.character(miss[i,4]),"] = [",miss[i,5],",",miss[i,6],"] vs [", miss[i,9], ",", miss[i,10], "], chisq ",miss[i,11], "\n",sep=""); 
+}
+
+}
+
+```
+

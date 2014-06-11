@@ -1,0 +1,168 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>genepi</groupId>
+	<artifactId>minimac-cloud</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>minimac-cloud</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>genepi-io</id>
+			<url>https://raw.github.com/genepi/maven/genepi-io</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+		<repository>
+			<id>hadoop-bam-sourceforge</id>
+			<url>http://hadoop-bam.sourceforge.net/maven/</url>
+		</repository>
+
+
+	</repositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>genepi.minicloudmac.MiniCloudMac</mainClass>
+								</transformer>
+							</transformers>
+
+							<artifactSet>
+								<includes>
+									<include>genepi-io:genepi-io:*:*</include>
+									<include>genepi-hadoop:genepi-hadoop:*:*</include>
+									<include>picard:picard:*:*</include>
+									<include>samtools:samtools:*:*</include>
+									<include>tribble:tribble:*:*</include>
+									<include>variant:variant:*:*</include>
+									<include>org.apache.commons:commons-math3:*:*</include>
+									<include>net.lingala.zip4j:zip4j*:*</include>
+									<include>commons-compress:commons-compress:*:*</include>
+									<include>commons-logging:commons-logging:*:*</include>
+									<include>commons-cli:commons-cli:*:*</include>
+									<include>commons-lang:commons-lang:*:*</include>
+									<include>com.esotericsoftware.yamlbeans:yamlbeans:*:*</include>
+								</includes>
+							</artifactSet>
+
+
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>create-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/assembly.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>genepi-io</groupId>
+			<artifactId>genepi-io</artifactId>
+			<version>0.5.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.lingala.zip4j</groupId>
+			<artifactId>zip4j</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>cloudgene</groupId>
+			<artifactId>cloudgene</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>genepi-hadoop</groupId>
+			<artifactId>genepi-hadoop</artifactId>
+			<version>0.5.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>picard</groupId>
+			<artifactId>picard</artifactId>
+			<version>1.107</version>
+		</dependency>
+
+		<dependency>
+			<groupId>samtools</groupId>
+			<artifactId>samtools</artifactId>
+			<version>1.107</version>
+		</dependency>
+
+		<dependency>
+			<groupId>tribble</groupId>
+			<artifactId>tribble</artifactId>
+			<version>1.107</version>
+		</dependency>
+
+		<dependency>
+			<groupId>variant</groupId>
+			<artifactId>variant</artifactId>
+			<version>1.107</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.3</version>
+		</dependency>
+
+
+	</dependencies>
+</project>

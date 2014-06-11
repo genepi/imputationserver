@@ -1,0 +1,13 @@
+hadoopPath: /opt/hadoop
+app: minimac.yaml
+outputPath: output
+tempPath: tmp
+localWorkspace: clodugene-workspace
+hdfsWorkspace: cloudgene-workspace
+
+mail:
+  smtp: smtp.i-med.ac.at
+  port: 587
+  user: qf0783
+  password: lalalalala
+  name: genepi@i-med.ac.at

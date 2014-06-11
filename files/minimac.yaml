@@ -1,0 +1,147 @@
+name:  Minimac
+description: <a href="http://genome.sph.umich.edu/wiki/Minimac">Minimac</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
+version: 0.1.0
+website: http://genepi.i-med.ac.at
+category: MiniMac
+
+cluster:
+
+  image: us-east-1/ami-7341831a
+  type: m1.large
+  ports: 80,50030,50070
+  user: ec2-user
+  creationOnly: false
+  installMapred: true
+  service: hadoop
+ 
+mapred:
+
+  steps:
+
+    - name: Input Validation
+      jar: minimac-cloud.jar
+      classname: genepi.minicloudmac.hadoop.validation.InputFileValidator
+
+    - name: Quality Control (Preprocessing)
+      jar: minimac-cloud.jar
+      params: maf --input $chunkfile --output $outputmaf --reference $refpanel --population $population
+
+    - name: Quality Control (Report)
+      rmd: qc-report.Rmd
+      params: $outputmaf
+      output: ${qcreport}.html
+
+#if( $mode == "all")
+
+    - name: Imputation
+      jar: minimac-cloud.jar
+      params: minimac --input $chunkfile --output $outputimputation --reference $refpanel --local $local --chunk $chunksize --window $window --log $logfile
+
+    - name: Imputation (Report)
+      rmd: report.Rmd
+      params: $local/results
+      output: $local/results/report.html
+
+    - name: Data Compression and Encryption
+      jar: minimac-cloud.jar
+      classname: genepi.minicloudmac.hadoop.compression.Compression
+
+#end
+
+  inputs:
+
+     - id: refpanel
+       description: Reference Panel
+       type: list
+       value: giant
+       values:
+         giant: GIANT ALL reference panel
+
+     - id: chunksize
+       description: chunksize
+       value: 2000000
+       type: number
+       visible: false
+
+     - id: window
+       description: window
+       value: 250000
+       type: number
+       visible: false
+
+     - id: files
+       description: Input Files (<a href="/start.html#!pages/formats">Formats</a>)
+       type: hdfs-folder
+
+     - id: population
+       description: Population
+       type: list
+       value: eur
+       values:
+         eur: EUR
+         afr: AFR
+         asn: ASN
+         amr: AMR
+
+     - id: mode
+       description: Mode
+       type: list
+       value: all
+       values:
+         qc: Quality Control
+         all: Quality Control + Imputation
+
+     - id: encryption
+       description: Result Encryption
+       type: checkbox
+       value: yes
+       values:
+         true: yes
+         false: no
+       visible: false
+
+  outputs:
+
+    - id: outputimputation
+      description: Imputated Genotypes
+      type: hdfs-folder
+      download: false
+      temp: true
+      zip: false
+      removeHeader: false
+      mergeOutput: false
+
+    - id: qcreport
+      description: Quality-Control Results
+      type: local-file
+      download: true
+      temp: false
+
+
+    - id: outputmaf
+      description: Output MAF
+      type: hdfs-folder
+      download: false
+      temp: true
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+       
+    - id: local
+      description: Imputation Results
+      type: local-folder
+      download: true
+      temp: true
+
+    - id: chunkfile
+      description: Chunk File
+      type: hdfs-file
+      download: false
+      temp: true
+      
+    - id: logfile
+      description: Log
+      type: local-file
+      download: false
+      temp: false
+

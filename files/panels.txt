@@ -1,0 +1,12 @@
+panels:
+  - id: giant
+    pattern: chr$chr.phase1_release_v3.20101123.snps_indels_svs.genotypes.refpanel.ALL.vcf.gz
+    hdfs: minimac-data/giant.tgz
+    legendPattern: ALL_1000G_phase1integrated_v3_annotated_legends/ALL_1000G_phase1integrated_v3_chr$chr_impute.legend.gz
+    legend: minimac-data/ALL_1000G_phase1integrated_v3_annotated_legends.tgz
+    
+  - id: phase3
+    pattern: ALL.chr$chr.phase3_shapeit2_integrated.20130502.snps_indels_svs.genotypes.vcf.gz
+    hdfs: minimac-data/1000g_phase3.tgz
+    legendPattern: ALL_1000G_phase1integrated_v3_annotated_legends/ALL_1000G_phase1integrated_v3_chr$chr_impute.legend.gz
+    legend: minimac-data/ALL_1000G_phase1integrated_v3_annotated_legends.tgz

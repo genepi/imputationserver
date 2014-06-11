@@ -1,0 +1,65 @@
+Imputation Report
+========================================================
+
+
+Date:  `r as.character(format(Sys.Date(), format="%B %d, %Y"))`
+
+
+
+```{r fig.width=7, fig.height=6, echo=FALSE, results='asis'}
+  suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(xtable))
+args<-commandArgs(TRUE)
+
+mypath=args[1]
+
+for (file in list.files(path=mypath, pattern="*.info.gz",full.names = TRUE)){
+                
+  cat(paste("<h1>",basename(file),"</h1>"))                
+  
+    cat(paste("<h2>Overal performance</h2>"))       
+                
+  t = read.table(gzfile(file), header=T)
+info = t;
+
+  t$br <- cut(t$MAF,hist(t$MAF,60,plot=F)$breaks);
+  
+  mean.wt <- tapply(t$Rsq,t$br,mean);
+  
+  m2 <- data.frame(mpg.bin=seq(0,0.499,0.01),mean.wt);
+  
+  print(ggplot(m2,aes(x=mpg.bin,y=mean.wt)) + geom_point()+xlab("MAF") + ylab("Rsq"));
+  
+
+cat("<h2> Info File Diagnostics </h2>")
+cat("<h3> Marker and Allele Labels </h3>")
+cat("<p>The first three columns in the .info file list marker name and alleles for each marker. Typically, the most common allele will be listed first, but this is not guaranteed.</p>")
+
+cat("<h3> Estimated Allele Frequency</h3>")
+cat("<p>The next column in the .info file lists the estimated frequency of allele 1 - this corresponds to the average number of imputed copies of allele 1 for each individual, divided by two.</p><pre>")
+print(summary(info$MAF), type="html")
+cat("</pre>")
+
+cat("<h3> Estimated Imputation Accuracy</h3>")
+cat("<p>Frequency information is followed by an estimate of the squared correlation between imputed genotypes and true, unobserved genotypes. Since true genotypes are not available, this calculation is based on the idea that poorly imputed genotype counts will shrink towards their expectations based on population allele frequencies alone; specifically 2p where p is the frequency of the allele being imputed.</p><pre>")
+print((summary(info$Rsq)))
+cat("</pre>")
+  
+cat("<h3> looRsq : Estimated R-squared in Leave-One-Out Analysis</h3>")
+cat("<p>This statistic is calculated by hiding all known genotypes for the SNP, imputing it and then estimating imputation accuracy. It doesn't use the known genotypes for the SNP at all.</p><pre>")
+print(summary(info[info$Genotyped!="-",]$LooRsq))
+cat("</pre>")
+  
+cat("<h3> empR : Correlation Between Imputed and True Genotypes</h3>")
+cat("<p>Whereas looRsq statistic completely ignores experimental genotypes, this one is based on a comparison of imputed and experimental genotypes. A negative correlation between imputed and experimental genotypes can indicate allele flips.</p><pre>") 
+       
+print(summary(info[info$Genotyped!="-",]$EmpR))
+cat("</pre>")
+
+cat("<h3> empRsq : Squared Correlation Between Imputed and True Genotypes</h3>") 
+cat("<p>Whereas looRsq statistic reports the estimated imputation accuracy, this one reports the ''actual'' imputation accuracy - as estimated by comparing genotypes generated using imputation (after hiding any known genotypes for the marker) and the previously hidden known genotypes. By comparing empRsq and looRsq it should be possible to tell whether estimates of imputation accuracy are well calibrated.</p><pre>")
+print(summary(info[info$Genotyped!="-",]$EmpRsq))
+cat("</pre>")
+
+}
+```
