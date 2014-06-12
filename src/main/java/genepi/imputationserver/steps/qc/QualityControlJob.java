@@ -1,16 +1,14 @@
 package genepi.imputationserver.steps.qc;
 
-import java.io.IOException;
-import java.text.DecimalFormat;
-
 import genepi.hadoop.CacheStore;
 import genepi.hadoop.HadoopJob;
-import genepi.hadoop.formats.NLineInputFormat;
 import genepi.io.FileUtil;
-import genepi.io.text.LineWriter;
+
+import java.io.IOException;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
 
 public class QualityControlJob extends HadoopJob {
 
@@ -24,9 +22,18 @@ public class QualityControlJob extends HadoopJob {
 
 	public static final String OUTPUT_MANIFEST = "MINIMAC_MANIFEST";
 
-	private String qcstat;
-
 	private String refPanelHdfs;
+
+	private long monomorphic;
+	private long alternativeAlleles;
+	private long noSnps;
+	private long duplicates;
+	private long filtered;
+	private long foundInLegend;
+	private long notFoundInLegend;
+	private long alleleMismatch;
+	private long toLessSamples;
+	private long removedChunks;
 
 	public QualityControlJob(String name) {
 
@@ -63,51 +70,31 @@ public class QualityControlJob extends HadoopJob {
 
 	@Override
 	public void cleanupJob(Job job) {
-		// write counters to file
-		LineWriter writer;
+
 		try {
-			writer = new LineWriter(qcstat);
-			long monomorphic = job.getCounters().getGroup("minimac")
+
+			monomorphic = job.getCounters().getGroup("minimac")
 					.findCounter("monomorphic").getValue();
-			long alternativeAlleles = job.getCounters().getGroup("minimac")
+			alternativeAlleles = job.getCounters().getGroup("minimac")
 					.findCounter("alternativeAlleles").getValue();
-			long noSnps = job.getCounters().getGroup("minimac")
+			noSnps = job.getCounters().getGroup("minimac")
 					.findCounter("noSnps").getValue();
-			long duplicates = job.getCounters().getGroup("minimac")
+			duplicates = job.getCounters().getGroup("minimac")
 					.findCounter("duplicates").getValue();
-			long filtered = job.getCounters().getGroup("minimac")
+			filtered = job.getCounters().getGroup("minimac")
 					.findCounter("filtered").getValue();
-			long foundInLegend = job.getCounters().getGroup("minimac")
+			foundInLegend = job.getCounters().getGroup("minimac")
 					.findCounter("foundInLegend").getValue();
-			long notFoundInLegend = job.getCounters().getGroup("minimac")
+			notFoundInLegend = job.getCounters().getGroup("minimac")
 					.findCounter("notFoundInLegend").getValue();
-			long alleleMismatch = job.getCounters().getGroup("minimac")
+			alleleMismatch = job.getCounters().getGroup("minimac")
 					.findCounter("alleleMismatch").getValue();
-			long toLessSamples = job.getCounters().getGroup("minimac")
+			toLessSamples = job.getCounters().getGroup("minimac")
 					.findCounter("toLessSamples").getValue();
-			long removedChunks = job.getCounters().getGroup("minimac")
+			removedChunks = job.getCounters().getGroup("minimac")
 					.findCounter("removedChunks").getValue();
 
-			DecimalFormat df = new DecimalFormat("#.00");
-
-			writer.write("Duplicated sites: " + duplicates);
-			writer.write("NonSNP sites: " + noSnps);
-			writer.write("Alternative allele frequency > 0.5 sites: "
-					+ alternativeAlleles);
-			writer.write("Monomorphic sites: " + monomorphic);
-			writer.write("Reference Overlap: "
-					+ df.format(foundInLegend
-							/ (double) (foundInLegend + notFoundInLegend) * 100)
-					+ "% ");
-			writer.write("Allele mismatch: " + alleleMismatch);
-			writer.write("Excluded SNPs with a call rate of < 90%: "
-					+ toLessSamples);
-			writer.write("Excluded sites in total: " + filtered);
-			writer.write("Excluded chunks: " + removedChunks);
-			writer.close();
-
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -134,8 +121,48 @@ public class QualityControlJob extends HadoopJob {
 		set(OUTPUT_MAF, outputMaf);
 	}
 
-	public void setQcStat(String qcstat) {
-		this.qcstat = qcstat;
+	public String getRefPanelHdfs() {
+		return refPanelHdfs;
+	}
+
+	public long getMonomorphic() {
+		return monomorphic;
+	}
+
+	public long getAlternativeAlleles() {
+		return alternativeAlleles;
+	}
+
+	public long getNoSnps() {
+		return noSnps;
+	}
+
+	public long getDuplicates() {
+		return duplicates;
+	}
+
+	public long getFiltered() {
+		return filtered;
+	}
+
+	public long getFoundInLegend() {
+		return foundInLegend;
+	}
+
+	public long getNotFoundInLegend() {
+		return notFoundInLegend;
+	}
+
+	public long getAlleleMismatch() {
+		return alleleMismatch;
+	}
+
+	public long getToLessSamples() {
+		return toLessSamples;
+	}
+
+	public long getRemovedChunks() {
+		return removedChunks;
 	}
 
 }

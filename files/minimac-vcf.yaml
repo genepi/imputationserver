@@ -29,15 +29,10 @@ mapred:
       params: $files $chunksize
       generates: $chunkfile
 
-    - name: Quality Control (Preprocessing)
+    - name: Quality Control
       jar: minimac-cloud.jar
-      params: quality-control --input $chunkfile --output $outputmaf --reference $refpanel --population $population --output-manifest $mafchunkfile --qcstat $qcstat
+      classname: genepi.imputationserver.steps.QualityControl
       generates: $outputmaf $mafchunkfile $qcstat
-
-    - name: Quality Control Statistics
-      jar: minimac-cloud.jar
-      classname: genepi.imputationserver.steps.QualityControlSummary
-      params: $qcstat
 
 #if( $population != "mixed")
 
@@ -52,7 +47,7 @@ mapred:
 
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
-      classname: genepi.imputationserver.steps.ImputationStep
+      classname: genepi.imputationserver.steps.Imputation
       params: $mafchunkfile $refpanel $chunksize $window $phasing      
       generates: $local $outputimputation $logfile
 
@@ -149,12 +144,7 @@ mapred:
       download: true
       temp: false
 
-    - id: qcstat
-      description: Quality-Control Statistics
-      type: local-file
-      download: false
-      temp: true
-
+ 
     - id: report
       description: Imputation Report
       type: local-file

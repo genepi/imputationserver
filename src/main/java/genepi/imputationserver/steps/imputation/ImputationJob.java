@@ -6,7 +6,7 @@ import java.util.List;
 import genepi.hadoop.CacheStore;
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.formats.NLineInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
 import genepi.hadoop.log.LogCollector;
 import genepi.imputationserver.steps.imputation.sort.ChunkKey;
 import genepi.imputationserver.steps.imputation.sort.ChunkValue;
@@ -39,6 +39,8 @@ public class ImputationJob extends HadoopJob {
 	private String refPanelHdfs;
 
 	private String logFilename;
+	
+	private String folder;
 
 	public ImputationJob(String name) {
 
@@ -75,7 +77,7 @@ public class ImputationJob extends HadoopJob {
 
 		// installs and distributed alls binaries
 		String data = "minimac-data";
-		distribute("bin", data, cache);
+		distribute(FileUtil.path(folder, "bin"), data, cache);
 
 		// distributed refpanels
 
@@ -84,6 +86,10 @@ public class ImputationJob extends HadoopJob {
 		cache.addArchive(name, refPanelHdfs);
 	}
 
+	public void setFolder(String folder){
+		this.folder = folder;
+	}
+	
 	protected void distribute(String folder, String hdfs, CacheStore cache) {
 		String[] files = FileUtil.getFiles(folder, "");
 		for (String file : files) {

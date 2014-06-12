@@ -1,6 +1,10 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.imputationserver.steps.imputation.ImputationJob;
+import genepi.imputationserver.util.ParallelHadoopJobStep;
+import genepi.imputationserver.util.RefPanel;
+import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
 import java.io.IOException;
@@ -12,11 +16,10 @@ import org.apache.hadoop.mapred.RunningJob;
 
 import cloudgene.mapred.jobs.CloudgeneContext;
 import cloudgene.mapred.jobs.Message;
-import cloudgene.mapred.steps.ParallelHadoopStep;
 import cloudgene.mapred.util.HadoopUtil;
 import cloudgene.mapred.wdl.WdlStep;
 
-public class ImputationStep extends ParallelHadoopStep {
+public class Imputation extends ParallelHadoopJobStep {
 
 	private Map<String, MyJob> jobs;
 
@@ -30,7 +33,7 @@ public class ImputationStep extends ParallelHadoopStep {
 
 	Message message = null;
 
-	public ImputationStep() {
+	public Imputation() {
 		super(10);
 		jobs = new HashMap<String, MyJob>();
 	}
@@ -46,6 +49,8 @@ public class ImputationStep extends ParallelHadoopStep {
 		String window = context.get("window");
 		String log = context.get("logfile");
 		String phasing = context.get("phasing");
+
+		String folder = getFolder(Imputation.class);
 
 		try {
 			List<String> chunkFiles = HdfsUtil.getFiles(input);
@@ -67,17 +72,51 @@ public class ImputationStep extends ParallelHadoopStep {
 
 			}
 
+			// load reference panels
+
+			RefPanelList panels = null;
+			try {
+				panels = RefPanelList.loadFromFile(FileUtil.path(folder,
+						"panels.txt"));
+
+			} catch (Exception e) {
+
+				error("panels.txt not found.");
+				return false;
+			}
+
 			for (String chunkFile : chunkFiles) {
 
 				String[] tiles = chunkFile.split("/");
 				String chr = tiles[tiles.length - 1];
 
-				executeJarInBackground(chunkFile, context, "minimac-cloud.jar",
-						"imputation", "--input", chunkFile, "--output",
-						HdfsUtil.path(output, chr), "--reference", reference,
-						"--local", local, "--chunk", chunk, "--window", window,
-						"--phasing", phasing, "--log",
-						FileUtil.path(log, "chr_" + chr + ".log"));
+				ImputationJob job = new ImputationJob("");
+				job.setFolder(folder);
+
+				RefPanel panel = panels.getById(reference);
+				if (panel == null) {
+					error("Reference '" + reference + "' not found.");
+					error("Available references:");
+					for (RefPanel p : panels.getPanels()) {
+						error(p.getId());
+					}
+
+					return false;
+				}
+
+				job.setRefPanelHdfs(panel.getHdfs());
+				job.setRefPanelPattern(panel.getPattern());
+				job.setInput(chunkFile);
+				job.setOutput(HdfsUtil.path(output, chr));
+				job.setRefPanel(reference);
+				job.setLocalOutput(local);
+				job.setChunkSize(Integer.parseInt(chunk));
+				job.setWindowSize(Integer.parseInt(window));
+				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
+				job.setPhasing(phasing);
+
+				executeJarInBackground(chunkFile, context, job);
+
 			}
 
 			waitForAll();
@@ -209,40 +248,48 @@ public class ImputationStep extends ParallelHadoopStep {
 	public void updateProgress() {
 
 		for (MyJob job : jobs.values()) {
-			String id = job.getId();
-			String hadoopJobId = getHadoopJobId(id);
-			RunningJob hadoopJob = HadoopUtil.getInstance().getJob(hadoopJobId);
-			try {
 
-				if (hadoopJob != null) {
+			String hadoopJobId = getHadoopJob(job.getId()).getJobId();
 
-					if (hadoopJob.isComplete()) {
+			if (hadoopJobId != null) {
 
-						if (hadoopJob.isSuccessful()) {
-							job.state = OK;
+				RunningJob hadoopJob = HadoopUtil.getInstance().getJob(
+						hadoopJobId);
+				try {
+
+					if (hadoopJob != null) {
+
+						if (hadoopJob.isComplete()) {
+
+							if (hadoopJob.isSuccessful()) {
+								job.state = OK;
+							} else {
+								job.state = FAILED;
+							}
+
 						} else {
-							job.state = FAILED;
+
+							if (hadoopJob.getJobStatus().mapProgress() > 0) {
+
+								job.state = RUNNING;
+
+							} else {
+								job.state = WAIT;
+							}
+
 						}
 
 					} else {
-
-						if (hadoopJob.getJobStatus().mapProgress() > 0) {
-
-							job.state = RUNNING;
-
-						} else {
-							job.state = WAIT;
-						}
-
+						job.state = WAIT;
 					}
+				} catch (IOException e) {
 
-				} else {
 					job.state = WAIT;
+
 				}
-			} catch (IOException e) {
 
+			} else {
 				job.state = WAIT;
-
 			}
 
 		}

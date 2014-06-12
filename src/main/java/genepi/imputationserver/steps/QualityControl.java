@@ -1,65 +1,56 @@
 package genepi.imputationserver.steps;
 
-import genepi.base.Tool;
+import java.text.DecimalFormat;
+
 import genepi.imputationserver.steps.qc.QualityControlJob;
+import genepi.imputationserver.util.HadoopJobStep;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
+import genepi.io.FileUtil;
+import cloudgene.mapred.jobs.CloudgeneContext;
+import cloudgene.mapred.jobs.Message;
+import cloudgene.mapred.wdl.WdlStep;
 
-public class QualityControl extends Tool {
-
-	public QualityControl(String[] args) {
-		super(args);
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public void createParameters() {
-		addParameter("input", "Hdfs input path");
-		addParameter("reference", "reference id");
-		addParameter("output", "Hdfs output path");
-		addParameter("output-manifest", "output-manifest folder");
-		addParameter("population", "reference population");
-		addParameter("qcstat", "qc stat output");
-	}
+public class QualityControl extends HadoopJobStep {
 
 	@Override
-	public void init() {
+	public boolean run(WdlStep step, CloudgeneContext context) {
 
-	}
+		String folder = getFolder(HadoopJobStep.class);
 
-	@Override
-	public int run() {
+		// inputs
+		String input = context.get("chunkfile");
+		String reference = context.get("refpanel");
+		String population = context.get("population");
 
-		String input = (String) getValue("input");
-		String output = (String) getValue("output");
+		// outputs
+		String output = context.get("outputmaf");
+		String outputManifest = context.get("mafchunkfile");
 
-		String outputManifest = (String) getValue("output-manifest");
-
-		String reference = (String) getValue("reference");
-		String population = (String) getValue("population");
-		String qcstat = (String) getValue("qcstat");
-		
 		RefPanelList panels = null;
 		try {
-			panels = RefPanelList.loadFromFile("panels.txt");
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder,
+					"panels.txt"));
 
 		} catch (Exception e) {
 
-			System.out.println("panels.txt not found.");
-			return 1;
+			context.println("panels.txt not found.");
+			return false;
 		}
 		RefPanel panel = panels.getById(reference);
 		if (panel == null) {
-			System.out.println("Reference '" + reference + "' not found.");
-			System.out.println("Available references:");
+			context.println("Reference '" + reference + "' not found.");
+			context.println("Available references:");
 			for (RefPanel p : panels.getPanels()) {
-				System.out.println(p.getId());
+				context.println(p.getId());
 			}
 
-			return 1;
+			return false;
 		}
 
 		QualityControlJob job = new QualityControlJob("maf");
+		// job.setJar(FileUtil.path(folder, step.getJar()));
+		// job.setJarByClass(QualityControlStep.class);
 		job.setLegendHdfs(panel.getLegend());
 		job.setLegendPattern(panel.getLegendPattern());
 		job.setPopulation(population);
@@ -67,14 +58,39 @@ public class QualityControl extends Tool {
 		job.setOutput(output + "_temp");
 		job.setOutputMaf(output);
 		job.setOutputManifest(outputManifest);
-		job.setQcStat(qcstat);
 
-		if (job.execute()) {
-			return 0;
+		boolean successful = executeHadoopJob(job, context);
+
+		if (successful) {
+			// print statistics (TODO: remove qstat file!)
+
+			DecimalFormat df = new DecimalFormat("#.00");
+
+			StringBuffer text = new StringBuffer();
+			text.append("Duplicated sites: " + job.getDuplicates() + "<br>");
+			text.append("NonSNP sites: " + job.getNoSnps() + "<br>");
+			text.append("Alternative allele frequency > 0.5 sites: "
+					+ job.getAlternativeAlleles() + "<br>");
+			text.append("Monomorphic sites: " + job.getMonomorphic() + "<br>");
+			text.append("Reference Overlap: "
+					+ df.format(job.getFoundInLegend()
+							/ (double) (job.getFoundInLegend() + job
+									.getNotFoundInLegend()) * 100) + "% "
+					+ "<br>");
+			text.append("Allele mismatch: " + job.getAlleleMismatch() + "<br>");
+			text.append("Excluded SNPs with a call rate of < 90%: "
+					+ job.getToLessSamples() + "<br>");
+			text.append("Excluded sites in total: " + job.getFiltered()
+					+ "<br>");
+			text.append("Excluded chunks: " + job.getRemovedChunks());
+
+			ok(text.toString());
+
+			return true;
 		} else {
-			return 1;
+			error("QC Quality Control failed!");
+			return false;
 		}
-
 	}
 
 }
