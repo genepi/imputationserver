@@ -1,4 +1,4 @@
-package genepi.minicloudmac.hadoop.imputation.sort;
+package genepi.imputationserver.steps.imputation.sort;
 
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;

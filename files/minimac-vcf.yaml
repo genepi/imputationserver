@@ -19,24 +19,24 @@ mapred:
   setup:
     name: Input Validation
     jar: minimac-cloud.jar
-    classname: genepi.minicloudmac.hadoop.validation.VcfInputFileCheck
+    classname: genepi.imputationserver.steps.InputValidation
 
   steps:
 
     - name: Input Preprocessing
       jar: minimac-cloud.jar
-      classname: genepi.minicloudmac.hadoop.validation.VcfInputFileSplitter
+      classname: genepi.imputationserver.steps.InputSplitter
       params: $files $chunksize
       generates: $chunkfile
 
     - name: Quality Control (Preprocessing)
       jar: minimac-cloud.jar
-      params: maf-vcf --input $chunkfile --output $outputmaf --reference $refpanel --population $population --output-manifest $mafchunkfile --qcstat $qcstat
+      params: quality-control --input $chunkfile --output $outputmaf --reference $refpanel --population $population --output-manifest $mafchunkfile --qcstat $qcstat
       generates: $outputmaf $mafchunkfile $qcstat
 
     - name: Quality Control Statistics
       jar: minimac-cloud.jar
-      classname: genepi.minicloudmac.hadoop.preprocessing.vcf.FilePrinter
+      classname: genepi.imputationserver.steps.QualityControlSummary
       params: $qcstat
 
 #if( $population != "mixed")
@@ -52,7 +52,7 @@ mapred:
 
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
-      classname: genepi.minicloudmac.hadoop.imputation.ImputationVcfStep
+      classname: genepi.imputationserver.steps.ImputationStep
       params: $mafchunkfile $refpanel $chunksize $window $phasing      
       generates: $local $outputimputation $logfile
 
@@ -64,7 +64,7 @@ mapred:
 
     - name: Data Compression and Encryption
       jar: minimac-cloud.jar
-      classname: genepi.minicloudmac.hadoop.compression.Compression
+      classname: genepi.imputationserver.steps.CompressionEncryption
       params: $local $report $encryption
 
 #end

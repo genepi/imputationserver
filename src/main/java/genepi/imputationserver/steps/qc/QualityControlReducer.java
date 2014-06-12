@@ -1,14 +1,14 @@
-package genepi.minicloudmac.hadoop.preprocessing.vcf;
+package genepi.imputationserver.steps.qc;
 
 import genepi.hadoop.HdfsUtil;
-import genepi.minicloudmac.hadoop.util.HdfsLineWriter;
+import genepi.hadoop.io.HdfsLineWriter;
 
 import java.io.IOException;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class MafReducer extends Reducer<Text, Text, Text, Text> {
+public class QualityControlReducer extends Reducer<Text, Text, Text, Text> {
 
 	private String output;
 
@@ -16,7 +16,7 @@ public class MafReducer extends Reducer<Text, Text, Text, Text> {
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
 
-		output = context.getConfiguration().get(MafJob.OUTPUT_MANIFEST);
+		output = context.getConfiguration().get(QualityControlJob.OUTPUT_MANIFEST);
 
 	}
 

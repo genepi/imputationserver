@@ -1,4 +1,4 @@
-package genepi.minicloudmac.hadoop.imputation.sort;
+package genepi.imputationserver.steps.imputation.sort;
 
 import java.io.DataInput;
 import java.io.DataOutput;

@@ -1,4 +1,4 @@
-package genepi.minicloudmac.hadoop.preprocessing.vcf;
+package genepi.imputationserver.steps.qc;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -12,7 +12,7 @@ import genepi.io.text.LineWriter;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 
-public class MafJob extends HadoopJob {
+public class QualityControlJob extends HadoopJob {
 
 	public static final String LEGEND_PATTERN = "MINIMAC_LEGEND_PATTERN";
 
@@ -28,7 +28,7 @@ public class MafJob extends HadoopJob {
 
 	private String refPanelHdfs;
 
-	public MafJob(String name) {
+	public QualityControlJob(String name) {
 
 		super("maf-minimac");
 		getConfiguration().set("mapred.task.timeout", "360000000");
@@ -40,10 +40,10 @@ public class MafJob extends HadoopJob {
 
 		NLineInputFormat.setNumLinesPerSplit(job, 1);
 
-		job.setMapperClass(MafMapper.class);
+		job.setMapperClass(QualityControlMapper.class);
 		job.setMapOutputKeyClass(Text.class);
 		job.setInputFormatClass(NLineInputFormat.class);
-		job.setReducerClass(MafReducer.class);
+		job.setReducerClass(QualityControlReducer.class);
 		job.setNumReduceTasks(22);
 	}
 

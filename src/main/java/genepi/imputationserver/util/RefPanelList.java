@@ -1,4 +1,4 @@
-package genepi.minicloudmac.hadoop.util;
+package genepi.imputationserver.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -1,4 +1,4 @@
-package genepi.minicloudmac.hadoop.preprocessing.vcf;
+package genepi.imputationserver.steps;
 
 import genepi.io.FileUtil;
 import cloudgene.mapred.jobs.CloudgeneContext;
@@ -6,7 +6,7 @@ import cloudgene.mapred.jobs.CloudgeneStep;
 import cloudgene.mapred.jobs.Message;
 import cloudgene.mapred.wdl.WdlStep;
 
-public class FilePrinter extends CloudgeneStep {
+public class QualityControlSummary extends CloudgeneStep {
 
 	@Override
 	public boolean run(WdlStep step, CloudgeneContext context) {

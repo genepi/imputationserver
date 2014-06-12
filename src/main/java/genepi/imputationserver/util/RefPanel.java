@@ -1,4 +1,4 @@
-package genepi.minicloudmac.hadoop.util;
+package genepi.imputationserver.util;
 
 public class RefPanel {
 

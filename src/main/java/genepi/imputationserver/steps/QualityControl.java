@@ -1,12 +1,13 @@
-package genepi.minicloudmac.hadoop.preprocessing.vcf;
+package genepi.imputationserver.steps;
 
 import genepi.base.Tool;
-import genepi.minicloudmac.hadoop.util.RefPanel;
-import genepi.minicloudmac.hadoop.util.RefPanelList;
+import genepi.imputationserver.steps.qc.QualityControlJob;
+import genepi.imputationserver.util.RefPanel;
+import genepi.imputationserver.util.RefPanelList;
 
-public class Maf extends Tool {
+public class QualityControl extends Tool {
 
-	public Maf(String[] args) {
+	public QualityControl(String[] args) {
 		super(args);
 		// TODO Auto-generated constructor stub
 	}
@@ -58,7 +59,7 @@ public class Maf extends Tool {
 			return 1;
 		}
 
-		MafJob job = new MafJob("maf");
+		QualityControlJob job = new QualityControlJob("maf");
 		job.setLegendHdfs(panel.getLegend());
 		job.setLegendPattern(panel.getLegendPattern());
 		job.setPopulation(population);

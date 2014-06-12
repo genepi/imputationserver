@@ -1,33 +1,28 @@
-package genepi.minicloudmac.hadoop.preprocessing.vcf;
+package genepi.imputationserver.steps.qc;
 
 import genepi.hadoop.CacheStore;
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.ParameterStore;
 import genepi.hadoop.PreferenceStore;
+import genepi.hadoop.io.HdfsLineWriter;
+import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.io.FileUtil;
 import genepi.io.legend.LegendEntry;
 import genepi.io.legend.LegendFileReader;
 import genepi.io.text.LineReader;
-import genepi.minicloudmac.hadoop.util.HdfsLineWriter;
-import genepi.minicloudmac.hadoop.util.ParameterStore;
-import genepi.minicloudmac.hadoop.validation.io.vcf.VcfChunk;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Set;
 
-import org.apache.commons.math3.stat.inference.ChiSquareTest;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.broadinstitute.variant.variantcontext.Allele;
 import org.broadinstitute.variant.variantcontext.VariantContext;
-import org.broadinstitute.variant.variantcontext.VariantContext.Type;
 import org.broadinstitute.variant.vcf.VCFCodec;
 import org.broadinstitute.variant.vcf.VCFFileReader;
 import org.broadinstitute.variant.vcf.VCFHeaderVersion;
 
-public class MafMapper extends Mapper<LongWritable, Text, Text, Text> {
+public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private String folder;
 
@@ -58,10 +53,10 @@ public class MafMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 		// read parameters
 		ParameterStore parameters = new ParameterStore(context);
-		legendPattern = parameters.get(MafJob.LEGEND_PATTERN);
-		population = parameters.get(MafJob.LEGEND_POPULATION);
-		output = parameters.get(MafJob.OUTPUT_MAF);
-		String hdfsPath = parameters.get(MafJob.LEGEND_HDFS);
+		legendPattern = parameters.get(QualityControlJob.LEGEND_PATTERN);
+		population = parameters.get(QualityControlJob.LEGEND_POPULATION);
+		output = parameters.get(QualityControlJob.OUTPUT_MAF);
+		String hdfsPath = parameters.get(QualityControlJob.LEGEND_HDFS);
 		String legendFilename = FileUtil.getFilename(hdfsPath);
 
 		// load files from cache

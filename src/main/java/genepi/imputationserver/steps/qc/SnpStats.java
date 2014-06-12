@@ -1,4 +1,4 @@
-package genepi.minicloudmac.hadoop.preprocessing.vcf;
+package genepi.imputationserver.steps.qc;
 
 public class SnpStats {
 

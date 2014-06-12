@@ -60,7 +60,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>genepi.minicloudmac.MiniCloudMac</mainClass>
+									<mainClass>genepi.imputationserver.ImputationServer</mainClass>
 								</transformer>
 							</transformers>
 
