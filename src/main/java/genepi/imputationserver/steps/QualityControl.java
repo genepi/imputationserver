@@ -50,17 +50,17 @@ public class QualityControl extends HadoopJobStep {
 
 		} catch (Exception e) {
 
-			context.println("panels.txt not found.");
+			error("panels.txt not found.");
 			return false;
 		}
 
 		// check reference panel
 		RefPanel panel = panels.getById(reference);
 		if (panel == null) {
-			context.println("Reference '" + reference + "' not found.");
-			context.println("Available references:");
+			error("Reference '" + reference + "' not found.");
+			error("Available references:");
 			for (RefPanel p : panels.getPanels()) {
-				context.println(p.getId());
+				error(p.getId());
 			}
 
 			return false;
@@ -79,7 +79,8 @@ public class QualityControl extends HadoopJobStep {
 		successful = executeHadoopJob(job, context);
 
 		if (successful) {
-			// print statistics
+
+			// print qc statistics
 			DecimalFormat df = new DecimalFormat("#.00");
 
 			StringBuffer text = new StringBuffer();
@@ -103,9 +104,12 @@ public class QualityControl extends HadoopJobStep {
 			ok(text.toString());
 
 			return true;
+
 		} else {
+
 			error("QC Quality Control failed!");
 			return false;
+
 		}
 	}
 
