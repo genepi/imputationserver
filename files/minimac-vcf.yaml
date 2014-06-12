@@ -23,12 +23,6 @@ mapred:
 
   steps:
 
-    - name: Input Preprocessing
-      jar: minimac-cloud.jar
-      classname: genepi.imputationserver.steps.InputSplitter
-      params: $files $chunksize
-      generates: $chunkfile
-
     - name: Quality Control
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.QualityControl

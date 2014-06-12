@@ -32,7 +32,7 @@ public class InputValidation extends CloudgeneStep {
 
 	private boolean checkVcfFiles(CloudgeneContext context) {
 
-		String folder = getFolder(InputSplitter.class);
+		String folder = getFolder(InputValidation.class);
 		String tabix = FileUtil.path(folder, "bin", "tabix");
 
 		String inputFiles = context.get("files");
