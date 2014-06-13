@@ -47,6 +47,8 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 	private int duplicates = 0;
 
 	private int lastPos = 0;
+	
+	private int phasingWindow;
 
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
@@ -68,6 +70,7 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 		folder = store.getString("minimac.tmp");
 		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
 		FileUtil.createDirectory(folder);
+		phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
 	}
 
@@ -105,13 +108,13 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 		HdfsLineWriter newFileWriter = new HdfsLineWriter(hdfsFilename);
 		StringBuilder chunkData = new StringBuilder();
 
-		// +/- 1 Mbases
-		int start = chunk.getStart() - 1000000;
+		// +/- phasingWindow (1 Mbases default)
+		int start = chunk.getStart() - phasingWindow;
 		if (start < 1) {
 			start = 1;
 		}
 
-		int end = chunk.getEnd() + 1000000;
+		int end = chunk.getEnd() + phasingWindow;
 
 		LineReader reader = new LineReader(vcfFilename);
 		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFilename));

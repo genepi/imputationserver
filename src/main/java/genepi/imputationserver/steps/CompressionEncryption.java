@@ -18,10 +18,11 @@ public class CompressionEncryption extends Hadoop {
 	@Override
 	public boolean run(WdlStep step, CloudgeneContext context) {
 
-		String password = RandomStringUtils.randomAlphabetic(10);
+		// inputs
 		String folder = context.get("local");
-		// String report = context.get("report");
 		String encryption = context.get("encryption");
+
+		String password = RandomStringUtils.randomAlphabetic(10);
 
 		try {
 
@@ -32,11 +33,6 @@ public class CompressionEncryption extends Hadoop {
 				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
 			}
 
-			/*
-			 * new File(report).renameTo(new File(FileUtil.path(folder,
-			 * "results", "report.html")));
-			 */
-
 			ZipFile file = new ZipFile(new File(FileUtil.path(folder,
 					"results.zip")));
 			file.createZipFileFromFolder(FileUtil.path(folder, "results"),
@@ -45,12 +41,12 @@ public class CompressionEncryption extends Hadoop {
 
 			ok("Data compression successful.");
 
-			//submit counters!
+			// submit counters!
 			context.submitCounter("samples");
 			context.submitCounter("genotypes");
 			context.submitCounter("chromosomes");
 			context.submitCounter("runs");
-			
+
 			if (encryption.equals("yes")) {
 
 				ok("We have sent an email to <b>" + context.getUser().getMail()

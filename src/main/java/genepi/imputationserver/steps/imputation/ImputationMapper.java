@@ -36,7 +36,7 @@ public class ImputationMapper extends
 	private ChunkValue chunkValue = new ChunkValue();
 
 	private String output;
-	private int window = 0;
+
 	private String refFilename = "";
 
 	private Log log;
@@ -50,7 +50,6 @@ public class ImputationMapper extends
 		ParameterStore parameters = new ParameterStore(context);
 		pattern = parameters.get(ImputationJob.REF_PANEL_PATTERN);
 		output = parameters.get(ImputationJob.OUTPUT);
-		window = parameters.getInteger(ImputationJob.WINDOW, 0);
 		phasing = parameters.get(ImputationJob.PHASING);
 		String hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
@@ -64,6 +63,16 @@ public class ImputationMapper extends
 		String vcf2HapCommand = cache.getFile("vcf2hap");
 		String shapeItCommand = cache.getFile("shapeit");
 
+		// create temp directory
+		PreferenceStore store = new PreferenceStore(context.getConfiguration());
+		folder = store.getString("minimac.tmp");
+		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
+		FileUtil.createDirectory(folder);
+
+		// load config
+		int minimacWindow = Integer.parseInt(store.getString("minimac.window"));
+		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
+
 		// config pipeline
 		pipeline = new ImputationPipeline();
 		pipeline.setMinimacCommand(minimacCommand);
@@ -71,12 +80,8 @@ public class ImputationMapper extends
 		pipeline.setVcfCookerCommand(vcfCookerCommand);
 		pipeline.setVcf2HapCommand(vcf2HapCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
-
-		// create temp directory
-		PreferenceStore store = new PreferenceStore(context.getConfiguration());
-		folder = store.getString("minimac.tmp");
-		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
-		FileUtil.createDirectory(folder);
+		pipeline.setMinimacWindow(minimacWindow);
+		pipeline.setPhasingWindow(phasingWindow);
 
 	}
 
@@ -113,6 +118,7 @@ public class ImputationMapper extends
 		}
 
 		pipeline.init();
+		pipeline.setReferencePanel(refPanelFilename);
 
 		if (chunk.isPhased()) {
 
@@ -129,8 +135,7 @@ public class ImputationMapper extends
 			if (!chunk.getChromosome().equals("23")
 					&& !chunk.getChromosome().equals("X")) {
 
-				successful = pipeline.imputeMach(chunk, outputChunk, window,
-						refPanelFilename);
+				successful = pipeline.imputeMach(chunk, outputChunk);
 				if (successful) {
 					log.info("  Minimac successful.");
 				} else {
@@ -141,8 +146,9 @@ public class ImputationMapper extends
 
 		} else {
 
-			System.out.println("vcf lines: " + FileUtil.getLineCount(outputChunk.getVcfFilename()));
-			
+			System.out.println("vcf lines: "
+					+ FileUtil.getLineCount(outputChunk.getVcfFilename()));
+
 			// convert vcf to bim/bed/fam
 			boolean successful = pipeline.vcfToBed(outputChunk);
 			if (successful) {
@@ -190,18 +196,11 @@ public class ImputationMapper extends
 
 			}
 
-			// remove monomorphic snps
-			/*int removedSnps = ShapeitUtil.cleanUp(
-					outputChunk.getHapsFilename(),
-					outputChunk.getHapsCleanFilename());
-			log.info("  " + removedSnps + " monomorphic snps removed.");*/
-
 			// imputation
 			if (!chunk.getChromosome().equals("23")
 					&& !chunk.getChromosome().equals("X")) {
 
-				successful = pipeline.imputeShapeIt(chunk, outputChunk, window,
-						refPanelFilename);
+				successful = pipeline.imputeShapeIt(chunk, outputChunk);
 				if (successful) {
 					log.info("  Minimac successful.");
 				} else {

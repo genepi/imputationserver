@@ -1,10 +1,12 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.PreferenceStore;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.io.FileUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
@@ -21,8 +23,7 @@ public class InputValidation extends CloudgeneStep {
 	@Override
 	public boolean run(WdlStep step, CloudgeneContext context) {
 
-		boolean importOk = importVcfFiles(context);
-		if (!importOk) {
+		if (!importVcfFiles(context)) {
 			return false;
 		}
 
@@ -31,13 +32,17 @@ public class InputValidation extends CloudgeneStep {
 	}
 
 	private boolean checkVcfFiles(CloudgeneContext context) {
-
 		String folder = getFolder(InputValidation.class);
-		String tabix = FileUtil.path(folder, "bin", "tabix");
 
+		// inputs
 		String inputFiles = context.get("files");
-		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
+		// read config
+		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
+				folder, "job.config")));
+		int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
+
+		String tabix = FileUtil.path(folder, "bin", "tabix");
 		String files = FileUtil.path(context.getLocalTemp(), "input");
 
 		// exports files from hdfs
@@ -135,8 +140,7 @@ public class InputValidation extends CloudgeneStep {
 		} else {
 
 			analyzeMessage.setType(Message.ERROR);
-			analyzeMessage.setMessage(validVcfFiles.size()
-					+ " valid VCF file(s) found.");
+			analyzeMessage.setMessage("no valid VCF file(s) found.");
 			chromosomeMessage.setType(Message.ERROR);
 
 			return false;
@@ -144,9 +148,12 @@ public class InputValidation extends CloudgeneStep {
 	}
 
 	private boolean importVcfFiles(CloudgeneContext context) {
+
 		for (String input : context.getInputs()) {
 
 			if (ImporterFactory.needsImport(context.get(input))) {
+
+				Message message = createLogMessage("", Message.RUNNING);
 
 				String[] urlList = context.get(input).split(";")[0]
 						.split("\\s+");
@@ -170,7 +177,7 @@ public class InputValidation extends CloudgeneStep {
 
 					try {
 
-						beginTask("Import File(s) " + url2 + "...");
+						message.setMessage("Import " + url2 + "...");
 
 						IImporter importer = ImporterFactory.createImporter(
 								url, target);
@@ -183,14 +190,12 @@ public class InputValidation extends CloudgeneStep {
 
 								context.setInput(input, target);
 
-								endTask("Import File(s) " + url2
-										+ " successful.", Message.OK);
-
 							} else {
 
-								endTask("Import File(s) " + url2 + " failed: "
-										+ importer.getErrorMessage(),
-										Message.ERROR);
+								message.setMessage("Import " + url2
+										+ " failed: "
+										+ importer.getErrorMessage());
+								message.setType(Message.ERROR);
 
 								return false;
 
@@ -198,23 +203,29 @@ public class InputValidation extends CloudgeneStep {
 
 						} else {
 
-							endTask("Import File(s) " + url2
-									+ " failed: Protocol not supported",
-									Message.ERROR);
+							message.setMessage("Import " + url2
+									+ " failed: Protocol not supported");
+							message.setType(Message.ERROR);
 
 							return false;
 
 						}
 
 					} catch (Exception e) {
-						endTask("Import File(s) " + url2 + " failed: "
-								+ e.toString(), Message.ERROR);
+						message.setMessage("Import File(s) " + url2
+								+ " failed: " + e.toString());
+						message.setType(Message.ERROR);
+
 						return false;
 					}
 
 				}
 
+				message.setMessage("File Import successful. ");
+				message.setType(Message.OK);
+
 			}
+
 		}
 
 		return true;

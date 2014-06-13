@@ -141,7 +141,7 @@
 		<dependency>
 			<groupId>genepi-hadoop</groupId>
 			<artifactId>genepi-hadoop</artifactId>
-			<version>0.5.0</version>
+			<version>0.7.1</version>
 		</dependency>
 
 		<dependency>

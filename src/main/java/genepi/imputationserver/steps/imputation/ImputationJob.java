@@ -28,10 +28,6 @@ public class ImputationJob extends HadoopJob {
 
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
 
-	public static final String CHUNK_SIZE = "MINIMAC_CHUNKSIZE";
-
-	public static final String WINDOW = "MINIMAC_WINDOW";
-
 	public static final String PHASING = "MINIMAC_PHASING";
 
 	private String localOutput;
@@ -39,7 +35,7 @@ public class ImputationJob extends HadoopJob {
 	private String refPanelHdfs;
 
 	private String logFilename;
-	
+
 	private String folder;
 
 	public ImputationJob(String name) {
@@ -86,10 +82,10 @@ public class ImputationJob extends HadoopJob {
 		cache.addArchive(name, refPanelHdfs);
 	}
 
-	public void setFolder(String folder){
+	public void setFolder(String folder) {
 		this.folder = folder;
 	}
-	
+
 	protected void distribute(String folder, String hdfs, CacheStore cache) {
 		String[] files = FileUtil.getFiles(folder, "");
 		for (String file : files) {
@@ -168,14 +164,6 @@ public class ImputationJob extends HadoopJob {
 	public void setRefPanelHdfs(String refPanelHdfs) {
 		this.refPanelHdfs = refPanelHdfs;
 		set(REF_PANEL_HDFS, refPanelHdfs);
-	}
-
-	public void setChunkSize(int size) {
-		set(CHUNK_SIZE, size);
-	}
-
-	public void setWindowSize(int window) {
-		set(WINDOW, window);
 	}
 
 	public void setLogFilename(String logFilename) {

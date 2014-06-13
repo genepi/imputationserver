@@ -19,6 +19,9 @@ public class ImputationPipeline {
 	private String shapeItCommand;
 	private String vcfCookerCommand;
 	private String vcf2HapCommand;
+	private String refPanelFilename;
+	private int minimacWindow;
+	private int phasingWindow;
 
 	public void init() {
 
@@ -42,6 +45,18 @@ public class ImputationPipeline {
 
 	public void setShapeItCommand(String shapeItCommand) {
 		this.shapeItCommand = shapeItCommand;
+	}
+
+	public void setMinimacWindow(int minimacWindow) {
+		this.minimacWindow = minimacWindow;
+	}
+
+	public void setPhasingWindow(int phasingWindow) {
+		this.phasingWindow = phasingWindow;
+	}
+
+	public void setReferencePanel(String refPanelFilename) {
+		this.refPanelFilename = refPanelFilename;
 	}
 
 	public boolean vcfToBed(VcfChunkOutput output) {
@@ -69,14 +84,14 @@ public class ImputationPipeline {
 
 	public int getNoSnps(VcfChunk input, VcfChunkOutput output) {
 		MapFileReader reader = null;
-		
+
 		try {
 			System.out.println(FileUtil.getLineCount(output.getBimFilename()));
 		} catch (IOException e1) {
 			System.out.println(e1.getMessage());
 			e1.printStackTrace();
 		}
-		
+
 		int noSnps = 0;
 		try {
 			reader = new MapFileReader(output.getBimFilename());
@@ -100,12 +115,12 @@ public class ImputationPipeline {
 	public boolean phaseWithHapiUr(VcfChunk input, VcfChunkOutput output) {
 
 		// +/- 1 Mbases
-		int start = input.getStart() - 1000000;
+		int start = input.getStart() - phasingWindow;
 		if (start < 1) {
 			start = 1;
 		}
 
-		int end = input.getEnd() + 1000000;
+		int end = input.getEnd() + phasingWindow;
 
 		Command hapiUr = new Command(hapiUrCommand);
 		hapiUr.setSilent(false);
@@ -120,7 +135,7 @@ public class ImputationPipeline {
 	}
 
 	public boolean phaseWithShapeIt(VcfChunk input, VcfChunkOutput output) {
-		
+
 		Command shapeIt = new Command(shapeItCommand);
 		shapeIt.setSilent(false);
 
@@ -134,9 +149,8 @@ public class ImputationPipeline {
 		return (shapeIt.execute() == 0);
 	}
 
-	public boolean imputeShapeIt(VcfChunk input, VcfChunkOutput output,
-			int window, String refPanelFilename) throws InterruptedException,
-			IOException {
+	public boolean imputeShapeIt(VcfChunk input, VcfChunkOutput output)
+			throws InterruptedException, IOException {
 
 		if (!new File(refPanelFilename).exists()) {
 			throw new InterruptedException("ReferencePanel '"
@@ -151,8 +165,9 @@ public class ImputationPipeline {
 				"--sample", output.getSampleFilename(), "--shape_haps",
 				output.getHapsFilename(), "--rounds", "5", "--vcfstart",
 				input.getStart() + "", "--vcfend", input.getEnd() + "",
-				"--vcfwindow", window + "", "--vcfchr", input.getChromosome(),
-				"--prefix", output.getPrefix(), "--chr", input.getChromosome());
+				"--vcfwindow", minimacWindow + "", "--vcfchr",
+				input.getChromosome(), "--prefix", output.getPrefix(), "--chr",
+				input.getChromosome());
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
@@ -161,9 +176,8 @@ public class ImputationPipeline {
 
 	}
 
-	public boolean imputeMach(VcfChunk input, VcfChunkOutput output,
-			int window, String refPanelFilename) throws InterruptedException,
-			IOException {
+	public boolean imputeMach(VcfChunk input, VcfChunkOutput output)
+			throws InterruptedException, IOException {
 
 		// mini-mac
 		Command minimac = new Command(minimacCommand);
@@ -173,8 +187,9 @@ public class ImputationPipeline {
 				"--snps", output.getSnpsFilename(), "--haps",
 				output.getHapFilename(), "--rounds", "5", "--vcfstart",
 				input.getStart() + "", "--vcfend", input.getEnd() + "",
-				"--vcfwindow", window + "", "--vcfchr", input.getChromosome(),
-				"--prefix", output.getPrefix(), "--chr", input.getChromosome());
+				"--vcfwindow", minimacWindow + "", "--vcfchr",
+				input.getChromosome(), "--prefix", output.getPrefix(), "--chr",
+				input.getChromosome());
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");

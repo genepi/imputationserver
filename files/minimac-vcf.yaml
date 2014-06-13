@@ -37,8 +37,6 @@ mapred:
       
 #end
 
-#if( $mode == "all")
-
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.Imputation
@@ -56,7 +54,6 @@ mapred:
       classname: genepi.imputationserver.steps.CompressionEncryption
       params: $local $report $encryption
 
-#end
 
   inputs:
 
@@ -67,18 +64,6 @@ mapred:
        values:
          giant: GIANT ALL reference panel
          phase3: 1000G Phase 3 pre-release - chr 20 only
-
-     - id: chunksize
-       description: chunksize
-       value: 5000000
-       type: number
-       visible: false
-
-     - id: window
-       description: window
-       value: 500000
-       type: number
-       visible: false
 
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
@@ -102,15 +87,6 @@ mapred:
          asn: ASN
          amr: AMR
          mixed: Mixed
-
-     - id: mode
-       description: Mode
-       type: list
-       value: all
-       visible: false
-       values:
-         qc: Quality Control
-         all: Quality Control + Imputation
 
      - id: encryption
        description: Result Encryption

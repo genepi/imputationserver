@@ -41,16 +41,17 @@ public class Imputation extends ParallelHadoopJobStep {
 	@Override
 	public boolean run(WdlStep step, CloudgeneContext context) {
 
+		String folder = getFolder(Imputation.class);
+
+		// inputs
 		String input = context.get("mafchunkfile");
-		String output = context.get("outputimputation");
 		String reference = context.get("refpanel");
-		String local = context.get("local");
-		String chunk = context.get("chunksize");
-		String window = context.get("window");
-		String log = context.get("logfile");
 		String phasing = context.get("phasing");
 
-		String folder = getFolder(Imputation.class);
+		// outputs
+		String output = context.get("outputimputation");
+		String local = context.get("local");
+		String log = context.get("logfile");
 
 		try {
 			List<String> chunkFiles = HdfsUtil.getFiles(input);
@@ -110,8 +111,6 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
 				job.setLocalOutput(local);
-				job.setChunkSize(Integer.parseInt(chunk));
-				job.setWindowSize(Integer.parseInt(window));
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setPhasing(phasing);
 
@@ -249,47 +248,52 @@ public class Imputation extends ParallelHadoopJobStep {
 
 		for (MyJob job : jobs.values()) {
 
-			String hadoopJobId = getHadoopJob(job.getId()).getJobId();
+			job.state = WAIT;
+			
+			if (getHadoopJob(job.getId()) != null) {
 
-			if (hadoopJobId != null) {
+				String hadoopJobId = getHadoopJob(job.getId()).getJobId();
 
-				RunningJob hadoopJob = HadoopUtil.getInstance().getJob(
-						hadoopJobId);
-				try {
+				if (hadoopJobId != null) {
 
-					if (hadoopJob != null) {
+					
+					RunningJob hadoopJob = HadoopUtil.getInstance().getJob(
+							hadoopJobId);
+					try {
 
-						if (hadoopJob.isComplete()) {
+						if (hadoopJob != null) {
 
-							if (hadoopJob.isSuccessful()) {
-								job.state = OK;
+							if (hadoopJob.isComplete()) {
+
+								if (hadoopJob.isSuccessful()) {
+									job.state = OK;
+								} else {
+									job.state = FAILED;
+								}
+
 							} else {
-								job.state = FAILED;
+
+								if (hadoopJob.getJobStatus().mapProgress() > 0) {
+
+									job.state = RUNNING;
+
+								} else {
+									job.state = WAIT;
+								}
+
 							}
 
 						} else {
-
-							if (hadoopJob.getJobStatus().mapProgress() > 0) {
-
-								job.state = RUNNING;
-
-							} else {
-								job.state = WAIT;
-							}
-
+							job.state = WAIT;
 						}
+					} catch (IOException e) {
 
-					} else {
 						job.state = WAIT;
+
 					}
-				} catch (IOException e) {
 
-					job.state = WAIT;
+				} 
 
-				}
-
-			} else {
-				job.state = WAIT;
 			}
 
 		}

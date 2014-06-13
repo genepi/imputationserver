@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.qc.QualityControlJob;
 import genepi.imputationserver.steps.vcf.VcfFile;
@@ -10,6 +11,7 @@ import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
+import java.io.File;
 import java.text.DecimalFormat;
 
 import cloudgene.mapred.jobs.CloudgeneContext;
@@ -27,14 +29,18 @@ public class QualityControl extends HadoopJobStep {
 		String population = context.get("population");
 		String files = context.get("files");
 		String chunkfile = context.get("chunkfile");
-		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
 		// outputs
 		String output = context.get("outputmaf");
 		String outputManifest = context.get("mafchunkfile");
 
+		// read config
+		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
+				folder, "job.config")));
+		int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
+
 		// create manifest file
-		boolean successful = createManifestFile(context, files, chunkfile,
+		boolean successful = createChunkFile(context, files, chunkfile,
 				chunkSize);
 
 		if (!successful) {
@@ -113,7 +119,7 @@ public class QualityControl extends HadoopJobStep {
 		}
 	}
 
-	private boolean createManifestFile(CloudgeneContext context,
+	private boolean createChunkFile(CloudgeneContext context,
 			String inputFiles, String chunkfile, int chunkSize) {
 		String files = FileUtil.path(context.getLocalTemp(), "input");
 
