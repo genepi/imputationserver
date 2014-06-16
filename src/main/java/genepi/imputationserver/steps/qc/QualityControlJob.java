@@ -2,6 +2,7 @@ package genepi.imputationserver.steps.qc;
 
 import genepi.hadoop.CacheStore;
 import genepi.hadoop.HadoopJob;
+import genepi.hadoop.HdfsUtil;
 import genepi.io.FileUtil;
 
 import java.io.IOException;
@@ -55,11 +56,15 @@ public class QualityControlJob extends HadoopJob {
 	}
 
 	@Override
-	protected void setupDistributedCache(CacheStore cache) {
+	protected void setupDistributedCache(CacheStore cache) throws IOException {
 
 		// add Legend file
-		String name = FileUtil.getFilename(refPanelHdfs);
-		cache.addArchive(name, refPanelHdfs);
+		if (HdfsUtil.exists(refPanelHdfs)) {
+			String name = FileUtil.getFilename(refPanelHdfs);
+			cache.addArchive(name, refPanelHdfs);
+		} else {
+			throw new IOException("RefPanel " + refPanelHdfs + " not found.");
+		}
 
 	}
 
