@@ -49,19 +49,27 @@ public class CompressionEncryption extends Hadoop {
 
 			if (encryption.equals("yes")) {
 
-				ok("We have sent an email to <b>" + context.getUser().getMail()
-						+ "</b> with the password.");
+				if (context.getUser().getMail() != null) {
 
-				String subject = "Job " + context.getJob().getName()
-						+ " is complete.";
-				String message = "Dear "
-						+ context.getUser().getFullName()
-						+ ",\nthe password for the imputation results is: "
-						+ password
-						+ "\n\nThe results can be downloaded from https://imputationserver.sph.umich.edu/start.html#!jobs/"
-						+ context.getJob().getName();
+					ok("We have sent an email to <b>"
+							+ context.getUser().getMail()
+							+ "</b> with the password.");
 
-				return context.sendMail(subject, message);
+					String subject = "Job " + context.getJob().getName()
+							+ " is complete.";
+					String message = "Dear "
+							+ context.getUser().getFullName()
+							+ ",\nthe password for the imputation results is: "
+							+ password
+							+ "\n\nThe results can be downloaded from https://imputationserver.sph.umich.edu/start.html#!jobs/"
+							+ context.getJob().getName();
+
+					return context.sendMail(subject, message);
+
+				} else {
+					error("No email address found. Please enter yout email address (Account -> Profile).");
+					return false;
+				}
 
 			} else {
 
