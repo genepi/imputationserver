@@ -1,5 +1,6 @@
 package genepi.imputationserver.steps;
 
+import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
 import genepi.imputationserver.steps.imputation.ImputationJob;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
@@ -12,30 +13,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.mapred.RunningJob;
-
 import cloudgene.mapred.jobs.CloudgeneContext;
 import cloudgene.mapred.jobs.Message;
-import cloudgene.mapred.util.HadoopUtil;
 import cloudgene.mapred.wdl.WdlStep;
 
 public class Imputation extends ParallelHadoopJobStep {
 
-	private Map<String, MyJob> jobs;
-
-	int WAIT = 0;
-
-	int RUNNING = 1;
-
-	int OK = 2;
-
-	int FAILED = 3;
-
 	Message message = null;
+
+	Map<String, HadoopJob> jobs = null;
 
 	public Imputation() {
 		super(10);
-		jobs = new HashMap<String, MyJob>();
+		jobs = new HashMap<String, HadoopJob>();
 	}
 
 	@Override
@@ -57,21 +47,6 @@ public class Imputation extends ParallelHadoopJobStep {
 			List<String> chunkFiles = HdfsUtil.getFiles(input);
 
 			message = createLogMessage("", Message.OK);
-
-			for (String chunkFile : chunkFiles) {
-
-				String[] tiles = chunkFile.split("/");
-				String chr = tiles[tiles.length - 1];
-
-				MyJob myJob = new MyJob();
-				myJob.id = chunkFile;
-				myJob.chromosome = chr;
-				myJob.state = WAIT;
-				jobs.put(chunkFile, myJob);
-
-				updateMessage();
-
-			}
 
 			// load reference panels
 
@@ -114,7 +89,8 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setPhasing(phasing);
 
-				executeJarInBackground(chunkFile, context, job);
+				executeJarInBackground(chr, context, job);
+				jobs.put(chr, job);
 
 			}
 
@@ -147,30 +123,33 @@ public class Imputation extends ParallelHadoopJobStep {
 
 		int i = 1;
 
-		for (MyJob job : jobs.values()) {
+		for (String id : jobs.keySet()) {
 
-			if (job.state == OK) {
+			HadoopJob job = jobs.get(id);
+			int state = getState(job);
+
+			if (state == OK) {
 
 				text += "<span class=\"badge badge-success\" style=\"width: 40px\">Chr "
-						+ job.chromosome + "</span>";
+						+ id + "</span>";
 
 			}
-			if (job.state == RUNNING) {
+			if (state == RUNNING) {
 
 				text += "<span class=\"badge badge-info\" style=\"width: 40px\">Chr "
-						+ job.chromosome + "</span>";
+						+ id + "</span>";
 
 			}
-			if (job.state == FAILED) {
+			if (state == FAILED) {
 
 				text += "<span class=\"badge badge-important\" style=\"width: 40px\">Chr "
-						+ job.chromosome + "</span>";
+						+ id + "</span>";
 
 			}
-			if (job.state == WAIT) {
+			if (state == WAIT) {
 
-				text += "<span class=\"badge\" style=\"width: 40px\">Chr "
-						+ job.chromosome + "</span>";
+				text += "<span class=\"badge\" style=\"width: 40px\">Chr " + id
+						+ "</span>";
 
 			}
 
@@ -209,94 +188,10 @@ public class Imputation extends ParallelHadoopJobStep {
 
 	}
 
-	class MyJob {
-
-		private String chromosome;
-
-		private int state = WAIT;
-
-		private String id;
-
-		public String getChromosome() {
-			return chromosome;
-		}
-
-		public void setChromosome(String chromosome) {
-			this.chromosome = chromosome;
-		}
-
-		public int getState() {
-			return state;
-		}
-
-		public void setState(int state) {
-			this.state = state;
-		}
-
-		public void setId(String id) {
-			this.id = id;
-		}
-
-		public String getId() {
-			return id;
-		}
-
-	}
-
 	@Override
 	public void updateProgress() {
 
-		for (MyJob job : jobs.values()) {
-
-			job.state = WAIT;
-			
-			if (getHadoopJob(job.getId()) != null) {
-
-				String hadoopJobId = getHadoopJob(job.getId()).getJobId();
-
-				if (hadoopJobId != null) {
-
-					
-					RunningJob hadoopJob = HadoopUtil.getInstance().getJob(
-							hadoopJobId);
-					try {
-
-						if (hadoopJob != null) {
-
-							if (hadoopJob.isComplete()) {
-
-								if (hadoopJob.isSuccessful()) {
-									job.state = OK;
-								} else {
-									job.state = FAILED;
-								}
-
-							} else {
-
-								if (hadoopJob.getJobStatus().mapProgress() > 0) {
-
-									job.state = RUNNING;
-
-								} else {
-									job.state = WAIT;
-								}
-
-							}
-
-						} else {
-							job.state = WAIT;
-						}
-					} catch (IOException e) {
-
-						job.state = WAIT;
-
-					}
-
-				} 
-
-			}
-
-		}
+		super.updateProgress();
 
 		updateMessage();
 

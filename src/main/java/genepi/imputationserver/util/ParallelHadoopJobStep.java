@@ -3,7 +3,9 @@ package genepi.imputationserver.util;
 import genepi.hadoop.HadoopJob;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -13,10 +15,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.mapred.RunningJob;
 
+import sun.awt.X11.ListHelper;
 import cloudgene.mapred.jobs.CloudgeneContext;
 import cloudgene.mapred.jobs.CloudgeneStep;
 import cloudgene.mapred.steps.Hadoop;
+import cloudgene.mapred.util.HadoopUtil;
 
 public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 
@@ -30,6 +35,16 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 
 	protected static final Log log = LogFactory.getLog(Hadoop.class);
 
+	public int WAIT = 0;
+
+	public int RUNNING = 1;
+
+	public int OK = 2;
+
+	public int FAILED = 3;
+
+	private Map<HadoopJob, Integer> states = null;
+
 	public ParallelHadoopJobStep(int threads) {
 		queueThreadPool = new ArrayBlockingQueue<Runnable>(100);
 
@@ -37,6 +52,7 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 				TimeUnit.SECONDS, queueThreadPool);
 
 		jobs = new HashMap<String, HadoopJob>();
+		states = new HashMap<HadoopJob, Integer>();
 	}
 
 	protected void waitForAll() throws InterruptedException {
@@ -53,6 +69,7 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 		BackgroundHadoopJob job = new BackgroundHadoopJob(id, hadoopJob);
 		job.setContext(context);
 		jobs.put(id, hadoopJob);
+		states.put(hadoopJob, WAIT);
 		Future<?> future = threadPool.submit(job);
 
 	}
@@ -129,6 +146,68 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 
 	public HadoopJob getHadoopJob(String id) {
 		return jobs.get(id);
+	}
+
+	public int getState(HadoopJob job) {
+		return states.get(job);
+	}
+
+	@Override
+	public void updateProgress() {
+
+		for (HadoopJob job : jobs.values()) {
+
+			int state = WAIT;
+
+			if (job != null) {
+
+				String hadoopJobId = job.getJobId();
+
+				if (hadoopJobId != null) {
+
+					RunningJob hadoopJob = HadoopUtil.getInstance().getJob(
+							hadoopJobId);
+					try {
+
+						if (hadoopJob != null) {
+
+							if (hadoopJob.isComplete()) {
+
+								if (hadoopJob.isSuccessful()) {
+									state = OK;
+								} else {
+									state = FAILED;
+								}
+
+							} else {
+
+								if (hadoopJob.getJobStatus().mapProgress() > 0) {
+
+									state = RUNNING;
+
+								} else {
+									state = WAIT;
+								}
+
+							}
+
+						} else {
+							state = WAIT;
+						}
+					} catch (IOException e) {
+
+						state = WAIT;
+
+					}
+
+				}
+
+			}
+
+			states.put(job, state);
+
+		}
+
 	}
 
 }
