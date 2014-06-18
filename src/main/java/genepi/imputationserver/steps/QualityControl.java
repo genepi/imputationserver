@@ -92,21 +92,31 @@ public class QualityControl extends HadoopJobStep {
 			DecimalFormat df = new DecimalFormat("#.00");
 
 			StringBuffer text = new StringBuffer();
-			text.append("Duplicated sites: " + job.getDuplicates() + "<br>");
-			text.append("NonSNP sites: " + job.getNoSnps() + "<br>");
+
+			text.append("<b>Statistics:</b> <br>");
 			text.append("Alternative allele frequency > 0.5 sites: "
 					+ job.getAlternativeAlleles() + "<br>");
-			text.append("Monomorphic sites: " + job.getMonomorphic() + "<br>");
 			text.append("Reference Overlap: "
 					+ df.format(job.getFoundInLegend()
 							/ (double) (job.getFoundInLegend() + job
 									.getNotFoundInLegend()) * 100) + "% "
 					+ "<br>");
+
+			text.append("<b>Filter details:</b> <br>");
+			text.append("Filter flag set: " + job.getFilterFlag() + "<br>");
+			text.append("Invalid alleles: " + job.getInvalidAlleles() + "<br>");
+			text.append("Duplicated sites: " + job.getDuplicates() + "<br>");
+			text.append("NonSNP sites: " + job.getNoSnps() + "<br>");
+			text.append("Monomorphic sites: " + job.getMonomorphic() + "<br>");
 			text.append("Allele mismatch: " + job.getAlleleMismatch() + "<br>");
 			text.append("Excluded SNPs with a call rate of < 90%: "
 					+ job.getToLessSamples() + "<br>");
+			text.append("<hr>");
 			text.append("Excluded sites in total: " + job.getFiltered()
 					+ "<br>");
+			text.append("Remaining sites in total: " + job.getRemainingSnps()
+					+ "<br>");
+
 			text.append("Excluded chunks: " + job.getRemovedChunks());
 
 			ok(text.toString());

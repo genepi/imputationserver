@@ -126,33 +126,38 @@ public class Imputation extends ParallelHadoopJobStep {
 		for (String id : jobs.keySet()) {
 
 			HadoopJob job = jobs.get(id);
-			int state = getState(job);
+			Integer state = getState(job);
 
-			if (state == OK) {
+			if (state != null) {
 
-				text += "<span class=\"badge badge-success\" style=\"width: 40px\">Chr "
-						+ id + "</span>";
+				if (state == OK) {
 
-			}
-			if (state == RUNNING) {
+					text += "<span class=\"badge badge-success\" style=\"width: 40px\">Chr "
+							+ id + "</span>";
 
-				text += "<span class=\"badge badge-info\" style=\"width: 40px\">Chr "
-						+ id + "</span>";
+				}
+				if (state == RUNNING) {
 
-			}
-			if (state == FAILED) {
+					text += "<span class=\"badge badge-info\" style=\"width: 40px\">Chr "
+							+ id + "</span>";
 
-				text += "<span class=\"badge badge-important\" style=\"width: 40px\">Chr "
-						+ id + "</span>";
+				}
+				if (state == FAILED) {
 
-			}
-			if (state == WAIT) {
+					text += "<span class=\"badge badge-important\" style=\"width: 40px\">Chr "
+							+ id + "</span>";
 
+				}
+				if (state == WAIT) {
+
+					text += "<span class=\"badge\" style=\"width: 40px\">Chr "
+							+ id + "</span>";
+
+				}
+			} else {
 				text += "<span class=\"badge\" style=\"width: 40px\">Chr " + id
 						+ "</span>";
-
 			}
-
 			if (i % 6 == 0) {
 				text += "<br>";
 			}

@@ -15,10 +15,12 @@ public class VcfChunk {
 	private int start;
 
 	private int end;
-	
-	private boolean filtered;
 
 	private DecimalFormat nf = new DecimalFormat("#0000000000");
+
+	private int snps = 0;
+
+	private int inReference = 0;;
 
 	public VcfChunk() {
 
@@ -33,6 +35,11 @@ public class VcfChunk {
 		phased = tiles[3].equals("VCF-PHASED");
 		vcfFilename = tiles[4];
 		indexFilename = tiles[5];
+
+		if (tiles.length > 7) {
+			snps = Integer.parseInt(tiles[6]);
+			inReference = Integer.parseInt(tiles[7]);
+		}
 	}
 
 	public String getChromosome() {
@@ -86,11 +93,27 @@ public class VcfChunk {
 	public String toString() {
 		return getId();
 	}
-	
+
+	public int getSnps() {
+		return snps;
+	}
+
+	public void setSnps(int snps) {
+		this.snps = snps;
+	}
+
+	public int getInReference() {
+		return inReference;
+	}
+
+	public void setInReference(int inReference) {
+		this.inReference = inReference;
+	}
+
 	public String serialize() {
 		return chromosome + "\t" + start + "\t" + end + "\t"
 				+ (phased ? "VCF-PHASED" : "VCF-UNPHASED") + "\t" + vcfFilename
-				+ "\t" + indexFilename + "\t";
+				+ "\t" + indexFilename + "\t" + snps + "\t" + inReference;
 	}
 
 	public String getId() {

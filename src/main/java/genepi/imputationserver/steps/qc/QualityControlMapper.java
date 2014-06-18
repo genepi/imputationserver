@@ -29,8 +29,6 @@ public class QualityControlMapper extends
 
 	private LegendFileReader legendReader;
 
-	private StringBuilder removedSnpsBuilder;
-
 	private String oldChromosome = "";
 
 	private String legendPattern;
@@ -40,16 +38,8 @@ public class QualityControlMapper extends
 	private String population;
 
 	private String output;
-	
+
 	private String outputRemovedSnps;
-
-	private int monomorphic = 0;
-
-	private int alternativeAlleles = 0;
-
-	private int noSnps = 0;
-
-	private int duplicates = 0;
 
 	private int lastPos = 0;
 
@@ -63,7 +53,8 @@ public class QualityControlMapper extends
 		legendPattern = parameters.get(QualityControlJob.LEGEND_PATTERN);
 		population = parameters.get(QualityControlJob.LEGEND_POPULATION);
 		output = parameters.get(QualityControlJob.OUTPUT_MAF);
-		outputRemovedSnps = parameters.get(QualityControlJob.OUTPUT_REMOVED_SNPS);
+		outputRemovedSnps = parameters
+				.get(QualityControlJob.OUTPUT_REMOVED_SNPS);
 		String hdfsPath = parameters.get(QualityControlJob.LEGEND_HDFS);
 		String legendFilename = FileUtil.getFilename(hdfsPath);
 
@@ -77,9 +68,6 @@ public class QualityControlMapper extends
 		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
 		FileUtil.createDirectory(folder);
 		phasingWindow = Integer.parseInt(store.getString("phasing.window"));
-
-		removedSnpsBuilder = new StringBuilder();
-
 	}
 
 	@Override
@@ -110,14 +98,12 @@ public class QualityControlMapper extends
 		HdfsLineWriter statisticWriter = new HdfsLineWriter(HdfsUtil.path(
 				output, context.getTaskAttemptID().toString()));
 
-		HdfsLineWriter statisticFailureWriter = new HdfsLineWriter(HdfsUtil.path(
+		HdfsLineWriter logWriter = new HdfsLineWriter(HdfsUtil.path(
 				outputRemovedSnps, context.getTaskAttemptID().toString()));
-		
+
 		String hdfsFilename = chunk.getVcfFilename() + "_" + chunk.getId();
 
 		HdfsLineWriter newFileWriter = new HdfsLineWriter(hdfsFilename);
-		StringBuilder chunkData = new StringBuilder();
-
 		// +/- phasingWindow (1 Mbases default)
 		int start = chunk.getStart() - phasingWindow;
 		if (start < 1) {
@@ -135,13 +121,18 @@ public class QualityControlMapper extends
 		int foundInLegend = 0;
 		int notFoundInLegend = 0;
 		int alleleMismatch = 0;
-		int toLessSamples = 0;
+		int lowCallRate = 0;
 		int filtered = 0;
 		int removedChunks = 0;
 		int overallSnps = 0;
-		int[] snpsPerSampleCount = null;
+		int monomorphic = 0;
+		int alternativeAlleles = 0;
+		int noSnps = 0;
+		int duplicates = 0;
+		int filterFlag = 0;
+		int invalidAlleles = 0;
 
-		chunkData.setLength(0);
+		int[] snpsPerSampleCount = null;
 
 		while (reader.next()) {
 
@@ -158,171 +149,176 @@ public class QualityControlMapper extends
 				String ref = tiles[3];
 				String alt = tiles[4];
 
-				if (ref.toUpperCase().equals("A")
-						|| ref.toUpperCase().equals("C")
-						|| ref.toUpperCase().equals("G")
-						|| ref.toUpperCase().equals("T")) {
+				boolean insideChunk = position >= chunk.getStart()
+						&& position <= chunk.getEnd();
 
-					if (alt.toUpperCase().equals("A")
-							|| alt.toUpperCase().equals("C")
-							|| alt.toUpperCase().equals("G")
-							|| alt.toUpperCase().equals("T")) {
+				// filter invalid alleles
+				if (!isValid(ref) || !isValid(alt)) {
+					if (insideChunk) {
+						logWriter.write("Invalid Alleles: " + tiles[0] + " ("
+								+ ref + "/" + alt + ")\n");
+						invalidAlleles++;
+						filtered++;
+					}
+					continue;
+				}
 
-						VariantContext snp = codec.decode(line);
+				VariantContext snp = codec.decode(line);
 
-						if (snpsPerSampleCount == null) {
-							snpsPerSampleCount = new int[snp.getNSamples()];
-						}
+				// count duplicates
+				if ((lastPos == snp.getStart() && lastPos > 0)) {
+					if (insideChunk) {
+						duplicates++;
+						logWriter.write("Duplicate: " + snp.getID() + "\n");
+						filtered++;
+					}
+					lastPos = snp.getStart();
+					continue;
 
-						boolean insideChunk = position >= chunk.getStart()
-								&& position <= chunk.getEnd();
+				}
+				lastPos = snp.getStart();
 
-						// calc general statistics without filtering
-						calcStats(snp, insideChunk);
+				if (snpsPerSampleCount == null) {
+					snpsPerSampleCount = new int[snp.getNSamples()];
+				}
 
-						// start filtering
-						if (!snp.isFiltered() && !snp.isIndel()
-								&& !snp.isComplexIndel()
-								&& snp.getHetCount() > 0) {
+				// filter flag
+				if (snp.isFiltered()) {
+					if (insideChunk) {
+						logWriter.write("Filter Flag set: " + snp.getID()
+								+ "\n");
+						filterFlag++;
+						filtered++;
+					}
+					continue;
+				}
 
-							LegendEntry refSnp = getReader(snp.getChr())
-									.findByPosition2(snp.getStart());
-
-							if (refSnp != null) {
-
-								if (refSnp.getType().equals("SNP")) {
-
-									foundInLegend++;
-
-									char legendRef = refSnp.getAlleleA();
-									char legendAlt = refSnp.getAlleleB();
-									char studyRef = snp.getReference()
-											.getBaseString().charAt(0);
-									char studyAlt = snp
-											.getAltAlleleWithHighestAlleleCount()
-											.getBaseString().charAt(0);
-
-									if (legendRef == studyRef
-											&& studyAlt == legendAlt) {
-
-										if (snp.getNoCallCount()
-												/ (double) snp.getNSamples() <= 0.10) {
-
-											// write only SNPs into minimac file
-											// which came to this point
-											if (position >= start
-													&& position <= end) {
-												overallSnps++;
-												chunkData.append(line + "\n");
-
-												// check if all samples have
-												// enough SNPs
-												int i = 0;
-												for (String sample : snp
-														.getSampleNamesOrderedByName()) {
-
-													if (snp.getGenotype(sample)
-															.isCalled()) {
-
-														snpsPerSampleCount[i] += 1;
-
-													}
-
-													i++;
-												}
-
-											}
-
-											// really?
-											if (insideChunk) {
-
-												if (!population.equals("mixed")) {
-
-													SnpStats statistics = calculateAlleleFreq(
-															snp, refSnp);
-													statisticWriter
-															.write(snp.getID()
-																	+ "\t"
-																	+ statistics
-																			.toString());
-												}
-											}
-
-										}
-
-										else {
-
-											if (insideChunk) {
-
-												removedSnpsBuilder
-														.append("To less calls: "
-																+ snp.getID()
-																+ "\n");
-												toLessSamples++;
-												filtered++;
-
-											}
-
-										}
-
-									}
-
-									else {
-
-										if (insideChunk) {
-											removedSnpsBuilder
-													.append("Allele mismatch: "
-															+ snp.getID() + "reference: " + legendRef + "/" + legendAlt + " study: " +studyRef
-															+ "/" +studyAlt + "\n");
-											alleleMismatch++;
-											filtered++;
-
-										}
-
-									}
-
-								}
-
-							}
-
-							else {
-
-								chunkData.append(line + "\n");
-
-								if (insideChunk) {
-
-									notFoundInLegend++;
-
-								}
-
-							}
-
-						}
-
-						else {
-
-							if (insideChunk) {
-
-								removedSnpsBuilder
-										.append("Filtered (monoporphic, duplicate, indel): "
-												+ snp.getID() + "\n");
-								filtered++;
-
-							}
-
-						}
+				// alternative allele frequency
+				int hetVarOnes = snp.getHetCount();
+				int homVarOnes = snp.getHomVarCount() * 2;
+				double af = (double) ((hetVarOnes + homVarOnes) / (double) (((snp
+						.getNSamples() - snp.getNoCallCount()) * 2)));
+				if (af > 0.5) {
+					if (insideChunk) {
+						alternativeAlleles++;
 					}
 				}
+
+				// filter indels
+				if (snp.isIndel() || snp.isComplexIndel()) {
+					if (insideChunk) {
+						logWriter.write("InDel: " + snp.getID() + "\n");
+						noSnps++;
+						filtered++;
+					}
+					continue;
+				}
+
+				// remove monomorphic snps
+				if (snp.getHetCount() == 0) {
+					if (insideChunk) {
+						logWriter.write("Monomorphic: " + snp.getID() + "\n");
+						monomorphic++;
+						filtered++;
+					}
+					continue;
+				}
+
+				LegendEntry refSnp = getReader(snp.getChr()).findByPosition2(
+						snp.getStart());
+
+				// not found in legend file
+				if (refSnp == null) {
+					// write to vcf file
+					newFileWriter.write(line);
+					if (insideChunk) {
+						overallSnps++;
+						notFoundInLegend++;
+					}
+					continue;
+				} else {
+
+					if (insideChunk) {
+						foundInLegend++;
+					}
+
+					char legendRef = refSnp.getAlleleA();
+					char legendAlt = refSnp.getAlleleB();
+					char studyRef = snp.getReference().getBaseString()
+							.charAt(0);
+					char studyAlt = snp.getAltAlleleWithHighestAlleleCount()
+							.getBaseString().charAt(0);
+
+					// filter aleele mismatches
+					if (legendRef != studyRef || studyAlt != legendAlt) {
+						if (insideChunk) {
+							logWriter.write("Allele mismatch: " + snp.getID()
+									+ " (ref: " + legendRef + "/" + legendAlt
+									+ ", data: " + studyRef + "/" + studyAlt
+									+ ")\n");
+							alleleMismatch++;
+							filtered++;
+						}
+						continue;
+					}
+
+					// filter low call rate
+					if (snp.getNoCallCount() / (double) snp.getNSamples() > 0.10) {
+						if (insideChunk) {
+							logWriter.write("Low call rate: "
+									+ snp.getID()
+									+ " ("
+									+ (1.0 - snp.getNoCallCount()
+											/ (double) snp.getNSamples())
+									+ ")\n");
+							lowCallRate++;
+							filtered++;
+						}
+						continue;
+					}
+
+					// allele-frequency check
+					if (insideChunk) {
+						if (!population.equals("mixed")) {
+
+							SnpStats statistics = calculateAlleleFreq(snp,
+									refSnp);
+							statisticWriter.write(snp.getID() + "\t"
+									+ statistics.toString());
+						}
+						overallSnps++;
+					}
+
+					// write only SNPs into minimac file
+					// which came to this point
+					if (position >= start && position <= end) {
+
+						newFileWriter.write(line);
+
+						// check if all samples have
+						// enough SNPs
+						int i = 0;
+						for (String sample : snp.getSampleNamesOrderedByName()) {
+							if (snp.getGenotype(sample).isCalled()) {
+								snpsPerSampleCount[i] += 1;
+							}
+							i++;
+						}
+
+					}
+
+				}
+
 			}
 		}
+		newFileWriter.close();
 
 		// this checks if enough SNPs are included in each sample
 		boolean acceptChunk = true;
 		for (int it : snpsPerSampleCount) {
 			if (it / (double) overallSnps < 0.9) {
 				acceptChunk = false;
-				removedSnpsBuilder.append("Not enough SNPs for sample: " + it
-						+ "\n");
+				logWriter.write("Not enough SNPs for sample: " + it + "\n");
 				break;
 
 			}
@@ -331,38 +327,39 @@ public class QualityControlMapper extends
 
 		// this checks if the amount of not found SNPs in the reference panel is
 		// smaller than 50 %. At least 3 SNPs must be included in each chunk
-		if ((notFoundInLegend / (double) (foundInLegend + notFoundInLegend) < 0.5)
-				&& overallSnps >= 3 && acceptChunk) {
 
-			newFileWriter.write(chunkData.toString());
-			newFileWriter.close();
+		double overlap = foundInLegend
+				/ (double) (foundInLegend + notFoundInLegend);
+
+		if (overlap >= 0.5 && overallSnps >= 3 && acceptChunk) {
 
 			// update chunk
+			chunk.setSnps(overallSnps);
+			chunk.setInReference(foundInLegend);
 			chunk.setVcfFilename(hdfsFilename);
 			context.write(new Text(chunk.getChromosome()),
 					new Text(chunk.serialize()));
-		}
-
-		else {
-			removedSnpsBuilder
-			.append("Chunk " + chunk.serialize() +" removed: not found vs found:"
-					+ (notFoundInLegend / (double) (foundInLegend + notFoundInLegend))
-					+ " overall SNPs: " + overallSnps
-					+ " enough samples per chunk? " + acceptChunk + "\n");
+		} else {
+			logWriter
+					.write("Chunk "
+							+ chunk.serialize()
+							+ " removed: not found vs found:"
+							+ (notFoundInLegend / (double) (foundInLegend + notFoundInLegend))
+							+ " overall SNPs: " + overallSnps
+							+ " enough samples per chunk? " + acceptChunk
+							+ "\n");
 			removedChunks++;
 		}
-		
+
 		vcfReader.close();
 		reader.close();
 		legendReader.close();
 
 		statisticWriter.write("");
 		statisticWriter.close();
-		
-		statisticFailureWriter.write(removedSnpsBuilder.toString());
-		statisticFailureWriter.write("");
-		statisticFailureWriter.close();
-		
+
+		logWriter.close();
+
 		context.getCounter("minimac", "alternativeAlleles").increment(
 				alternativeAlleles);
 		context.getCounter("minimac", "monomorphic").increment(monomorphic);
@@ -373,64 +370,14 @@ public class QualityControlMapper extends
 				notFoundInLegend);
 		context.getCounter("minimac", "alleleMismatch").increment(
 				alleleMismatch);
-		context.getCounter("minimac", "toLessSamples").increment(toLessSamples);
+		context.getCounter("minimac", "toLessSamples").increment(lowCallRate);
 		context.getCounter("minimac", "filtered").increment(filtered);
 		context.getCounter("minimac", "removedChunks").increment(removedChunks);
+		context.getCounter("minimac", "filterFlag").increment(filterFlag);
+		context.getCounter("minimac", "invalidAlleles").increment(
+				invalidAlleles);
+		context.getCounter("minimac", "remainingSnps").increment(overallSnps);
 		// write updated value out
-
-	}
-	
-
-	private void calcStats(VariantContext snp, boolean insideChunk) {
-
-		if (snp.getHetCount() == 0 && !snp.isFiltered()) {
-
-			if (insideChunk) {
-
-				monomorphic++;
-
-			}
-
-		}
-
-		int hetVarOnes = snp.getHetCount();
-
-		int homVarOnes = snp.getHomVarCount() * 2;
-
-		double af = (double) ((hetVarOnes + homVarOnes) / (double) (((snp
-				.getNSamples() - snp.getNoCallCount()) * 2)));
-
-		if (af > 0.5 && !snp.isFiltered()) {
-
-			if (insideChunk) {
-
-				alternativeAlleles++;
-
-			}
-
-		}
-
-		if ((lastPos == snp.getStart() && lastPos > 0)) {
-
-			if (insideChunk) {
-
-				duplicates++;
-
-			}
-
-		}
-
-		lastPos = snp.getStart();
-
-		if (!snp.isSNP()) {
-
-			if (insideChunk) {
-
-				noSnps++;
-
-			}
-
-		}
 
 	}
 
@@ -512,6 +459,13 @@ public class QualityControlMapper extends
 
 		return legendReader;
 
+	}
+
+	private boolean isValid(String allele) {
+		return allele.toUpperCase().equals("A")
+				|| allele.toUpperCase().equals("C")
+				|| allele.toUpperCase().equals("G")
+				|| allele.toUpperCase().equals("T");
 	}
 
 	/*

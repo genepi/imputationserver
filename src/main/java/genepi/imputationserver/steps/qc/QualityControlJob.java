@@ -22,7 +22,7 @@ public class QualityControlJob extends HadoopJob {
 	public static final String OUTPUT_MAF = "MINIMAC_OUTPUT_MAF";
 
 	public static final String OUTPUT_MANIFEST = "MINIMAC_MANIFEST";
-	
+
 	public static final String OUTPUT_REMOVED_SNPS = "MINIMAC_REMOVED_SNPS";
 
 	private String refPanelHdfs;
@@ -37,6 +37,9 @@ public class QualityControlJob extends HadoopJob {
 	private long alleleMismatch;
 	private long toLessSamples;
 	private long removedChunks;
+	private long filterFlag;
+	private long invalidAlleles;
+	private long remainingSnps;
 
 	public QualityControlJob(String name) {
 
@@ -100,6 +103,12 @@ public class QualityControlJob extends HadoopJob {
 					.findCounter("toLessSamples").getValue();
 			removedChunks = job.getCounters().getGroup("minimac")
 					.findCounter("removedChunks").getValue();
+			filterFlag = job.getCounters().getGroup("minimac")
+					.findCounter("filterFlag").getValue();
+			invalidAlleles = job.getCounters().getGroup("minimac")
+					.findCounter("invalidAlleles").getValue();
+			remainingSnps = job.getCounters().getGroup("minimac")
+					.findCounter("remainingSnps").getValue();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -123,7 +132,7 @@ public class QualityControlJob extends HadoopJob {
 	public void setOutputManifest(String outputManifest) {
 		set(OUTPUT_MANIFEST, outputManifest);
 	}
-	
+
 	public void setOutputRemovedSnps(String removedSnps) {
 		set(OUTPUT_REMOVED_SNPS, removedSnps);
 	}
@@ -174,6 +183,18 @@ public class QualityControlJob extends HadoopJob {
 
 	public long getRemovedChunks() {
 		return removedChunks;
+	}
+
+	public long getFilterFlag() {
+		return filterFlag;
+	}
+
+	public long getInvalidAlleles() {
+		return invalidAlleles;
+	}
+
+	public long getRemainingSnps() {
+		return remainingSnps;
 	}
 
 }
