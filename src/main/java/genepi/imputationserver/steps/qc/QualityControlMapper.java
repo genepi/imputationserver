@@ -199,7 +199,7 @@ public class QualityControlMapper extends
 							filtered++;
 						} else {
 
-							logWriter.write("Filter Flag set: " + snp.getID());
+							logWriter.write("Filter-Flag set: " + snp.getID());
 							filterFlag++;
 							filtered++;
 						}
@@ -231,6 +231,7 @@ public class QualityControlMapper extends
 				// remove monomorphic snps
 				if (snp.isMonomorphicInSamples()) {
 					if (insideChunk) {
+						//System.out.println(snp.getChr()+":"+snp.getStart());
 						logWriter.write("Monomorphic: " + snp.getID());
 						monomorphic++;
 						filtered++;
@@ -306,7 +307,7 @@ public class QualityControlMapper extends
 					}
 
 					// write only SNPs into minimac file
-					// which came to this point
+					// which came up to this point
 					if (position >= start && position <= end) {
 
 						newFileWriter.write(line);
@@ -334,7 +335,6 @@ public class QualityControlMapper extends
 		for (int it : snpsPerSampleCount) {
 			if (it / (double) overallSnps < 0.9) {
 				acceptChunk = false;
-				// logWriter.write("Not enough SNPs for sample: " + it + "\n");
 				break;
 
 			}
