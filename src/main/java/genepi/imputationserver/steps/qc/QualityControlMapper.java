@@ -22,11 +22,14 @@ import org.broadinstitute.variant.vcf.VCFCodec;
 import org.broadinstitute.variant.vcf.VCFFileReader;
 import org.broadinstitute.variant.vcf.VCFHeaderVersion;
 
-public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text> {
+public class QualityControlMapper extends
+		Mapper<LongWritable, Text, Text, Text> {
 
 	private String folder;
 
 	private LegendFileReader legendReader;
+
+	private StringBuilder removedSnpsBuilder;
 
 	private String oldChromosome = "";
 
@@ -37,6 +40,8 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 	private String population;
 
 	private String output;
+	
+	private String outputRemovedSnps;
 
 	private int monomorphic = 0;
 
@@ -47,7 +52,7 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 	private int duplicates = 0;
 
 	private int lastPos = 0;
-	
+
 	private int phasingWindow;
 
 	protected void setup(Context context) throws IOException,
@@ -58,6 +63,7 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 		legendPattern = parameters.get(QualityControlJob.LEGEND_PATTERN);
 		population = parameters.get(QualityControlJob.LEGEND_POPULATION);
 		output = parameters.get(QualityControlJob.OUTPUT_MAF);
+		outputRemovedSnps = parameters.get(QualityControlJob.OUTPUT_REMOVED_SNPS);
 		String hdfsPath = parameters.get(QualityControlJob.LEGEND_HDFS);
 		String legendFilename = FileUtil.getFilename(hdfsPath);
 
@@ -71,6 +77,8 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
 		FileUtil.createDirectory(folder);
 		phasingWindow = Integer.parseInt(store.getString("phasing.window"));
+
+		removedSnpsBuilder = new StringBuilder();
 
 	}
 
@@ -91,7 +99,6 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 		}
 
 		VcfChunk chunk = new VcfChunk(value.toString());
-
 		String vcfFilename = FileUtil.path(folder, "minimac.vcf.gz");
 		String vcfFilenameIndex = FileUtil.path(folder, "minimac.vcf.gz.tbi");
 
@@ -103,6 +110,9 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 		HdfsLineWriter statisticWriter = new HdfsLineWriter(HdfsUtil.path(
 				output, context.getTaskAttemptID().toString()));
 
+		HdfsLineWriter statisticFailureWriter = new HdfsLineWriter(HdfsUtil.path(
+				outputRemovedSnps, context.getTaskAttemptID().toString()));
+		
 		String hdfsFilename = chunk.getVcfFilename() + "_" + chunk.getId();
 
 		HdfsLineWriter newFileWriter = new HdfsLineWriter(hdfsFilename);
@@ -215,9 +225,9 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 															.isCalled()) {
 
 														snpsPerSampleCount[i] += 1;
-														
+
 													}
-													
+
 													i++;
 												}
 
@@ -244,6 +254,10 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 
 											if (insideChunk) {
 
+												removedSnpsBuilder
+														.append("To less calls: "
+																+ snp.getID()
+																+ "\n");
 												toLessSamples++;
 												filtered++;
 
@@ -256,7 +270,10 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 									else {
 
 										if (insideChunk) {
-
+											removedSnpsBuilder
+													.append("Allele mismatch: "
+															+ snp.getID() + "reference: " + legendRef + "/" + legendAlt + " study: " +studyRef
+															+ "/" +studyAlt + "\n");
 											alleleMismatch++;
 											filtered++;
 
@@ -267,12 +284,11 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 								}
 
 							}
-							
 
 							else {
 
 								chunkData.append(line + "\n");
-								
+
 								if (insideChunk) {
 
 									notFoundInLegend++;
@@ -287,6 +303,9 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 
 							if (insideChunk) {
 
+								removedSnpsBuilder
+										.append("Filtered (monoporphic, duplicate, indel): "
+												+ snp.getID() + "\n");
 								filtered++;
 
 							}
@@ -297,37 +316,27 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 			}
 		}
 
-		vcfReader.close();
-		reader.close();
-		legendReader.close();
-
-		statisticWriter.write("");
-		statisticWriter.close();
-
 		// this checks if enough SNPs are included in each sample
 		boolean acceptChunk = true;
-		int i = 0;
 		for (int it : snpsPerSampleCount) {
 			if (it / (double) overallSnps < 0.9) {
-				System.out.println("sample id "+ i);
-				System.out.println("sample "+ (it / (double) overallSnps));
-				System.out.println(it);
-				System.out.println(overallSnps);
 				acceptChunk = false;
-				i++;
+				removedSnpsBuilder.append("Not enough SNPs for sample: " + it
+						+ "\n");
 				break;
-				
+
 			}
-			
+
 		}
-		
-		// this checks if the amount of not found SNPs in the reference panel is smaller than 50 %. At least 3 SNPs must be included in each chunk
-		if ((notFoundInLegend / (double) (foundInLegend +notFoundInLegend) < 0.5)  && overallSnps >= 3
-				&& acceptChunk) {
+
+		// this checks if the amount of not found SNPs in the reference panel is
+		// smaller than 50 %. At least 3 SNPs must be included in each chunk
+		if ((notFoundInLegend / (double) (foundInLegend + notFoundInLegend) < 0.5)
+				&& overallSnps >= 3 && acceptChunk) {
 
 			newFileWriter.write(chunkData.toString());
 			newFileWriter.close();
-			
+
 			// update chunk
 			chunk.setVcfFilename(hdfsFilename);
 			context.write(new Text(chunk.getChromosome()),
@@ -335,9 +344,25 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 		}
 
 		else {
+			removedSnpsBuilder
+			.append("Chunk " + chunk.serialize() +" removed: not found vs found:"
+					+ (notFoundInLegend / (double) (foundInLegend + notFoundInLegend))
+					+ " overall SNPs: " + overallSnps
+					+ " enough samples per chunk? " + acceptChunk + "\n");
 			removedChunks++;
 		}
+		
+		vcfReader.close();
+		reader.close();
+		legendReader.close();
 
+		statisticWriter.write("");
+		statisticWriter.close();
+		
+		statisticFailureWriter.write(removedSnpsBuilder.toString());
+		statisticFailureWriter.write("");
+		statisticFailureWriter.close();
+		
 		context.getCounter("minimac", "alternativeAlleles").increment(
 				alternativeAlleles);
 		context.getCounter("minimac", "monomorphic").increment(monomorphic);
@@ -354,6 +379,7 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 		// write updated value out
 
 	}
+	
 
 	private void calcStats(VariantContext snp, boolean insideChunk) {
 

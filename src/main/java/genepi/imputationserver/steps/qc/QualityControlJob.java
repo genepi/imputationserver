@@ -22,6 +22,8 @@ public class QualityControlJob extends HadoopJob {
 	public static final String OUTPUT_MAF = "MINIMAC_OUTPUT_MAF";
 
 	public static final String OUTPUT_MANIFEST = "MINIMAC_MANIFEST";
+	
+	public static final String OUTPUT_REMOVED_SNPS = "MINIMAC_REMOVED_SNPS";
 
 	private String refPanelHdfs;
 
@@ -120,6 +122,10 @@ public class QualityControlJob extends HadoopJob {
 
 	public void setOutputManifest(String outputManifest) {
 		set(OUTPUT_MANIFEST, outputManifest);
+	}
+	
+	public void setOutputRemovedSnps(String removedSnps) {
+		set(OUTPUT_REMOVED_SNPS, removedSnps);
 	}
 
 	public void setOutputMaf(String outputMaf) {

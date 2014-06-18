@@ -33,6 +33,7 @@ public class QualityControl extends HadoopJobStep {
 		// outputs
 		String output = context.get("outputmaf");
 		String outputManifest = context.get("mafchunkfile");
+		String removedSnps = context.get("filtered");
 
 		// read config
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
@@ -81,6 +82,7 @@ public class QualityControl extends HadoopJobStep {
 		job.setOutput(output + "_temp");
 		job.setOutputMaf(output);
 		job.setOutputManifest(outputManifest);
+		job.setOutputRemovedSnps(removedSnps);
 
 		successful = executeHadoopJob(job, context);
 

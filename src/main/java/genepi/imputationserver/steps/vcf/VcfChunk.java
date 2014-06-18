@@ -15,6 +15,8 @@ public class VcfChunk {
 	private int start;
 
 	private int end;
+	
+	private boolean filtered;
 
 	private DecimalFormat nf = new DecimalFormat("#0000000000");
 
@@ -84,11 +86,11 @@ public class VcfChunk {
 	public String toString() {
 		return getId();
 	}
-
+	
 	public String serialize() {
 		return chromosome + "\t" + start + "\t" + end + "\t"
 				+ (phased ? "VCF-PHASED" : "VCF-UNPHASED") + "\t" + vcfFilename
-				+ "\t" + indexFilename;
+				+ "\t" + indexFilename + "\t";
 	}
 
 	public String getId() {
