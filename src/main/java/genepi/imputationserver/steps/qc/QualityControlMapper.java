@@ -96,10 +96,13 @@ public class QualityControlMapper extends
 		// int errors = 0;
 
 		HdfsLineWriter statisticWriter = new HdfsLineWriter(HdfsUtil.path(
-				output, context.getTaskAttemptID().toString()));
+				output, chunk.toString()));
 
 		HdfsLineWriter logWriter = new HdfsLineWriter(HdfsUtil.path(
-				outputRemovedSnps, context.getTaskAttemptID().toString()));
+				outputRemovedSnps, chunk.toString()));
+
+		HdfsLineWriter chunkWriter = new HdfsLineWriter(HdfsUtil.path(
+				outputRemovedSnps, "exlcude" + chunk.toString()));
 
 		String hdfsFilename = chunk.getVcfFilename() + "_" + chunk.getId();
 
@@ -156,7 +159,7 @@ public class QualityControlMapper extends
 				if (!isValid(ref) || !isValid(alt)) {
 					if (insideChunk) {
 						logWriter.write("Invalid Alleles: " + tiles[0] + " ("
-								+ ref + "/" + alt + ")\n");
+								+ ref + "/" + alt + ")");
 						invalidAlleles++;
 						filtered++;
 					}
@@ -169,14 +172,18 @@ public class QualityControlMapper extends
 				if ((lastPos == snp.getStart() && lastPos > 0)) {
 					if (insideChunk) {
 						duplicates++;
-						logWriter.write("Duplicate: " + snp.getID() + "\n");
+						logWriter.write("Duplicate: " + snp.getID());
 						filtered++;
 					}
 					lastPos = snp.getStart();
 					continue;
 
 				}
-				lastPos = snp.getStart();
+
+				// update lastpos only when not filtered
+				if (!snp.isFiltered()) {
+					lastPos = snp.getStart();
+				}
 
 				if (snpsPerSampleCount == null) {
 					snpsPerSampleCount = new int[snp.getNSamples()];
@@ -185,10 +192,17 @@ public class QualityControlMapper extends
 				// filter flag
 				if (snp.isFiltered()) {
 					if (insideChunk) {
-						logWriter.write("Filter Flag set: " + snp.getID()
-								+ "\n");
-						filterFlag++;
-						filtered++;
+
+						if (snp.getFilters().contains("DUP")) {
+							duplicates++;
+							logWriter.write("Duplicate: " + snp.getID());
+							filtered++;
+						} else {
+
+							logWriter.write("Filter Flag set: " + snp.getID());
+							filterFlag++;
+							filtered++;
+						}
 					}
 					continue;
 				}
@@ -207,7 +221,7 @@ public class QualityControlMapper extends
 				// filter indels
 				if (snp.isIndel() || snp.isComplexIndel()) {
 					if (insideChunk) {
-						logWriter.write("InDel: " + snp.getID() + "\n");
+						logWriter.write("InDel: " + snp.getID());
 						noSnps++;
 						filtered++;
 					}
@@ -215,9 +229,9 @@ public class QualityControlMapper extends
 				}
 
 				// remove monomorphic snps
-				if (snp.getHetCount() == 0) {
+				if (snp.isMonomorphicInSamples()) {
 					if (insideChunk) {
-						logWriter.write("Monomorphic: " + snp.getID() + "\n");
+						logWriter.write("Monomorphic: " + snp.getID());
 						monomorphic++;
 						filtered++;
 					}
@@ -255,7 +269,7 @@ public class QualityControlMapper extends
 							logWriter.write("Allele mismatch: " + snp.getID()
 									+ " (ref: " + legendRef + "/" + legendAlt
 									+ ", data: " + studyRef + "/" + studyAlt
-									+ ")\n");
+									+ ")");
 							alleleMismatch++;
 							filtered++;
 						}
@@ -265,12 +279,14 @@ public class QualityControlMapper extends
 					// filter low call rate
 					if (snp.getNoCallCount() / (double) snp.getNSamples() > 0.10) {
 						if (insideChunk) {
-							logWriter.write("Low call rate: "
-									+ snp.getID()
-									+ " ("
-									+ (1.0 - snp.getNoCallCount()
-											/ (double) snp.getNSamples())
-									+ ")\n");
+							logWriter
+									.write("Low call rate: "
+											+ snp.getID()
+											+ " ("
+											+ (1.0 - snp.getNoCallCount()
+													/ (double) snp
+															.getNSamples())
+											+ ")");
 							lowCallRate++;
 							filtered++;
 						}
@@ -318,7 +334,7 @@ public class QualityControlMapper extends
 		for (int it : snpsPerSampleCount) {
 			if (it / (double) overallSnps < 0.9) {
 				acceptChunk = false;
-				logWriter.write("Not enough SNPs for sample: " + it + "\n");
+				// logWriter.write("Not enough SNPs for sample: " + it + "\n");
 				break;
 
 			}
@@ -340,14 +356,9 @@ public class QualityControlMapper extends
 			context.write(new Text(chunk.getChromosome()),
 					new Text(chunk.serialize()));
 		} else {
-			logWriter
-					.write("Chunk "
-							+ chunk.serialize()
-							+ " removed: not found vs found:"
-							+ (notFoundInLegend / (double) (foundInLegend + notFoundInLegend))
-							+ " overall SNPs: " + overallSnps
-							+ " enough samples per chunk? " + acceptChunk
-							+ "\n");
+			chunkWriter.write(chunk.toString() + " (Snps: " + overallSnps
+					+ ", Reference overlap: " + overlap + ", Low Samples: "
+					+ acceptChunk + ")");
 			removedChunks++;
 		}
 
@@ -358,7 +369,11 @@ public class QualityControlMapper extends
 		statisticWriter.write("");
 		statisticWriter.close();
 
+		logWriter.write("");
 		logWriter.close();
+
+		chunkWriter.write("");
+		chunkWriter.close();
 
 		context.getCounter("minimac", "alternativeAlleles").increment(
 				alternativeAlleles);
