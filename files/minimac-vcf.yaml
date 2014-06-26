@@ -155,3 +155,12 @@ mapred:
       type: local-folder
       download: true
       temp: false
+
+    - id: filtered
+      description: Filtered SNPs
+      type: hdfs-folder
+      download: true
+      temp: false
+      mergeOutput: true
+      removeHeader: false
+      zip: false

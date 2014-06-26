@@ -22,6 +22,11 @@ public class CompressionEncryption extends Hadoop {
 		String folder = context.get("local");
 		String encryption = context.get("encryption");
 
+		if (!new File(FileUtil.path(folder, "results")).exists()) {
+			error("no results found.");
+			return true;
+		}
+
 		String password = RandomStringUtils.randomAlphabetic(10);
 
 		try {

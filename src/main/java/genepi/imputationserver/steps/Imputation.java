@@ -43,6 +43,11 @@ public class Imputation extends ParallelHadoopJobStep {
 		String local = context.get("local");
 		String log = context.get("logfile");
 
+		if (!HdfsUtil.exists(input)) {
+			error("no chunks passed the QC step.");
+			return true;
+		}
+
 		try {
 			List<String> chunkFiles = HdfsUtil.getFiles(input);
 

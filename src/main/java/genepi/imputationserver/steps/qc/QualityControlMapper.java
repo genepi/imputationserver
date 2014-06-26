@@ -231,7 +231,7 @@ public class QualityControlMapper extends
 				// remove monomorphic snps
 				if (snp.isMonomorphicInSamples()) {
 					if (insideChunk) {
-						//System.out.println(snp.getChr()+":"+snp.getStart());
+						// System.out.println(snp.getChr()+":"+snp.getStart());
 						logWriter.write("Monomorphic: " + snp.getID());
 						monomorphic++;
 						filtered++;
@@ -357,8 +357,8 @@ public class QualityControlMapper extends
 					new Text(chunk.serialize()));
 		} else {
 			chunkWriter.write(chunk.toString() + " (Snps: " + overallSnps
-					+ ", Reference overlap: " + overlap + ", Low samples: "
-					+ acceptChunk + ")");
+					+ ", Reference overlap: " + overlap + ", low sample call rates: "
+					+ !acceptChunk + ")");
 			removedChunks++;
 		}
 
