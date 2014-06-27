@@ -93,6 +93,7 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setLocalOutput(local);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setPhasing(phasing);
+				job.setJarByClass(ImputationJob.class);
 
 				executeJarInBackground(chr, context, job);
 				jobs.put(chr, job);

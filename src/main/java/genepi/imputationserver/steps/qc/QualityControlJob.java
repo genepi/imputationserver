@@ -46,6 +46,7 @@ public class QualityControlJob extends HadoopJob {
 		super("maf-minimac");
 		getConfiguration().set("mapred.task.timeout", "360000000");
 		getConfiguration().set("mapred.reduce.tasks", "22");
+
 	}
 
 	@Override

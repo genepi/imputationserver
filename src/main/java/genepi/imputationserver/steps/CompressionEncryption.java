@@ -1,5 +1,7 @@
 package genepi.imputationserver.steps;
 
+import genepi.io.FileUtil;
+
 import java.io.File;
 
 import net.lingala.zip4j.core.ZipFile;
@@ -10,7 +12,6 @@ import org.apache.commons.lang.RandomStringUtils;
 
 import cloudgene.mapred.jobs.CloudgeneContext;
 import cloudgene.mapred.steps.Hadoop;
-import cloudgene.mapred.util.FileUtil;
 import cloudgene.mapred.wdl.WdlStep;
 
 public class CompressionEncryption extends Hadoop {

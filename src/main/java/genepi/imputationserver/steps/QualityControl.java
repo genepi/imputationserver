@@ -83,6 +83,7 @@ public class QualityControl extends HadoopJobStep {
 		job.setOutputMaf(output);
 		job.setOutputManifest(outputManifest);
 		job.setOutputRemovedSnps(removedSnps);
+		job.setJarByClass(QualityControl.class);
 
 		successful = executeHadoopJob(job, context);
 
