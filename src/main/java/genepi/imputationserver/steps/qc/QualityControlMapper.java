@@ -187,6 +187,9 @@ public class QualityControlMapper extends
 
 				if (snpsPerSampleCount == null) {
 					snpsPerSampleCount = new int[snp.getNSamples()];
+					for (int i = 0; i < snp.getNSamples(); i++) {
+						snpsPerSampleCount[i] = 0;
+					}
 				}
 
 				// filter flag
@@ -314,14 +317,16 @@ public class QualityControlMapper extends
 
 						// check if all samples have
 						// enough SNPs
-						int i = 0;
-						for (String sample : snp.getSampleNamesOrderedByName()) {
-							if (snp.getGenotype(sample).isCalled()) {
-								snpsPerSampleCount[i] += 1;
+						if (insideChunk) {
+							int i = 0;
+							for (String sample : snp
+									.getSampleNamesOrderedByName()) {
+								if (snp.getGenotype(sample).isCalled()) {
+									snpsPerSampleCount[i] += 1;
+								}
+								i++;
 							}
-							i++;
 						}
-
 					}
 
 				}
@@ -332,11 +337,15 @@ public class QualityControlMapper extends
 
 		// this checks if enough SNPs are included in each sample
 		boolean acceptChunk = true;
-		for (int it : snpsPerSampleCount) {
-			if (it / (double) overallSnps < 0.9) {
+		for (int i = 0; i < snpsPerSampleCount.length; i++) {
+			int snps = snpsPerSampleCount[i];
+			if (snps / (double) overallSnps < 0.8) {
 				acceptChunk = false;
-				break;
-
+				chunkWriter.write(chunk.toString()
+						+ " Sample "
+						+ vcfReader.getFileHeader().getSampleNamesInOrder()
+								.get(i) + ": call rate: "
+						+ (snps / (double) overallSnps));
 			}
 
 		}
@@ -357,8 +366,8 @@ public class QualityControlMapper extends
 					new Text(chunk.serialize()));
 		} else {
 			chunkWriter.write(chunk.toString() + " (Snps: " + overallSnps
-					+ ", Reference overlap: " + overlap + ", low sample call rates: "
-					+ !acceptChunk + ")");
+					+ ", Reference overlap: " + overlap
+					+ ", low sample call rates: " + !acceptChunk + ")");
 			removedChunks++;
 		}
 

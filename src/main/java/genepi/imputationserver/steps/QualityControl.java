@@ -110,8 +110,8 @@ public class QualityControl extends HadoopJobStep {
 			text.append("NonSNP sites: " + job.getNoSnps() + "<br>");
 			text.append("Monomorphic sites: " + job.getMonomorphic() + "<br>");
 			text.append("Allele mismatch: " + job.getAlleleMismatch() + "<br>");
-			text.append("Excluded SNPs with a call rate of < 90%: "
-					+ job.getToLessSamples() + "<br>");
+			text.append("SNPs call rate < 90%: " + job.getToLessSamples()
+					+ "<br>");
 			text.append("<hr>");
 			text.append("Excluded sites in total: " + job.getFiltered()
 					+ "<br>");
