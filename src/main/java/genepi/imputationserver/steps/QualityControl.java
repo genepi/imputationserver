@@ -41,10 +41,9 @@ public class QualityControl extends HadoopJobStep {
 		int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
 
 		// create manifest file
-		boolean successful = createChunkFile(context, files, chunkfile,
-				chunkSize);
+		int chunks = createChunkFile(context, files, chunkfile, chunkSize);
 
-		if (!successful) {
+		if (chunks == -1) {
 			error("Error during manifest file creation.");
 			return false;
 		}
@@ -85,7 +84,7 @@ public class QualityControl extends HadoopJobStep {
 		job.setOutputRemovedSnps(removedSnps);
 		job.setJarByClass(QualityControl.class);
 
-		successful = executeHadoopJob(job, context);
+		boolean successful = executeHadoopJob(job, context);
 
 		if (successful) {
 
@@ -110,17 +109,49 @@ public class QualityControl extends HadoopJobStep {
 			text.append("NonSNP sites: " + job.getNoSnps() + "<br>");
 			text.append("Monomorphic sites: " + job.getMonomorphic() + "<br>");
 			text.append("Allele mismatch: " + job.getAlleleMismatch() + "<br>");
-			text.append("SNPs call rate < 90%: " + job.getToLessSamples()
-					+ "<br>");
-			text.append("<hr>");
+			text.append("SNPs call rate < 90%: " + job.getToLessSamples());
+
+			ok(text.toString());
+
+			text = new StringBuffer();
+
 			text.append("Excluded sites in total: " + job.getFiltered()
 					+ "<br>");
 			text.append("Remaining sites in total: " + job.getRemainingSnps()
 					+ "<br>");
 
-			text.append("Excluded chunks: " + job.getRemovedChunks());
+			if (job.getRemovedChunksSnps() > 0) {
 
-			ok(text.toString());
+				text.append("<b>Warning:</b> "
+						+ job.getRemovedChunksSnps()
+
+						+ " chunks excluded: < 3 SNPs (see filtered.txt for details).");
+			}
+
+			if (job.getRemovedChunksCallRate() > 0) {
+
+				text.append("<b>Warning:</b> "
+						+ job.getRemovedChunksCallRate()
+
+						+ " chunks excluded: sample call rate < 50% (see filtered.txt for details).");
+			}
+
+			if (job.getRemovedChunksOverlap() > 0) {
+
+				text.append("<b>Warning:</b> "
+						+ job.getRemovedChunksOverlap()
+
+						+ " chunks excluded: reference overlap < 50% (see filtered.txt for details).");
+			}
+
+			long excludedChunks = job.getRemovedChunksSnps()
+					+ job.getRemovedChunksCallRate()
+					+ job.getRemovedChunksOverlap();
+
+			if (excludedChunks > 0) {
+				text.append("<br>Remaining chunks: " + (chunks - excludedChunks));
+				warning(text.toString());
+			}
 
 			return true;
 
@@ -132,8 +163,8 @@ public class QualityControl extends HadoopJobStep {
 		}
 	}
 
-	private boolean createChunkFile(CloudgeneContext context,
-			String inputFiles, String chunkfile, int chunkSize) {
+	private int createChunkFile(CloudgeneContext context, String inputFiles,
+			String chunkfile, int chunkSize) {
 		String files = FileUtil.path(context.getLocalTemp(), "input");
 
 		// exports files from hdfs
@@ -143,9 +174,11 @@ public class QualityControl extends HadoopJobStep {
 
 		} catch (Exception e) {
 			error("Downloading files: " + e.getMessage());
-			return false;
+			return -1;
 
 		}
+
+		int chunks = 0;
 
 		int pairId = 0;
 
@@ -191,6 +224,7 @@ public class QualityControl extends HadoopJobStep {
 						}
 
 						writer.write(value);
+						chunks++;
 					}
 					pairId++;
 
@@ -200,12 +234,12 @@ public class QualityControl extends HadoopJobStep {
 
 			} catch (Exception e) {
 				e.printStackTrace();
-				return false;
+				return -1;
 			}
 
 		}
 
-		return true;
+		return chunks;
 	}
 
 }

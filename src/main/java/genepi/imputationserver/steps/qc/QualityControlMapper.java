@@ -126,7 +126,6 @@ public class QualityControlMapper extends
 		int alleleMismatch = 0;
 		int lowCallRate = 0;
 		int filtered = 0;
-		int removedChunks = 0;
 		int overallSnps = 0;
 		int monomorphic = 0;
 		int alternativeAlleles = 0;
@@ -134,6 +133,10 @@ public class QualityControlMapper extends
 		int duplicates = 0;
 		int filterFlag = 0;
 		int invalidAlleles = 0;
+
+		int removedChunksSnps = 0;
+		int removedChunksOverlap = 0;
+		int removedChunksCallRate = 0;
 
 		int[] snpsPerSampleCount = null;
 
@@ -340,17 +343,16 @@ public class QualityControlMapper extends
 		newFileWriter.close();
 
 		// this checks if enough SNPs are included in each sample
-		boolean acceptChunk = true;
+		boolean lowSampleCallRate = false;
 		for (int i = 0; i < snpsPerSampleCount.length; i++) {
 			int snps = snpsPerSampleCount[i];
-			double sampleRate = snps / (double) overallSnps;
-			if (sampleRate < 0.5) {
-				acceptChunk = false;
+			double sampleCallRate = snps / (double) overallSnps;
+			if (sampleCallRate < 0.5) {
+				lowSampleCallRate = true;
 				chunkWriter.write(chunk.toString()
 						+ " Sample "
 						+ vcfReader.getFileHeader().getSampleNamesInOrder()
-								.get(i) + ": call rate: "
-						+ (snps / (double) overallSnps));
+								.get(i) + ": call rate: " + sampleCallRate);
 			}
 
 		}
@@ -361,7 +363,7 @@ public class QualityControlMapper extends
 		double overlap = foundInLegend
 				/ (double) (foundInLegend + notFoundInLegend);
 
-		if (overlap >= 0.5 && overallSnps >= 3 && acceptChunk) {
+		if (overlap >= 0.5 && overallSnps >= 3 && !lowSampleCallRate) {
 
 			// update chunk
 			chunk.setSnps(overallSnps);
@@ -372,8 +374,19 @@ public class QualityControlMapper extends
 		} else {
 			chunkWriter.write(chunk.toString() + " (Snps: " + overallSnps
 					+ ", Reference overlap: " + overlap
-					+ ", low sample call rates: " + !acceptChunk + ")");
-			removedChunks++;
+					+ ", low sample call rates: " + lowSampleCallRate + ")");
+
+			if (overlap < 0.5) {
+				removedChunksOverlap++;
+			}
+
+			if (overallSnps < 3) {
+				removedChunksSnps++;
+			}
+
+			if (lowSampleCallRate) {
+				removedChunksCallRate++;
+			}
 		}
 
 		vcfReader.close();
@@ -401,7 +414,12 @@ public class QualityControlMapper extends
 				alleleMismatch);
 		context.getCounter("minimac", "toLessSamples").increment(lowCallRate);
 		context.getCounter("minimac", "filtered").increment(filtered);
-		context.getCounter("minimac", "removedChunks").increment(removedChunks);
+		context.getCounter("minimac", "removedChunksCallRate").increment(
+				removedChunksCallRate);
+		context.getCounter("minimac", "removedChunksOverlap").increment(
+				removedChunksOverlap);
+		context.getCounter("minimac", "removedChunksSnps").increment(
+				removedChunksSnps);
 		context.getCounter("minimac", "filterFlag").increment(filterFlag);
 		context.getCounter("minimac", "invalidAlleles").increment(
 				invalidAlleles);
@@ -497,91 +515,4 @@ public class QualityControlMapper extends
 				|| allele.toUpperCase().equals("T");
 	}
 
-	/*
-	 * private SnpStats calculateStats(VariantContext snp) throws IOException,
-	 * InterruptedException {
-	 * 
-	 * int ALLELE_A = 0; int ALLELE_B = 1;
-	 * 
-	 * char labels[] = new char[2]; int[] frequencies = new int[2];
-	 * 
-	 * // calculate maf frequencies[ALLELE_A] = snp.getHomRefCount();
-	 * frequencies[ALLELE_B] = snp.getHomVarCount();
-	 * 
-	 * labels[ALLELE_A] = snp.getReference().getBaseString().charAt(0);
-	 * labels[ALLELE_B] = snp.getAltAlleleWithHighestAlleleCount()
-	 * .getBaseString().charAt(0);
-	 * 
-	 * int noAlleles = snp.getAlternateAlleles().size();
-	 * 
-	 * int total = frequencies[ALLELE_A] + frequencies[ALLELE_B];
-	 * 
-	 * // swap alleles: allele A = minor allele if (frequencies[ALLELE_A] >
-	 * frequencies[ALLELE_B]) { char tempAlleleA = labels[ALLELE_A]; int
-	 * tempFreqA = frequencies[ALLELE_A]; labels[ALLELE_A] = labels[ALLELE_B];
-	 * frequencies[ALLELE_A] = frequencies[ALLELE_B]; labels[ALLELE_B] =
-	 * tempAlleleA; frequencies[ALLELE_B] = tempFreqA; }
-	 * 
-	 * // load reference entry
-	 * 
-	 * String chromosome = snp.getChr(); int position = snp.getStart();
-	 * LegendEntry refSnp = getReader(chromosome).findByPosition2(position);
-	 * 
-	 * SnpStats output = new SnpStats(); output.setChromosome(chromosome);
-	 * output.setPosition(position); output.setAlleleA(labels[ALLELE_A]);
-	 * output.setAlleleB(labels[ALLELE_B]);
-	 * output.setFrequencyA(frequencies[ALLELE_A] / (float) total);
-	 * output.setFrequencyB(frequencies[ALLELE_B] / (float) total);
-	 * 
-	 * // overlap if (refSnp != null) {
-	 * 
-	 * boolean sameAlleles = (labels[ALLELE_A] == refSnp.getAlleleB() &&
-	 * labels[ALLELE_B] == refSnp .getAlleleA()) || (labels[ALLELE_B] ==
-	 * refSnp.getAlleleB() && labels[ALLELE_A] == refSnp .getAlleleA());
-	 * 
-	 * if (refSnp.getType().equals("SNP")) {
-	 * 
-	 * // bring in the same order if (labels[ALLELE_A] == refSnp.getAlleleB() ||
-	 * labels[ALLELE_B] == refSnp.getAlleleA()) { refSnp.swapAlleles(); }
-	 * 
-	 * output.setRefAlleleA(refSnp.getAlleleA());
-	 * output.setRefAlleleB(refSnp.getAlleleB());
-	 * output.setRefFrequencyA(refSnp.getFrequencyA());
-	 * output.setRefFrequencyB(refSnp.getFrequencyB());
-	 * 
-	 * if (sameAlleles && noAlleles <= 2) {
-	 * 
-	 * // calculate chisq long[] observed = new long[2]; double[] expected = new
-	 * double[2];
-	 * 
-	 * observed[0] = frequencies[ALLELE_A]; observed[1] = frequencies[ALLELE_B];
-	 * 
-	 * expected[0] = refSnp.getFrequencyA(); expected[1] =
-	 * refSnp.getFrequencyB();
-	 * 
-	 * if (observed[0] == 0) { observed[0] = 1; } if (observed[1] == 0) {
-	 * observed[1] = 1; }
-	 * 
-	 * if (expected[0] == 0) { expected[0] = 0.00001; } if (expected[1] == 0) {
-	 * expected[1] = 0.00001; }
-	 * 
-	 * ChiSquareTest test = new ChiSquareTest(); double chisq =
-	 * test.chiSquare(expected, observed); output.setChisq(chisq);
-	 * output.setOverlapWithReference(true);
-	 * 
-	 * }
-	 * 
-	 * output.setType("SNP");
-	 * 
-	 * } else {
-	 * 
-	 * output.setChisq(Double.NaN); output.setOverlapWithReference(true);
-	 * output.setType("INDEL");
-	 * 
-	 * } }
-	 * 
-	 * return output;
-	 * 
-	 * }
-	 */
 }

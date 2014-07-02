@@ -36,10 +36,12 @@ public class QualityControlJob extends HadoopJob {
 	private long notFoundInLegend;
 	private long alleleMismatch;
 	private long toLessSamples;
-	private long removedChunks;
 	private long filterFlag;
 	private long invalidAlleles;
 	private long remainingSnps;
+	private long removedChunksSnps;
+	private long removedChunksCallRate;
+	private long removedChunksOverlap;
 
 	public QualityControlJob(String name) {
 
@@ -102,14 +104,21 @@ public class QualityControlJob extends HadoopJob {
 					.findCounter("alleleMismatch").getValue();
 			toLessSamples = job.getCounters().getGroup("minimac")
 					.findCounter("toLessSamples").getValue();
-			removedChunks = job.getCounters().getGroup("minimac")
-					.findCounter("removedChunks").getValue();
 			filterFlag = job.getCounters().getGroup("minimac")
 					.findCounter("filterFlag").getValue();
 			invalidAlleles = job.getCounters().getGroup("minimac")
 					.findCounter("invalidAlleles").getValue();
 			remainingSnps = job.getCounters().getGroup("minimac")
 					.findCounter("remainingSnps").getValue();
+
+			removedChunksSnps = job.getCounters().getGroup("minimac")
+					.findCounter("removedChunksSnps").getValue();
+
+			removedChunksOverlap = job.getCounters().getGroup("minimac")
+					.findCounter("removedChunksOverlap").getValue();
+
+			removedChunksCallRate = job.getCounters().getGroup("minimac")
+					.findCounter("removedChunksCallRate").getValue();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -182,10 +191,18 @@ public class QualityControlJob extends HadoopJob {
 		return toLessSamples;
 	}
 
-	public long getRemovedChunks() {
-		return removedChunks;
+	public long getRemovedChunksSnps() {
+		return removedChunksSnps;
 	}
 
+	public long getRemovedChunksOverlap() {
+		return removedChunksOverlap;
+	}
+
+	public long getRemovedChunksCallRate() {
+		return removedChunksCallRate;
+	}
+	
 	public long getFilterFlag() {
 		return filterFlag;
 	}
