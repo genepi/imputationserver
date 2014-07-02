@@ -269,15 +269,19 @@ public class QualityControlMapper extends
 
 					// filter aleele mismatches
 					if (legendRef != studyRef || studyAlt != legendAlt) {
-						if (insideChunk) {
-							logWriter.write("Allele mismatch: " + snp.getID()
-									+ " (ref: " + legendRef + "/" + legendAlt
-									+ ", data: " + studyRef + "/" + studyAlt
-									+ ")");
-							alleleMismatch++;
-							filtered++;
+
+						if (!(legendRef == studyAlt && legendAlt == studyRef)) {
+
+							if (insideChunk) {
+								logWriter.write("Allele mismatch: "
+										+ snp.getID() + " (ref: " + legendRef
+										+ "/" + legendAlt + ", data: "
+										+ studyRef + "/" + studyAlt + ")");
+								alleleMismatch++;
+								filtered++;
+							}
+							continue;
 						}
-						continue;
 					}
 
 					// filter low call rate
@@ -339,7 +343,8 @@ public class QualityControlMapper extends
 		boolean acceptChunk = true;
 		for (int i = 0; i < snpsPerSampleCount.length; i++) {
 			int snps = snpsPerSampleCount[i];
-			if (snps / (double) overallSnps < 0.8) {
+			double sampleRate = snps / (double) overallSnps;
+			if (sampleRate < 0.5) {
 				acceptChunk = false;
 				chunkWriter.write(chunk.toString()
 						+ " Sample "
