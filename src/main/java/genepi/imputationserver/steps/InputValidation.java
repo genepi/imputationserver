@@ -104,8 +104,7 @@ public class InputValidation extends CloudgeneStep {
 							+ "Chromosomes:" + chromosomeString + "\n"
 							+ "SNPs: " + noSnps + "\n" + "Chunks: " + chunks
 							+ "\n" + "Datatype: "
-							+ (phased ? "phased" : "unphased") + "\n"
-							+ "Genome Build: 37");
+							+ (phased ? "phased" : "unphased"));
 
 				}
 
