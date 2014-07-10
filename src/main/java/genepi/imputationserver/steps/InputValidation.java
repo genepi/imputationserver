@@ -65,7 +65,6 @@ public class InputValidation extends CloudgeneStep {
 		int chunks = 0;
 		int noSnps = 0;
 		int noSamples = 0;
-		int noChromosomes = 0;
 
 		boolean phased = true;
 
@@ -94,7 +93,6 @@ public class InputValidation extends CloudgeneStep {
 					String chromosomeString = "";
 					for (String chr : chromosomes) {
 						chromosomeString += " " + chr;
-						noChromosomes++;
 					}
 					noSamples = vcfFile.getNoSamples();
 					noSnps += vcfFile.getNoSnps();
@@ -132,7 +130,7 @@ public class InputValidation extends CloudgeneStep {
 			// init counteres
 			context.incCounter("samples", noSamples);
 			context.incCounter("genotypes", noSamples * noSnps);
-			context.incCounter("chromosomes", noSamples * noChromosomes);
+			context.incCounter("chromosomes", noSamples * chromosomes.size());
 			context.incCounter("runs", 1);
 
 			return true;

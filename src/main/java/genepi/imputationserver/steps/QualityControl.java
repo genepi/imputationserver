@@ -122,10 +122,9 @@ public class QualityControl extends HadoopJobStep {
 
 			if (job.getRemovedChunksSnps() > 0) {
 
-				text.append("<b>Warning:</b> "
-						+ job.getRemovedChunksSnps()
+				text.append("<b>Warning:</b> " + job.getRemovedChunksSnps()
 
-						+ " chunks excluded: < 3 SNPs (see filtered.txt for details).");
+				+ " chunks excluded: < 3 SNPs (see filtered.txt for details).");
 			}
 
 			if (job.getRemovedChunksCallRate() > 0) {
@@ -149,7 +148,8 @@ public class QualityControl extends HadoopJobStep {
 					+ job.getRemovedChunksOverlap();
 
 			if (excludedChunks > 0) {
-				text.append("<br>Remaining chunks: " + (chunks - excludedChunks));
+				text.append("<br>Remaining chunks: "
+						+ (chunks - excludedChunks));
 				warning(text.toString());
 			}
 
