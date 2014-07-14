@@ -124,7 +124,7 @@ public class QualityControl extends HadoopJobStep {
 
 				text.append("<b>Warning:</b> " + job.getRemovedChunksSnps()
 
-				+ " chunks excluded: < 3 SNPs (see filtered.txt for details).");
+				+ " chunks excluded: < 3 SNPs (see " + context.createLinkToFile("filtered") + "  for details).");
 			}
 
 			if (job.getRemovedChunksCallRate() > 0) {
@@ -132,7 +132,7 @@ public class QualityControl extends HadoopJobStep {
 				text.append("<b>Warning:</b> "
 						+ job.getRemovedChunksCallRate()
 
-						+ " chunks excluded: sample call rate < 50% (see filtered.txt for details).");
+						+ " chunks excluded: sample call rate < 50% (see " + context.createLinkToFile("filtered") + " for details).");
 			}
 
 			if (job.getRemovedChunksOverlap() > 0) {
@@ -140,7 +140,7 @@ public class QualityControl extends HadoopJobStep {
 				text.append("<b>Warning:</b> "
 						+ job.getRemovedChunksOverlap()
 
-						+ " chunks excluded: reference overlap < 50% (see filtered.txt for details).");
+						+ " chunks excluded: reference overlap < 50% (see " + context.createLinkToFile("filtered") + " for details).");
 			}
 
 			long excludedChunks = job.getRemovedChunksSnps()
@@ -150,10 +150,21 @@ public class QualityControl extends HadoopJobStep {
 			if (excludedChunks > 0) {
 				text.append("<br>Remaining chunks: "
 						+ (chunks - excludedChunks));
-				warning(text.toString());
+
 			}
 
-			return true;
+			if (excludedChunks == chunks) {
+
+				text.append("<br><b>Error:</b> No chunks passed the QC step.");
+				error(text.toString());
+
+				return false;
+
+			} else {
+				warning(text.toString());
+				return true;
+
+			}
 
 		} else {
 

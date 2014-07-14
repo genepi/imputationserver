@@ -26,7 +26,7 @@ mapred:
     - name: Quality Control
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.QualityControl
-      generates: $outputmaf $mafchunkfile $qcstat
+      generates: $outputmaf $mafchunkfile $qcstat $filtered
 
 #if( $population != "mixed")
 
@@ -164,3 +164,4 @@ mapred:
       mergeOutput: true
       removeHeader: false
       zip: false
+      autoExport: true
