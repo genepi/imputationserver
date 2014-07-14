@@ -6,7 +6,7 @@ panels:
     legend: minimac-data/ALL_1000G_phase1integrated_v3_annotated_legends.tgz
     
   - id: phase3
-    pattern: ALL.chr$chr.phase3_shapeit2_integrated.20130502.snps_indels_svs.genotypes.vcf.gz
-    hdfs: minimac-data/1000g_phase3.tgz
+    pattern: reduced.ALL.chr$chr.phase3_shapeit2_mvncall_integrated_v2.20130502.genotypes.vcf.gz
+    hdfs: minimac-data/phase3.tar.gz
     legendPattern: ALL_1000G_phase1integrated_v3_annotated_legends/ALL_1000G_phase1integrated_v3_chr$chr_impute.legend.gz
     legend: minimac-data/ALL_1000G_phase1integrated_v3_annotated_legends.tgz

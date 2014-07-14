@@ -62,8 +62,8 @@ mapred:
        type: list
        value: giant
        values:
-         giant: GIANT ALL reference panel
-         phase3: 1000G Phase 3 pre-release - chr 20 only
+         giant: GIANT ALL Reference Panel
+         phase3: 1000G Phase 3
 
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
