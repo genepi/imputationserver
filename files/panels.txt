@@ -9,4 +9,4 @@ panels:
     pattern: reduced.ALL.chr$chr.phase3_shapeit2_mvncall_integrated_v2.20130502.genotypes.vcf.gz
     hdfs: minimac-data/phase3.tar.gz
     legendPattern: ALL_1000G_phase3_integrated_6_2014_chr$chr_impute.legend.gz
-    legend: minimac-data/ALL_1000G_phase3_integrated_6_2014_annotated_legends.tgz
+    legend: minimac-data/ALL_1000G_phase3_integrated_6_2014_annotated_legends.tar.gz

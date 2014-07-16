@@ -123,7 +123,7 @@
 		<dependency>
 			<groupId>genepi-io</groupId>
 			<artifactId>genepi-io</artifactId>
-			<version>0.6.0</version>
+			<version>0.6.3</version>
 		</dependency>
 
 		<dependency>
@@ -140,7 +140,7 @@
 		<dependency>
 			<groupId>genepi-hadoop</groupId>
 			<artifactId>genepi-hadoop</artifactId>
-			<version>0.7.1</version>
+			<version>0.7.2</version>
 		</dependency>
 
 		<dependency>

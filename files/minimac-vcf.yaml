@@ -34,6 +34,7 @@ mapred:
       rmd: qc-report.Rmd
       params: $outputmaf
       output: ${qcreport}.html
+      generates: $qcreport
       
 #end
 
@@ -63,7 +64,7 @@ mapred:
        value: giant
        values:
          giant: GIANT ALL Reference Panel
-         phase3: 1000G Phase 3
+         phase3: 1000G Phase 3 initial release 6/2014
 
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
@@ -113,13 +114,14 @@ mapred:
       type: local-file
       download: true
       temp: false
+      autoExport: true
 
  
     - id: report
       description: Imputation Report
       type: local-file
       download: false
-      temp: ftrue
+      temp: true
 
 
     - id: outputmaf
