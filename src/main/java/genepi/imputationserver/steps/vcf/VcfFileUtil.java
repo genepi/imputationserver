@@ -37,6 +37,11 @@ public class VcfFileUtil {
 			if (!line.startsWith("#")) {
 
 				String tiles[] = line.split("\t", 3);
+
+				if (tiles.length < 4) {
+					throw new IOException("Please use tab-delimited VCF files.");
+				}
+
 				String chromosome = tiles[0];
 				int position = Integer.parseInt(tiles[1]);
 
@@ -53,7 +58,7 @@ public class VcfFileUtil {
 				chromosomes.add(chromosome);
 				if (chromosomes.size() > 1) {
 					throw new IOException(
-							"Vcf file contains more than one chromosome. Please split your input vcf file by chromosome.");
+							"VCF file contains more than one chromosome. Please split your input vcf file by chromosome.");
 				}
 
 				int chunk = position / chunksize;
@@ -96,7 +101,7 @@ public class VcfFileUtil {
 		return pair;
 
 	}
-	
+
 	public static Set<String> validChromosomes = new HashSet<String>();
 
 	static {
@@ -124,8 +129,8 @@ public class VcfFileUtil {
 		validChromosomes.add("21");
 		validChromosomes.add("22");
 	}
-	
-	public static boolean isAutosomal(String chromosome){
+
+	public static boolean isAutosomal(String chromosome) {
 		return validChromosomes.contains(chromosome);
 	}
 
