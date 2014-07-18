@@ -10,3 +10,9 @@ panels:
     hdfs: minimac-data/phase3.tar.gz
     legendPattern: ALL_1000G_phase3_integrated_6_2014_chr$chr_impute.legend.gz
     legend: minimac-data/ALL_1000G_phase3_integrated_6_2014_annotated_legends.tar.gz
+    
+  - id: test-panel
+    pattern: chr$chr.phase1_release_v3.20101123.snps_indels_svs.genotypes.refpanel.ALL.vcf.gz
+    hdfs: minimac-data/giant.tgz
+    legendPattern: seb_chr2.legend.gz
+    legend: minimac-data/test.tar.gz
