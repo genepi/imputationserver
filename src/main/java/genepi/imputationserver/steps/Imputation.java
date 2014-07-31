@@ -37,7 +37,17 @@ public class Imputation extends ParallelHadoopJobStep {
 		String input = context.get("mafchunkfile");
 		String reference = context.get("refpanel");
 		String phasing = context.get("phasing");
+		boolean noCache = false;
+		String minimacBin = "minimac";
+		
+		if (context.get("nocache") != null){
+			noCache = context.get("nocache").equals("yes");
+		}
 
+		if (context.get("minimacbin") != null){
+			minimacBin = context.get("minimacbin");
+		}
+		
 		// outputs
 		String output = context.get("outputimputation");
 		String local = context.get("local");
@@ -94,7 +104,9 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setPhasing(phasing);
 				job.setJarByClass(ImputationJob.class);
-
+				job.setNoCache(noCache);
+				job.setMinimacBin(minimacBin);
+				
 				executeJarInBackground(chr, context, job);
 				jobs.put(chr, job);
 

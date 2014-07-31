@@ -29,6 +29,8 @@ public class ImputationJob extends HadoopJob {
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
 
 	public static final String PHASING = "MINIMAC_PHASING";
+	
+	public static final String MINIMAC_BIN = "MINIMAC_BIN";
 
 	private String localOutput;
 
@@ -37,6 +39,10 @@ public class ImputationJob extends HadoopJob {
 	private String logFilename;
 
 	private String folder;
+
+	private String minimacBin;
+	
+	private boolean noCache = false;
 
 	public ImputationJob(String name) {
 
@@ -90,7 +96,9 @@ public class ImputationJob extends HadoopJob {
 		String[] files = FileUtil.getFiles(folder, "");
 		for (String file : files) {
 			if (!HdfsUtil
-					.exists(HdfsUtil.path(hdfs, FileUtil.getFilename(file)))) {
+					.exists(HdfsUtil.path(hdfs, FileUtil.getFilename(file)))
+					|| noCache) {
+				HdfsUtil.delete(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
 				HdfsUtil.put(file,
 						HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
 			}
@@ -172,6 +180,15 @@ public class ImputationJob extends HadoopJob {
 
 	public void setPhasing(String phasing) {
 		set(PHASING, phasing);
+	}
+
+	public void setNoCache(boolean noCache) {
+		this.noCache = noCache;
+	}
+	
+	public void setMinimacBin(String minimacBin) {
+		this.minimacBin = minimacBin;
+		set(MINIMAC_BIN, minimacBin);
 	}
 
 }

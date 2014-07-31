@@ -255,7 +255,16 @@ public class QualityControlMapper extends
 					if (insideChunk) {
 						overallSnps++;
 						notFoundInLegend++;
+
+						int i = 0;
+						for (String sample : snp.getSampleNamesOrderedByName()) {
+							if (snp.getGenotype(sample).isCalled()) {
+								snpsPerSampleCount[i] += 1;
+							}
+							i++;
+						}
 					}
+
 					continue;
 				} else {
 
@@ -363,7 +372,7 @@ public class QualityControlMapper extends
 		double overlap = foundInLegend
 				/ (double) (foundInLegend + notFoundInLegend);
 
-		if (overlap >= 0.5 && overallSnps >= 3 && !lowSampleCallRate) {
+		if (overlap >= 0.1 && overallSnps >= 3 && !lowSampleCallRate) {
 
 			// update chunk
 			chunk.setSnps(overallSnps);
@@ -372,6 +381,7 @@ public class QualityControlMapper extends
 			context.write(new Text(chunk.getChromosome()),
 					new Text(chunk.serialize()));
 		} else {
+
 			chunkWriter.write(chunk.toString() + " (Snps: " + overallSnps
 					+ ", Reference overlap: " + overlap
 					+ ", low sample call rates: " + lowSampleCallRate + ")");
@@ -387,6 +397,7 @@ public class QualityControlMapper extends
 			if (lowSampleCallRate) {
 				removedChunksCallRate++;
 			}
+
 		}
 
 		vcfReader.close();

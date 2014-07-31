@@ -73,7 +73,7 @@ public class CompressionEncryption extends Hadoop {
 					return context.sendMail(subject, message);
 
 				} else {
-					error("No email address found. Please enter yout email address (Account -> Profile).");
+					error("No email address found. Please enter your email address (Account -> Profile).");
 					return false;
 				}
 

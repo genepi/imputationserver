@@ -53,11 +53,13 @@ public class ImputationMapper extends
 		phasing = parameters.get(ImputationJob.PHASING);
 		String hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
-
+		String minimacBin = parameters.get(ImputationJob.MINIMAC_BIN);
+		
+		
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
 		refFilename = cache.getArchive(referencePanel);
-		String minimacCommand = cache.getFile("minimac");
+		String minimacCommand = cache.getFile(minimacBin);
 		String hapiUrCommand = cache.getFile("hapi-ur");
 		String vcfCookerCommand = cache.getFile("vcfCooker");
 		String vcf2HapCommand = cache.getFile("vcf2hap");

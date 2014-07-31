@@ -72,7 +72,7 @@ public class InputValidation extends CloudgeneStep {
 
 		if (vcfFiles.length == 0) {
 			analyzeMessage.setType(Message.ERROR);
-			analyzeMessage.setMessage("No valid vcf files found.");
+			analyzeMessage.setMessage("No valid vcf files found (see <a href=\"/start.html#!pages/help\">Help</a>).");
 			return false;
 		}
 
@@ -112,7 +112,7 @@ public class InputValidation extends CloudgeneStep {
 
 				analyzeMessage.setType(Message.ERROR);
 				chromosomeMessage.setType(Message.ERROR);
-				chromosomeMessage.setMessage(e.getMessage());
+				chromosomeMessage.setMessage(e.getMessage() +  " (see <a href=\"/start.html#!pages/help\">Help</a>).");
 				return false;
 
 			}
@@ -137,7 +137,7 @@ public class InputValidation extends CloudgeneStep {
 		} else {
 
 			analyzeMessage.setType(Message.ERROR);
-			analyzeMessage.setMessage("no valid VCF file(s) found.");
+			analyzeMessage.setMessage("no valid VCF file(s) found (see <a href=\"/start.html#!pages/help\">Help</a>)." );
 			chromosomeMessage.setType(Message.ERROR);
 
 			return false;
@@ -181,7 +181,7 @@ public class InputValidation extends CloudgeneStep {
 
 						if (importer != null) {
 
-							boolean successful = importer.importFiles();
+							boolean successful = importer.importFiles("vcf.gz");
 
 							if (successful) {
 

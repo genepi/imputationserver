@@ -21,84 +21,103 @@ public class VcfFileUtil {
 		int noSnps = 0;
 		int noSamples = 0;
 
-		VCFFileReader reader = new VCFFileReader(new File(vcfFilename), false);
+		try {
 
-		noSamples = reader.getFileHeader().getGenotypeSamples().size();
-		reader.close();
+			VCFFileReader reader = new VCFFileReader(new File(vcfFilename),
+					false);
 
-		LineReader lineReader = new LineReader(vcfFilename);
+			noSamples = reader.getFileHeader().getGenotypeSamples().size();
+			reader.close();
 
-		boolean phased = true;
+			LineReader lineReader = new LineReader(vcfFilename);
 
-		while (lineReader.next()) {
+			boolean phased = true;
 
-			String line = lineReader.get();
+			while (lineReader.next()) {
 
-			if (!line.startsWith("#")) {
+				String line = lineReader.get();
 
-				String tiles[] = line.split("\t", 3);
+				if (!line.startsWith("#")) {
 
-				if (tiles.length < 4) {
-					throw new IOException("Please use tab-delimited VCF files.");
-				}
+					String tiles[] = line.split("\t", 6);
 
-				String chromosome = tiles[0];
-				int position = Integer.parseInt(tiles[1]);
-
-				if (phased) {
-					boolean containsSlash = tiles[2].contains("/");
-					if (containsSlash) {
-						phased = false;
+					if (tiles.length < 3) {
+						throw new IOException(
+								"Please use tab-delimited VCF files.");
 					}
 
-				}
+					String chromosome = tiles[0];
+					int position = Integer.parseInt(tiles[1]);
 
-				// TODO: check that all are phased
-				// context.getGenotypes().get(0).isPhased();
-				chromosomes.add(chromosome);
-				if (chromosomes.size() > 1) {
+					if (phased) {
+						boolean containsSlash = tiles[5].contains("/");
+						if (containsSlash) {
+							phased = false;
+						}
+
+					}
+
+					// TODO: check that all are phased
+					// context.getGenotypes().get(0).isPhased();
+					chromosomes.add(chromosome);
+					if (chromosomes.size() > 1) {
+						throw new IOException(
+								"VCF file contains more than one chromosome. Please split your input vcf file by chromosome.");
+					}
+
+					String ref = tiles[3];
+					String alt = tiles[4];
+
+					if (ref.equals(alt)) {
+						throw new IOException(
+								"The provided VCF file is malformed at variation "
+										+ tiles[2] + ": reference allele ("
+										+ ref + ") and alternate allele  ("
+										+ alt + ") are the same.");
+					}
+
+					int chunk = position / chunksize;
+					if (position % chunksize == 0) {
+						chunk = chunk - 1;
+					}
+					chunks.add(chunk);
+					noSnps++;
+
+				}
+			}
+			lineReader.close();
+			reader.close();
+
+			// create index
+			if (tabixPath != null) {
+
+				Command tabix = new Command(tabixPath);
+
+				tabix.setParams("-p", "vcf", vcfFilename);
+				tabix.saveStdErr("tabix.output");
+				int returnCode = tabix.execute();
+
+				if (returnCode != 0) {
 					throw new IOException(
-							"VCF file contains more than one chromosome. Please split your input vcf file by chromosome.");
+							"The provided VCF file is malformed. Error during index creation: "
+									+ FileUtil.readFileAsString("tabix.output"));
 				}
 
-				int chunk = position / chunksize;
-				if (position % chunksize == 0) {
-					chunk = chunk - 1;
-				}
-				chunks.add(chunk);
-				noSnps++;
-
-			}
-		}
-		lineReader.close();
-		reader.close();
-
-		// create index
-		if (tabixPath != null) {
-
-			Command tabix = new Command(tabixPath);
-
-			tabix.setParams("-p", "vcf", vcfFilename);
-			tabix.saveStdErr("tabix.output");
-			int returnCode = tabix.execute();
-
-			if (returnCode != 0) {
-				throw new IOException("Error during index creation ("
-						+ returnCode + "): "
-						+ FileUtil.readFileAsString("tabix.output"));
 			}
 
-		}
+			VcfFile pair = new VcfFile();
+			pair.setVcfFilename(vcfFilename);
+			pair.setIndexFilename(vcfFilename + ".tbi");
+			pair.setNoSnps(noSnps);
+			pair.setNoSamples(noSamples);
+			pair.setChunks(chunks);
+			pair.setChromosomes(chromosomes);
+			pair.setPhased(phased);
+			return pair;
 
-		VcfFile pair = new VcfFile();
-		pair.setVcfFilename(vcfFilename);
-		pair.setIndexFilename(vcfFilename + ".tbi");
-		pair.setNoSnps(noSnps);
-		pair.setNoSamples(noSamples);
-		pair.setChunks(chunks);
-		pair.setChromosomes(chromosomes);
-		pair.setPhased(phased);
-		return pair;
+		} catch (Exception e) {
+			throw new IOException(e.getMessage());
+		}
 
 	}
 

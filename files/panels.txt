@@ -5,6 +5,12 @@ panels:
     legendPattern: ALL_1000G_phase1integrated_v3_annotated_legends/ALL_1000G_phase1integrated_v3_chr$chr_impute.legend.gz
     legend: minimac-data/ALL_1000G_phase1integrated_v3_annotated_legends.tgz
     
+  - id: hapmap2
+    pattern: hapmap_r22.chr$chr.CEU.hg19.recode.vcf.gz
+    hdfs: minimac-data/hapmap_r22.CEU.hg19.tgz
+    legendPattern: hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
+    legend: minimac-data/hapmap_r22.CEU.hg19.legends.tgz
+
   - id: phase3
     pattern: reduced.ALL.chr$chr.phase3_shapeit2_mvncall_integrated_v2.20130502.genotypes.vcf.gz
     hdfs: minimac-data/phase3.tar.gz

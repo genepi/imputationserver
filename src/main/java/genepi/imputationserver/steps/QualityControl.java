@@ -124,7 +124,9 @@ public class QualityControl extends HadoopJobStep {
 
 				text.append("<br><b>Warning:</b> " + job.getRemovedChunksSnps()
 
-				+ " Chunks excluded: < 3 SNPs (see " + context.createLinkToFile("filtered") + "  for details).");
+				+ " Chunks excluded: < 3 SNPs (see "
+						+ context.createLinkToFile("filtered")
+						+ "  for details).");
 			}
 
 			if (job.getRemovedChunksCallRate() > 0) {
@@ -132,7 +134,9 @@ public class QualityControl extends HadoopJobStep {
 				text.append("<br><b>Warning:</b> "
 						+ job.getRemovedChunksCallRate()
 
-						+ " Chunks excluded: at least one sample has a call rate < 50% (see " + context.createLinkToFile("filtered") + " for details).");
+						+ " Chunks excluded: at least one sample has a call rate < 50% (see "
+						+ context.createLinkToFile("filtered")
+						+ " for details).");
 			}
 
 			if (job.getRemovedChunksOverlap() > 0) {
@@ -140,7 +144,9 @@ public class QualityControl extends HadoopJobStep {
 				text.append("<br><b>Warning:</b> "
 						+ job.getRemovedChunksOverlap()
 
-						+ " Chunks excluded: reference overlap < 50% (see " + context.createLinkToFile("filtered") + " for details).");
+						+ " Chunks excluded: reference overlap < 50% (see "
+						+ context.createLinkToFile("filtered")
+						+ " for details).");
 			}
 
 			long excludedChunks = job.getRemovedChunksSnps()
@@ -195,11 +201,12 @@ public class QualityControl extends HadoopJobStep {
 
 		String[] vcfFiles = FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$");
 
-		for (String filename : vcfFiles) {
+		for (String vcfFilename : vcfFiles) {
 
 			try {
 
-				VcfFile vcfFile = VcfFileUtil.load(filename, chunkSize, null);
+				VcfFile vcfFile = VcfFileUtil
+						.load(vcfFilename, chunkSize, null);
 
 				if (VcfFileUtil.isAutosomal(vcfFile.getChromosome())) {
 
@@ -214,11 +221,11 @@ public class QualityControl extends HadoopJobStep {
 					// puts converted files into hdfs
 					int i = 0;
 					String[] hdfsFiles = new String[vcfFile.getFilenames().length];
-					for (String filename2 : vcfFile.getFilenames()) {
+					for (String filename : vcfFile.getFilenames()) {
 						String hdfsFile = HdfsUtil.path(context.getHdfsTemp(),
 								type + "_chr" + chromosome + "_" + pairId + "_"
 										+ i + "");
-						HdfsUtil.put(filename2, hdfsFile);
+						HdfsUtil.put(filename, hdfsFile);
 						hdfsFiles[i] = hdfsFile;
 						i++;
 					}
