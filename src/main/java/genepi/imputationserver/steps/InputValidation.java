@@ -72,7 +72,7 @@ public class InputValidation extends CloudgeneStep {
 
 		if (vcfFiles.length == 0) {
 			analyzeMessage.setType(Message.ERROR);
-			analyzeMessage.setMessage("No valid vcf files found (see <a href=\"/start.html#!pages/help\">Help</a>).");
+			analyzeMessage.setMessage("The provided files are not VCF files (see <a href=\"/start.html#!pages/help\">Help</a>).");
 			return false;
 		}
 
@@ -137,7 +137,7 @@ public class InputValidation extends CloudgeneStep {
 		} else {
 
 			analyzeMessage.setType(Message.ERROR);
-			analyzeMessage.setMessage("no valid VCF file(s) found (see <a href=\"/start.html#!pages/help\">Help</a>)." );
+			analyzeMessage.setMessage("The provided files are not VCF files  (see <a href=\"/start.html#!pages/help\">Help</a>)." );
 			chromosomeMessage.setType(Message.ERROR);
 
 			return false;

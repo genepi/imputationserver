@@ -43,7 +43,7 @@ public class VcfFileUtil {
 
 					if (tiles.length < 3) {
 						throw new IOException(
-								"Please use tab-delimited VCF files.");
+								"The provided VCF file is no tab-delimited");
 					}
 
 					String chromosome = tiles[0];
@@ -62,7 +62,7 @@ public class VcfFileUtil {
 					chromosomes.add(chromosome);
 					if (chromosomes.size() > 1) {
 						throw new IOException(
-								"VCF file contains more than one chromosome. Please split your input vcf file by chromosome.");
+								"The provided VCF file contains more than one chromosome. Please split your input VCF file by chromosome");
 					}
 
 					String ref = tiles[3];
