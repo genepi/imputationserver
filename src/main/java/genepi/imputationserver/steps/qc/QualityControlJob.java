@@ -78,7 +78,6 @@ public class QualityControlJob extends HadoopJob {
 
 	@Override
 	public void after() {
-
 	}
 
 	@Override
@@ -202,7 +201,7 @@ public class QualityControlJob extends HadoopJob {
 	public long getRemovedChunksCallRate() {
 		return removedChunksCallRate;
 	}
-	
+
 	public long getFilterFlag() {
 		return filterFlag;
 	}

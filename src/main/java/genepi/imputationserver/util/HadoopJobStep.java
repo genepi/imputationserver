@@ -17,12 +17,20 @@ public abstract class HadoopJobStep extends CloudgeneStep {
 		this.job = job;
 		beginTask("Running Hadoop Job...");
 		boolean successful = job.execute();
+
 		if (successful) {
 			endTask("Execution successful.", Message.OK);
 			return true;
 		} else {
+
+			// String logs = FileUtil.path(context.getLocalOutput(), "logs");
+			// FileUtil.createDirectory(logs);
+
+			// job.downloadFailedLogs(logs);
+
 			endTask("Execution failed. Please have a look at the logfile for details.",
 					Message.ERROR);
+
 			return false;
 		}
 	}

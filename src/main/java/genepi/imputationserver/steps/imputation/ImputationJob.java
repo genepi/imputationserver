@@ -1,12 +1,8 @@
 package genepi.imputationserver.steps.imputation;
 
-import java.io.IOException;
-import java.util.List;
-
 import genepi.hadoop.CacheStore;
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
-import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
 import genepi.hadoop.log.LogCollector;
 import genepi.imputationserver.steps.imputation.sort.ChunkKey;
 import genepi.imputationserver.steps.imputation.sort.ChunkValue;
@@ -15,8 +11,12 @@ import genepi.imputationserver.steps.imputation.sort.NaturalKeyGroupingComparato
 import genepi.imputationserver.steps.imputation.sort.NaturalKeyPartitioner;
 import genepi.io.FileUtil;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
 
 public class ImputationJob extends HadoopJob {
 
@@ -29,7 +29,7 @@ public class ImputationJob extends HadoopJob {
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
 
 	public static final String PHASING = "MINIMAC_PHASING";
-	
+
 	public static final String MINIMAC_BIN = "MINIMAC_BIN";
 
 	private String localOutput;
@@ -41,13 +41,13 @@ public class ImputationJob extends HadoopJob {
 	private String folder;
 
 	private String minimacBin;
-	
+
 	private boolean noCache = false;
 
 	public ImputationJob(String name) {
 
 		super("imputation-minimac");
-		set("mapred.task.timeout", "360000000");
+		set("mapred.task.timeout", "720000000");
 		set("mapred.map.tasks.speculative.execution", false);
 		set("mapred.reduce.tasks.speculative.execution", false);
 		getConfiguration().set("mapred.reduce.tasks", "22");
@@ -185,7 +185,7 @@ public class ImputationJob extends HadoopJob {
 	public void setNoCache(boolean noCache) {
 		this.noCache = noCache;
 	}
-	
+
 	public void setMinimacBin(String minimacBin) {
 		this.minimacBin = minimacBin;
 		set(MINIMAC_BIN, minimacBin);

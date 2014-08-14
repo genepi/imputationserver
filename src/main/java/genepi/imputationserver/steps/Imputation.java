@@ -39,15 +39,15 @@ public class Imputation extends ParallelHadoopJobStep {
 		String phasing = context.get("phasing");
 		boolean noCache = false;
 		String minimacBin = "minimac";
-		
-		if (context.get("nocache") != null){
+
+		if (context.get("nocache") != null) {
 			noCache = context.get("nocache").equals("yes");
 		}
 
-		if (context.get("minimacbin") != null){
+		if (context.get("minimacbin") != null) {
 			minimacBin = context.get("minimacbin");
 		}
-		
+
 		// outputs
 		String output = context.get("outputimputation");
 		String local = context.get("local");
@@ -106,7 +106,7 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setJarByClass(ImputationJob.class);
 				job.setNoCache(noCache);
 				job.setMinimacBin(minimacBin);
-				
+
 				executeJarInBackground(chr, context, job);
 				jobs.put(chr, job);
 
@@ -117,21 +117,21 @@ public class Imputation extends ParallelHadoopJobStep {
 			updateProgress();
 			updateMessage();
 			message.setType(Message.OK);
-			// message.setMessage("Done!");
+			return true;
 
 		} catch (IOException e1) {
-			e1.printStackTrace();
+
+			message.setType(Message.ERROR);
+			message.setMessage(e1.getMessage());
 			return false;
+
 		} catch (InterruptedException e1) {
-			e1.printStackTrace();
 
 			message.setType(Message.ERROR);
 			message.setMessage("Canceled by user.");
-
 			return false;
-		}
 
-		return true;
+		}
 
 	}
 

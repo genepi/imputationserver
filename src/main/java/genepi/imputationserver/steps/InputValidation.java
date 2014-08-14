@@ -4,6 +4,8 @@ import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.PreferenceStore;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.util.RefPanel;
+import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
 import java.io.File;
@@ -36,6 +38,7 @@ public class InputValidation extends CloudgeneStep {
 
 		// inputs
 		String inputFiles = context.get("files");
+		String reference = context.get("refpanel");
 
 		// read config
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
@@ -72,7 +75,8 @@ public class InputValidation extends CloudgeneStep {
 
 		if (vcfFiles.length == 0) {
 			analyzeMessage.setType(Message.ERROR);
-			analyzeMessage.setMessage("The provided files are not VCF files (see <a href=\"/start.html#!pages/help\">Help</a>).");
+			analyzeMessage
+					.setMessage("The provided files are not VCF files (see <a href=\"/start.html#!pages/help\">Help</a>).");
 			return false;
 		}
 
@@ -100,11 +104,35 @@ public class InputValidation extends CloudgeneStep {
 
 					phased = phased && vcfFile.isPhased();
 
+					// check reference panel
+					// load reference panels
+					RefPanelList panels = null;
+					try {
+						panels = RefPanelList.loadFromFile(FileUtil.path(
+								folder, "panels.txt"));
+
+					} catch (Exception e) {
+
+						analyzeMessage.setType(Message.ERROR);
+						analyzeMessage.setMessage("panels.txt not found.");
+						return false;
+					}
+					RefPanel panel = panels.getById(reference);
+					if (panel == null) {
+						analyzeMessage.setType(Message.ERROR);
+						analyzeMessage.setMessage("Reference '" + reference
+								+ "' not found.");
+						chromosomeMessage.setType(Message.ERROR);
+
+						return false;
+					}
+
 					chromosomeMessage.setMessage("Samples: " + noSamples + "\n"
 							+ "Chromosomes:" + chromosomeString + "\n"
 							+ "SNPs: " + noSnps + "\n" + "Chunks: " + chunks
 							+ "\n" + "Datatype: "
-							+ (phased ? "phased" : "unphased"));
+							+ (phased ? "phased" : "unphased") + "\n"
+							+ "Reference Panel: " + panel.getId());
 
 				}
 
@@ -112,7 +140,9 @@ public class InputValidation extends CloudgeneStep {
 
 				analyzeMessage.setType(Message.ERROR);
 				chromosomeMessage.setType(Message.ERROR);
-				chromosomeMessage.setMessage(e.getMessage() +  " (see <a href=\"/start.html#!pages/help\">Help</a>).");
+				chromosomeMessage
+						.setMessage(e.getMessage()
+								+ " (see <a href=\"/start.html#!pages/help\">Help</a>).");
 				return false;
 
 			}
@@ -137,7 +167,8 @@ public class InputValidation extends CloudgeneStep {
 		} else {
 
 			analyzeMessage.setType(Message.ERROR);
-			analyzeMessage.setMessage("The provided files are not VCF files  (see <a href=\"/start.html#!pages/help\">Help</a>)." );
+			analyzeMessage
+					.setMessage("The provided files are not VCF files  (see <a href=\"/start.html#!pages/help\">Help</a>).");
 			chromosomeMessage.setType(Message.ERROR);
 
 			return false;

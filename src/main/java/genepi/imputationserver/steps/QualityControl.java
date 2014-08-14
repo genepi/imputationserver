@@ -86,6 +86,8 @@ public class QualityControl extends HadoopJobStep {
 
 		boolean successful = executeHadoopJob(job, context);
 
+		// job.downloadLogs("/home/lukas/mylog");
+
 		if (successful) {
 
 			// print qc statistics
