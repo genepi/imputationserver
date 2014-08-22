@@ -14,6 +14,7 @@ public class VcfChunkOutput extends VcfChunk {
 	private String sampleFilename;
 	private String snpsFilename;
 	private String doseFilename;
+	private String vcfOutFilename;
 	private String infoFilename;
 	private String infoFixedFilename;
 
@@ -29,6 +30,7 @@ public class VcfChunkOutput extends VcfChunk {
 		sampleFilename = prefix + ".sample";
 		snpsFilename = prefix + ".snps";
 		doseFilename = prefix + ".dose";
+		vcfOutFilename = prefix + ".dose.vcf";
 		infoFilename = prefix + ".info";
 		infoFixedFilename = infoFilename + ".fixed";
 
@@ -86,6 +88,10 @@ public class VcfChunkOutput extends VcfChunk {
 
 	public String getBedFilename() {
 		return bedFilename;
+	}
+	
+	public String getVcfOutFilename() {
+		return vcfOutFilename;
 	}
 
 }
