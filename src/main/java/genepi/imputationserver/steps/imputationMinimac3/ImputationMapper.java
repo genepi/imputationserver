@@ -123,15 +123,15 @@ public class ImputationMapper extends
 
 		if (chunk.isPhased()) {
 
-		// imputation with VCF files
+		// imputation for phased genotypes
 			if (!chunk.getChromosome().equals("23")
 					&& !chunk.getChromosome().equals("X")) {
 
 				boolean successful = pipeline.imputeMach(chunk, outputChunk);
 				if (successful) {
-					log.info("  Minimac successful.");
+					log.info("  Minimac3 successful.");
 				} else {
-					log.stop("  Minimac failed", "");
+					log.stop("  Minimac3 failed", "");
 					return;
 				}
 			}
@@ -140,15 +140,6 @@ public class ImputationMapper extends
 
 			System.out.println("vcf lines: "
 					+ FileUtil.getLineCount(outputChunk.getVcfFilename()));
-
-			// convert vcf to bim/bed/fam
-			boolean successful = pipeline.vcfToBed(outputChunk);
-			if (successful) {
-				log.info("  vcfCooker successful.");
-			} else {
-				log.stop("  vcfCooker failed", "");
-				return;
-			}
 
 			// ignore small chunks
 			int noSnps = pipeline.getNoSnps(chunk, outputChunk);
@@ -161,10 +152,20 @@ public class ImputationMapper extends
 			}
 
 			// remove parents
+			//TODO ask lukas if this is still needed
 			BedUtil.removeParents(outputChunk.getFamFilename());
 
 			// phasing
 			if (!phasing.equals("shapeit")) {
+				
+				// convert vcf to bim/bed/fam only for HapiUR
+				boolean successful = pipeline.vcfToBed(outputChunk);
+				if (successful) {
+					log.info("  vcfCooker successful.");
+				} else {
+					log.stop("  vcfCooker failed", "");
+					return;
+				}
 
 				// hapiur
 				successful = pipeline.phaseWithHapiUr(chunk, outputChunk);
@@ -178,7 +179,7 @@ public class ImputationMapper extends
 			} else {
 
 				// shapeit
-				successful = pipeline.phaseWithShapeIt(chunk, outputChunk);
+				boolean successful = pipeline.phaseWithShapeIt(chunk, outputChunk);
 				if (successful) {
 					log.info("  ShapeIt successful.");
 				} else {
@@ -188,13 +189,16 @@ public class ImputationMapper extends
 
 			}
 
-			// imputation
+			//TODO currently not supported with minmac3. 
+			//use shapeit-convert or add option to handle unphased data
+			
+			// imputation for unphased genotypes. 
 			if (!chunk.getChromosome().equals("23")
 					&& !chunk.getChromosome().equals("X")) {
 
-				successful = pipeline.imputeShapeIt(chunk, outputChunk);
+				boolean successful = pipeline.imputeShapeIt(chunk, outputChunk);
 				if (successful) {
-					log.info("  Minimac successful.");
+					log.info("  Minimac3 successful.");
 				} else {
 
 					String stdOut = FileUtil.readFileAsString(outputChunk
@@ -202,7 +206,7 @@ public class ImputationMapper extends
 					String stdErr = FileUtil.readFileAsString(outputChunk
 							.getPrefix() + ".minimac.err");
 
-					log.stop("  Minimac failed", "StdOut:\n" + stdOut
+					log.stop("  Minimac3 failed", "StdOut:\n" + stdOut
 							+ "\nStdErr:\n" + stdErr);
 					return;
 				}
@@ -211,6 +215,7 @@ public class ImputationMapper extends
 		}
 
 		// fix window bug in minimac
+		//TODO ask lukas what this is for
 		int[] indices = pipeline.fixInfoFile(chunk, outputChunk);
 		log.info("  Postprocessing successful.");
 

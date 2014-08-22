@@ -139,8 +139,7 @@ public class ImputationPipeline {
 		Command shapeIt = new Command(shapeItCommand);
 		shapeIt.setSilent(false);
 
-		shapeIt.setParams("--input-bed", output.getBedFilename(),
-				output.getBimFilename(), output.getFamFilename(),
+		shapeIt.setParams("--input-vcf", output.getVcfFilename(),
 				"--output-max", output.getPrefix(), "--input-from",
 				input.getStart() + "", "--input-to", input.getEnd() + "");
 		shapeIt.saveStdOut(output.getPrefix() + ".shapeit.out");
@@ -149,6 +148,8 @@ public class ImputationPipeline {
 		return (shapeIt.execute() == 0);
 	}
 
+
+	// mini-mac
 	public boolean imputeShapeIt(VcfChunk input, VcfChunkOutput output)
 			throws InterruptedException, IOException {
 
@@ -157,15 +158,15 @@ public class ImputationPipeline {
 					+ refPanelFilename + "' not found.");
 		}
 
-		// mini-mac
+		// minimac
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
 
-		minimac.setParams("--vcfReference", "--refHaps", refPanelFilename,
-				"--sample", output.getSampleFilename(), "--shape_haps",
-				output.getHapsFilename(), "--rounds", "5", "--vcfstart",
-				input.getStart() + "", "--vcfend", input.getEnd() + "",
-				"--vcfwindow", minimacWindow + "", "--vcfchr",
+		minimac.setParams("--refHaps", refPanelFilename,
+				"--sample", output.getSampleFilename(), "--snps", output.getSnpsFilename(), "--haps",
+				output.getHapsFilename(), "--rounds", "5", "--start",
+				input.getStart() + "", "--end", input.getEnd() + "",
+				"--window", minimacWindow + "", "--chr",
 				input.getChromosome(), "--prefix", output.getPrefix(), "--chr",
 				input.getChromosome());
 
@@ -183,7 +184,7 @@ public class ImputationPipeline {
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
 
-		minimac.setParams("--vcfReference", "--refHaps", refPanelFilename,
+		minimac.setParams("--refHaps", refPanelFilename,
 				 "--haps",
 				output.getVcfFilename(), "--rounds", "5", "--start",
 				input.getStart() + "", "--end", input.getEnd() + "",
