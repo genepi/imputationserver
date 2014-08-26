@@ -20,10 +20,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class ImputationMapper extends
+public class ImputationMapperMinimac3 extends
 		Mapper<LongWritable, Text, ChunkKey, ChunkValue> {
 
-	private ImputationPipeline pipeline;
+	private ImputationPipelineMinimac3 pipeline;
 
 	public String folder;
 
@@ -44,12 +44,12 @@ public class ImputationMapper extends
 
 		// get parameters
 		ParameterStore parameters = new ParameterStore(context);
-		pattern = parameters.get(ImputationJob.REF_PANEL_PATTERN);
-		output = parameters.get(ImputationJob.OUTPUT);
-		phasing = parameters.get(ImputationJob.PHASING);
-		String hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
+		pattern = parameters.get(ImputationJobMinimac3.REF_PANEL_PATTERN);
+		output = parameters.get(ImputationJobMinimac3.OUTPUT);
+		phasing = parameters.get(ImputationJobMinimac3.PHASING);
+		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
-		String minimacBin = parameters.get(ImputationJob.MINIMAC_BIN);
+		String minimacBin = parameters.get(ImputationJobMinimac3.MINIMAC_BIN);
 		
 		
 		// get cached files
@@ -72,7 +72,7 @@ public class ImputationMapper extends
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
 		// config pipeline
-		pipeline = new ImputationPipeline();
+		pipeline = new ImputationPipelineMinimac3();
 		pipeline.setMinimacCommand(minimacCommand);
 		pipeline.setHapiUrCommand(hapiUrCommand);
 		pipeline.setVcfCookerCommand(vcfCookerCommand);

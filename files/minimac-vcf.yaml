@@ -65,6 +65,7 @@ mapred:
        values:
          giant: GIANT ALL Reference Panel
          phase3: 1000G Phase 3 initial release 6/2014
+         hapmap2: HapMap 2
 
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)

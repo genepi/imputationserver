@@ -18,7 +18,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
 
-public class ImputationJob extends HadoopJob {
+public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String REF_PANEL = "MINIMAC_REFPANEL";
 
@@ -44,9 +44,9 @@ public class ImputationJob extends HadoopJob {
 
 	private boolean noCache = false;
 
-	public ImputationJob(String name) {
+	public ImputationJobMinimac3(String name) {
 
-		super("imputation-minimac");
+		super("imputation-minimac3");
 		set("mapred.task.timeout", "720000000");
 		set("mapred.map.tasks.speculative.execution", false);
 		set("mapred.reduce.tasks.speculative.execution", false);
@@ -58,7 +58,7 @@ public class ImputationJob extends HadoopJob {
 
 		NLineInputFormat.setNumLinesPerSplit(job, 1);
 
-		job.setMapperClass(ImputationMapper.class);
+		job.setMapperClass(ImputationMapperMinimac3.class);
 		job.setInputFormatClass(NLineInputFormat.class);
 
 		job.setMapOutputKeyClass(ChunkKey.class);

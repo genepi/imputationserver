@@ -12,7 +12,7 @@ import genepi.io.text.LineWriter;
 import java.io.File;
 import java.io.IOException;
 
-public class ImputationPipeline {
+public class ImputationPipelineMinimac3 {
 
 	private String minimacCommand;
 	private String hapiUrCommand;
@@ -183,7 +183,7 @@ public class ImputationPipeline {
 		// mini-mac
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
-
+		System.out.println("new package!");
 		minimac.setParams("--refHaps", refPanelFilename,
 				 "--haps",
 				output.getVcfFilename(), "--rounds", "5", "--start",
