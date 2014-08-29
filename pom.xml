@@ -7,7 +7,7 @@
 	<version>0.5.0</version>
 	<packaging>jar</packaging>
 
-	<name>minimac-cloud</name>
+	<name>University of Michigan Imputation-Server</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -23,7 +23,7 @@
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
-		
+
 		<repository>
 			<id>genepi-hadoop</id>
 			<url>https://raw.github.com/genepi/maven/genepi-hadoop</url>
@@ -32,8 +32,8 @@
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
-		
-		
+
+
 
 		<repository>
 			<id>hadoop-bam-sourceforge</id>
@@ -134,9 +134,13 @@
 
 		<dependency>
 			<groupId>cloudgene</groupId>
-			<artifactId>cloudgene</artifactId>
-			<version>2.0.0</version>
+			<artifactId>cloudgene-client</artifactId>
+			<version>0.5.0</version>
+			<type>zip</type>
+			<classifier>assembly</classifier>
+			<scope>provided</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>genepi-hadoop</groupId>
 			<artifactId>genepi-hadoop</artifactId>

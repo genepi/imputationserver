@@ -1,0 +1,126 @@
+<div class="span12">
+<div class="span8">
+<h2>User-Manual</h2>
+
+<p>This server provides a free genotype imputation service. You can upload GWAS genotypes stored in VCF files and receive imputed genomes in return. 
+The current version of this server uses the 1000 genomes project phase I release as a reference for imputation</p>
+ <p>To start the imputation process, the user has to select the (a) reference panel, (b) input files (in the vcf.gz format), (c) phasing algorithm (ShapeIT, HAPI-UR) and (d) population panel (AFR, EUR, MIXED, ASN, AMR) for the allele frequency check.
+
+<hr>
+
+<h3>0. Prepare your data</h3>
+<p> Input files need to be in the vcf.gz file format. When starting with a vcf file, a gz file can be generated with the bgzip command:</p>
+<ol>
+<li> If your genotypes are not saved in VCF, please use <a href="https://www.cog-genomics.org/plink2/">plink2</a>, <a href="http://vcftools.sourceforge.net/man_latest.html">VCFtools</a>, <a href="http://genome.sph.umich.edu/wiki/VcfCooker">VcfCooker</a> to convert it.<br>
+For example, the following plink2 command converts ped/map files into a vcf file:
+<pre>plink --ped mystudy_chr1.ped --map mystudy_chr1.map --recode vcf --out mystudy_chr1</pre>
+
+</li>
+<li> Download the <a href="http://vcftools.sourceforge.net">vcftools</a> and <a href="http://sourceforge.net/projects/samtools/files/tabix/"> tabix (including bgzip)</a>. More about tabix can be found <a href="http://samtools.sourceforge.net/tabix.shtml">here</a></li>
+<li> <p>Sort and compress the VCF file:</p> 
+
+<pre>vcf-sort mystudy_chr1.vcf | bgzip -c > mystudy_chr1.vcf.gz</pre>
+</li>
+</ol>
+
+<h5>Important:</h5>
+
+<ul>
+	<li>The variations stored in the VCF file must be sorted by genomic position (see comand above)</li>
+	<li>Each chromosome has to be saved in a separate VCF file</li>
+</ul>
+
+<h5>Optional:</h5>
+
+<ul>
+<li> To avoid long lasting uploads via the browser, *.vcf.gz files can be located on a SSH server and imported using the provided sftp upload.</li>
+<li> Use <a href="https://github.com/zhanxw/checkVCF">checkVCF</a> to ensure that VCF files are valid. checkVCF proposes "Action Items" (e.g. upload to sftp server), which can be ignored. Only the validity is checked with this command. </li>
+<pre>checkVCF.py -r human_g1k_v37.fasta -o out mystudy_chr1.vcf.gz
+</pre> 
+
+</ul>
+<hr>
+
+<h3>1. Data sensitivity</h3>
+<p> Data is uploaded to our server located in Michigan. The complete interaction with the server is secured with HTTPS. After the imputation process has finished all input data is deleted from our server.
+Furthermore, results are encrypted with a one-time password which is sent to the user via email. After 7 days, all imputation results are deleted from our server. The complete source code will be available on a public repository.  </p>
+
+<hr>
+
+<h3>2. First steps</h3>
+
+<p> To use the imputation server, a registration is required. After the email address has been verified (by an activation link), the service can be used without any costs.</p>
+<img src="/assets/img/tutorial/impute1.PNG"  class="img-rounded" width="900px"> 
+
+<hr>
+
+<h3>3. Data upload</h3>
+
+<p>VCF files can be uploaded from the local file system or by specifying a sftp location. In both cases several files or several locations can be selected. All data (input and output) is deleted after the job has finished.</p>
+
+<img src="/assets/img/tutorial/impute2.PNG"  class="img-rounded" width="900px">
+
+<h4>3.1 File Upload</h4>
+When using the file upload, data is imported from the local file system to the imputation server. One (minimac_test.chr01.vcf.gz) or several files (minimac_test.chr01.vcf.gz - minimac_test.chr02.vcf.gz) can be imported at once.
+<img src="/assets/img/tutorial/impute3.PNG"  class="img-rounded" width="900px">
+<img src="/assets/img/tutorial/impute4_selectFiles.PNG" class="img-rounded" width="900px">
+
+<h4>3.2 sftp Upload</h4>
+A convenient way to upload data is by specifying a SSH server location. This can be achieved by selecting "Secure File Transfer Protocol" and using the "add files" button.  
+A URL consists of the server address followed by the full Unix path. Several paths can be specified in consecutive lines. 
+<pre>URLs: sftp://192.168.71.201/home/my_user/vcfDir/</pre>
+In this example, the server address is "sftp://192.168.71.201" followed by the full path "/home/my_user/vcfDir/". No colon is included between server path and path.
+
+
+The following three screenshots show the process in detail:
+
+<img src="/assets/img/tutorial/impute4_sftp_1.PNG" class="img-rounded" width="900px">
+<img src="/assets/img/tutorial/impute4_sftp_2.PNG" class="img-rounded" width="900px">
+<img src="/assets/img/tutorial/impute4_sftp_3.PNG" class="img-rounded" width="900px"> 
+
+<hr>
+
+<h3>4. Start the Imputation!</h3>
+
+<p> After specifying the data location, the imputation process can be started immediately. The default values are:
+
+<ul>
+	<li>Reference panel: GIANT</li>
+	<li>Phasing: <a href="https://code.google.com/p/hapi-ur/">HAPI-UR</a>. This can be toggled to <a href="http://www.shapeit.fr">ShapeIT</a>.</li>
+	<li>Population for the allele frequency check: EUR</li>
+	
+</ul>
+
+In the background several steps are executed.
+
+<ul>
+	<li><b>VCF check:</b> validity + statistics such as #samples, chromosomes, SNPs, chunks, phased / unphased, reference build.</li>
+	<li><b>Quality control statistics:</b> duplicate sites, SNPs removed, NonSNP sites, monomorphic sites, MAF check.</li>
+	<li><b>Imputation</b>: Imputation is achieved with minimac. An overview of running / waiting / completed steps per user can be displayed. </li>
+</ul>
+
+
+<img src="/assets/img/tutorial/impute_exec1.PNG" class="img-rounded" width="900px">
+<img src="/assets/img/tutorial/impute_exec2.PNG" class="img-rounded" width="900px">
+<img src="/assets/img/tutorial/impute_exec4.PNG" class="img-rounded" width="900px">
+<img src="/assets/img/tutorial/impute_exec3.PNG" class="img-rounded" width="900px">
+
+<hr>
+
+<h3>5. Download results</h3>
+<p> The user is notified by an email, when the imputation job has finished. A zip archive including the results can be downloaded directly from the server. To decrypt the results, a one-time password is generated by the server and included in the email. The data is deleted automatically after 7 days. 
+The QC report can be displayed and downloaded as well.</p>
+<img src="/assets/img/tutorial/impute_exec5.PNG" class="img-rounded" width="900px"> </p> 
+
+<hr>
+
+<h3>6. Contact </h3>
+Feel free to contact <a href="mailto:cfuchsb@umich.edu">Christian Fuchsberger</a> in case of problems.
+
+<hr>
+
+<br><br>
+
+</div> 
+
+<div>

@@ -6,9 +6,7 @@ import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.log.LogCollector;
 import genepi.imputationserver.steps.imputation.sort.ChunkKey;
 import genepi.imputationserver.steps.imputation.sort.ChunkValue;
-import genepi.imputationserver.steps.imputation.sort.CompositeKeyComparator;
-import genepi.imputationserver.steps.imputation.sort.NaturalKeyGroupingComparator;
-import genepi.imputationserver.steps.imputation.sort.NaturalKeyPartitioner;
+import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.io.FileUtil;
 
 import java.io.IOException;
@@ -113,18 +111,18 @@ public class ImputationJobMinimac3 extends HadoopJob {
 			for (String folder : folders) {
 
 				String name = FileUtil.getFilename(folder);
-				
-				System.out.println("name is "+ name);
+
+				System.out.println("name is " + name);
 
 				// merge all info files
 				HdfsUtil.mergeAndGz(
 						FileUtil.path(localOutput, "results", "chr" + name
 								+ ".info.gz"), folder, true, ".info");
-				
+
 				// merge vcf output
-				HdfsUtil.mergeAndGz(
+				VcfFileUtil.mergeGz(
 						FileUtil.path(localOutput, "results", "chr" + name
-								+ ".dose.vcf.gz"), folder, true, ".dose.vcf");
+								+ ".dose.vcf.gz"), folder, ".dose.vcf");
 
 			}
 
@@ -186,6 +184,5 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		this.minimacBin = minimacBin;
 		set(MINIMAC_BIN, minimacBin);
 	}
-	
-	
+
 }
