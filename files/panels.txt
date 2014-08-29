@@ -18,8 +18,8 @@ panels:
     legend: minimac-data/ALL_1000G_phase3_integrated_6_2014_annotated_legends.tar.gz
     
   - id: hrc
-    pattern: CHR_20_DATA_ANALYSIS.FINAL.vcf.gz
-    hdfs: minimac-data/hrc.tgz
+    pattern: Chr.20.All.Cohorts.MAC.5.2.Cohorts.optm.gz
+    hdfs: minimac-data/hrc_optm.tgz
     legendPattern: ALL_1000G_phase3_integrated_6_2014_chr$chr_impute.legend.gz
     legend: minimac-data/ALL_1000G_phase3_integrated_6_2014_annotated_legends.tar.gz
  

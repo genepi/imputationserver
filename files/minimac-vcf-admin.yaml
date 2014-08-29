@@ -41,7 +41,7 @@ mapred:
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.ImputationMinimac3
-      params: $mafchunkfile $refpanel $chunksize $window $phasing      
+      params: $mafchunkfile $refpanel $chunksize $window $phasing $rounds     
       generates: $local $outputimputation $logfile
 
     - name: Imputation (Report)
@@ -66,7 +66,7 @@ mapred:
          giant: GIANT ALL Reference Panel
          phase3: 1000G Phase 3 initial release 6/2014
          hapmap2: HapMap 2
-         hrc: HRC CHR20 Panel
+         hrc: HRC OPTM chr20
 
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
@@ -79,6 +79,11 @@ mapred:
        values:
          hapiur: HapiUR
          shapeit: SHAPEIT
+
+     - id: rounds
+       description: Rounds
+       type: number
+       value: 0
 
      - id: population
        description: Population
