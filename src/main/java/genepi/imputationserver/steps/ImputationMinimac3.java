@@ -37,6 +37,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String input = context.get("mafchunkfile");
 		String reference = context.get("refpanel");
 		String phasing = context.get("phasing");
+		String rounds = context.get("rounds");
 		boolean noCache = false;
 		String minimacBin = "minimac";
 
@@ -103,6 +104,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setLocalOutput(local);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setPhasing(phasing);
+				job.setRounds(rounds);
 				job.setJarByClass(ImputationJobMinimac3.class);
 				job.setNoCache(noCache);
 				job.setMinimacBin(minimacBin);

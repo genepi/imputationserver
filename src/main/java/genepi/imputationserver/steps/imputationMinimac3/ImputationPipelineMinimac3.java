@@ -177,7 +177,7 @@ public class ImputationPipelineMinimac3 {
 
 	}
 
-	public boolean imputeMach(VcfChunk input, VcfChunkOutput output)
+	public boolean imputeVCF(VcfChunk input, VcfChunkOutput output)
 			throws InterruptedException, IOException {
 
 		// mini-mac
@@ -186,7 +186,7 @@ public class ImputationPipelineMinimac3 {
 		System.out.println("new package!");
 		minimac.setParams("--refHaps", refPanelFilename,
 				 "--haps",
-				output.getVcfFilename(), "--rounds", "5", "--start",
+				output.getVcfFilename(), "--rounds", input.getRounds(), "--start",
 				input.getStart() + "", "--end", input.getEnd() + "",
 				"--window", minimacWindow + "", "--phased","--vcfOutput",
 				input.getChromosome(), "--prefix", output.getPrefix(), "--chr",

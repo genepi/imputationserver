@@ -27,6 +27,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
 
 	public static final String PHASING = "MINIMAC_PHASING";
+	
+	public static final String ROUNDS = "MINIMAC_ROUNDS";
 
 	public static final String MINIMAC_BIN = "MINIMAC_BIN";
 
@@ -174,6 +176,10 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public void setPhasing(String phasing) {
 		set(PHASING, phasing);
+	}
+	
+	public void setRounds(String rounds) {
+		set(ROUNDS, rounds);
 	}
 
 	public void setNoCache(boolean noCache) {

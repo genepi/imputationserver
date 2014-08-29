@@ -31,6 +31,8 @@ public class ImputationMapperMinimac3 extends
 
 	private String phasing;
 
+	private String rounds;
+	
 	private String output;
 
 	private String refFilename = "";
@@ -47,6 +49,7 @@ public class ImputationMapperMinimac3 extends
 		pattern = parameters.get(ImputationJobMinimac3.REF_PANEL_PATTERN);
 		output = parameters.get(ImputationJobMinimac3.OUTPUT);
 		phasing = parameters.get(ImputationJobMinimac3.PHASING);
+		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
 		String minimacBin = parameters.get(ImputationJobMinimac3.MINIMAC_BIN);
@@ -101,10 +104,10 @@ public class ImputationMapperMinimac3 extends
 		}
 
 		VcfChunk chunk = new VcfChunk(value.toString());
+		chunk.setRounds(rounds);
+		
 		VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
 		
-		System.out.println("name is: " + outputChunk.getVcfFilename());
-
 		HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
 
 		log.info("Starting pipeline for chunk " + chunk + "...");
@@ -127,7 +130,7 @@ public class ImputationMapperMinimac3 extends
 			if (!chunk.getChromosome().equals("23")
 					&& !chunk.getChromosome().equals("X")) {
 
-				boolean successful = pipeline.imputeMach(chunk, outputChunk);
+				boolean successful = pipeline.imputeVCF(chunk, outputChunk);
 				if (successful) {
 					log.info("  Minimac3 successful.");
 				} else {

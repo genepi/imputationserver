@@ -11,6 +11,8 @@ public class VcfChunk {
 	private String indexFilename;
 
 	private boolean phased = true;
+	
+	private String rounds;
 
 	private int start;
 
@@ -120,6 +122,14 @@ public class VcfChunk {
 		return "chunk_" + chromosome + "_" + nf.format(start) + "_"
 				+ nf.format(end);
 
+	}
+
+	public String getRounds() {
+		return rounds;
+	}
+
+	public void setRounds(String rounds) {
+		this.rounds = rounds;
 	}
 
 }
