@@ -5,10 +5,22 @@ import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.Vector;
+import java.util.zip.GZIPOutputStream;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.broadinstitute.variant.vcf.VCFFileReader;
 
 public class VcfFileUtil {
@@ -151,6 +163,82 @@ public class VcfFileUtil {
 
 	public static boolean isAutosomal(String chromosome) {
 		return validChromosomes.contains(chromosome);
+	}
+
+	public static void mergeGz(String local, String hdfs, String ext)
+			throws FileNotFoundException, IOException {
+		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(local));
+		merge(out, hdfs, ext);
+	}
+
+	public static void merge(OutputStream out, String hdfs, String ext)
+			throws IOException {
+
+		Configuration conf = new Configuration();
+
+		FileSystem fileSystem = FileSystem.get(conf);
+		Path pathFolder = new Path(hdfs);
+		FileStatus[] files = fileSystem.listStatus(pathFolder);
+
+		List<String> filenames = new Vector<String>();
+
+		if (files != null) {
+
+			// filters by extension and sorts by filename
+			for (FileStatus file : files) {
+				if (!file.isDir()
+						&& !file.getPath().getName().startsWith("_")
+						&& (ext == null || file.getPath().getName()
+								.endsWith(ext))) {
+					filenames.add(file.getPath().toString());
+				}
+			}
+			Collections.sort(filenames);
+
+			boolean firstFile = true;
+			boolean firstLine = true;
+
+			for (String filename : filenames) {
+
+				Path path = new Path(filename);
+
+				FSDataInputStream in = fileSystem.open(path);
+
+				LineReader reader = new LineReader(in);
+
+				while (reader.next()) {
+
+					String line = reader.get();
+
+					if (line.startsWith("#")) {
+
+						if (firstFile) {
+							if (!firstLine) {
+								out.write('\n');
+							}
+							out.write(line.getBytes());
+							firstLine = false;
+						}
+
+					} else {
+
+						if (!firstLine) {
+							out.write('\n');
+						}
+						out.write(line.getBytes());
+						firstLine = false;
+					}
+
+				}
+
+				in.close();
+				firstFile = false;
+
+			}
+
+			out.close();
+		}
+
 	}
 
 }
