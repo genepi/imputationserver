@@ -22,6 +22,7 @@ public class ImputationPipelineMinimac3 {
 	private String refPanelFilename;
 	private int minimacWindow;
 	private int phasingWindow;
+	private int rounds;
 
 	public void init() {
 
@@ -58,6 +59,15 @@ public class ImputationPipelineMinimac3 {
 	public void setReferencePanel(String refPanelFilename) {
 		this.refPanelFilename = refPanelFilename;
 	}
+	
+	public int getRounds() {
+		return rounds;
+	}
+
+	public void setRounds(int rounds) {
+		this.rounds = rounds;
+	}
+
 
 	public boolean vcfToBed(VcfChunkOutput output) {
 
@@ -186,7 +196,7 @@ public class ImputationPipelineMinimac3 {
 		System.out.println("new package!");
 		minimac.setParams("--refHaps", refPanelFilename,
 				 "--haps",
-				output.getVcfFilename(), "--rounds", input.getRounds(), "--start",
+				output.getVcfFilename(), "--rounds", rounds + "", "--start",
 				input.getStart() + "", "--end", input.getEnd() + "",
 				"--window", minimacWindow + "", "--phased","--vcfOutput",
 				input.getChromosome(), "--prefix", output.getPrefix(), "--chr",

@@ -33,6 +33,8 @@ public class ImputationMapperMinimac3 extends
 
 	private String rounds;
 	
+	private String window;
+	
 	private String output;
 
 	private String refFilename = "";
@@ -50,6 +52,7 @@ public class ImputationMapperMinimac3 extends
 		output = parameters.get(ImputationJobMinimac3.OUTPUT);
 		phasing = parameters.get(ImputationJobMinimac3.PHASING);
 		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
+		window = parameters.get(ImputationJobMinimac3.WINDOW);
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
 		String minimacBin = parameters.get(ImputationJobMinimac3.MINIMAC_BIN);
@@ -71,7 +74,7 @@ public class ImputationMapperMinimac3 extends
 		FileUtil.createDirectory(folder);
 
 		// load config
-		int minimacWindow = Integer.parseInt(store.getString("minimac.window"));
+		//int minimacWindow = Integer.parseInt(store.getString("minimac.window"));
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
 		// config pipeline
@@ -81,8 +84,12 @@ public class ImputationMapperMinimac3 extends
 		pipeline.setVcfCookerCommand(vcfCookerCommand);
 		pipeline.setVcf2HapCommand(vcf2HapCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
-		pipeline.setMinimacWindow(minimacWindow);
+		//pipeline.setMinimacWindow(minimacWindow);
 		pipeline.setPhasingWindow(phasingWindow);
+		
+		//Minimac3
+		pipeline.setRounds(Integer.parseInt(rounds));
+		pipeline.setMinimacWindow(Integer.parseInt(window));
 
 	}
 
@@ -104,7 +111,6 @@ public class ImputationMapperMinimac3 extends
 		}
 
 		VcfChunk chunk = new VcfChunk(value.toString());
-		chunk.setRounds(rounds);
 		
 		VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
 		
