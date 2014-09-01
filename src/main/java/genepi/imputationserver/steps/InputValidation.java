@@ -39,7 +39,7 @@ public class InputValidation extends CloudgeneStep {
 		// inputs
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
-		int chunkSize = Integer.valueOf(context.get("chunksize"));
+		int chunkSize = Integer.parseInt(context.get("chunksize"));
 		
 		// read config
 		//PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
