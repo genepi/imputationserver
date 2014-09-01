@@ -39,11 +39,13 @@ public class InputValidation extends CloudgeneStep {
 		// inputs
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
-
+		int chunkSize = Integer.valueOf(context.get("chunksize"));
+		
 		// read config
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
-				folder, "job.config")));
-		int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
+		//PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
+		//		folder, "job.config")));
+		
+		//int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
 
 		String tabix = FileUtil.path(folder, "bin", "tabix");
 		String files = FileUtil.path(context.getLocalTemp(), "input");

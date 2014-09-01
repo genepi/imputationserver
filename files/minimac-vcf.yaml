@@ -79,6 +79,24 @@ mapred:
          hapiur: HapiUR
          shapeit: SHAPEIT
 
+     - id: rounds
+       description: Rounds
+       type: number
+       value: 0
+       visible: false
+       
+     - id: window
+       description: Window size
+       type: number
+       value: 500000
+       visible: false
+
+     - id: chunksize
+       description: Chunk size
+       type: number
+       value: 5000000
+       visible: false
+       
      - id: population
        description: Population
        type: list

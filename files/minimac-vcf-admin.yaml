@@ -84,6 +84,19 @@ mapred:
        description: Rounds
        type: number
        value: 0
+       visible: true
+       
+     - id: window
+       description: Window size
+       type: number
+       value: 500000
+       visible: true
+
+     - id: chunksize
+       description: Chunk size
+       type: number
+       value: 5000000
+       visible: true
 
      - id: population
        description: Population
@@ -110,7 +123,7 @@ mapred:
        type: list
        value: minimac
        values:
-          minimac3: minimac3
+          Minimac3: Minimac3
 
      - id: nocache
        description: <b>Disable Cache</b>

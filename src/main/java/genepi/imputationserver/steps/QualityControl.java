@@ -36,9 +36,11 @@ public class QualityControl extends HadoopJobStep {
 		String removedSnps = context.get("filtered");
 
 		// read config
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
-				folder, "job.config")));
-		int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
+		//PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
+		//		folder, "job.config")));
+		//int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
+		
+		int chunkSize = Integer.valueOf(context.get("chunksize"));
 
 		// create manifest file
 		int chunks = createChunkFile(context, files, chunkfile, chunkSize);
