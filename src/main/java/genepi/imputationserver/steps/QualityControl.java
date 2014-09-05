@@ -40,7 +40,7 @@ public class QualityControl extends HadoopJobStep {
 		//		folder, "job.config")));
 		//int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
 		
-		int chunkSize = Integer.valueOf(context.get("chunksize"));
+		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
 		// create manifest file
 		int chunks = createChunkFile(context, files, chunkfile, chunkSize);
