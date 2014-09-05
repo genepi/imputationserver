@@ -23,6 +23,10 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	Map<String, HadoopJob> jobs = null;
 
+	boolean error = false;
+
+	private String errorChr = "";
+
 	public ImputationMinimac3() {
 		super(10);
 		jobs = new HashMap<String, HadoopJob>();
@@ -60,23 +64,33 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			return false;
 		}
 
+		// load reference panels
+
+		RefPanelList panels = null;
+		try {
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder,
+					"panels.txt"));
+
+		} catch (Exception e) {
+
+			error("panels.txt not found.");
+			return false;
+		}
+
+		// check reference panel
+
+		RefPanel panel = panels.getById(reference);
+		if (panel == null) {
+			error("Reference Panel '" + reference + "' not found.");
+			return false;
+		}
+
+		// execute one job per chromosome
+
 		try {
 			List<String> chunkFiles = HdfsUtil.getFiles(input);
 
 			message = createLogMessage("", Message.OK);
-
-			// load reference panels
-
-			RefPanelList panels = null;
-			try {
-				panels = RefPanelList.loadFromFile(FileUtil.path(folder,
-						"panels.txt"));
-
-			} catch (Exception e) {
-
-				error("panels.txt not found.");
-				return false;
-			}
 
 			for (String chunkFile : chunkFiles) {
 
@@ -85,18 +99,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				ImputationJobMinimac3 job = new ImputationJobMinimac3("");
 				job.setFolder(folder);
-
-				RefPanel panel = panels.getById(reference);
-				if (panel == null) {
-					error("Reference '" + reference + "' not found.");
-					error("Available references:");
-					for (RefPanel p : panels.getPanels()) {
-						error(p.getId());
-					}
-
-					return false;
-				}
-
 				job.setRefPanelHdfs(panel.getHdfs());
 				job.setRefPanelPattern(panel.getPattern());
 				job.setInput(chunkFile);
@@ -117,19 +119,60 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			}
 
 			waitForAll();
+			context.println("All jobs terminated.");
+
+			// canceled by user
+			if (isCanceled()) {
+				context.println("Canceled by user.");
+				updateProgress();
+				printSummary(context);
+
+				message.setType(Message.ERROR);
+				message.setMessage("Canceled by user.");
+				return false;
+
+			}
+
+			// one job was failed
+			if (error) {
+				context.println("Imputation on chromosome " + errorChr
+						+ " failed. Imputation was stopped.");
+				updateProgress();
+				printSummary(context);
+
+				message.setType(Message.ERROR);
+				message.setMessage("Imputation on chromosome " + errorChr
+						+ " failed. Imputation was stopped.");
+				return false;
+
+			}
+
+			// everthing fine
 
 			updateProgress();
+			printSummary(context);
+
 			updateMessage();
 			message.setType(Message.OK);
 			return true;
 
 		} catch (IOException e1) {
 
+			// unexpected exception
+
+			updateProgress();
+			printSummary(context);
+
 			message.setType(Message.ERROR);
 			message.setMessage(e1.getMessage());
 			return false;
 
 		} catch (InterruptedException e1) {
+
+			// canceled by user
+
+			updateProgress();
+			printSummary(context);
 
 			message.setType(Message.ERROR);
 			message.setMessage("Canceled by user.");
@@ -138,6 +181,49 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		}
 
 	}
+
+	// print summary and download log files from tasktracker
+
+	private void printSummary(CloudgeneContext context) {
+		context.println("Summary: ");
+		String log = context.get("hadooplogs");
+
+		for (String id : jobs.keySet()) {
+
+			HadoopJob job = jobs.get(id);
+			Integer state = getState(job);
+
+			job.downloadFailedLogs(log);
+
+			if (state != null) {
+
+				if (state == OK) {
+
+					context.println("  [OK]   Chr " + id + " ("
+							+ job.getJobId() + ")");
+
+				} else if (state == FAILED) {
+
+					context.println("  [FAIL] Chr " + id + " ("
+							+ job.getJobId() + ")");
+
+				} else {
+					context.println("  [" + state + "]   Chr " + id + " ("
+							+ job.getJobId() + ")");
+				}
+
+			} else {
+
+				context.println("  [??]   Chr " + id + " (" + job.getJobId()
+						+ ")");
+
+			}
+
+		}
+
+	}
+
+	// update message
 
 	private synchronized void updateMessage() {
 
@@ -203,14 +289,37 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	}
 
 	@Override
-	protected synchronized void onJobStart(String id) {
+	protected synchronized void onJobStart(String id, CloudgeneContext context) {
+		context.println("Running job chr_" + id + "....");
 	}
 
 	@Override
-	protected synchronized void onJobFinish(String id, boolean successful) {
+	protected synchronized void onJobFinish(String id, boolean successful,
+			CloudgeneContext context) {
 
-		if (!successful) {
-			kill();
+		HadoopJob job = jobs.get(id);
+
+		if (successful) {
+
+			// everything fine
+
+			context.println("Job chr_" + id + " (" + job.getJobId()
+					+ ") executed sucessful.");
+		} else {
+
+			// one job failed
+
+			context.println("Job chr_" + id + " (" + job.getJobId()
+					+ ") failed.");
+
+			// kill all running jobs
+
+			if (!error && !isCanceled()) {
+				error = true;
+				errorChr = id;
+				context.println("Kill all running jobs...");
+				kill();
+			}
 		}
 
 	}

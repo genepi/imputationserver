@@ -42,6 +42,15 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 
 	private Map<HadoopJob, Integer> states = null;
 
+	private CloudgeneContext context;
+
+	private boolean canceled = false;
+
+	@Override
+	public void setup(CloudgeneContext context) {
+		this.context = context;
+	}
+
 	public ParallelHadoopJobStep(int threads) {
 		queueThreadPool = new ArrayBlockingQueue<Runnable>(100);
 
@@ -95,48 +104,55 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 		@Override
 		public void run() {
 
-			onJobStart(id);
-			log.info("Running job " + id + "....");
+			onJobStart(id, context);
 			boolean successful = job.execute();
-			log.info("job " + id + " finished. sucessful " + successful);
-			onJobFinish(id, successful);
+			onJobFinish(id, successful, context);
 
 		}
+	}
+
+	protected synchronized void onJobFinish(String id, boolean successful,
+			CloudgeneContext context) {
 
 	}
 
-	protected synchronized void onJobFinish(String id, boolean successful) {
+	protected synchronized void onJobStart(String id, CloudgeneContext context) {
 
 	}
 
-	protected synchronized void onJobStart(String id) {
-
+	public boolean isCanceled() {
+		return canceled;
 	}
 
 	@Override
 	public void kill() {
 
-		threadPool.purge();
+		canceled = true;
 
-		try {
+		for (String id : jobs.keySet()) {
 
-			for (HadoopJob job : jobs.values()) {
+			HadoopJob job = jobs.get(id);
 
-				if (job != null) {
+			if (job != null) {
 
-					log.info(" Cancel Job " + job.getJobId());
+				try {
+
 					job.kill();
 
+					context.println(" Job " + id + " (" + job.getJobId()
+							+ " killed.");
+
+				} catch (Exception e) {
+
+					context.println(" Cancel Job " + id + " (" + job.getJobId()
+							+ ") failed: " + e.getMessage());
+
 				}
-
 			}
-
-		} catch (IOException e) {
-
-			log.error(" Cancel Job failed: ", e);
 
 		}
 
+		threadPool.purge();
 		threadPool.shutdownNow();
 
 	}

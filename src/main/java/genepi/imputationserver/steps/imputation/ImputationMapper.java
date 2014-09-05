@@ -54,8 +54,7 @@ public class ImputationMapper extends
 		String hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
 		String minimacBin = parameters.get(ImputationJob.MINIMAC_BIN);
-		
-		
+
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
 		refFilename = cache.getArchive(referencePanel);
@@ -100,164 +99,179 @@ public class ImputationMapper extends
 	public void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException {
 
-		if (value.toString() == null || value.toString().isEmpty()) {
+		try {
+
+			if (value.toString() == null || value.toString().isEmpty()) {
+				return;
+			}
+
+			VcfChunk chunk = new VcfChunk(value.toString());
+			VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
+
+			HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
+
+			log.info("Starting pipeline for chunk " + chunk + "...");
+
+			String chrFilename = pattern.replaceAll("\\$chr",
+					chunk.getChromosome());
+			String refPanelFilename = FileUtil.path(refFilename, chrFilename);
+
+			if (!new File(refPanelFilename).exists()) {
+				log.stop(
+						"ReferencePanel '" + refPanelFilename + "' not found.",
+						"");
+			}
+
+			pipeline.init();
+			pipeline.setReferencePanel(refPanelFilename);
+
+			if (chunk.isPhased()) {
+
+				// convert vcf to hap
+				boolean successful = pipeline.vcfToHap(outputChunk);
+				if (successful) {
+					log.info("  vcf2hap successful.");
+				} else {
+					log.stop("  vcf2hap failed", "");
+					return;
+				}
+
+				// imputation
+				if (!chunk.getChromosome().equals("23")
+						&& !chunk.getChromosome().equals("X")) {
+
+					successful = pipeline.imputeMach(chunk, outputChunk);
+					if (successful) {
+						log.info("  Minimac successful.");
+					} else {
+						log.stop("  Minimac failed", "");
+						return;
+					}
+				}
+
+			} else {
+
+				System.out.println("vcf lines: "
+						+ FileUtil.getLineCount(outputChunk.getVcfFilename()));
+
+				// convert vcf to bim/bed/fam
+				boolean successful = pipeline.vcfToBed(outputChunk);
+				if (successful) {
+					log.info("  vcfCooker successful.");
+				} else {
+					log.stop("  vcfCooker failed", "");
+					return;
+				}
+
+				// ignore small chunks
+				int noSnps = pipeline.getNoSnps(chunk, outputChunk);
+				if (noSnps <= 2) {
+					log.info("  Chunk " + chunk + " has only " + noSnps
+							+ " markers. Ignore it.");
+					return;
+				} else {
+					log.info("  Before imputation: " + noSnps + " SNPs");
+				}
+
+				// remove parents
+				BedUtil.removeParents(outputChunk.getFamFilename());
+
+				// phasing
+				if (!phasing.equals("shapeit")) {
+
+					// hapiur
+					successful = pipeline.phaseWithHapiUr(chunk, outputChunk);
+					if (successful) {
+						log.info("  HapiUR successful.");
+					} else {
+						log.stop("  HapiUR failed", "");
+						return;
+					}
+
+				} else {
+
+					// shapeit
+					successful = pipeline.phaseWithShapeIt(chunk, outputChunk);
+					if (successful) {
+						log.info("  ShapeIt successful.");
+					} else {
+						log.stop("  ShapeIt failed", "");
+						return;
+					}
+
+				}
+
+				// imputation
+				if (!chunk.getChromosome().equals("23")
+						&& !chunk.getChromosome().equals("X")) {
+
+					successful = pipeline.imputeShapeIt(chunk, outputChunk);
+					if (successful) {
+						log.info("  Minimac successful.");
+					} else {
+
+						String stdOut = FileUtil.readFileAsString(outputChunk
+								.getPrefix() + ".minimac.out");
+						String stdErr = FileUtil.readFileAsString(outputChunk
+								.getPrefix() + ".minimac.err");
+
+						log.stop("  Minimac failed", "StdOut:\n" + stdOut
+								+ "\nStdErr:\n" + stdErr);
+						return;
+					}
+
+				} else {
+					log.info("  Ignore  chromosome " + chunk.getChromosome()
+							+ ".");
+					return;
+				}
+
+			}
+
+			// fix window bug in minimac
+			int[] indices = pipeline.fixInfoFile(chunk, outputChunk);
+			log.info("  Postprocessing successful.");
+
+			// store info file
+			HdfsUtil.put(
+					outputChunk.getInfoFixedFilename(),
+					HdfsUtil.path(output, chunk.getChromosome(), chunk
+							+ ".info"), context.getConfiguration());
+
+			// merge dose files using shuffle and sort phase
+			LineReader reader = new LineReader(outputChunk.getDoseFilename());
+
+			while (reader.next()) {
+
+				String line = reader.get();
+				String[] tiles = line.split("\t");
+				String sample = tiles[0];
+
+				// add chunk start position
+				chunkKey.setChromosome(chunk.getChromosome());
+				chunkKey.setSample(sample);
+				chunkKey.setStartPosition(chunk.getStart());
+
+				StringBuffer buffer = new StringBuffer();
+				for (int i = indices[0]; i <= indices[1]; i++) {
+					if (i != indices[0]) {
+						buffer.append("\t");
+					}
+					buffer.append(tiles[i + 2]);
+				}
+
+				chunkValue.genotypes = buffer.toString();
+				chunkValue.sample = sample;
+
+				context.write(chunkKey, chunkValue);
+
+			}
+			reader.close();
+
+		} catch (Exception e) {
+			log.stop("  Imputation Mapper failed.", e);
 			return;
 		}
-
-		VcfChunk chunk = new VcfChunk(value.toString());
-		VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
-
-		HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
-
-		log.info("Starting pipeline for chunk " + chunk + "...");
-
-		String chrFilename = pattern
-				.replaceAll("\\$chr", chunk.getChromosome());
-		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
-
-		if (!new File(refPanelFilename).exists()) {
-			log.stop("ReferencePanel '" + refPanelFilename + "' not found.", "");
-		}
-
-		pipeline.init();
-		pipeline.setReferencePanel(refPanelFilename);
-
-		if (chunk.isPhased()) {
-
-			// convert vcf to hap
-			boolean successful = pipeline.vcfToHap(outputChunk);
-			if (successful) {
-				log.info("  vcf2hap successful.");
-			} else {
-				log.stop("  vcf2hap failed", "");
-				return;
-			}
-
-			// imputation
-			if (!chunk.getChromosome().equals("23")
-					&& !chunk.getChromosome().equals("X")) {
-
-				successful = pipeline.imputeMach(chunk, outputChunk);
-				if (successful) {
-					log.info("  Minimac successful.");
-				} else {
-					log.stop("  Minimac failed", "");
-					return;
-				}
-			}
-
-		} else {
-
-			System.out.println("vcf lines: "
-					+ FileUtil.getLineCount(outputChunk.getVcfFilename()));
-
-			// convert vcf to bim/bed/fam
-			boolean successful = pipeline.vcfToBed(outputChunk);
-			if (successful) {
-				log.info("  vcfCooker successful.");
-			} else {
-				log.stop("  vcfCooker failed", "");
-				return;
-			}
-
-			// ignore small chunks
-			int noSnps = pipeline.getNoSnps(chunk, outputChunk);
-			if (noSnps <= 2) {
-				log.info("  Chunk " + chunk + " has only " + noSnps
-						+ " markers. Ignore it.");
-				return;
-			} else {
-				log.info("  Before imputation: " + noSnps + " SNPs");
-			}
-
-			// remove parents
-			BedUtil.removeParents(outputChunk.getFamFilename());
-
-			// phasing
-			if (!phasing.equals("shapeit")) {
-
-				// hapiur
-				successful = pipeline.phaseWithHapiUr(chunk, outputChunk);
-				if (successful) {
-					log.info("  HapiUR successful.");
-				} else {
-					log.stop("  HapiUR failed", "");
-					return;
-				}
-
-			} else {
-
-				// shapeit
-				successful = pipeline.phaseWithShapeIt(chunk, outputChunk);
-				if (successful) {
-					log.info("  ShapeIt successful.");
-				} else {
-					log.stop("  ShapeIt failed", "");
-					return;
-				}
-
-			}
-
-			// imputation
-			if (!chunk.getChromosome().equals("23")
-					&& !chunk.getChromosome().equals("X")) {
-
-				successful = pipeline.imputeShapeIt(chunk, outputChunk);
-				if (successful) {
-					log.info("  Minimac successful.");
-				} else {
-
-					String stdOut = FileUtil.readFileAsString(outputChunk
-							.getPrefix() + ".minimac.out");
-					String stdErr = FileUtil.readFileAsString(outputChunk
-							.getPrefix() + ".minimac.err");
-
-					log.stop("  Minimac failed", "StdOut:\n" + stdOut
-							+ "\nStdErr:\n" + stdErr);
-					return;
-				}
-			}
-
-		}
-
-		// fix window bug in minimac
-		int[] indices = pipeline.fixInfoFile(chunk, outputChunk);
-		log.info("  Postprocessing successful.");
-
-		// store info file
-		HdfsUtil.put(outputChunk.getInfoFixedFilename(),
-				HdfsUtil.path(output, chunk.getChromosome(), chunk + ".info"),
-				context.getConfiguration());
-
-		// merge dose files using shuffle and sort phase
-		LineReader reader = new LineReader(outputChunk.getDoseFilename());
-
-		while (reader.next()) {
-
-			String line = reader.get();
-			String[] tiles = line.split("\t");
-			String sample = tiles[0];
-
-			// add chunk start position
-			chunkKey.setChromosome(chunk.getChromosome());
-			chunkKey.setSample(sample);
-			chunkKey.setStartPosition(chunk.getStart());
-
-			StringBuffer buffer = new StringBuffer();
-			for (int i = indices[0]; i <= indices[1]; i++) {
-				if (i != indices[0]) {
-					buffer.append("\t");
-				}
-				buffer.append(tiles[i + 2]);
-			}
-
-			chunkValue.genotypes = buffer.toString();
-			chunkValue.sample = sample;
-
-			context.write(chunkKey, chunkValue);
-
-		}
-		reader.close();
 
 	}
 }
