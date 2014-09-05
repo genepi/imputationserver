@@ -12,8 +12,6 @@ public class VcfChunk {
 
 	private boolean phased = true;
 	
-	private String rounds;
-
 	private int start;
 
 	private int end;
@@ -112,6 +110,7 @@ public class VcfChunk {
 		this.inReference = inReference;
 	}
 
+
 	public String serialize() {
 		return chromosome + "\t" + start + "\t" + end + "\t"
 				+ (phased ? "VCF-PHASED" : "VCF-UNPHASED") + "\t" + vcfFilename
@@ -122,14 +121,6 @@ public class VcfChunk {
 		return "chunk_" + chromosome + "_" + nf.format(start) + "_"
 				+ nf.format(end);
 
-	}
-
-	public String getRounds() {
-		return rounds;
-	}
-
-	public void setRounds(String rounds) {
-		this.rounds = rounds;
 	}
 
 }
