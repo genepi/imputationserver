@@ -59,7 +59,7 @@ public class ImputationPipelineMinimac3 {
 	public void setReferencePanel(String refPanelFilename) {
 		this.refPanelFilename = refPanelFilename;
 	}
-	
+
 	public int getRounds() {
 		return rounds;
 	}
@@ -67,7 +67,6 @@ public class ImputationPipelineMinimac3 {
 	public void setRounds(int rounds) {
 		this.rounds = rounds;
 	}
-
 
 	public boolean vcfToBed(VcfChunkOutput output) {
 
@@ -82,7 +81,7 @@ public class ImputationPipelineMinimac3 {
 
 	}
 
-	public boolean vcfToHap(VcfChunkOutput output) {
+	public boolean vcfToHap2(VcfChunkOutput output) {
 		Command vcf2Hap = new Command(vcf2HapCommand);
 		vcf2Hap.setSilent(false);
 		vcf2Hap.setParams("--in-vcf", output.getVcfFilename(), "--out",
@@ -158,7 +157,6 @@ public class ImputationPipelineMinimac3 {
 		return (shapeIt.execute() == 0);
 	}
 
-
 	// mini-mac
 	public boolean imputeShapeIt(VcfChunk input, VcfChunkOutput output)
 			throws InterruptedException, IOException {
@@ -172,13 +170,12 @@ public class ImputationPipelineMinimac3 {
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
 
-		minimac.setParams("--refHaps", refPanelFilename,
-				"--sample", output.getSampleFilename(), "--snps", output.getSnpsFilename(), "--haps",
-				output.getHapsFilename(), "--rounds", "5", "--start",
+		minimac.setParams("--refHaps", refPanelFilename, "--sample",
+				output.getSampleFilename(), "--snps", output.getSnpsFilename(),
+				"--haps", output.getHapsFilename(), "--rounds", "5", "--start",
 				input.getStart() + "", "--end", input.getEnd() + "",
-				"--window", minimacWindow + "", "--chr",
-				input.getChromosome(), "--prefix", output.getPrefix(), "--chr",
-				input.getChromosome());
+				"--window", minimacWindow + "", "--chr", input.getChromosome(),
+				"--prefix", output.getPrefix(), "--chr", input.getChromosome());
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
@@ -194,13 +191,11 @@ public class ImputationPipelineMinimac3 {
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
 		System.out.println("new package!");
-		minimac.setParams("--refHaps", refPanelFilename,
-				 "--haps",
+		minimac.setParams("--refHaps", refPanelFilename, "--haps",
 				output.getVcfFilename(), "--rounds", rounds + "", "--start",
 				input.getStart() + "", "--end", input.getEnd() + "",
-				"--window", minimacWindow + "", "--phased","--vcfOutput",
-				input.getChromosome(), "--prefix", output.getPrefix(), "--chr",
-				input.getChromosome());
+				"--window", minimacWindow + "", "--phased", "--vcfOutput",
+				"--prefix", output.getPrefix(), "--chr", input.getChromosome());
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");

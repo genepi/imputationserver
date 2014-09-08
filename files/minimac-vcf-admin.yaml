@@ -194,6 +194,13 @@ mapred:
       download: true
       temp: false
 
+    - id: hadooplogs
+      description: Hadoop Task Logs
+      type: local-folder
+      download: true
+      temp: false
+      autoExport: true
+
     - id: filtered
       description: Filtered SNPs
       type: hdfs-folder

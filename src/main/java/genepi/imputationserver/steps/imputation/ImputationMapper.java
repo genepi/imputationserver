@@ -128,11 +128,13 @@ public class ImputationMapper extends
 			if (chunk.isPhased()) {
 
 				// convert vcf to hap
+				long time = System.currentTimeMillis();
 				boolean successful = pipeline.vcfToHap(outputChunk);
+				time = (System.currentTimeMillis() - time) / 1000;
 				if (successful) {
-					log.info("  vcf2hap successful.");
+					log.info("  vcf2hap successful. [" + time + " sec]");
 				} else {
-					log.stop("  vcf2hap failed", "");
+					log.stop("  vcf2hap failed [" + time + " sec]", "");
 					return;
 				}
 
@@ -140,11 +142,13 @@ public class ImputationMapper extends
 				if (!chunk.getChromosome().equals("23")
 						&& !chunk.getChromosome().equals("X")) {
 
+					time = System.currentTimeMillis();
 					successful = pipeline.imputeMach(chunk, outputChunk);
+					time = (System.currentTimeMillis() - time) / 1000;
 					if (successful) {
-						log.info("  Minimac successful.");
+						log.info("  Minimac successful.[" + time + " sec]");
 					} else {
-						log.stop("  Minimac failed", "");
+						log.stop("  Minimac failed[" + time + " sec]", "");
 						return;
 					}
 				}
@@ -155,11 +159,14 @@ public class ImputationMapper extends
 						+ FileUtil.getLineCount(outputChunk.getVcfFilename()));
 
 				// convert vcf to bim/bed/fam
+				long time = System.currentTimeMillis();
 				boolean successful = pipeline.vcfToBed(outputChunk);
+				time = (System.currentTimeMillis() - time) / 1000;
+
 				if (successful) {
-					log.info("  vcfCooker successful.");
+					log.info("  vcfCooker successful [" + time + " sec]");
 				} else {
-					log.stop("  vcfCooker failed", "");
+					log.stop("  vcfCooker failed[" + time + " sec]", "");
 					return;
 				}
 
@@ -180,22 +187,28 @@ public class ImputationMapper extends
 				if (!phasing.equals("shapeit")) {
 
 					// hapiur
+					time = System.currentTimeMillis();
 					successful = pipeline.phaseWithHapiUr(chunk, outputChunk);
+					time = (System.currentTimeMillis() - time) / 1000;
+
 					if (successful) {
-						log.info("  HapiUR successful.");
+						log.info("  HapiUR successful [" + time + " sec]");
 					} else {
-						log.stop("  HapiUR failed", "");
+						log.stop("  HapiUR failed [" + time + " sec]", "");
 						return;
 					}
 
 				} else {
 
 					// shapeit
+					time = System.currentTimeMillis();
 					successful = pipeline.phaseWithShapeIt(chunk, outputChunk);
+					time = (System.currentTimeMillis() - time) / 1000;
+
 					if (successful) {
-						log.info("  ShapeIt successful.");
+						log.info("  ShapeIt successful [" + time + " sec]");
 					} else {
-						log.stop("  ShapeIt failed", "");
+						log.stop("  ShapeIt failed [" + time + " sec]", "");
 						return;
 					}
 
@@ -205,9 +218,12 @@ public class ImputationMapper extends
 				if (!chunk.getChromosome().equals("23")
 						&& !chunk.getChromosome().equals("X")) {
 
+					time = System.currentTimeMillis();
 					successful = pipeline.imputeShapeIt(chunk, outputChunk);
+					time = (System.currentTimeMillis() - time) / 1000;
+
 					if (successful) {
-						log.info("  Minimac successful.");
+						log.info("  Minimac successful. [" + time + " sec]");
 					} else {
 
 						String stdOut = FileUtil.readFileAsString(outputChunk
@@ -215,8 +231,8 @@ public class ImputationMapper extends
 						String stdErr = FileUtil.readFileAsString(outputChunk
 								.getPrefix() + ".minimac.err");
 
-						log.stop("  Minimac failed", "StdOut:\n" + stdOut
-								+ "\nStdErr:\n" + stdErr);
+						log.stop("  Minimac failed [" + time + " sec]",
+								"StdOut:\n" + stdOut + "\nStdErr:\n" + stdErr);
 						return;
 					}
 
@@ -229,8 +245,11 @@ public class ImputationMapper extends
 			}
 
 			// fix window bug in minimac
+			long time = System.currentTimeMillis();
 			int[] indices = pipeline.fixInfoFile(chunk, outputChunk);
-			log.info("  Postprocessing successful.");
+			time = (System.currentTimeMillis() - time) / 1000;
+
+			log.info("  Postprocessing successful. [" + time + " sec]");
 
 			// store info file
 			HdfsUtil.put(

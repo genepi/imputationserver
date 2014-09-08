@@ -11,7 +11,6 @@ import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.io.FileUtil;
 import genepi.io.bed.BedUtil;
-import genepi.io.text.LineReader;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,9 +31,9 @@ public class ImputationMapperMinimac3 extends
 	private String phasing;
 
 	private String rounds;
-	
+
 	private String window;
-	
+
 	private String output;
 
 	private String refFilename = "";
@@ -56,8 +55,7 @@ public class ImputationMapperMinimac3 extends
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
 		String minimacBin = parameters.get(ImputationJobMinimac3.MINIMAC_BIN);
-		
-		
+
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
 		refFilename = cache.getArchive(referencePanel);
@@ -74,7 +72,8 @@ public class ImputationMapperMinimac3 extends
 		FileUtil.createDirectory(folder);
 
 		// load config
-		//int minimacWindow = Integer.parseInt(store.getString("minimac.window"));
+		// int minimacWindow =
+		// Integer.parseInt(store.getString("minimac.window"));
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
 		// config pipeline
@@ -84,10 +83,10 @@ public class ImputationMapperMinimac3 extends
 		pipeline.setVcfCookerCommand(vcfCookerCommand);
 		pipeline.setVcf2HapCommand(vcf2HapCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
-		//pipeline.setMinimacWindow(minimacWindow);
+		// pipeline.setMinimacWindow(minimacWindow);
 		pipeline.setPhasingWindow(phasingWindow);
-		
-		//Minimac3
+
+		// Minimac3
 		pipeline.setRounds(Integer.parseInt(rounds));
 		pipeline.setMinimacWindow(Integer.parseInt(window));
 
@@ -111,16 +110,16 @@ public class ImputationMapperMinimac3 extends
 		}
 
 		VcfChunk chunk = new VcfChunk(value.toString());
-		
+
 		VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
-		
+
 		HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
 
 		log.info("Starting pipeline for chunk " + chunk + "...");
 
 		String chrFilename = pattern
 				.replaceAll("\\$chr", chunk.getChromosome());
-		
+
 		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
 
 		if (!new File(refPanelFilename).exists()) {
@@ -132,15 +131,17 @@ public class ImputationMapperMinimac3 extends
 
 		if (chunk.isPhased()) {
 
-		// imputation for phased genotypes
+			// imputation for phased genotypes
 			if (!chunk.getChromosome().equals("23")
 					&& !chunk.getChromosome().equals("X")) {
-
+				long time = System.currentTimeMillis();
 				boolean successful = pipeline.imputeVCF(chunk, outputChunk);
+				time = (System.currentTimeMillis() - time) / 1000;
+
 				if (successful) {
-					log.info("  Minimac3 successful.");
+					log.info("  Minimac3 successful. [" + time + " sec]");
 				} else {
-					log.stop("  Minimac3 failed", "");
+					log.stop("  Minimac3 failed [" + time + " sec]", "");
 					return;
 				}
 			}
@@ -161,53 +162,66 @@ public class ImputationMapperMinimac3 extends
 			}
 
 			// remove parents
-			//TODO ask lukas if this is still needed
+			// TODO ask lukas if this is still needed
 			BedUtil.removeParents(outputChunk.getFamFilename());
 
 			// phasing
 			if (!phasing.equals("shapeit")) {
-				
+
 				// convert vcf to bim/bed/fam only for HapiUR
+				long time = System.currentTimeMillis();
 				boolean successful = pipeline.vcfToBed(outputChunk);
+				time = (System.currentTimeMillis() - time) / 1000;
+
 				if (successful) {
-					log.info("  vcfCooker successful.");
+					log.info("  vcfCooker successful. [" + time + " sec]");
 				} else {
-					log.stop("  vcfCooker failed", "");
+					log.stop("  vcfCooker failed. [" + time + " sec]", "");
 					return;
 				}
 
 				// hapiur
+				time = System.currentTimeMillis();
 				successful = pipeline.phaseWithHapiUr(chunk, outputChunk);
+				time = (System.currentTimeMillis() - time) / 1000;
+
 				if (successful) {
-					log.info("  HapiUR successful.");
+					log.info("  HapiUR successful [" + time + " sec]");
 				} else {
-					log.stop("  HapiUR failed", "");
+					log.stop("  HapiUR failed[" + time + " sec]", "");
 					return;
 				}
 
 			} else {
 
 				// shapeit
-				boolean successful = pipeline.phaseWithShapeIt(chunk, outputChunk);
+				long time = System.currentTimeMillis();
+				boolean successful = pipeline.phaseWithShapeIt(chunk,
+						outputChunk);
+				time = (System.currentTimeMillis() - time) / 1000;
+
 				if (successful) {
-					log.info("  ShapeIt successful.");
+					log.info("  ShapeIt successful. [" + time + " sec]");
 				} else {
-					log.stop("  ShapeIt failed", "");
+					log.stop("  ShapeIt failed [" + time + " sec]", "");
 					return;
 				}
 
 			}
 
-			//TODO currently not supported with minmac3. 
-			//use shapeit-convert or add option to handle unphased data
-			
-			// imputation for unphased genotypes. 
+			// TODO currently not supported with minmac3.
+			// use shapeit-convert or add option to handle unphased data
+
+			// imputation for unphased genotypes.
 			if (!chunk.getChromosome().equals("23")
 					&& !chunk.getChromosome().equals("X")) {
 
+				long time = System.currentTimeMillis();
 				boolean successful = pipeline.imputeShapeIt(chunk, outputChunk);
+				time = (System.currentTimeMillis() - time) / 1000;
+
 				if (successful) {
-					log.info("  Minimac3 successful.");
+					log.info("  Minimac3 successful.[" + time + " sec]");
 				} else {
 
 					String stdOut = FileUtil.readFileAsString(outputChunk
@@ -215,8 +229,8 @@ public class ImputationMapperMinimac3 extends
 					String stdErr = FileUtil.readFileAsString(outputChunk
 							.getPrefix() + ".minimac.err");
 
-					log.stop("  Minimac3 failed", "StdOut:\n" + stdOut
-							+ "\nStdErr:\n" + stdErr);
+					log.stop("  Minimac3 failed[" + time + " sec]", "StdOut:\n"
+							+ stdOut + "\nStdErr:\n" + stdErr);
 					return;
 				}
 			}
@@ -224,7 +238,7 @@ public class ImputationMapperMinimac3 extends
 		}
 
 		// fix window bug in minimac
-		//TODO ask lukas what this is for
+		// TODO ask lukas what this is for
 		int[] indices = pipeline.fixInfoFile(chunk, outputChunk);
 		log.info("  Postprocessing successful.");
 
@@ -232,11 +246,12 @@ public class ImputationMapperMinimac3 extends
 		HdfsUtil.put(outputChunk.getInfoFixedFilename(),
 				HdfsUtil.path(output, chunk.getChromosome(), chunk + ".info"),
 				context.getConfiguration());
-		
+
 		// store vcf file
-				HdfsUtil.put(outputChunk.getVcfOutFilename(),
-						HdfsUtil.path(output, chunk.getChromosome(), chunk + ".dose.vcf"),
-						context.getConfiguration());
+		HdfsUtil.put(
+				outputChunk.getVcfOutFilename(),
+				HdfsUtil.path(output, chunk.getChromosome(), chunk
+						+ ".dose.vcf"), context.getConfiguration());
 
 	}
 }
