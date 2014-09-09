@@ -316,9 +316,14 @@ public class QualityControlMapper extends
 					// allele-frequency check
 					if (insideChunk) {
 						if (!population.equals("mixed")) {
-
-							SnpStats statistics = calculateAlleleFreq(snp,
-									refSnp);
+							SnpStats statistics;
+							if ((legendRef == studyAlt && legendAlt == studyRef)) {
+								statistics = calculateAlleleFreq(snp, refSnp,
+										true);
+							} else {
+								statistics = calculateAlleleFreq(snp, refSnp,
+										false);
+							}
 							statisticWriter.write(snp.getID() + "\t"
 									+ statistics.toString());
 						}
@@ -439,8 +444,9 @@ public class QualityControlMapper extends
 
 	}
 
-	private SnpStats calculateAlleleFreq(VariantContext snp, LegendEntry refSnp)
-			throws IOException, InterruptedException {
+	private SnpStats calculateAlleleFreq(VariantContext snp,
+			LegendEntry refSnp, boolean strandSwap) throws IOException,
+			InterruptedException {
 
 		// calculate allele frequency
 		SnpStats output = new SnpStats();
@@ -455,8 +461,27 @@ public class QualityControlMapper extends
 		double refA = refSnp.getFrequencyA();
 		double refB = refSnp.getFrequencyB();
 
-		int countRef = snp.getHetCount() + snp.getHomRefCount() * 2;
-		int countAlt = snp.getHetCount() + snp.getHomVarCount() * 2;
+		int majorAlleleCount;
+		int minorAlleleCount;
+		char majorAllele;
+		char minorAllele;
+
+		if (!strandSwap) {
+			majorAlleleCount = snp.getHomRefCount();
+			minorAlleleCount = snp.getHomVarCount();
+			majorAllele = snp.getReference().getBaseString().charAt(0);
+			minorAllele = snp.getAltAlleleWithHighestAlleleCount()
+					.getBaseString().charAt(0);
+		} else {
+			majorAlleleCount = snp.getHomVarCount();
+			minorAlleleCount = snp.getHomRefCount();
+			majorAllele = snp.getAltAlleleWithHighestAlleleCount()
+					.getBaseString().charAt(0);
+			minorAllele = snp.getReference().getBaseString().charAt(0);
+		}
+
+		int countRef = snp.getHetCount() + majorAlleleCount * 2;
+		int countAlt = snp.getHetCount() + minorAlleleCount * 2;
 
 		double p = countRef / (double) (countRef + countAlt);
 		double q = countAlt / (double) (countRef + countAlt);
@@ -484,9 +509,8 @@ public class QualityControlMapper extends
 		output.setFrequencyA((float) p);
 		output.setFrequencyB((float) q);
 		output.setChisq(chisq);
-		output.setAlleleA(snp.getReference().getBaseString().charAt(0));
-		output.setAlleleB(snp.getAltAlleleWithHighestAlleleCount()
-				.getBaseString().charAt(0));
+		output.setAlleleA(majorAllele);
+		output.setAlleleB(minorAllele);
 		output.setRefAlleleA(refSnp.getAlleleA());
 		output.setRefAlleleB(refSnp.getAlleleB());
 		output.setOverlapWithReference(true);

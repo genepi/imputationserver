@@ -8,6 +8,7 @@ input=args[1]
 
 suppressPackageStartupMessages(library(ggplot2))
 data = read.table(input, header = FALSE, sep="\t")
+data[, 11] <- as.numeric(as.character( data[, 11] ))
 miss = data[which(data$V11 > 300),];
 
 
