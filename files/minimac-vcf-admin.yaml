@@ -75,7 +75,7 @@ mapred:
      - id: phasing
        description: Phasing
        type: list
-       value: hapiur
+       value: shapeit
        values:
          hapiur: HapiUR
          shapeit: SHAPEIT
