@@ -82,7 +82,7 @@ mapred:
      - id: rounds
        description: Rounds
        type: number
-       value: 0
+       value: 5
        visible: false
        
      - id: window
