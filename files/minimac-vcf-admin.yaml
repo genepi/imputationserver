@@ -38,7 +38,7 @@ mapred:
       
 #end
 
-#if($qconly == "no")
+#if($mode == "imputation")
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.ImputationMinimac3
@@ -92,13 +92,13 @@ mapred:
          amr: AMR
          mixed: Mixed
                   
-     - id: qconly
-       description: <b>QC Only</b>
-       type: checkbox
-       value: no
+     - id: mode
+       description: Mode
+       type: list
+       value: imputation
        values:
-         true: yes
-         false: no        
+          qconly: Quality Control Only  
+          imputation: Quality Control & Imputation       
 
      - id: rounds
        description: Rounds
