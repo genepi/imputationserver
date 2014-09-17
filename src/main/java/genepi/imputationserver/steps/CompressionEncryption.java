@@ -19,6 +19,7 @@ public class CompressionEncryption extends Hadoop {
 	@Override
 	public boolean run(WdlStep step, CloudgeneContext context) {
 
+		try {
 		// inputs
 		String folder = context.get("local");
 		String encryption = context.get("encryption");
@@ -30,7 +31,7 @@ public class CompressionEncryption extends Hadoop {
 
 		String password = RandomStringUtils.randomAlphabetic(10);
 
-		try {
+		
 
 			ZipParameters param = new ZipParameters();
 			if (encryption.equals("yes")) {
