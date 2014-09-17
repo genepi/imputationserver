@@ -26,7 +26,7 @@ mapred:
     - name: Quality Control
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.QualityControl
-      generates: $outputmaf $mafchunkfile $qcstat $filtered
+      generates: $outputmaf $mafchunkfile $qcstat $statistics
 
 #if( $population != "mixed")
 
@@ -116,6 +116,14 @@ mapred:
          true: yes
          false: no
        visible: false
+       
+     - id: minimacbin
+       description: <b>Minimac Binary</b>
+       type: list
+       visible: false
+       value: minimac
+       values:
+          minimac2: Minimac2    
 
   outputs:
 
@@ -171,22 +179,8 @@ mapred:
       temp: true
       mergeOutput: false
 
-    - id: logfile
-      description: Logs
-      type: local-folder
-      download: true
-      temp: false
-
-    - id: hadooplogs
-      description: Hadoop Task Logs
-      type: local-folder
-      download: true
-      temp: false
-      autoExport: true
-      adminOnly: true
-
-    - id: filtered
-      description: Filtered SNPs
+    - id: statistics
+      description: SNP Statistics
       type: hdfs-folder
       download: true
       temp: false
@@ -194,3 +188,17 @@ mapred:
       removeHeader: false
       zip: false
       autoExport: true
+ 
+    - id: logfile
+      description: Logs
+      type: local-folder
+      download: true
+      temp: false
+           
+    - id: hadooplogs
+      description: Hadoop Task Logs
+      type: local-folder
+      download: true
+      temp: false
+      autoExport: true
+      adminOnly: true

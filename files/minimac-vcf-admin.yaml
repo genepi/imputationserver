@@ -26,7 +26,7 @@ mapred:
     - name: Quality Control
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.QualityControl
-      generates: $outputmaf $mafchunkfile $qcstat $filtered
+      generates: $outputmaf $mafchunkfile $qcstat $statistics
 
 #if( $population != "mixed")
 
@@ -201,7 +201,7 @@ mapred:
       temp: false
       autoExport: true
 
-    - id: filtered
+    - id: statistics
       description: Filtered SNPs
       type: hdfs-folder
       download: true
