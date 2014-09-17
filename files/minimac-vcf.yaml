@@ -183,6 +183,7 @@ mapred:
       download: true
       temp: false
       autoExport: true
+      adminOnly: true
 
     - id: filtered
       description: Filtered SNPs
