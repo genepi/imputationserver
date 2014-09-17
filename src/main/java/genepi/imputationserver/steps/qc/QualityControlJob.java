@@ -34,7 +34,6 @@ public class QualityControlJob extends HadoopJob {
 	private long filtered;
 	private long foundInLegend;
 	private long notFoundInLegend;
-	private long alleleMismatch;
 	private long toLessSamples;
 	private long filterFlag;
 	private long invalidAlleles;
@@ -42,6 +41,13 @@ public class QualityControlJob extends HadoopJob {
 	private long removedChunksSnps;
 	private long removedChunksCallRate;
 	private long removedChunksOverlap;
+	
+	private long alleleMismatch;
+	private long alleleSwitch;
+	private long strandSwitch1;
+	private long strandSwitch2;
+	private long strandSwitch3;
+	private long match;
 
 	public QualityControlJob(String name) {
 
@@ -119,6 +125,22 @@ public class QualityControlJob extends HadoopJob {
 
 			removedChunksCallRate = job.getCounters().getGroup("minimac")
 					.findCounter("removedChunksCallRate").getValue();
+			
+			strandSwitch1 = job.getCounters().getGroup("minimac")
+					.findCounter("strandSwitch1").getValue();
+			
+			strandSwitch2 = job.getCounters().getGroup("minimac")
+					.findCounter("strandSwitch2").getValue();
+			
+			strandSwitch3 = job.getCounters().getGroup("minimac")
+					.findCounter("strandSwitch3").getValue();
+			
+			setAlleleSwitch(job.getCounters().getGroup("minimac")
+					.findCounter("alleleSwitch").getValue());
+			
+			setMatch(job.getCounters().getGroup("minimac")
+					.findCounter("match").getValue());
+
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -213,6 +235,46 @@ public class QualityControlJob extends HadoopJob {
 
 	public long getRemainingSnps() {
 		return remainingSnps;
+	}
+
+	public long getAlleleSwitch() {
+		return alleleSwitch;
+	}
+
+	public void setAlleleSwitch(long alleleSwitch) {
+		this.alleleSwitch = alleleSwitch;
+	}
+
+	public long getMatch() {
+		return match;
+	}
+
+	public void setMatch(long match) {
+		this.match = match;
+	}
+
+	public long getStrandSwitch1() {
+		return strandSwitch1;
+	}
+
+	public void setStrandSwitch1(long strandSwitch1) {
+		this.strandSwitch1 = strandSwitch1;
+	}
+
+	public long getStrandSwitch2() {
+		return strandSwitch2;
+	}
+
+	public void setStrandSwitch2(long strandSwitch2) {
+		this.strandSwitch2 = strandSwitch2;
+	}
+
+	public long getStrandSwitch3() {
+		return strandSwitch3;
+	}
+
+	public void setStrandSwitch3(long strandSwitch3) {
+		this.strandSwitch3 = strandSwitch3;
 	}
 
 }

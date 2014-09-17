@@ -6,6 +6,8 @@ import genepi.hadoop.ParameterStore;
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.vcf.VcfChunk;
+import genepi.imputationserver.util.ChiSquareObject;
+import genepi.imputationserver.util.GenomicTools;
 import genepi.io.FileUtil;
 import genepi.io.legend.LegendEntry;
 import genepi.io.legend.LegendFileReader;
@@ -123,7 +125,14 @@ public class QualityControlMapper extends
 
 		int foundInLegend = 0;
 		int notFoundInLegend = 0;
+
 		int alleleMismatch = 0;
+		int alleleSwitch = 0;
+		int strandSwitch1 = 0;
+		int strandSwitch2 = 0;
+		int strandSwitch3 = 0;
+		int match = 0;
+
 		int lowCallRate = 0;
 		int filtered = 0;
 		int overallSnps = 0;
@@ -159,7 +168,7 @@ public class QualityControlMapper extends
 						&& position <= chunk.getEnd();
 
 				// filter invalid alleles
-				if (!isValid(ref) || !isValid(alt)) {
+				if (!GenomicTools.isValid(ref) || !GenomicTools.isValid(alt)) {
 					if (insideChunk) {
 						logWriter.write("Invalid Alleles: " + tiles[0] + " ("
 								+ ref + "/" + alt + ")");
@@ -173,17 +182,20 @@ public class QualityControlMapper extends
 
 				// count duplicates
 				if ((lastPos == snp.getStart() && lastPos > 0)) {
+
 					if (insideChunk) {
 						duplicates++;
-						logWriter.write("Duplicate: " + snp.getID());
+						logWriter.write("FILTER - Duplicate: " + snp.getID()
+								+ " - pos: " + snp.getStart());
 						filtered++;
 					}
+
 					lastPos = snp.getStart();
 					continue;
 
 				}
 
-				// update lastpos only when not filtered
+				// update last pos only when not filtered
 				if (!snp.isFiltered()) {
 					lastPos = snp.getStart();
 				}
@@ -201,11 +213,14 @@ public class QualityControlMapper extends
 
 						if (snp.getFilters().contains("DUP")) {
 							duplicates++;
-							logWriter.write("Duplicate: " + snp.getID());
+							logWriter.write("FILTER - Duplicate: " + snp.getID()
+									+ " - pos: " + snp.getStart());
 							filtered++;
 						} else {
 
-							logWriter.write("Filter-Flag set: " + snp.getID());
+							logWriter
+									.write("FILTER - Flag is set: " + snp.getID()
+											+ " - pos: " + snp.getStart());
 							filterFlag++;
 							filtered++;
 						}
@@ -218,6 +233,7 @@ public class QualityControlMapper extends
 				int homVarOnes = snp.getHomVarCount() * 2;
 				double af = (double) ((hetVarOnes + homVarOnes) / (double) (((snp
 						.getNSamples() - snp.getNoCallCount()) * 2)));
+
 				if (af > 0.5) {
 					if (insideChunk) {
 						alternativeAlleles++;
@@ -227,7 +243,8 @@ public class QualityControlMapper extends
 				// filter indels
 				if (snp.isIndel() || snp.isComplexIndel()) {
 					if (insideChunk) {
-						logWriter.write("InDel: " + snp.getID());
+						logWriter.write("FILTER - InDel: " + snp.getID() + " - pos: "
+								+ snp.getStart());
 						noSnps++;
 						filtered++;
 					}
@@ -235,10 +252,12 @@ public class QualityControlMapper extends
 				}
 
 				// remove monomorphic snps
-				if (snp.isMonomorphicInSamples()) {
+				// monomorphic only exclude 0/0; 
+				if (snp.isMonomorphicInSamples() || snp.getHetCount() == 2*(snp.getNSamples()-snp.getNoCallCount())) {
 					if (insideChunk) {
 						// System.out.println(snp.getChr()+":"+snp.getStart());
-						logWriter.write("Monomorphic: " + snp.getID());
+						logWriter.write("FILTER - Monomorphic: " + snp.getID()
+								+ " - pos: " + snp.getStart());
 						monomorphic++;
 						filtered++;
 					}
@@ -253,6 +272,7 @@ public class QualityControlMapper extends
 					// write to vcf file
 					newFileWriter.write(line);
 					if (insideChunk) {
+
 						overallSnps++;
 						notFoundInLegend++;
 
@@ -266,6 +286,7 @@ public class QualityControlMapper extends
 					}
 
 					continue;
+
 				} else {
 
 					if (insideChunk) {
@@ -279,29 +300,92 @@ public class QualityControlMapper extends
 					char studyAlt = snp.getAltAlleleWithHighestAlleleCount()
 							.getBaseString().charAt(0);
 
-					// filter aleele mismatches
-					if (legendRef != studyRef || studyAlt != legendAlt) {
+					/** simple match of ref/alt in study and legend file **/
+					if (GenomicTools.match(snp, refSnp)) {
 
-						if (!(legendRef == studyAlt && legendAlt == studyRef)) {
-
-							if (insideChunk) {
-								logWriter.write("Allele mismatch: "
-										+ snp.getID() + " (ref: " + legendRef
-										+ "/" + legendAlt + ", data: "
-										+ studyRef + "/" + studyAlt + ")");
-								alleleMismatch++;
-								filtered++;
-							}
-							continue;
+						if (insideChunk) {
+							match++;
 						}
+
+					}
+
+					/** count A/T C/G genotypes **/
+					else if (GenomicTools.complicatedGenotypes(snp, refSnp)) {
+
+						if (insideChunk) {
+							
+							strandSwitch2++;
+							
+						}
+
+					}
+
+					/** simple allele switch check; ignore A/T C/G from above **/
+					else if (GenomicTools.alleleSwitch(snp, refSnp)) {
+
+						if (insideChunk) {
+							alleleSwitch++;
+							logWriter.write("INFO - Allele switch: " + snp.getID()
+									+ " - pos: " + snp.getStart() + " (ref: "
+									+ legendRef + "/" + legendAlt + ", data: "
+									+ studyRef + "/" + studyAlt + ")");
+						}
+
+					} 
+					
+					/** simple strand swaps **/
+					else if (GenomicTools.strandSwap(studyRef, studyAlt,
+							legendRef, legendAlt)) {
+
+						if (insideChunk) {
+							strandSwitch1++;
+							logWriter.write("INFO - Strand switch: "
+									+ snp.getID() + " - pos: " + snp.getStart()
+									+ " (ref: " + legendRef + "/" + legendAlt
+									+ ", data: " + studyRef + "/" + studyAlt
+									+ ")");
+
+						}
+
+					}
+
+					else if (GenomicTools.strandSwapAndAlleleSwitch(studyRef,
+							studyAlt, legendRef, legendAlt)) {
+
+						if (insideChunk) {
+							strandSwitch3++;
+							logWriter.write("INFO - Strand switch and Allele switch: "
+									+ snp.getID() + " - pos: " + snp.getStart()
+									+ " (ref: " + legendRef + "/" + legendAlt
+									+ ", data: " + studyRef + "/" + studyAlt
+									+ ")");
+						}
+
+					}
+
+					// filter allele mismatches
+					else if (GenomicTools.alleleMismatch(studyRef, studyAlt,
+							legendRef, legendAlt)) {
+
+						if (insideChunk) {
+							logWriter.write("FILTER - Allele mismatch: " + snp.getID()
+									+ " - pos: " + snp.getStart() + " (ref: "
+									+ legendRef + "/" + legendAlt + ", data: "
+									+ studyRef + "/" + studyAlt + ")");
+							alleleMismatch++;
+							filtered++;
+						}
+						continue;
 					}
 
 					// filter low call rate
 					if (snp.getNoCallCount() / (double) snp.getNSamples() > 0.10) {
 						if (insideChunk) {
 							logWriter
-									.write("Low call rate: "
+									.write("FILTER - Low call rate: "
 											+ snp.getID()
+											+ " - pos: "
+											+ snp.getStart()
 											+ " ("
 											+ (1.0 - snp.getNoCallCount()
 													/ (double) snp
@@ -317,13 +401,21 @@ public class QualityControlMapper extends
 					if (insideChunk) {
 						if (!population.equals("mixed")) {
 							SnpStats statistics;
-							if ((legendRef == studyAlt && legendAlt == studyRef)) {
+
+							if (GenomicTools.strandSwapAndAlleleSwitch(
+									studyRef, studyAlt, legendRef, legendAlt)
+									|| GenomicTools.alleleSwitch(snp, refSnp)) {
+
+								// swap alleles
 								statistics = calculateAlleleFreq(snp, refSnp,
 										true);
-							} else {
+							}
+
+							else {
 								statistics = calculateAlleleFreq(snp, refSnp,
 										false);
 							}
+
 							statisticWriter.write(snp.getID() + "\t"
 									+ statistics.toString());
 						}
@@ -426,8 +518,15 @@ public class QualityControlMapper extends
 		context.getCounter("minimac", "foundInLegend").increment(foundInLegend);
 		context.getCounter("minimac", "notFoundInLegend").increment(
 				notFoundInLegend);
+
 		context.getCounter("minimac", "alleleMismatch").increment(
 				alleleMismatch);
+		context.getCounter("minimac", "strandSwitch1").increment(strandSwitch1);
+		context.getCounter("minimac", "strandSwitch2").increment(strandSwitch2);
+		context.getCounter("minimac", "strandSwitch3").increment(strandSwitch3);
+		context.getCounter("minimac", "match").increment(match);
+		context.getCounter("minimac", "alleleSwitch").increment(alleleSwitch);
+
 		context.getCounter("minimac", "toLessSamples").increment(lowCallRate);
 		context.getCounter("minimac", "filtered").increment(filtered);
 		context.getCounter("minimac", "removedChunksCallRate").increment(
@@ -453,62 +552,31 @@ public class QualityControlMapper extends
 
 		int position = snp.getStart();
 
-		double chisq = 0;
+		ChiSquareObject chiObj = GenomicTools
+				.chiSquare(snp, refSnp, strandSwap);
 
-		// TODO 1000G REF 1 samples count
-		int refN = 1092 * 2;
-
-		double refA = refSnp.getFrequencyA();
-		double refB = refSnp.getFrequencyB();
-
-		int majorAlleleCount;
-		int minorAlleleCount;
 		char majorAllele;
 		char minorAllele;
 
 		if (!strandSwap) {
-			majorAlleleCount = snp.getHomRefCount();
-			minorAlleleCount = snp.getHomVarCount();
 			majorAllele = snp.getReference().getBaseString().charAt(0);
 			minorAllele = snp.getAltAlleleWithHighestAlleleCount()
 					.getBaseString().charAt(0);
+
 		} else {
-			majorAlleleCount = snp.getHomVarCount();
-			minorAlleleCount = snp.getHomRefCount();
 			majorAllele = snp.getAltAlleleWithHighestAlleleCount()
 					.getBaseString().charAt(0);
 			minorAllele = snp.getReference().getBaseString().charAt(0);
 		}
-
-		int countRef = snp.getHetCount() + majorAlleleCount * 2;
-		int countAlt = snp.getHetCount() + minorAlleleCount * 2;
-
-		double p = countRef / (double) (countRef + countAlt);
-		double q = countAlt / (double) (countRef + countAlt);
-		double studyN = (snp.getNSamples() - snp.getNoCallCount()) * 2;
-
-		double totalQ = q * studyN + refB * refN;
-		double expectedQ = totalQ / (studyN + refN) * studyN;
-		double deltaQ = q * studyN - expectedQ;
-
-		chisq += (Math.pow(deltaQ, 2) / expectedQ)
-				+ (Math.pow(deltaQ, 2) / (totalQ - expectedQ));
-
-		double totalP = p * studyN + refA * refN;
-		double expectedP = totalP / (studyN + refN) * studyN;
-		double deltaP = p * studyN - expectedP;
-
-		chisq += (Math.pow(deltaP, 2) / expectedP)
-				+ (Math.pow(deltaP, 2) / (totalP - expectedP));
 
 		output.setType("SNP");
 		output.setPosition(position);
 		output.setChromosome(snp.getChr());
 		output.setRefFrequencyA(refSnp.getFrequencyA());
 		output.setRefFrequencyB(refSnp.getFrequencyB());
-		output.setFrequencyA((float) p);
-		output.setFrequencyB((float) q);
-		output.setChisq(chisq);
+		output.setFrequencyA((float) chiObj.getP());
+		output.setFrequencyB((float) chiObj.getQ());
+		output.setChisq(chiObj.getChisq());
 		output.setAlleleA(majorAllele);
 		output.setAlleleB(minorAllele);
 		output.setRefAlleleA(refSnp.getAlleleA());
@@ -541,13 +609,6 @@ public class QualityControlMapper extends
 
 		return legendReader;
 
-	}
-
-	private boolean isValid(String allele) {
-		return allele.toUpperCase().equals("A")
-				|| allele.toUpperCase().equals("C")
-				|| allele.toUpperCase().equals("G")
-				|| allele.toUpperCase().equals("T");
 	}
 
 }

@@ -33,7 +33,7 @@ public class QualityControl extends HadoopJobStep {
 		// outputs
 		String output = context.get("outputmaf");
 		String outputManifest = context.get("mafchunkfile");
-		String removedSnps = context.get("filtered");
+		String removedSnps = context.get("statistics");
 
 		// read config
 		//PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
@@ -106,7 +106,13 @@ public class QualityControl extends HadoopJobStep {
 									.getNotFoundInLegend()) * 100) + "% "
 					+ "<br>");
 
-			text.append("<b>Filter details:</b> <br>");
+			text.append("Match: " + job.getMatch() + "<br>");
+			text.append("Allele switch: " + job.getAlleleSwitch() + "<br>");
+			text.append("Strand switch: " + job.getStrandSwitch1() + "<br>");
+			text.append("Strand switch and allele switch: " + job.getStrandSwitch3() + "<br>");
+			text.append("A/T, C/G genotypes: " + job.getStrandSwitch2() + "<br>");
+			
+			text.append("<b>Filtered sites:</b> <br>");
 			text.append("Filter flag set: " + job.getFilterFlag() + "<br>");
 			text.append("Invalid alleles: " + job.getInvalidAlleles() + "<br>");
 			text.append("Duplicated sites: " + job.getDuplicates() + "<br>");
@@ -114,6 +120,7 @@ public class QualityControl extends HadoopJobStep {
 			text.append("Monomorphic sites: " + job.getMonomorphic() + "<br>");
 			text.append("Allele mismatch: " + job.getAlleleMismatch() + "<br>");
 			text.append("SNPs call rate < 90%: " + job.getToLessSamples());
+			
 
 			ok(text.toString());
 
