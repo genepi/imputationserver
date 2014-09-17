@@ -38,6 +38,7 @@ mapred:
       
 #end
 
+#if($qconly == "no")
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.Imputation
@@ -54,7 +55,7 @@ mapred:
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.CompressionEncryption
       params: $local $report $encryption
-
+#end
 
   inputs:
 
@@ -78,7 +79,26 @@ mapred:
        values:
          hapiur: HapiUR
          shapeit: SHAPEIT
-
+  
+     - id: population
+       description: Population
+       type: list
+       value: eur
+       values:
+         eur: EUR
+         afr: AFR
+         asn: ASN
+         amr: AMR
+         mixed: Mixed
+                
+     - id: qconly
+       description: <b>QC Only</b>
+       type: checkbox
+       value: no
+       values:
+         true: yes
+         false: no 
+         
      - id: rounds
        description: Rounds
        type: number
@@ -97,17 +117,6 @@ mapred:
        value: 5000000
        visible: false
        
-     - id: population
-       description: Population
-       type: list
-       value: eur
-       values:
-         eur: EUR
-         afr: AFR
-         asn: ASN
-         amr: AMR
-         mixed: Mixed
-
      - id: encryption
        description: Result Encryption
        type: checkbox
