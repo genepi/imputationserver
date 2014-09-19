@@ -68,6 +68,7 @@ public class ImputationPipeline {
 				"--out", output.getPrefix());
 		vcfCooker.saveStdOut(output.getPrefix() + ".vcfcooker.out");
 		vcfCooker.saveStdErr(output.getPrefix() + ".vcfcooker.err");
+		System.out.println("Command: " + vcfCooker.getExecutedCommand());
 		return (vcfCooker.execute() == 0);
 
 	}
@@ -79,6 +80,7 @@ public class ImputationPipeline {
 				output.getPrefix());
 		vcf2Hap.saveStdOut(output.getPrefix() + ".vcf2hap.out");
 		vcf2Hap.saveStdErr(output.getPrefix() + ".vcf2hap.err");
+		System.out.println("Command: " + vcf2Hap.getExecutedCommand());
 		return (vcf2Hap.execute() == 0);
 	}
 
@@ -130,6 +132,7 @@ public class ImputationPipeline {
 				start + "", "--end", end + "", "--impute2");
 		hapiUr.saveStdOut(output.getPrefix() + ".hapiur.out");
 		hapiUr.saveStdErr(output.getPrefix() + ".hapiur.err");
+		System.out.println("Command: " + hapiUr.getExecutedCommand());
 
 		return (hapiUr.execute() == 0);
 	}
@@ -145,7 +148,7 @@ public class ImputationPipeline {
 				input.getStart() + "", "--input-to", input.getEnd() + "");
 		shapeIt.saveStdOut(output.getPrefix() + ".shapeit.out");
 		shapeIt.saveStdErr(output.getPrefix() + ".shapeit.err");
-
+		System.out.println("Command: " + shapeIt.getExecutedCommand());
 		return (shapeIt.execute() == 0);
 	}
 
@@ -171,7 +174,7 @@ public class ImputationPipeline {
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
-
+		System.out.println("Command: " + minimac.getExecutedCommand());
 		return (minimac.execute() == 0);
 
 	}
@@ -193,7 +196,7 @@ public class ImputationPipeline {
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
-
+		System.out.println("Command: " + minimac.getExecutedCommand());
 		return (minimac.execute() == 0);
 
 	}
