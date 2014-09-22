@@ -13,11 +13,15 @@ import genepi.io.FileUtil;
 
 import java.io.File;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import cloudgene.mapred.jobs.CloudgeneContext;
 import cloudgene.mapred.wdl.WdlStep;
 
 public class QualityControl extends HadoopJobStep {
+
+	private DecimalFormat formatter = new DecimalFormat("###,###.###");
 
 	@Override
 	public boolean run(WdlStep step, CloudgeneContext context) {
@@ -36,10 +40,11 @@ public class QualityControl extends HadoopJobStep {
 		String removedSnps = context.get("statistics");
 
 		// read config
-		//PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
-		//		folder, "job.config")));
-		//int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
-		
+		// PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
+		// folder, "job.config")));
+		// int chunkSize =
+		// Integer.parseInt(store.getString("pipeline.chunksize"));
+
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
 		// create manifest file
@@ -99,43 +104,54 @@ public class QualityControl extends HadoopJobStep {
 
 			text.append("<b>Statistics:</b> <br>");
 			text.append("Alternative allele frequency > 0.5 sites: "
-					+ job.getAlternativeAlleles() + "<br>");
+					+ formatter.format(job.getAlternativeAlleles()) + "<br>");
 			text.append("Reference Overlap: "
 					+ df.format(job.getFoundInLegend()
 							/ (double) (job.getFoundInLegend() + job
 									.getNotFoundInLegend()) * 100) + "% "
 					+ "<br>");
 
-			text.append("Match: " + job.getMatch() + "<br>");
-			text.append("Allele switch: " + job.getAlleleSwitch() + "<br>");
-			text.append("Strand switch: " + job.getStrandSwitch1() + "<br>");
-			text.append("Strand switch and allele switch: " + job.getStrandSwitch3() + "<br>");
-			text.append("A/T, C/G genotypes: " + job.getStrandSwitch2() + "<br>");
-			
+			text.append("Match: " + formatter.format(job.getMatch()) + "<br>");
+			text.append("Allele switch: "
+					+ formatter.format(job.getAlleleSwitch()) + "<br>");
+			text.append("Strand switch: "
+					+ formatter.format(job.getStrandSwitch1()) + "<br>");
+			text.append("Strand switch and allele switch: "
+					+ formatter.format(job.getStrandSwitch3()) + "<br>");
+			text.append("A/T, C/G genotypes: "
+					+ formatter.format(job.getStrandSwitch2()) + "<br>");
+
 			text.append("<b>Filtered sites:</b> <br>");
-			text.append("Filter flag set: " + job.getFilterFlag() + "<br>");
-			text.append("Invalid alleles: " + job.getInvalidAlleles() + "<br>");
-			text.append("Duplicated sites: " + job.getDuplicates() + "<br>");
-			text.append("NonSNP sites: " + job.getNoSnps() + "<br>");
-			text.append("Monomorphic sites: " + job.getMonomorphic() + "<br>");
-			text.append("Allele mismatch: " + job.getAlleleMismatch() + "<br>");
-			text.append("SNPs call rate < 90%: " + job.getToLessSamples());
-			
+			text.append("Filter flag set: "
+					+ formatter.format(job.getFilterFlag()) + "<br>");
+			text.append("Invalid alleles: "
+					+ formatter.format(job.getInvalidAlleles()) + "<br>");
+			text.append("Duplicated sites: "
+					+ formatter.format(job.getDuplicates()) + "<br>");
+			text.append("NonSNP sites: " + formatter.format(job.getNoSnps())
+					+ "<br>");
+			text.append("Monomorphic sites: "
+					+ formatter.format(job.getMonomorphic()) + "<br>");
+			text.append("Allele mismatch: "
+					+ formatter.format(job.getAlleleMismatch()) + "<br>");
+			text.append("SNPs call rate < 90%: "
+					+ formatter.format(job.getToLessSamples()));
 
 			ok(text.toString());
 
 			text = new StringBuffer();
 
-			text.append("Excluded sites in total: " + job.getFiltered()
-					+ "<br>");
-			text.append("Remaining sites in total: " + job.getRemainingSnps()
-					+ "<br>");
+			text.append("Excluded sites in total: "
+					+ formatter.format(job.getFiltered()) + "<br>");
+			text.append("Remaining sites in total: "
+					+ formatter.format(job.getRemainingSnps()) + "<br>");
 
 			if (job.getRemovedChunksSnps() > 0) {
 
-				text.append("<br><b>Warning:</b> " + job.getRemovedChunksSnps()
+				text.append("<br><b>Warning:</b> "
+						+ formatter.format(job.getRemovedChunksSnps())
 
-				+ " Chunks excluded: < 3 SNPs (see "
+						+ " Chunks excluded: < 3 SNPs (see "
 						+ context.createLinkToFile("filtered")
 						+ "  for details).");
 			}
@@ -143,7 +159,7 @@ public class QualityControl extends HadoopJobStep {
 			if (job.getRemovedChunksCallRate() > 0) {
 
 				text.append("<br><b>Warning:</b> "
-						+ job.getRemovedChunksCallRate()
+						+ formatter.format(job.getRemovedChunksCallRate())
 
 						+ " Chunks excluded: at least one sample has a call rate < 50% (see "
 						+ context.createLinkToFile("filtered")
@@ -153,7 +169,7 @@ public class QualityControl extends HadoopJobStep {
 			if (job.getRemovedChunksOverlap() > 0) {
 
 				text.append("<br><b>Warning:</b> "
-						+ job.getRemovedChunksOverlap()
+						+ formatter.format(job.getRemovedChunksOverlap())
 
 						+ " Chunks excluded: reference overlap < 50% (see "
 						+ context.createLinkToFile("filtered")
@@ -166,7 +182,7 @@ public class QualityControl extends HadoopJobStep {
 
 			if (excludedChunks > 0) {
 				text.append("<br>Remaining chunk(s): "
-						+ (chunks - excludedChunks));
+						+ formatter.format(chunks - excludedChunks));
 
 			}
 

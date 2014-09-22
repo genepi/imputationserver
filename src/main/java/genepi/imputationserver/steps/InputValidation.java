@@ -1,16 +1,17 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.PreferenceStore;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
-import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 import cloudgene.mapred.jobs.CloudgeneContext;
@@ -22,6 +23,8 @@ import cloudgene.mapred.wdl.WdlStep;
 
 public class InputValidation extends CloudgeneStep {
 
+	private DecimalFormat formatter = new DecimalFormat("###,###.###");
+	
 	@Override
 	public boolean run(WdlStep step, CloudgeneContext context) {
 
@@ -129,9 +132,9 @@ public class InputValidation extends CloudgeneStep {
 						return false;
 					}
 
-					chromosomeMessage.setMessage("Samples: " + noSamples + "\n"
+					chromosomeMessage.setMessage("Samples: " + formatter.format(noSamples) + "\n"
 							+ "Chromosomes:" + chromosomeString + "\n"
-							+ "SNPs: " + noSnps + "\n" + "Chunks: " + chunks
+							+ "SNPs: " + formatter.format(noSnps) + "\n" + "Chunks: " +formatter.format(chunks)
 							+ "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n"
 							+ "Reference Panel: " + panel.getId());
