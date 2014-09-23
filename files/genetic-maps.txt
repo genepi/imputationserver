@@ -1,0 +1,6 @@
+maps:
+  - id: hapmap2
+    mapShapeIT: minimac-data/genetic_map_b37.tar.gz
+    mapPatternShapeIT: genetic_map_chr$chr_combined_b37.txt
+    mapHapiUR: minimac-data/genetic_map_hapiur_b37.tar.gz
+    mapPatternHapiUR: genetic_map_chr$chr_combined_hapiur_b37.txt
