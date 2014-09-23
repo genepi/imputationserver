@@ -69,7 +69,7 @@ public class CompressionEncryption extends Hadoop {
 							+ ",\nthe password for the imputation results is: "
 							+ password
 							+ "\n\nThe results can be downloaded from https://imputationserver.sph.umich.edu/start.html#!jobs/"
-							+ context.getJob().getName();
+							+ context.getJob().getName()+"/results";
 
 					return context.sendMail(subject, message);
 
