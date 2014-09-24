@@ -16,10 +16,12 @@ public class ImputationPipeline {
 
 	private String minimacCommand;
 	private String hapiUrCommand;
+	private String hapiUrPreprocessCommand;
 	private String shapeItCommand;
 	private String vcfCookerCommand;
 	private String vcf2HapCommand;
 	private String refPanelFilename;
+	private String mapFilename;
 	private int minimacWindow;
 	private int phasingWindow;
 
@@ -33,6 +35,10 @@ public class ImputationPipeline {
 
 	public void setHapiUrCommand(String hapiUrCommand) {
 		this.hapiUrCommand = hapiUrCommand;
+	}
+	
+	public void setHapiUrPreprocessCommand(String hapiUrPreCommand) {
+		this.hapiUrPreprocessCommand = hapiUrPreCommand;
 	}
 
 	public void setVcfCookerCommand(String vcfCookerCommand) {
@@ -57,6 +63,10 @@ public class ImputationPipeline {
 
 	public void setReferencePanel(String refPanelFilename) {
 		this.refPanelFilename = refPanelFilename;
+	}
+	
+	public void setMapFilename(String mapFilename) {
+		this.mapFilename = mapFilename;
 	}
 
 	public boolean vcfToBed(VcfChunkOutput output) {
@@ -123,11 +133,21 @@ public class ImputationPipeline {
 		}
 
 		int end = input.getEnd() + phasingWindow;
-
+		
+		//apply genetic map
+		String applyMap = output.getPrefix()+".map.bim";
+		
+		Command hapiUrPre = new Command(hapiUrPreprocessCommand);
+		hapiUrPre.setParams(output.getBimFilename(),mapFilename);
+		hapiUrPre.saveStdOut(applyMap);
+		hapiUrPre.setSilent(true);
+		hapiUrPre.execute();
+		System.out.println("Command: " + hapiUrPre.getExecutedCommand());
+		
 		Command hapiUr = new Command(hapiUrCommand);
 		hapiUr.setSilent(false);
 
-		hapiUr.setParams("-p", output.getPrefix(), "-w", "73", "-o",
+		hapiUr.setParams("-g", output.getBedFilename(), "-s", applyMap, "-i", output.getFamFilename(), "-w", "73", "-o",
 				output.getPrefix(), "-c", input.getChromosome(), "--start",
 				start + "", "--end", end + "", "--impute2");
 		hapiUr.saveStdOut(output.getPrefix() + ".hapiur.out");
@@ -143,7 +163,7 @@ public class ImputationPipeline {
 		shapeIt.setSilent(false);
 
 		shapeIt.setParams("--input-bed", output.getBedFilename(),
-				output.getBimFilename(), output.getFamFilename(),
+				output.getBimFilename(), output.getFamFilename(),"--input-map",mapFilename,
 				"--output-max", output.getPrefix(), "--input-from",
 				input.getStart() + "", "--input-to", input.getEnd() + "");
 		shapeIt.saveStdOut(output.getPrefix() + ".shapeit.out");

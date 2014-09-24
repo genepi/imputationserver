@@ -39,7 +39,15 @@ public class ImputationMapper extends
 
 	private String refFilename = "";
 
+	private String mapShapeITFilename = "";
+	
+	private String mapHapiURFilename = "";
+
 	private Log log;
+
+	private String mapShapeITPattern;
+	
+	private String mapHapiURPattern;
 
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
@@ -49,17 +57,26 @@ public class ImputationMapper extends
 		// get parameters
 		ParameterStore parameters = new ParameterStore(context);
 		pattern = parameters.get(ImputationJob.REF_PANEL_PATTERN);
+		mapShapeITPattern = parameters.get(ImputationJob.MAP_SHAPEIT_PATTERN);
+		mapHapiURPattern = parameters.get(ImputationJob.MAP_HAPIUR_PATTERN);
 		output = parameters.get(ImputationJob.OUTPUT);
 		phasing = parameters.get(ImputationJob.PHASING);
 		String hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
+		String hdfsPathShapeITMap = parameters.get(ImputationJob.MAP_SHAPEIT_HDFS);
+		String hdfsPathHapiURMap = parameters.get(ImputationJob.MAP_HAPIUR_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
+		String mapShapeIT = FileUtil.getFilename(hdfsPathShapeITMap);
+		String mapHapiUR = FileUtil.getFilename(hdfsPathHapiURMap);
 		String minimacBin = parameters.get(ImputationJob.MINIMAC_BIN);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
 		refFilename = cache.getArchive(referencePanel);
+		mapShapeITFilename = cache.getArchive(mapShapeIT);
+		mapHapiURFilename = cache.getArchive(mapHapiUR);
 		String minimacCommand = cache.getFile(minimacBin);
 		String hapiUrCommand = cache.getFile("hapi-ur");
+		String hapiUrPreprocessCommand = cache.getFile("insert-map.pl");
 		String vcfCookerCommand = cache.getFile("vcfCooker");
 		String vcf2HapCommand = cache.getFile("vcf2hap");
 		String shapeItCommand = cache.getFile("shapeit");
@@ -78,6 +95,7 @@ public class ImputationMapper extends
 		pipeline = new ImputationPipeline();
 		pipeline.setMinimacCommand(minimacCommand);
 		pipeline.setHapiUrCommand(hapiUrCommand);
+		pipeline.setHapiUrPreprocessCommand(hapiUrPreprocessCommand);
 		pipeline.setVcfCookerCommand(vcfCookerCommand);
 		pipeline.setVcf2HapCommand(vcf2HapCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
@@ -185,9 +203,21 @@ public class ImputationMapper extends
 
 				// phasing
 				if (!phasing.equals("shapeit")) {
-
+					
 					// hapiur
 					time = System.currentTimeMillis();
+					
+					chrFilename = mapHapiURPattern
+							.replaceAll("\\$chr", chunk.getChromosome());
+					String mapNname = FileUtil.path(mapHapiURFilename, chrFilename);
+
+					if (!new File(mapNname).exists()) {
+						log.stop("Map '" + mapNname + "' not found.", "");
+					}
+					
+					pipeline.setMapFilename(mapNname);
+
+				
 					successful = pipeline.phaseWithHapiUr(chunk, outputChunk);
 					time = (System.currentTimeMillis() - time) / 1000;
 
@@ -199,6 +229,17 @@ public class ImputationMapper extends
 					}
 
 				} else {
+					
+					
+					chrFilename = mapShapeITPattern
+							.replaceAll("\\$chr", chunk.getChromosome());
+					String mapfilePath = FileUtil.path(mapShapeITFilename, chrFilename);
+
+					if (!new File(mapfilePath).exists()) {
+						log.stop("Map '" + mapfilePath + "' not found.", "");
+					}
+					
+					pipeline.setMapFilename(mapfilePath);
 
 					// shapeit
 					time = System.currentTimeMillis();
