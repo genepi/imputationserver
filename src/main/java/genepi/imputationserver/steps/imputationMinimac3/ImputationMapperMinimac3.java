@@ -5,6 +5,7 @@ import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.ParameterStore;
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.log.Log;
+import genepi.imputationserver.steps.imputation.ImputationJob;
 import genepi.imputationserver.steps.imputation.sort.ChunkKey;
 import genepi.imputationserver.steps.imputation.sort.ChunkValue;
 import genepi.imputationserver.steps.vcf.VcfChunk;
@@ -37,6 +38,14 @@ public class ImputationMapperMinimac3 extends
 	private String output;
 
 	private String refFilename = "";
+	
+	private String mapShapeITPattern;
+	
+	private String mapHapiURPattern;
+	
+	private String mapShapeITFilename = "";
+	
+	private String mapHapiURFilename = "";
 
 	private Log log;
 
@@ -48,19 +57,28 @@ public class ImputationMapperMinimac3 extends
 		// get parameters
 		ParameterStore parameters = new ParameterStore(context);
 		pattern = parameters.get(ImputationJobMinimac3.REF_PANEL_PATTERN);
+		mapShapeITPattern = parameters.get(ImputationJob.MAP_SHAPEIT_PATTERN);
+		mapHapiURPattern = parameters.get(ImputationJob.MAP_HAPIUR_PATTERN);
 		output = parameters.get(ImputationJobMinimac3.OUTPUT);
 		phasing = parameters.get(ImputationJobMinimac3.PHASING);
 		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
 		window = parameters.get(ImputationJobMinimac3.WINDOW);
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
+		String hdfsPathShapeITMap = parameters.get(ImputationJob.MAP_SHAPEIT_HDFS);
+		String hdfsPathHapiURMap = parameters.get(ImputationJob.MAP_HAPIUR_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
+		String mapShapeIT = FileUtil.getFilename(hdfsPathShapeITMap);
+		String mapHapiUR = FileUtil.getFilename(hdfsPathHapiURMap);
 		String minimacBin = parameters.get(ImputationJobMinimac3.MINIMAC_BIN);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
 		refFilename = cache.getArchive(referencePanel);
+		mapShapeITFilename = cache.getArchive(mapShapeIT);
+		mapHapiURFilename = cache.getArchive(mapHapiUR);
 		String minimacCommand = cache.getFile(minimacBin);
 		String hapiUrCommand = cache.getFile("hapi-ur");
+		String hapiUrPreprocessCommand = cache.getFile("insert-map.pl");
 		String vcfCookerCommand = cache.getFile("vcfCooker");
 		String vcf2HapCommand = cache.getFile("vcf2hap");
 		String shapeItCommand = cache.getFile("shapeit");
@@ -83,7 +101,7 @@ public class ImputationMapperMinimac3 extends
 		pipeline.setVcfCookerCommand(vcfCookerCommand);
 		pipeline.setVcf2HapCommand(vcf2HapCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
-		// pipeline.setMinimacWindow(minimacWindow);
+		pipeline.setHapiUrPreprocessCommand(hapiUrPreprocessCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 
 		// Minimac3
@@ -151,6 +169,18 @@ public class ImputationMapperMinimac3 extends
 			System.out.println("vcf lines: "
 					+ FileUtil.getLineCount(outputChunk.getVcfFilename()));
 
+			// convert vcf to bim/bed/fam
+			long time = System.currentTimeMillis();
+			boolean successful = pipeline.vcfToBed(outputChunk);
+			time = (System.currentTimeMillis() - time) / 1000;
+
+			if (successful) {
+				log.info("  vcfCooker successful [" + time + " sec]");
+			} else {
+				log.stop("  vcfCooker failed[" + time + " sec]", "");
+				return;
+			}
+
 			// ignore small chunks
 			int noSnps = pipeline.getNoSnps(chunk, outputChunk);
 			if (noSnps <= 2) {
@@ -160,28 +190,24 @@ public class ImputationMapperMinimac3 extends
 			} else {
 				log.info("  Before imputation: " + noSnps + " SNPs");
 			}
-
-			// remove parents
-			// TODO ask lukas if this is still needed
-			BedUtil.removeParents(outputChunk.getFamFilename());
-
+			
 			// phasing
 			if (!phasing.equals("shapeit")) {
-
-				// convert vcf to bim/bed/fam only for HapiUR
-				long time = System.currentTimeMillis();
-				boolean successful = pipeline.vcfToBed(outputChunk);
-				time = (System.currentTimeMillis() - time) / 1000;
-
-				if (successful) {
-					log.info("  vcfCooker successful. [" + time + " sec]");
-				} else {
-					log.stop("  vcfCooker failed. [" + time + " sec]", "");
-					return;
-				}
-
+				
 				// hapiur
 				time = System.currentTimeMillis();
+				
+				chrFilename = mapHapiURPattern
+						.replaceAll("\\$chr", chunk.getChromosome());
+				String mapfilePath = FileUtil.path(mapHapiURFilename, chrFilename);
+
+				if (!new File(mapfilePath).exists()) {
+					log.stop("Map '" + mapfilePath + "' not found.", "");
+				}
+				
+				pipeline.setMapFilename(mapfilePath);
+
+
 				successful = pipeline.phaseWithHapiUr(chunk, outputChunk);
 				time = (System.currentTimeMillis() - time) / 1000;
 
@@ -195,8 +221,18 @@ public class ImputationMapperMinimac3 extends
 			} else {
 
 				// shapeit
-				long time = System.currentTimeMillis();
-				boolean successful = pipeline.phaseWithShapeIt(chunk,
+				chrFilename = mapShapeITPattern
+						.replaceAll("\\$chr", chunk.getChromosome());
+				String mapfilePath = FileUtil.path(mapShapeITFilename, chrFilename);
+
+				if (!new File(mapfilePath).exists()) {
+					log.stop("Map '" + mapfilePath + "' not found.", "");
+				}
+				
+				pipeline.setMapFilename(mapfilePath);
+				
+				time = System.currentTimeMillis();
+				successful = pipeline.phaseWithShapeIt(chunk,
 						outputChunk);
 				time = (System.currentTimeMillis() - time) / 1000;
 
@@ -216,8 +252,8 @@ public class ImputationMapperMinimac3 extends
 			if (!chunk.getChromosome().equals("23")
 					&& !chunk.getChromosome().equals("X")) {
 
-				long time = System.currentTimeMillis();
-				boolean successful = pipeline.imputeShapeIt(chunk, outputChunk);
+				time = System.currentTimeMillis();
+				successful = pipeline.imputeVCF(chunk, outputChunk);
 				time = (System.currentTimeMillis() - time) / 1000;
 
 				if (successful) {

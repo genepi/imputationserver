@@ -23,6 +23,14 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String REF_PANEL_PATTERN = "MINIMAC_REFPANEL_PATTERN";
 
 	public static final String REF_PANEL_HDFS = "MINIMAC_REFPANEL_HDFS";
+	
+	public static final String MAP_SHAPEIT_HDFS = "MINIMAC_MAP_SHAPEIT_HDFS";
+	
+	public static final String MAP_SHAPEIT_PATTERN = "MINIMAC_MAP_SHAPEIT_PATTERN";
+	
+	public static final String MAP_HAPIUR_HDFS = "MINIMAC_MAP_HAPIUR_HDFS";
+
+	public static final String MAP_HAPIUR_PATTERN = "MINIMAC_MAP_HAPIUR_PATTERN";
 
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
 
@@ -45,6 +53,10 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	private String minimacBin;
 
 	private boolean noCache = false;
+	
+	private String mapShapeITHDFS;
+	
+	private String mapHapiURHDFS;
 
 	public ImputationJobMinimac3(String name) {
 
@@ -72,7 +84,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	}
 
 	@Override
-	protected void setupDistributedCache(CacheStore cache) {
+	protected void setupDistributedCache(CacheStore cache) throws IOException {
 
 		// installs and distributed alls binaries
 		String data = "minimac-data-3";
@@ -83,6 +95,24 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		String name = FileUtil.getFilename(refPanelHdfs);
 
 		cache.addArchive(name, refPanelHdfs);
+		
+		
+		// add ShapeIT Map File to cache
+		if (HdfsUtil.exists(mapShapeITHDFS)) {
+			name = FileUtil.getFilename(mapShapeITHDFS);
+			cache.addArchive(name, mapShapeITHDFS);
+		} else {
+			throw new IOException("Map " + mapShapeITHDFS + " not found.");
+		}
+
+		// add HapiUR Map File to cache
+		if (HdfsUtil.exists(mapHapiURHDFS)) {
+			name = FileUtil.getFilename(mapHapiURHDFS);
+			cache.addArchive(name, mapHapiURHDFS);
+		} else {
+			throw new IOException("Map " + mapHapiURHDFS + " not found.");
+		}
+		
 	}
 
 	public void setFolder(String folder) {
@@ -195,6 +225,24 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public void setMinimacBin(String minimacBin) {
 		this.minimacBin = minimacBin;
 		set(MINIMAC_BIN, minimacBin);
+	}
+	
+	public void setMapShapeITPattern(String mapPattern) {
+		set(MAP_SHAPEIT_PATTERN, mapPattern);
+	}
+
+	public void setMapShapeITHdfs(String mapHDFS1) {
+		this.mapShapeITHDFS = mapHDFS1;
+		set(MAP_SHAPEIT_HDFS, mapHDFS1);
+	}
+	
+	public void setMapHapiURPattern(String mapPattern) {
+		set(MAP_HAPIUR_PATTERN, mapPattern);
+	}
+
+	public void setMapHapiURHdfs(String mapHDFS2) {
+		this.mapHapiURHDFS = mapHDFS2;
+		set(MAP_HAPIUR_HDFS, mapHDFS2);
 	}
 
 }
