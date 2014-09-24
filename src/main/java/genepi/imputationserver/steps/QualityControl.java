@@ -1,7 +1,6 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.qc.QualityControlJob;
 import genepi.imputationserver.steps.vcf.VcfFile;
@@ -11,10 +10,7 @@ import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
-import java.io.File;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 import cloudgene.mapred.jobs.CloudgeneContext;
 import cloudgene.mapred.wdl.WdlStep;
@@ -152,7 +148,7 @@ public class QualityControl extends HadoopJobStep {
 						+ formatter.format(job.getRemovedChunksSnps())
 
 						+ " Chunks excluded: < 3 SNPs (see "
-						+ context.createLinkToFile("filtered")
+						+ context.createLinkToFile("statistics")
 						+ "  for details).");
 			}
 
@@ -162,7 +158,7 @@ public class QualityControl extends HadoopJobStep {
 						+ formatter.format(job.getRemovedChunksCallRate())
 
 						+ " Chunks excluded: at least one sample has a call rate < 50% (see "
-						+ context.createLinkToFile("filtered")
+						+ context.createLinkToFile("statistics")
 						+ " for details).");
 			}
 
@@ -172,7 +168,7 @@ public class QualityControl extends HadoopJobStep {
 						+ formatter.format(job.getRemovedChunksOverlap())
 
 						+ " Chunks excluded: reference overlap < 50% (see "
-						+ context.createLinkToFile("filtered")
+						+ context.createLinkToFile("statistics")
 						+ " for details).");
 			}
 
