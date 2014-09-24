@@ -132,7 +132,7 @@ mapred:
      - id: minimacbin
        description: <b>Minimac Binary</b>
        type: list
-       value: minimac
+       value: Minimac3
        values:
           Minimac3: Minimac3
 
