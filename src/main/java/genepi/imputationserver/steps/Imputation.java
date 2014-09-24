@@ -3,6 +3,8 @@ package genepi.imputationserver.steps;
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
 import genepi.imputationserver.steps.imputation.ImputationJob;
+import genepi.imputationserver.util.GeneticMap;
+import genepi.imputationserver.util.MapList;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -82,6 +84,32 @@ public class Imputation extends ParallelHadoopJobStep {
 			error("Reference Panel '" + reference + "' not found.");
 			return false;
 		}
+		
+		
+		
+
+		// load maps
+
+		MapList maps = null;
+		try {
+			maps = MapList.loadFromFile(FileUtil.path(folder,
+					"genetic-maps.txt"));
+
+		} catch (Exception e) {
+
+			error("genetic-maps.txt not found.");
+			error(e.getMessage());
+			return false;
+		}
+
+		// check map for hapmap2
+		GeneticMap map = maps.getById("hapmap2");
+		if (map == null) {
+			error("hapmap2 not found.");
+			return false;
+		}
+		
+		
 
 		// execute one job per chromosome
 
@@ -99,6 +127,13 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setFolder(folder);
 				job.setRefPanelHdfs(panel.getHdfs());
 				job.setRefPanelPattern(panel.getPattern());
+				
+				job.setMapShapeITHdfs(map.getMapShapeIT());
+				job.setMapShapeITPattern(map.getMapPatternShapeIT());
+				
+				job.setMapHapiURHdfs(map.getMapHapiUR());
+				job.setMapHapiURPattern(map.getMapPatternHapiUR());
+				
 				job.setInput(chunkFile);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
