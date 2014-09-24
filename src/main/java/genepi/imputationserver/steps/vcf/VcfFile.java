@@ -17,6 +17,8 @@ public class VcfFile {
 	private int noSnps = -1;
 
 	private boolean phased = true;
+	
+	private boolean phasedAutodetect = true;
 
 	public VcfFile() {
 
@@ -104,5 +106,14 @@ public class VcfFile {
 
 		}
 	}
+
+	public boolean isPhasedAutodetect() {
+		return phasedAutodetect;
+	}
+
+	public void setPhasedAutodetect(boolean phasedAutodetect) {
+		this.phasedAutodetect = phasedAutodetect;
+	}
+
 
 }

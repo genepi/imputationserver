@@ -44,6 +44,8 @@ public class VcfFileUtil {
 			LineReader lineReader = new LineReader(vcfFilename);
 
 			boolean phased = true;
+			boolean phasedAutodetect = true;
+			boolean firstLine = true;
 
 			while (lineReader.next()) {
 
@@ -51,21 +53,35 @@ public class VcfFileUtil {
 
 				if (!line.startsWith("#")) {
 
-					String tiles[] = line.split("\t", 6);
+					String tiles[] = line.split("\t", 10);
 
 					if (tiles.length < 3) {
 						throw new IOException(
-								"The provided VCF file is no tab-delimited");
+								"The provided VCF file is not tab-delimited");
 					}
 
 					String chromosome = tiles[0];
 					int position = Integer.parseInt(tiles[1]);
 
 					if (phased) {
-						boolean containsSlash = tiles[5].contains("/");
-						if (containsSlash) {
+						boolean containsSymbol = tiles[9].contains("/");
+						
+						if (containsSymbol) {
 							phased = false;
+						} 
+
+					}
+					
+					if (firstLine) {
+						boolean containsSymbol = tiles[9].contains("/") || tiles[9].contains(".");
+						
+						if (!containsSymbol) {
+							phasedAutodetect = true;
+						} 
+						else {
+							phasedAutodetect = false;
 						}
+						firstLine = false;
 
 					}
 
@@ -125,6 +141,7 @@ public class VcfFileUtil {
 			pair.setChunks(chunks);
 			pair.setChromosomes(chromosomes);
 			pair.setPhased(phased);
+			pair.setPhasedAutodetect(phasedAutodetect);
 			return pair;
 
 		} catch (Exception e) {

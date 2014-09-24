@@ -146,6 +146,8 @@ public class QualityControlMapper extends
 		int removedChunksSnps = 0;
 		int removedChunksOverlap = 0;
 		int removedChunksCallRate = 0;
+		
+		String tmp = null;
 
 		int[] snpsPerSampleCount = null;
 
@@ -187,13 +189,17 @@ public class QualityControlMapper extends
 						duplicates++;
 						logWriter.write("FILTER - Duplicate: " + snp.getID()
 								+ " - pos: " + snp.getStart());
+						logWriter.write("COPY OF: " + tmp);
 						filtered++;
 					}
-
+					
 					lastPos = snp.getStart();
 					continue;
 
 				}
+				
+				tmp = "FILTER - Duplicate: " + snp.getID()
+						+ " - pos: " + snp.getStart();
 
 				// update last pos only when not filtered
 				if (!snp.isFiltered()) {
@@ -213,7 +219,7 @@ public class QualityControlMapper extends
 
 						if (snp.getFilters().contains("DUP")) {
 							duplicates++;
-							logWriter.write("FILTER - Duplicate: " + snp.getID()
+							logWriter.write("FILTER - Duplicate " + snp.getID()
 									+ " - pos: " + snp.getStart());
 							filtered++;
 						} else {
