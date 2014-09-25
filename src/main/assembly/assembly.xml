@@ -18,7 +18,7 @@
 			<scope>provided</scope>
 			<outputDirectory></outputDirectory>
 			<includes>
-				<include>cloudgene:cloudgene-client:*:*</include>
+				<include>cloudgene:cloudgene:*:*</include>
 			</includes>
 			<unpack>true</unpack>
 			<useProjectArtifact>false</useProjectArtifact>
