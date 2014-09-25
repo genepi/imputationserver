@@ -1,7 +1,7 @@
 hadoopPath: /opt/hadoop
 apps:
-  user: minimac-vcf.yaml
-  admin: minimac-vcf-admin.yaml
+  user: minimac/minimac-vcf.yaml
+  admin: minimac/minimac-vcf-admin.yaml
 outputPath: output
 tempPath: tmp
 localWorkspace: cloudgene-workspace
