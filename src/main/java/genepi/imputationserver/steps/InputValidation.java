@@ -1,29 +1,25 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.PreferenceStore;
+import genepi.hadoop.common.WorkflowContext;
+import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
 
-import cloudgene.mapred.jobs.CloudgeneContext;
-import cloudgene.mapred.jobs.CloudgeneStep;
-import cloudgene.mapred.jobs.Message;
 import cloudgene.mapred.steps.importer.IImporter;
 import cloudgene.mapred.steps.importer.ImporterFactory;
-import cloudgene.mapred.wdl.WdlStep;
 
-public class InputValidation extends CloudgeneStep {
+public class InputValidation extends WorkflowStep {
 
 	@Override
-	public boolean run(WdlStep step, CloudgeneContext context) {
+	public boolean run(WorkflowContext context) {
 
 		if (!importVcfFiles(context)) {
 			return false;
@@ -33,19 +29,20 @@ public class InputValidation extends CloudgeneStep {
 
 	}
 
-	private boolean checkVcfFiles(CloudgeneContext context) {
+	private boolean checkVcfFiles(WorkflowContext context) {
 		String folder = getFolder(InputValidation.class);
 
 		// inputs
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
-		
+
 		// read config
-		//PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
-		//		folder, "job.config")));
-		
-		//int chunkSize = Integer.parseInt(store.getString("pipeline.chunksize"));
+		// PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
+		// folder, "job.config")));
+
+		// int chunkSize =
+		// Integer.parseInt(store.getString("pipeline.chunksize"));
 
 		String tabix = FileUtil.path(folder, "bin", "tabix");
 		String files = FileUtil.path(context.getLocalTemp(), "input");
@@ -56,15 +53,14 @@ public class InputValidation extends CloudgeneStep {
 			HdfsUtil.getFolder(inputFiles, files);
 
 		} catch (Exception e) {
-			error("Downloading files: " + e.getMessage());
+			context.error("Downloading files: " + e.getMessage());
 			return false;
 
 		}
 
 		List<VcfFile> validVcfFiles = new Vector<VcfFile>();
 
-		Message analyzeMessage = createLogMessage("Analyze file ",
-				Message.RUNNING);
+		context.beginTask("Analyze files ");
 		List<String> chromosomes = new Vector<String>();
 
 		int chunks = 0;
@@ -76,17 +72,27 @@ public class InputValidation extends CloudgeneStep {
 		String[] vcfFiles = FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$");
 
 		if (vcfFiles.length == 0) {
-			analyzeMessage.setType(Message.ERROR);
-			analyzeMessage
-					.setMessage("The provided files are not VCF files (see <a href=\"/start.html#!pages/help\">Help</a>).");
+			context.endTask(
+					"The provided files are not VCF files (see <a href=\"/start.html#!pages/help\">Help</a>).",
+					WorkflowContext.ERROR);
 			return false;
 		}
 
-		Message chromosomeMessage = createLogMessage("", Message.OK);
+		String infos = null;
 
 		for (String filename : vcfFiles) {
-			analyzeMessage.setMessage("Analyze file "
-					+ FileUtil.getFilename(filename) + "...");
+
+			if (infos == null) {
+				// first files, no infos available
+				context.updateTask(
+						"Analyze file " + FileUtil.getFilename(filename)
+								+ "...", WorkflowContext.RUNNING);
+
+			} else {
+				context.updateTask(
+						"Analyze file " + FileUtil.getFilename(filename)
+								+ "...\n\n" + infos, WorkflowContext.RUNNING);
+			}
 
 			try {
 
@@ -108,14 +114,15 @@ public class InputValidation extends CloudgeneStep {
 
 					// check reference panel
 					// load reference panels
-					
-					if(vcfFile.isPhasedAutodetect() && !vcfFile.isPhased()){
-						analyzeMessage.setType(Message.ERROR);
-						analyzeMessage.setMessage("File should be phased, but also includes unphased and/or missing genotypes! Please double-check!");
-						chromosomeMessage.setType(Message.ERROR);
+
+					if (vcfFile.isPhasedAutodetect() && !vcfFile.isPhased()) {
+
+						context.endTask(
+								"File should be phased, but also includes unphased and/or missing genotypes! Please double-check!",
+								WorkflowContext.ERROR);
 						return false;
 					}
-					
+
 					RefPanelList panels = null;
 					try {
 						panels = RefPanelList.loadFromFile(FileUtil.path(
@@ -123,36 +130,32 @@ public class InputValidation extends CloudgeneStep {
 
 					} catch (Exception e) {
 
-						analyzeMessage.setType(Message.ERROR);
-						analyzeMessage.setMessage("panels.txt not found.");
+						context.endTask("panels.txt not found.",
+								WorkflowContext.ERROR);
 						return false;
 					}
 					RefPanel panel = panels.getById(reference);
 					if (panel == null) {
-						analyzeMessage.setType(Message.ERROR);
-						analyzeMessage.setMessage("Reference '" + reference
-								+ "' not found.");
-						chromosomeMessage.setType(Message.ERROR);
+						context.endTask("Reference '" + reference
+								+ "' not found.", WorkflowContext.ERROR);
 
 						return false;
 					}
 
-					chromosomeMessage.setMessage("Samples: " + noSamples + "\n"
-							+ "Chromosomes:" + chromosomeString + "\n"
-							+ "SNPs: " + noSnps + "\n" + "Chunks: " + chunks
-							+ "\n" + "Datatype: "
+					infos = "Samples: " + noSamples + "\n" + "Chromosomes:"
+							+ chromosomeString + "\n" + "SNPs: " + noSnps
+							+ "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n"
-							+ "Reference Panel: " + panel.getId());
+							+ "Reference Panel: " + panel.getId();
 
 				}
 
 			} catch (IOException e) {
 
-				analyzeMessage.setType(Message.ERROR);
-				chromosomeMessage.setType(Message.ERROR);
-				chromosomeMessage
-						.setMessage(e.getMessage()
-								+ " (see <a href=\"/start.html#!pages/help\">Help</a>).");
+				context.endTask(
+						e.getMessage()
+								+ " (see <a href=\"/start.html#!pages/help\">Help</a>).",
+						WorkflowContext.ERROR);
 				return false;
 
 			}
@@ -161,10 +164,9 @@ public class InputValidation extends CloudgeneStep {
 
 		if (validVcfFiles.size() > 0) {
 
-			analyzeMessage.setType(Message.OK);
-			analyzeMessage.setMessage(validVcfFiles.size()
-					+ " valid VCF file(s) found.");
-			chromosomeMessage.setType(Message.OK);
+			context.endTask(validVcfFiles.size()
+					+ " valid VCF file(s) found.\n\n" + infos,
+					WorkflowContext.OK);
 
 			// init counteres
 			context.incCounter("samples", noSamples);
@@ -176,22 +178,21 @@ public class InputValidation extends CloudgeneStep {
 
 		} else {
 
-			analyzeMessage.setType(Message.ERROR);
-			analyzeMessage
-					.setMessage("The provided files are not VCF files  (see <a href=\"/start.html#!pages/help\">Help</a>).");
-			chromosomeMessage.setType(Message.ERROR);
+			context.endTask(
+					"The provided files are not VCF files  (see <a href=\"/start.html#!pages/help\">Help</a>).",
+					WorkflowContext.ERROR);
 
 			return false;
 		}
 	}
 
-	private boolean importVcfFiles(CloudgeneContext context) {
+	private boolean importVcfFiles(WorkflowContext context) {
 
 		for (String input : context.getInputs()) {
 
 			if (ImporterFactory.needsImport(context.get(input))) {
 
-				Message message = createLogMessage("", Message.RUNNING);
+				context.beginTask("Importing files...");
 
 				String[] urlList = context.get(input).split(";")[0]
 						.split("\\s+");
@@ -215,7 +216,8 @@ public class InputValidation extends CloudgeneStep {
 
 					try {
 
-						message.setMessage("Import " + url2 + "...");
+						context.updateTask("Import " + url2 + "...",
+								WorkflowContext.RUNNING);
 
 						IImporter importer = ImporterFactory.createImporter(
 								url, target);
@@ -230,10 +232,10 @@ public class InputValidation extends CloudgeneStep {
 
 							} else {
 
-								message.setMessage("Import " + url2
-										+ " failed: "
-										+ importer.getErrorMessage());
-								message.setType(Message.ERROR);
+								context.updateTask(
+										"Import " + url2 + " failed: "
+												+ importer.getErrorMessage(),
+										WorkflowContext.ERROR);
 
 								return false;
 
@@ -241,26 +243,26 @@ public class InputValidation extends CloudgeneStep {
 
 						} else {
 
-							message.setMessage("Import " + url2
-									+ " failed: Protocol not supported");
-							message.setType(Message.ERROR);
+							context.updateTask("Import " + url2
+									+ " failed: Protocol not supported",
+									WorkflowContext.ERROR);
 
 							return false;
 
 						}
 
 					} catch (Exception e) {
-						message.setMessage("Import File(s) " + url2
-								+ " failed: " + e.toString());
-						message.setType(Message.ERROR);
+						context.updateTask("Import File(s) " + url2
+								+ " failed: " + e.toString(),
+								WorkflowContext.ERROR);
 
 						return false;
 					}
 
 				}
 
-				message.setMessage("File Import successful. ");
-				message.setType(Message.OK);
+				context.updateTask("File Import successful. ",
+						WorkflowContext.OK);
 
 			}
 

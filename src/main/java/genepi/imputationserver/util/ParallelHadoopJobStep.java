@@ -1,6 +1,8 @@
 package genepi.imputationserver.util;
 
 import genepi.hadoop.HadoopJob;
+import genepi.hadoop.common.WorkflowContext;
+import genepi.hadoop.common.WorkflowStep;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,12 +17,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.RunningJob;
 
-import cloudgene.mapred.jobs.CloudgeneContext;
-import cloudgene.mapred.jobs.CloudgeneStep;
 import cloudgene.mapred.steps.Hadoop;
 import cloudgene.mapred.util.HadoopUtil;
 
-public abstract class ParallelHadoopJobStep extends CloudgeneStep {
+public abstract class ParallelHadoopJobStep extends WorkflowStep {
 
 	private Map<String, HadoopJob> jobs;
 
@@ -42,12 +42,12 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 
 	private Map<HadoopJob, Integer> states = null;
 
-	private CloudgeneContext context;
+	private WorkflowContext context;
 
 	private boolean canceled = false;
 
 	@Override
-	public void setup(CloudgeneContext context) {
+	public void setup(WorkflowContext context) {
 		this.context = context;
 	}
 
@@ -70,7 +70,7 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 
 	}
 
-	protected void executeJarInBackground(String id, CloudgeneContext context,
+	protected void executeJarInBackground(String id, WorkflowContext context,
 			HadoopJob hadoopJob) {
 		BackgroundHadoopJob job = new BackgroundHadoopJob(id, hadoopJob);
 		job.setContext(context);
@@ -82,7 +82,7 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 
 	class BackgroundHadoopJob implements Runnable {
 
-		private CloudgeneContext context;
+		private WorkflowContext context;
 
 		private String id;
 
@@ -93,11 +93,11 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 			this.job = job;
 		}
 
-		public void setContext(CloudgeneContext context) {
+		public void setContext(WorkflowContext context) {
 			this.context = context;
 		}
 
-		public CloudgeneContext getContext() {
+		public WorkflowContext getContext() {
 			return context;
 		}
 
@@ -112,11 +112,11 @@ public abstract class ParallelHadoopJobStep extends CloudgeneStep {
 	}
 
 	protected synchronized void onJobFinish(String id, boolean successful,
-			CloudgeneContext context) {
+			WorkflowContext context) {
 
 	}
 
-	protected synchronized void onJobStart(String id, CloudgeneContext context) {
+	protected synchronized void onJobStart(String id, WorkflowContext context) {
 
 	}
 

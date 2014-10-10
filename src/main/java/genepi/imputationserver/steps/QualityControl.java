@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.qc.QualityControlJob;
 import genepi.imputationserver.steps.vcf.VcfFile;
@@ -12,15 +13,12 @@ import genepi.io.FileUtil;
 
 import java.text.DecimalFormat;
 
-import cloudgene.mapred.jobs.CloudgeneContext;
-import cloudgene.mapred.wdl.WdlStep;
-
 public class QualityControl extends HadoopJobStep {
 
 	private DecimalFormat formatter = new DecimalFormat("###,###.###");
 
 	@Override
-	public boolean run(WdlStep step, CloudgeneContext context) {
+	public boolean run(WorkflowContext context) {
 
 		String folder = getFolder(HadoopJobStep.class);
 
@@ -47,7 +45,7 @@ public class QualityControl extends HadoopJobStep {
 		int chunks = createChunkFile(context, files, chunkfile, chunkSize);
 
 		if (chunks == -1) {
-			error("Error during manifest file creation.");
+			context.error("Error during manifest file creation.");
 			return false;
 		}
 
@@ -59,17 +57,17 @@ public class QualityControl extends HadoopJobStep {
 
 		} catch (Exception e) {
 
-			error("panels.txt not found.");
+			context.error("panels.txt not found.");
 			return false;
 		}
 
 		// check reference panel
 		RefPanel panel = panels.getById(reference);
 		if (panel == null) {
-			error("Reference '" + reference + "' not found.");
-			error("Available references:");
+			context.error("Reference '" + reference + "' not found.");
+			context.error("Available references:");
 			for (RefPanel p : panels.getPanels()) {
-				error(p.getId());
+				context.error(p.getId());
 			}
 
 			return false;
@@ -133,7 +131,7 @@ public class QualityControl extends HadoopJobStep {
 			text.append("SNPs call rate < 90%: "
 					+ formatter.format(job.getToLessSamples()));
 
-			ok(text.toString());
+			context.ok(text.toString());
 
 			text = new StringBuffer();
 
@@ -185,25 +183,25 @@ public class QualityControl extends HadoopJobStep {
 			if (excludedChunks == chunks) {
 
 				text.append("<br><b>Error:</b> No chunks passed the QC step. Imputation cannot be started!");
-				error(text.toString());
+				context.error(text.toString());
 
 				return false;
 
 			} else {
-				warning(text.toString());
+				context.warning(text.toString());
 				return true;
 
 			}
 
 		} else {
 
-			error("QC Quality Control failed!");
+			context.error("QC Quality Control failed!");
 			return false;
 
 		}
 	}
 
-	private int createChunkFile(CloudgeneContext context, String inputFiles,
+	private int createChunkFile(WorkflowContext context, String inputFiles,
 			String chunkfile, int chunkSize) {
 		String files = FileUtil.path(context.getLocalTemp(), "input");
 
@@ -213,7 +211,7 @@ public class QualityControl extends HadoopJobStep {
 			HdfsUtil.getFolder(inputFiles, files);
 
 		} catch (Exception e) {
-			error("Downloading files: " + e.getMessage());
+			context.error("Downloading files: " + e.getMessage());
 			return -1;
 
 		}

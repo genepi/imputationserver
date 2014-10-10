@@ -1,25 +1,25 @@
 package genepi.imputationserver.util;
 
 import genepi.hadoop.HadoopJob;
+import genepi.hadoop.common.WorkflowContext;
+import genepi.hadoop.common.WorkflowStep;
 
 import java.io.IOException;
 
-import cloudgene.mapred.jobs.CloudgeneContext;
-import cloudgene.mapred.jobs.CloudgeneStep;
 import cloudgene.mapred.jobs.Message;
 
-public abstract class HadoopJobStep extends CloudgeneStep {
+public abstract class HadoopJobStep extends WorkflowStep {
 
 	private HadoopJob job;
 
-	public boolean executeHadoopJob(HadoopJob job, CloudgeneContext context) {
+	public boolean executeHadoopJob(HadoopJob job, WorkflowContext context) {
 
 		this.job = job;
-		beginTask("Running Hadoop Job...");
+		context.beginTask("Running Hadoop Job...");
 		boolean successful = job.execute();
 
 		if (successful) {
-			endTask("Execution successful.", Message.OK);
+			context.endTask("Execution successful.", Message.OK);
 			return true;
 		} else {
 
@@ -28,7 +28,7 @@ public abstract class HadoopJobStep extends CloudgeneStep {
 
 			// job.downloadFailedLogs(logs);
 
-			endTask("Execution failed. Please have a look at the logfile for details.",
+			context.endTask("Execution failed. Please have a look at the logfile for details.",
 					Message.ERROR);
 
 			return false;

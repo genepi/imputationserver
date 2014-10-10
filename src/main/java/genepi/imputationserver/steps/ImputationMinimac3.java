@@ -2,6 +2,7 @@ package genepi.imputationserver.steps;
 
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.common.WorkflowContext;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.util.GeneticMap;
 import genepi.imputationserver.util.MapList;
@@ -15,17 +16,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cloudgene.mapred.jobs.CloudgeneContext;
-import cloudgene.mapred.jobs.Message;
-import cloudgene.mapred.wdl.WdlStep;
-
 public class ImputationMinimac3 extends ParallelHadoopJobStep {
-
-	Message message = null;
 
 	Map<String, HadoopJob> jobs = null;
 
 	boolean error = false;
+
+	private WorkflowContext context;
 
 	private String errorChr = "";
 
@@ -35,7 +32,12 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	}
 
 	@Override
-	public boolean run(WdlStep step, CloudgeneContext context) {
+	public void setup(WorkflowContext context) {
+		this.context = context;
+	}
+
+	@Override
+	public boolean run(WorkflowContext context) {
 
 		String folder = getFolder(ImputationMinimac3.class);
 
@@ -62,7 +64,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String log = context.get("logfile");
 
 		if (!HdfsUtil.exists(input)) {
-			error("No chunks passed the QC step.");
+			context.error("No chunks passed the QC step.");
 			return false;
 		}
 
@@ -75,7 +77,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		} catch (Exception e) {
 
-			error("panels.txt not found.");
+			context.error("panels.txt not found.");
 			return false;
 		}
 
@@ -83,11 +85,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		RefPanel panel = panels.getById(reference);
 		if (panel == null) {
-			error("Reference Panel '" + reference + "' not found.");
+			context.error("Reference Panel '" + reference + "' not found.");
 			return false;
 		}
-		
-		
 
 		// load maps
 
@@ -98,14 +98,14 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		} catch (Exception e) {
 
-			error("genetic-maps.txt not found.");
+			context.error("genetic-maps.txt not found.");
 			return false;
 		}
 
 		// check map for hapmap2
 		GeneticMap map = maps.getById("hapmap2");
 		if (map == null) {
-			error("hapmap2 not found.");
+			context.error("hapmap2 not found.");
 			return false;
 		}
 
@@ -114,7 +114,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		try {
 			List<String> chunkFiles = HdfsUtil.getFiles(input);
 
-			message = createLogMessage("", Message.OK);
+			context.beginTask("Start Imputation...");
 
 			for (String chunkFile : chunkFiles) {
 
@@ -125,13 +125,13 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setFolder(folder);
 				job.setRefPanelHdfs(panel.getHdfs());
 				job.setRefPanelPattern(panel.getPattern());
-				
+
 				job.setMapShapeITHdfs(map.getMapShapeIT());
 				job.setMapShapeITPattern(map.getMapPatternShapeIT());
-				
+
 				job.setMapHapiURHdfs(map.getMapHapiUR());
 				job.setMapHapiURPattern(map.getMapPatternHapiUR());
-				
+
 				job.setInput(chunkFile);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
@@ -156,10 +156,10 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			if (isCanceled()) {
 				context.println("Canceled by user.");
 				updateProgress();
-				printSummary(context);
+				printSummary();
 
-				message.setType(Message.ERROR);
-				message.setMessage("Canceled by user.");
+				context.updateTask("Canceled by user.", WorkflowContext.ERROR);
+
 				return false;
 
 			}
@@ -169,22 +169,23 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				context.println("Imputation on chromosome " + errorChr
 						+ " failed. Imputation was stopped.");
 				updateProgress();
-				printSummary(context);
+				printSummary();
 
-				message.setType(Message.ERROR);
-				message.setMessage("Imputation on chromosome " + errorChr
-						+ " failed. Imputation was stopped.");
+				context.updateTask("Imputation on chromosome " + errorChr
+						+ " failed. Imputation was stopped.",
+						WorkflowContext.ERROR);
 				return false;
 
 			}
 
 			// everthing fine
 
-			updateProgress();
-			printSummary(context);
+			// updateProgress();
+			printSummary();
 
-			updateMessage();
-			message.setType(Message.OK);
+			String text = updateMessage();
+			context.updateTask(text, WorkflowContext.OK);
+
 			return true;
 
 		} catch (IOException e1) {
@@ -192,10 +193,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			// unexpected exception
 
 			updateProgress();
-			printSummary(context);
+			printSummary();
 
-			message.setType(Message.ERROR);
-			message.setMessage(e1.getMessage());
+			context.updateTask(e1.getMessage(), WorkflowContext.ERROR);
 			return false;
 
 		} catch (InterruptedException e1) {
@@ -203,10 +203,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			// canceled by user
 
 			updateProgress();
-			printSummary(context);
+			printSummary();
 
-			message.setType(Message.ERROR);
-			message.setMessage("Canceled by user.");
+			context.updateTask("Canceled by user.", WorkflowContext.ERROR);
 			return false;
 
 		}
@@ -215,7 +214,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	// print summary and download log files from tasktracker
 
-	private void printSummary(CloudgeneContext context) {
+	private void printSummary() {
 		context.println("Summary: ");
 		String log = context.get("hadooplogs");
 
@@ -256,7 +255,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	// update message
 
-	private synchronized void updateMessage() {
+	private synchronized String updateMessage() {
 
 		String text = "";
 
@@ -311,22 +310,18 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		text += "<span class=\"badge badge-info\" style=\"width: 8px\">&nbsp;</span> Running<br>";
 		text += "<span class=\"badge badge-success\" style=\"width: 8px\">&nbsp;</span> Complete";
 
-		if (message != null) {
-
-			message.setMessage(text);
-
-		}
+		return text;
 
 	}
 
 	@Override
-	protected synchronized void onJobStart(String id, CloudgeneContext context) {
+	protected synchronized void onJobStart(String id, WorkflowContext context) {
 		context.println("Running job chr_" + id + "....");
 	}
 
 	@Override
 	protected synchronized void onJobFinish(String id, boolean successful,
-			CloudgeneContext context) {
+			WorkflowContext context) {
 
 		HadoopJob job = jobs.get(id);
 
@@ -360,7 +355,8 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		super.updateProgress();
 
-		updateMessage();
+		String text = updateMessage();
+		context.updateTask(text, WorkflowContext.RUNNING);
 
 	}
 

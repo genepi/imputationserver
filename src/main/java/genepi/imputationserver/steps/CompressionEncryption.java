@@ -1,5 +1,7 @@
 package genepi.imputationserver.steps;
 
+import genepi.hadoop.common.WorkflowContext;
+import genepi.hadoop.common.WorkflowStep;
 import genepi.io.FileUtil;
 
 import java.io.File;
@@ -10,28 +12,22 @@ import net.lingala.zip4j.util.Zip4jConstants;
 
 import org.apache.commons.lang.RandomStringUtils;
 
-import cloudgene.mapred.jobs.CloudgeneContext;
-import cloudgene.mapred.steps.Hadoop;
-import cloudgene.mapred.wdl.WdlStep;
-
-public class CompressionEncryption extends Hadoop {
+public class CompressionEncryption extends WorkflowStep {
 
 	@Override
-	public boolean run(WdlStep step, CloudgeneContext context) {
+	public boolean run(WorkflowContext context) {
 
 		try {
-		// inputs
-		String folder = context.get("local");
-		String encryption = context.get("encryption");
+			// inputs
+			String folder = context.get("local");
+			String encryption = context.get("encryption");
 
-		if (!new File(FileUtil.path(folder, "results")).exists()) {
-			error("no results found.");
-			return true;
-		}
+			if (!new File(FileUtil.path(folder, "results")).exists()) {
+				context.error("no results found.");
+				return true;
+			}
 
-		String password = RandomStringUtils.randomAlphabetic(10);
-
-		
+			String password = RandomStringUtils.randomAlphabetic(10);
 
 			ZipParameters param = new ZipParameters();
 			if (encryption.equals("yes")) {
@@ -46,7 +42,7 @@ public class CompressionEncryption extends Hadoop {
 					param, false, 0);
 			FileUtil.deleteDirectory(FileUtil.path(folder, "results"));
 
-			ok("Data compression successful.");
+			context.ok("Data compression successful.");
 
 			// submit counters!
 			context.submitCounter("samples");
@@ -56,25 +52,27 @@ public class CompressionEncryption extends Hadoop {
 
 			if (encryption.equals("yes")) {
 
-				if (context.getUser().getMail() != null) {
+				Object mail = context.getData("cloudgene.user.mail");
+				Object name = context.getData("cloudgene.user.name");
 
-					ok("We have sent an email to <b>"
-							+ context.getUser().getMail()
+				if (mail != null) {
+
+					context.ok("We have sent an email to <b>" + mail
 							+ "</b> with the password.");
 
-					String subject = "Job " + context.getJob().getName()
+					String subject = "Job " + context.getJobName()
 							+ " is complete.";
 					String message = "Dear "
-							+ context.getUser().getFullName()
+							+ name
 							+ ",\nthe password for the imputation results is: "
 							+ password
 							+ "\n\nThe results can be downloaded from https://imputationserver.sph.umich.edu/start.html#!jobs/"
-							+ context.getJob().getName()+"/results";
+							+ context.getJobName() + "/results";
 
 					return context.sendMail(subject, message);
 
 				} else {
-					error("No email address found. Please enter your email address (Account -> Profile).");
+					context.error("No email address found. Please enter your email address (Account -> Profile).");
 					return false;
 				}
 
@@ -85,7 +83,7 @@ public class CompressionEncryption extends Hadoop {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			error("Data compression failed: " + e.getMessage());
+			context.error("Data compression failed: " + e.getMessage());
 			return false;
 		}
 
