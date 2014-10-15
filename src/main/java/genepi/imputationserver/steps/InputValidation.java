@@ -37,13 +37,6 @@ public class InputValidation extends WorkflowStep {
 		String reference = context.get("refpanel");
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
-		// read config
-		// PreferenceStore store = new PreferenceStore(new File(FileUtil.path(
-		// folder, "job.config")));
-
-		// int chunkSize =
-		// Integer.parseInt(store.getString("pipeline.chunksize"));
-
 		String tabix = FileUtil.path(folder, "bin", "tabix");
 		String files = FileUtil.path(context.getLocalTemp(), "input");
 
@@ -113,7 +106,6 @@ public class InputValidation extends WorkflowStep {
 					phased = phased && vcfFile.isPhased();
 
 					// check reference panel
-					// load reference panels
 
 					if (vcfFile.isPhasedAutodetect() && !vcfFile.isPhased()) {
 
@@ -173,6 +165,7 @@ public class InputValidation extends WorkflowStep {
 			context.incCounter("genotypes", noSamples * noSnps);
 			context.incCounter("chromosomes", noSamples * chromosomes.size());
 			context.incCounter("runs", 1);
+			context.incCounter("refpanel_" + reference, 1);
 
 			return true;
 
