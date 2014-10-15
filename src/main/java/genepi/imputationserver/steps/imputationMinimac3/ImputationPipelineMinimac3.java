@@ -132,33 +132,35 @@ public class ImputationPipelineMinimac3 {
 		}
 
 		int end = input.getEnd() + phasingWindow;
-		
-		String bimWthMap = output.getPrefix()+".map.bim";
-		
+
+		String bimWthMap = output.getPrefix() + ".map.bim";
+
 		Command hapiUrPre = new Command(hapiUrPreprocessCommand);
-		hapiUrPre.setParams(output.getBimFilename(),mapFilename);
+		hapiUrPre.setParams(output.getBimFilename(), mapFilename);
 		hapiUrPre.saveStdOut(bimWthMap);
 		hapiUrPre.setSilent(true);
 		hapiUrPre.execute();
 		System.out.println("Command: " + hapiUrPre.getExecutedCommand());
-		
+
 		Command hapiUr = new Command(hapiUrCommand);
 		hapiUr.setSilent(false);
 
-		hapiUr.setParams("-g", output.getBedFilename(), "-s", bimWthMap, "-i", output.getFamFilename(), "-w", "73", "-o",
-				output.getPrefix(), "-c", input.getChromosome(), "--start",
-				start + "", "--end", end + "", "--impute2");
+		hapiUr.setParams("-g", output.getBedFilename(), "-s", bimWthMap, "-i",
+				output.getFamFilename(), "-w", "73", "-o", output.getPrefix(),
+				"-c", input.getChromosome(), "--start", start + "", "--end",
+				end + "", "--impute2");
 		hapiUr.saveStdOut(output.getPrefix() + ".hapiur.out");
 		hapiUr.saveStdErr(output.getPrefix() + ".hapiur.err");
 		System.out.println("Command: " + hapiUr.getExecutedCommand());
 		hapiUr.execute();
-		
-		//haps to vcf
+
+		// haps to vcf
 		Command shapeItConvert = new Command(shapeItCommand);
 		shapeItConvert.setSilent(false);
-		shapeItConvert.setParams("-convert","--input-haps",output.getPrefix(),"--output-vcf",output.getVcfFilename());
+		shapeItConvert.setParams("-convert", "--input-haps",
+				output.getPrefix(), "--output-vcf", output.getVcfFilename());
 		System.out.println("Command: " + shapeItConvert.getExecutedCommand());
-		
+
 		return (shapeItConvert.execute() == 0);
 	}
 
@@ -168,23 +170,24 @@ public class ImputationPipelineMinimac3 {
 		shapeIt.setSilent(false);
 
 		shapeIt.setParams("--input-bed", output.getBedFilename(),
-				output.getBimFilename(), output.getFamFilename(),"--input-map",mapFilename,
-				"--output-max", output.getPrefix(), "--input-from",
-				input.getStart() + "", "--input-to", input.getEnd() + "");
+				output.getBimFilename(), output.getFamFilename(),
+				"--input-map", mapFilename, "--output-max", output.getPrefix(),
+				"--input-from", input.getStart() + "", "--input-to",
+				input.getEnd() + "");
 		shapeIt.saveStdOut(output.getPrefix() + ".shapeit.out");
 		shapeIt.saveStdErr(output.getPrefix() + ".shapeit.err");
 		System.out.println("Command: " + shapeIt.getExecutedCommand());
 		shapeIt.execute();
-		
-		//haps to vcf
+
+		// haps to vcf
 		Command shapeItConvert = new Command(shapeItCommand);
 		shapeItConvert.setSilent(false);
-		shapeItConvert.setParams("-convert","--input-haps",output.getPrefix(),"--output-vcf",output.getVcfFilename());
+		shapeItConvert.setParams("-convert", "--input-haps",
+				output.getPrefix(), "--output-vcf", output.getVcfFilename());
 		System.out.println("Command: " + shapeItConvert.getExecutedCommand());
-		
+
 		return (shapeItConvert.execute() == 0);
 	}
-
 
 	public boolean imputeVCF(VcfChunk input, VcfChunkOutput output)
 			throws InterruptedException, IOException {
@@ -195,8 +198,9 @@ public class ImputationPipelineMinimac3 {
 		minimac.setParams("--refHaps", refPanelFilename, "--haps",
 				output.getVcfFilename(), "--rounds", rounds + "", "--start",
 				input.getStart() + "", "--end", input.getEnd() + "",
-				"--window", minimacWindow + "", "--phased", "--vcfOutput",
-				"--prefix", output.getPrefix(), "--chr", input.getChromosome());
+				"--window", minimacWindow + "", "--nobgzip", "--prefix",
+				output.getPrefix(), "--chr", input.getChromosome(),
+				"--noPhoneHome");
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
