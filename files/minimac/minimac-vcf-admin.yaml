@@ -64,11 +64,11 @@ mapred:
        type: list
        value: giant
        values:
-         giant: GIANT ALL Reference Panel
+         phase1: 1000G PhaseI v3 Shapeit2 (no singletons)
          phase3: 1000G Phase 3 initial release 6/2014
          hapmap2: HapMap 2
          hrc: HRC OPTM chr20
-
+         
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
        type: hdfs-folder
