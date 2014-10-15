@@ -245,9 +245,6 @@ public class ImputationMapperMinimac3 extends
 
 			}
 
-			// TODO currently not supported with minmac3.
-			// use shapeit-convert or add option to handle unphased data
-
 			// imputation for unphased genotypes.
 			if (!chunk.getChromosome().equals("23")
 					&& !chunk.getChromosome().equals("X")) {
