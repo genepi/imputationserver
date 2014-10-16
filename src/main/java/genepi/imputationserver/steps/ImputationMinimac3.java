@@ -2,6 +2,7 @@ package genepi.imputationserver.steps;
 
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.common.ContextLog;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.util.GeneticMap;
@@ -121,7 +122,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				String[] tiles = chunkFile.split("/");
 				String chr = tiles[tiles.length - 1];
 
-				ImputationJobMinimac3 job = new ImputationJobMinimac3("");
+				ImputationJobMinimac3 job = new ImputationJobMinimac3(
+						context.getJobName() + "-chr-" + chr, new ContextLog(
+								context));
 				job.setFolder(folder);
 				job.setRefPanelHdfs(panel.getHdfs());
 				job.setRefPanelPattern(panel.getPattern());

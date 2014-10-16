@@ -14,6 +14,7 @@ import genepi.io.FileUtil;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
@@ -56,9 +57,8 @@ public class ImputationJob extends HadoopJob {
 
 	private boolean noCache = false;
 
-	public ImputationJob(String name) {
-
-		super("imputation-minimac");
+	public ImputationJob(String name, Log log) {
+		super(name, log);
 		set("mapred.task.timeout", "720000000");
 		set("mapred.map.tasks.speculative.execution", false);
 		set("mapred.reduce.tasks.speculative.execution", false);

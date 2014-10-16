@@ -272,9 +272,8 @@ public class ImputationMapperMinimac3 extends
 
 		// fix window bug in minimac
 		// TODO ask lukas what this is for
-		int[] indices = pipeline.fixInfoFile(chunk, outputChunk);
-		log.info("  Postprocessing successful.");
-
+		pipeline.fixInfoFile(chunk, outputChunk);
+		
 		// store info file
 		HdfsUtil.put(outputChunk.getInfoFixedFilename(),
 				HdfsUtil.path(output, chunk.getChromosome(), chunk + ".info"),
