@@ -1,7 +1,7 @@
-name:  Minimac (Experimental)
+name:  Minimac3 (Experimental Mode)
 description: <a href="http://genome.sph.umich.edu/wiki/Minimac">Minimac</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
-version: 0.1.0
-website: http://genepi.i-med.ac.at
+version: 3
+website: http://genome.sph.umich.edu/wiki/Minimac
 category: MiniMac
 
 cluster:
@@ -62,10 +62,10 @@ mapred:
      - id: refpanel
        description: Reference Panel
        type: list
-       value: giant
+       value: phase1
        values:
          phase1: 1000G PhaseI v3 Shapeit2 (no singletons)
-         phase3: 1000G Phase 3 initial release 6/2014
+         phase3: 1000G Phase 3 v5
          hapmap2: HapMap 2
          hrc: HRC OPTM chr20
          
@@ -117,8 +117,6 @@ mapred:
        type: number
        value: 5000000
        visible: true
-
-
 
      - id: encryption
        description: Result Encryption

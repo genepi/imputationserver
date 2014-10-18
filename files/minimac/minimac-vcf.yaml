@@ -1,7 +1,7 @@
 name:  Minimac
 description: <a href="http://genome.sph.umich.edu/wiki/Minimac">Minimac</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
-version: 0.1.0
-website: http://genepi.i-med.ac.at
+version: 3
+website: http://genome.sph.umich.edu/wiki/Minimac
 category: MiniMac
 
 cluster:
@@ -41,7 +41,7 @@ mapred:
 #if($mode == "imputation")
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
-      classname: genepi.imputationserver.steps.Imputation
+      classname: genepi.imputationserver.steps.ImputationMinimac3
       params: $mafchunkfile $refpanel $chunksize $window $phasing      
       generates: $local $outputimputation $logfile $hadooplogs
 
@@ -62,10 +62,10 @@ mapred:
      - id: refpanel
        description: Reference Panel
        type: list
-       value: giant
+       value: phase1
        values:
-         giant: GIANT ALL Reference Panel
-         phase3: 1000G Phase 3 initial release 6/2014
+         phase1: 1000G Phase 1 v3 Shapeit2 (no singletons)
+         phase3: 1000G Phase 3 v5
          hapmap2: HapMap 2
 
      - id: files
@@ -130,10 +130,19 @@ mapred:
        description: <b>Minimac Binary</b>
        type: list
        visible: false
-       value: minimac2
+       value: Minimac3
        values:
-          minimac2: Minimac2    
-
+          Minimac3: Minimac3 
+            
+     - id: nocache
+       description: <b>Disable Cache</b>
+       type: checkbox
+       value: no
+       values:
+         true: yes
+         false: no
+       visible: false  
+         
   outputs:
 
     - id: outputimputation
