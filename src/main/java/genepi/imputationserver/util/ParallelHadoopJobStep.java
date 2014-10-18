@@ -144,8 +144,8 @@ public abstract class ParallelHadoopJobStep extends WorkflowStep {
 
 				} catch (Exception e) {
 
-					context.println(" Cancel Job " + id + " (" + job.getJobId()
-							+ ") failed: " + e.getMessage());
+					//context.println(" Cancel Job " + id + " (" + job.getJobId()
+					//		+ ") failed: " + e.getMessage());
 
 				}
 			}
