@@ -38,13 +38,13 @@ public class ImputationMapperMinimac3 extends
 	private String output;
 
 	private String refFilename = "";
-	
+
 	private String mapShapeITPattern;
-	
+
 	private String mapHapiURPattern;
-	
+
 	private String mapShapeITFilename = "";
-	
+
 	private String mapHapiURFilename = "";
 
 	private Log log;
@@ -64,8 +64,10 @@ public class ImputationMapperMinimac3 extends
 		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
 		window = parameters.get(ImputationJobMinimac3.WINDOW);
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
-		String hdfsPathShapeITMap = parameters.get(ImputationJob.MAP_SHAPEIT_HDFS);
-		String hdfsPathHapiURMap = parameters.get(ImputationJob.MAP_HAPIUR_HDFS);
+		String hdfsPathShapeITMap = parameters
+				.get(ImputationJob.MAP_SHAPEIT_HDFS);
+		String hdfsPathHapiURMap = parameters
+				.get(ImputationJob.MAP_HAPIUR_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
 		String mapShapeIT = FileUtil.getFilename(hdfsPathShapeITMap);
 		String mapHapiUR = FileUtil.getFilename(hdfsPathHapiURMap);
@@ -140,13 +142,21 @@ public class ImputationMapperMinimac3 extends
 
 		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
 
+		// hack for phase 1 (missing chr 14 and chr 19)
+		if (refPanelFilename.contains("phase1_v3")){
+			if (chunk.getChromosome().equals("14") || chunk.getChromosome().equals("19")){
+				log.info("Sorry, chr " + chunk.getChromosome() + " is not available");
+				return;
+			}
+		}
+		
 		if (!new File(refPanelFilename).exists()) {
 			log.stop("ReferencePanel '" + refPanelFilename + "' not found.", "");
 		}
 
 		pipeline.init();
 		pipeline.setReferencePanel(refPanelFilename);
-
+		
 		if (chunk.isPhased()) {
 
 			// imputation for phased genotypes
@@ -190,23 +200,23 @@ public class ImputationMapperMinimac3 extends
 			} else {
 				log.info("  Before imputation: " + noSnps + " SNPs");
 			}
-			
+
 			// phasing
 			if (!phasing.equals("shapeit")) {
-				
+
 				// hapiur
 				time = System.currentTimeMillis();
-				
-				chrFilename = mapHapiURPattern
-						.replaceAll("\\$chr", chunk.getChromosome());
-				String mapfilePath = FileUtil.path(mapHapiURFilename, chrFilename);
+
+				chrFilename = mapHapiURPattern.replaceAll("\\$chr",
+						chunk.getChromosome());
+				String mapfilePath = FileUtil.path(mapHapiURFilename,
+						chrFilename);
 
 				if (!new File(mapfilePath).exists()) {
 					log.stop("Map '" + mapfilePath + "' not found.", "");
 				}
-				
-				pipeline.setMapFilename(mapfilePath);
 
+				pipeline.setMapFilename(mapfilePath);
 
 				successful = pipeline.phaseWithHapiUr(chunk, outputChunk);
 				time = (System.currentTimeMillis() - time) / 1000;
@@ -221,19 +231,19 @@ public class ImputationMapperMinimac3 extends
 			} else {
 
 				// shapeit
-				chrFilename = mapShapeITPattern
-						.replaceAll("\\$chr", chunk.getChromosome());
-				String mapfilePath = FileUtil.path(mapShapeITFilename, chrFilename);
+				chrFilename = mapShapeITPattern.replaceAll("\\$chr",
+						chunk.getChromosome());
+				String mapfilePath = FileUtil.path(mapShapeITFilename,
+						chrFilename);
 
 				if (!new File(mapfilePath).exists()) {
 					log.stop("Map '" + mapfilePath + "' not found.", "");
 				}
-				
+
 				pipeline.setMapFilename(mapfilePath);
-				
+
 				time = System.currentTimeMillis();
-				successful = pipeline.phaseWithShapeIt(chunk,
-						outputChunk);
+				successful = pipeline.phaseWithShapeIt(chunk, outputChunk);
 				time = (System.currentTimeMillis() - time) / 1000;
 
 				if (successful) {
@@ -273,7 +283,7 @@ public class ImputationMapperMinimac3 extends
 		// fix window bug in minimac
 		// TODO ask lukas what this is for
 		pipeline.fixInfoFile(chunk, outputChunk);
-		
+
 		// store info file
 		HdfsUtil.put(outputChunk.getInfoFixedFilename(),
 				HdfsUtil.path(output, chunk.getChromosome(), chunk + ".info"),
