@@ -141,14 +141,6 @@ public class ImputationMapperMinimac3 extends
 				.replaceAll("\\$chr", chunk.getChromosome());
 
 		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
-
-		// hack for phase 1 (missing chr 14 and chr 19)
-		if (refPanelFilename.contains("phase1_v3")){
-			if (chunk.getChromosome().equals("14") || chunk.getChromosome().equals("19")){
-				log.info("Sorry, chr " + chunk.getChromosome() + " is not available");
-				return;
-			}
-		}
 		
 		if (!new File(refPanelFilename).exists()) {
 			log.stop("ReferencePanel '" + refPanelFilename + "' not found.", "");
