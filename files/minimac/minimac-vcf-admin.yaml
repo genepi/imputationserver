@@ -115,7 +115,7 @@ mapred:
      - id: chunksize
        description: Chunk size
        type: number
-       value: 5000000
+       value: 10000000
        visible: true
 
      - id: encryption
@@ -137,10 +137,11 @@ mapred:
      - id: nocache
        description: <b>Disable Cache</b>
        type: checkbox
-       value: yes
+       value: no
        values:
          true: yes
          false: no
+       visible: false
 
 
   outputs:
