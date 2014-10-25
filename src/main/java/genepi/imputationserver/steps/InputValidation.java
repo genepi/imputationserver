@@ -10,6 +10,8 @@ import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
@@ -99,6 +101,15 @@ public class InputValidation extends WorkflowStep {
 					for (String chr : chromosomes) {
 						chromosomeString += " " + chr;
 					}
+
+					//check if all files have same amount of samples
+					if(noSamples!=0 && noSamples!=vcfFile.getNoSamples()){
+						context.endTask(
+								"Please double check, if all uploaded VCF files include the same amount of samples ("+vcfFile.getNoSamples()+ " vs "+noSamples+")",
+								WorkflowContext.ERROR);
+						return false;
+					}
+					
 					noSamples = vcfFile.getNoSamples();
 					noSnps += vcfFile.getNoSnps();
 					chunks += vcfFile.getChunks().size();
@@ -106,7 +117,6 @@ public class InputValidation extends WorkflowStep {
 					phased = phased && vcfFile.isPhased();
 
 					// check reference panel
-
 					if (vcfFile.isPhasedAutodetect() && !vcfFile.isPhased()) {
 
 						context.endTask(
@@ -152,6 +162,14 @@ public class InputValidation extends WorkflowStep {
 
 			}
 
+		}
+
+		if (!phased && noSamples < 50) {
+			context.endTask(
+					"At least 50 samples must be included for pre-phasing",
+					WorkflowContext.ERROR);
+
+			return false;
 		}
 
 		if (validVcfFiles.size() > 0) {
