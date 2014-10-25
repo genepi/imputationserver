@@ -166,14 +166,21 @@ public class ImputationPipelineMinimac3 {
 
 	public boolean phaseWithShapeIt(VcfChunk input, VcfChunkOutput output) {
 
+		// +/- 1 Mbases
+		int start = input.getStart() - phasingWindow;
+		if (start < 1) {
+			start = 1;
+		}
+
+		int end = input.getEnd() + phasingWindow;
+
 		Command shapeIt = new Command(shapeItCommand);
 		shapeIt.setSilent(false);
 
 		shapeIt.setParams("--input-bed", output.getBedFilename(),
 				output.getBimFilename(), output.getFamFilename(),
 				"--input-map", mapFilename, "--output-max", output.getPrefix(),
-				"--input-from", input.getStart() + "", "--input-to",
-				input.getEnd() + "");
+				"--input-from", start + "", "--input-to", end + "");
 		shapeIt.saveStdOut(output.getPrefix() + ".shapeit.out");
 		shapeIt.saveStdErr(output.getPrefix() + ".shapeit.err");
 		System.out.println("Command: " + shapeIt.getExecutedCommand());
