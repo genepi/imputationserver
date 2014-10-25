@@ -276,7 +276,7 @@ public class QualityControlMapper extends
 				// not found in legend file
 				if (refSnp == null) {
 					// write to vcf file
-					newFileWriter.write(line);
+					//newFileWriter.write(line);
 					if (insideChunk) {
 
 						overallSnps++;
