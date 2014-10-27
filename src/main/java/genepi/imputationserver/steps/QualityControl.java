@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.common.ContextLog;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.qc.QualityControlJob;
@@ -74,7 +75,7 @@ public class QualityControl extends HadoopJobStep {
 		}
 
 		// submit qc hadoop job
-		QualityControlJob job = new QualityControlJob("maf");
+		QualityControlJob job = new QualityControlJob(context.getJobId() +  "-quality-control", new ContextLog(context));
 		job.setLegendHdfs(panel.getLegend());
 		job.setLegendPattern(panel.getLegendPattern());
 		job.setPopulation(population);

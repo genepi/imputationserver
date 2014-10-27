@@ -7,6 +7,7 @@ import genepi.io.FileUtil;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
@@ -49,9 +50,9 @@ public class QualityControlJob extends HadoopJob {
 	private long strandSwitch3;
 	private long match;
 
-	public QualityControlJob(String name) {
+	public QualityControlJob(String name, Log log) {
 
-		super("maf-minimac");
+		super(name, log);
 		getConfiguration().set("mapred.task.timeout", "360000000");
 		getConfiguration().set("mapred.reduce.tasks", "22");
 		getConfiguration().set("mapred.job.queue.name", "qc");
