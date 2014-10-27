@@ -79,6 +79,7 @@ public class ImputationPipelineMinimac3 {
 				"--out", output.getPrefix());
 		vcfCooker.saveStdOut(output.getPrefix() + ".vcfcooker.out");
 		vcfCooker.saveStdErr(output.getPrefix() + ".vcfcooker.err");
+		System.out.println("Command: " + vcfCooker.getExecutedCommand());
 		return (vcfCooker.execute() == 0);
 
 	}
