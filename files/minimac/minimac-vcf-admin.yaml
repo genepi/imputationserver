@@ -88,10 +88,12 @@ mapred:
        values:
          eur: EUR
          afr: AFR
-         asn: ASN
+         asn: ASN (Phase1 only)
          amr: AMR
+         sas: SAS (Phase3 only)
+         eas: EAS (Phase3 only)
          mixed: Mixed
-                  
+         
      - id: mode
        description: Mode
        type: list
