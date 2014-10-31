@@ -1,11 +1,8 @@
 package genepi.imputationserver.util;
 
-import genepi.imputationserver.steps.qc.SnpStats;
 import genepi.io.legend.LegendEntry;
 
-import java.io.IOException;
 
-import org.broadinstitute.variant.variantcontext.Genotype;
 import org.broadinstitute.variant.variantcontext.VariantContext;
 
 public class GenomicTools {
