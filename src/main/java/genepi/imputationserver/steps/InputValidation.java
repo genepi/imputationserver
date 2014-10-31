@@ -10,8 +10,6 @@ import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
@@ -37,8 +35,9 @@ public class InputValidation extends WorkflowStep {
 		// inputs
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
-		int chunkSize = Integer.parseInt(context.get("chunksize"));
+		String population = context.get("population");
 
+		int chunkSize = Integer.parseInt(context.get("chunksize"));
 		String tabix = FileUtil.path(folder, "bin", "tabix");
 		String files = FileUtil.path(context.getLocalTemp(), "input");
 
@@ -102,14 +101,17 @@ public class InputValidation extends WorkflowStep {
 						chromosomeString += " " + chr;
 					}
 
-					//check if all files have same amount of samples
-					if(noSamples!=0 && noSamples!=vcfFile.getNoSamples()){
+					// check if all files have same amount of samples
+					if (noSamples != 0 && noSamples != vcfFile.getNoSamples()) {
 						context.endTask(
-								"Please double check, if all uploaded VCF files include the same amount of samples ("+vcfFile.getNoSamples()+ " vs "+noSamples+")",
+								"Please double check, if all uploaded VCF files include the same amount of samples ("
+										+ vcfFile.getNoSamples()
+										+ " vs "
+										+ noSamples + ")",
 								WorkflowContext.ERROR);
 						return false;
 					}
-					
+
 					noSamples = vcfFile.getNoSamples();
 					noSnps += vcfFile.getNoSnps();
 					chunks += vcfFile.getChunks().size();
@@ -136,10 +138,43 @@ public class InputValidation extends WorkflowStep {
 								WorkflowContext.ERROR);
 						return false;
 					}
+
 					RefPanel panel = panels.getById(reference);
 					if (panel == null) {
 						context.endTask("Reference '" + reference
 								+ "' not found.", WorkflowContext.ERROR);
+
+						return false;
+					}
+
+					if ((panel.getId().equals("hapmap2") && !population
+							.equals("eur"))) {
+
+						context.endTask(
+								"Please select the EUR population for the HapMap reference panel",
+								WorkflowContext.ERROR);
+
+						return false;
+					}
+
+					if ((panel.getId().equals("phase1") && population
+							.equals("sas"))
+							|| (panel.getId().equals("phase1") && population
+									.equals("eas"))) {
+
+						context.endTask(
+								"The selected population (SAS, EAS) is not allowed for this panel",
+								WorkflowContext.ERROR);
+
+						return false;
+					}
+
+					if ((panel.getId().equals("phase3") && population
+							.equals("asn"))) {
+
+						context.endTask(
+								"The selected population (ASN) is not allowed for the 1000G Phase3 reference panel",
+								WorkflowContext.ERROR);
 
 						return false;
 					}
