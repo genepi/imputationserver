@@ -52,7 +52,7 @@ public class CompressionEncryption extends WorkflowStep {
 					// merge vcf output
 					VcfFileUtil.mergeGz(
 							FileUtil.path(localOutput, "results", "chr" + name
-									+ ".dose.vcf.gz"), folder, ".dose.vcf");
+									+ ".dose.vcf.gz"), folder, ".dose.vcf.gz");
 
 				}
 

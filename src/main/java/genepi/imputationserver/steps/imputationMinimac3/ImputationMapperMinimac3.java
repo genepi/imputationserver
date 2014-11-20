@@ -282,7 +282,7 @@ public class ImputationMapperMinimac3 extends
 
 		// store vcf file
 		HdfsUtil.put(outputChunk.getVcfOutFilename(),
-				HdfsUtil.path(output, chunk + ".dose.vcf"));
+				HdfsUtil.path(output, chunk + ".dose.vcf.gz"));
 
 	}
 }

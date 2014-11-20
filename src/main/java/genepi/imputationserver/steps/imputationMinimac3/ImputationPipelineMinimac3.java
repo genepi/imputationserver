@@ -206,9 +206,8 @@ public class ImputationPipelineMinimac3 {
 		minimac.setParams("--refHaps", refPanelFilename, "--haps",
 				output.getVcfFilename(), "--rounds", rounds + "", "--start",
 				input.getStart() + "", "--end", input.getEnd() + "",
-				"--window", minimacWindow + "", "--nobgzip", "--prefix",
-				output.getPrefix(), "--chr", input.getChromosome(),
-				"--noPhoneHome");
+				"--window", minimacWindow + "", "--prefix", output.getPrefix(),
+				"--chr", input.getChromosome(), "--noPhoneHome");
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
