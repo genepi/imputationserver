@@ -4,7 +4,6 @@ import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.ContextLog;
 import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.log.Log;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.util.GeneticMap;
 import genepi.imputationserver.util.MapList;
@@ -27,8 +26,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	private WorkflowContext context;
 
 	private String errorChr = "";
-	
-	private Log log;
 
 	public ImputationMinimac3() {
 		super(10);
@@ -37,7 +34,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	@Override
 	public void setup(WorkflowContext context) {
-		
+
 		this.context = context;
 	}
 
@@ -65,7 +62,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		// outputs
 		String output = context.get("outputimputation");
-		String local = context.get("local");
 		String log = context.get("logfile");
 
 		if (!HdfsUtil.exists(input)) {
@@ -125,7 +121,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				String[] tiles = chunkFile.split("/");
 				String chr = tiles[tiles.length - 1];
-				
+
 				ImputationJobMinimac3 job = new ImputationJobMinimac3(
 						context.getJobName() + "-chr-" + chr, new ContextLog(
 								context));
@@ -142,7 +138,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setInput(chunkFile);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
-				job.setLocalOutput(local);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setPhasing(phasing);
 				job.setRounds(rounds);

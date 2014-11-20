@@ -55,7 +55,7 @@ public class QualityControlJob extends HadoopJob {
 		super(name, log);
 		getConfiguration().set("mapred.task.timeout", "360000000");
 		getConfiguration().set("mapred.reduce.tasks", "22");
-		getConfiguration().set("mapred.job.queue.name", "qc");
+		//getConfiguration().set("mapred.job.queue.name", "qc");
 
 	}
 

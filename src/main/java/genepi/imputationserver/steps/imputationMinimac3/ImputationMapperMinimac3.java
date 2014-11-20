@@ -141,14 +141,14 @@ public class ImputationMapperMinimac3 extends
 				.replaceAll("\\$chr", chunk.getChromosome());
 
 		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
-		
+
 		if (!new File(refPanelFilename).exists()) {
 			log.stop("ReferencePanel '" + refPanelFilename + "' not found.", "");
 		}
 
 		pipeline.init();
 		pipeline.setReferencePanel(refPanelFilename);
-		
+
 		if (chunk.isPhased()) {
 
 			// imputation for phased genotypes
@@ -278,14 +278,11 @@ public class ImputationMapperMinimac3 extends
 
 		// store info file
 		HdfsUtil.put(outputChunk.getInfoFixedFilename(),
-				HdfsUtil.path(output, chunk.getChromosome(), chunk + ".info"),
-				context.getConfiguration());
+				HdfsUtil.path(output, chunk + ".info"));
 
 		// store vcf file
-		HdfsUtil.put(
-				outputChunk.getVcfOutFilename(),
-				HdfsUtil.path(output, chunk.getChromosome(), chunk
-						+ ".dose.vcf"), context.getConfiguration());
+		HdfsUtil.put(outputChunk.getVcfOutFilename(),
+				HdfsUtil.path(output, chunk + ".dose.vcf"));
 
 	}
 }

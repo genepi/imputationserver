@@ -24,11 +24,11 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String REF_PANEL_PATTERN = "MINIMAC_REFPANEL_PATTERN";
 
 	public static final String REF_PANEL_HDFS = "MINIMAC_REFPANEL_HDFS";
-	
+
 	public static final String MAP_SHAPEIT_HDFS = "MINIMAC_MAP_SHAPEIT_HDFS";
-	
+
 	public static final String MAP_SHAPEIT_PATTERN = "MINIMAC_MAP_SHAPEIT_PATTERN";
-	
+
 	public static final String MAP_HAPIUR_HDFS = "MINIMAC_MAP_HAPIUR_HDFS";
 
 	public static final String MAP_HAPIUR_PATTERN = "MINIMAC_MAP_HAPIUR_PATTERN";
@@ -43,8 +43,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String MINIMAC_BIN = "MINIMAC_BIN";
 
-	private String localOutput;
-
 	private String refPanelHdfs;
 
 	private String logFilename;
@@ -54,9 +52,9 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	private String minimacBin;
 
 	private boolean noCache = false;
-	
+
 	private String mapShapeITHDFS;
-	
+
 	private String mapHapiURHDFS;
 
 	public ImputationJobMinimac3(String name, Log log) {
@@ -95,8 +93,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		String name = FileUtil.getFilename(refPanelHdfs);
 
 		cache.addArchive(name, refPanelHdfs);
-		
-		
+
 		// add ShapeIT Map File to cache
 		if (HdfsUtil.exists(mapShapeITHDFS)) {
 			name = FileUtil.getFilename(mapShapeITHDFS);
@@ -112,7 +109,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		} else {
 			throw new IOException("Map " + mapHapiURHDFS + " not found.");
 		}
-		
+
 	}
 
 	public void setFolder(String folder) {
@@ -136,36 +133,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	@Override
 	public void after() {
 
-		try {
-
-			List<String> folders = HdfsUtil.getDirectories(getOutput());
-
-			FileUtil.createDirectory(FileUtil.path(localOutput, "results"));
-
-			for (String folder : folders) {
-
-				String name = FileUtil.getFilename(folder);
-
-				System.out.println("name is " + name);
-
-				// merge all info files
-				HdfsUtil.mergeAndGz(
-						FileUtil.path(localOutput, "results", "chr" + name
-								+ ".info.gz"), folder, true, ".info");
-
-				// merge vcf output
-				VcfFileUtil.mergeGz(
-						FileUtil.path(localOutput, "results", "chr" + name
-								+ ".dose.vcf.gz"), folder, ".dose.vcf");
-
-			}
-
-			// delete temporary files
-			HdfsUtil.delete(getOutput());
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// delete temp directory for mapred output
+		HdfsUtil.delete(HdfsUtil.path(getOutput(), "temp"));
 
 	}
 
@@ -181,12 +150,9 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	@Override
 	public void setOutput(String output) {
-		super.setOutput(output);
+		// set mapred output to temp directory
+		super.setOutput(HdfsUtil.path(output, "temp"));
 		set(OUTPUT, output);
-	}
-
-	public void setLocalOutput(String localOutput) {
-		this.localOutput = localOutput;
 	}
 
 	public void setRefPanel(String refPanel) {
@@ -226,7 +192,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		this.minimacBin = minimacBin;
 		set(MINIMAC_BIN, minimacBin);
 	}
-	
+
 	public void setMapShapeITPattern(String mapPattern) {
 		set(MAP_SHAPEIT_PATTERN, mapPattern);
 	}
@@ -235,7 +201,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		this.mapShapeITHDFS = mapHDFS1;
 		set(MAP_SHAPEIT_HDFS, mapHDFS1);
 	}
-	
+
 	public void setMapHapiURPattern(String mapPattern) {
 		set(MAP_HAPIUR_PATTERN, mapPattern);
 	}

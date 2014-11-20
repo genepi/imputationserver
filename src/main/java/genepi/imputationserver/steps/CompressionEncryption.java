@@ -1,10 +1,13 @@
 package genepi.imputationserver.steps;
 
+import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.io.FileUtil;
 
 import java.io.File;
+import java.util.List;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
@@ -18,11 +21,49 @@ public class CompressionEncryption extends WorkflowStep {
 	public boolean run(WorkflowContext context) {
 
 		try {
+
+			String output = context.get("outputimputation");
+
 			// inputs
-			String folder = context.get("local");
+			String localOutput = context.get("local");
 			String encryption = context.get("encryption");
 
-			if (!new File(FileUtil.path(folder, "results")).exists()) {
+			
+			
+			try {
+
+				List<String> folders = HdfsUtil.getDirectories(output);
+
+				FileUtil.createDirectory(FileUtil.path(localOutput, "results"));
+
+				// export all chromosomes
+			
+				for (String folder : folders) {
+
+					String name = FileUtil.getFilename(folder);
+
+					context.println("Export and merge file " + folder);
+
+					// merge all info files
+					HdfsUtil.mergeAndGz(
+							FileUtil.path(localOutput, "results", "chr" + name
+									+ ".info.gz"), folder, true, ".info");
+
+					// merge vcf output
+					VcfFileUtil.mergeGz(
+							FileUtil.path(localOutput, "results", "chr" + name
+									+ ".dose.vcf.gz"), folder, ".dose.vcf");
+
+				}
+
+				// delete temporary files
+				HdfsUtil.delete(output);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			if (!new File(FileUtil.path(localOutput, "results")).exists()) {
 				context.error("no results found.");
 				return true;
 			}
@@ -36,11 +77,11 @@ public class CompressionEncryption extends WorkflowStep {
 				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
 			}
 
-			ZipFile file = new ZipFile(new File(FileUtil.path(folder,
+			ZipFile file = new ZipFile(new File(FileUtil.path(localOutput,
 					"results.zip")));
-			file.createZipFileFromFolder(FileUtil.path(folder, "results"),
+			file.createZipFileFromFolder(FileUtil.path(localOutput, "results"),
 					param, false, 0);
-			FileUtil.deleteDirectory(FileUtil.path(folder, "results"));
+			FileUtil.deleteDirectory(FileUtil.path(localOutput, "results"));
 
 			context.ok("Data compression successful.");
 
