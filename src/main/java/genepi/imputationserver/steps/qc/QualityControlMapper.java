@@ -123,9 +123,8 @@ public class QualityControlMapper extends
 
 		codec.setVCFHeader(vcfReader.getFileHeader(), VCFHeaderVersion.VCF4_1);
 
-		int foundInLegend = 0;
 		int notFoundInLegend = 0;
-
+		int foundInLegend = 0;
 		int alleleMismatch = 0;
 		int alleleSwitch = 0;
 		int strandSwitch1 = 0;
@@ -475,7 +474,7 @@ public class QualityControlMapper extends
 		double overlap = foundInLegend
 				/ (double) (foundInLegend + notFoundInLegend);
 
-		if (overlap >= 0.1 && overallSnps >= 3 && !lowSampleCallRate) {
+		if (overlap >= 0.1 && foundInLegend >= 3 && !lowSampleCallRate) {
 
 			// update chunk
 			chunk.setSnps(overallSnps);
