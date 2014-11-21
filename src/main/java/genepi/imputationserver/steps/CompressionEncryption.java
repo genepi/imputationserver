@@ -15,60 +15,67 @@ import net.lingala.zip4j.util.Zip4jConstants;
 
 import org.apache.commons.lang.RandomStringUtils;
 
+import cloudgene.mapred.jobs.Message;
+
 public class CompressionEncryption extends WorkflowStep {
 
 	@Override
 	public boolean run(WorkflowContext context) {
 
+		String output = context.get("outputimputation");
+		String localOutput = context.get("local");
+		String encryption = context.get("encryption");
+
+		String password = RandomStringUtils.randomAlphabetic(10);
+
 		try {
 
-			String output = context.get("outputimputation");
+			context.beginTask("Export data...");
 
-			// inputs
-			String localOutput = context.get("local");
-			String encryption = context.get("encryption");
+			List<String> folders = HdfsUtil.getDirectories(output);
 
-			
-			
-			try {
+			FileUtil.createDirectory(FileUtil.path(localOutput, "results"));
 
-				List<String> folders = HdfsUtil.getDirectories(output);
+			// export all chromosomes
 
-				FileUtil.createDirectory(FileUtil.path(localOutput, "results"));
+			for (String folder : folders) {
 
-				// export all chromosomes
-			
-				for (String folder : folders) {
+				String name = FileUtil.getFilename(folder);
 
-					String name = FileUtil.getFilename(folder);
+				context.println("Export and merge file " + folder);
 
-					context.println("Export and merge file " + folder);
+				// merge all info files
+				HdfsUtil.mergeAndGz(
+						FileUtil.path(localOutput, "results", "chr" + name
+								+ ".info.gz"), folder, true, ".info");
 
-					// merge all info files
-					HdfsUtil.mergeAndGz(
-							FileUtil.path(localOutput, "results", "chr" + name
-									+ ".info.gz"), folder, true, ".info");
+				// merge vcf output
+				VcfFileUtil.mergeGz(
+						FileUtil.path(localOutput, "results", "chr" + name
+								+ ".dose.vcf.gz"), folder, ".dose.vcf.gz");
 
-					// merge vcf output
-					VcfFileUtil.mergeGz(
-							FileUtil.path(localOutput, "results", "chr" + name
-									+ ".dose.vcf.gz"), folder, ".dose.vcf.gz");
-
-				}
-
-				// delete temporary files
-				HdfsUtil.delete(output);
-
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
+
+			// delete temporary files
+			HdfsUtil.delete(output);
+
+			context.endTask("Exported data.", Message.OK);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			context.endTask("Data compression failed: " + e.getMessage(),
+					Message.ERROR);
+			return false;
+		}
+
+		try {
+
+			context.beginTask("Compress data");
 
 			if (!new File(FileUtil.path(localOutput, "results")).exists()) {
-				context.error("no results found.");
-				return true;
+				context.endTask("no results found.", Message.ERROR);
+				return false;
 			}
-
-			String password = RandomStringUtils.randomAlphabetic(10);
 
 			ZipParameters param = new ZipParameters();
 			if (encryption.equals("yes")) {
@@ -83,49 +90,57 @@ public class CompressionEncryption extends WorkflowStep {
 					param, false, 0);
 			FileUtil.deleteDirectory(FileUtil.path(localOutput, "results"));
 
-			context.ok("Data compression successful.");
+			context.endTask("Data compression successful.", Message.OK);
 
-			// submit counters!
-			context.submitCounter("samples");
-			context.submitCounter("genotypes");
-			context.submitCounter("chromosomes");
-			context.submitCounter("runs");
+		} catch (Exception e) {
+			e.printStackTrace();
+			context.endTask("Data compression failed: " + e.getMessage(),
+					Message.ERROR);
+			return false;
+		}
 
-			if (encryption.equals("yes")) {
+		// submit counters!
+		context.submitCounter("samples");
+		context.submitCounter("genotypes");
+		context.submitCounter("chromosomes");
+		context.submitCounter("runs");
 
-				Object mail = context.getData("cloudgene.user.mail");
-				Object name = context.getData("cloudgene.user.name");
+		// send email
 
-				if (mail != null) {
+		if (encryption.equals("yes")) {
 
+			Object mail = context.getData("cloudgene.user.mail");
+			Object name = context.getData("cloudgene.user.name");
+
+			if (mail != null) {
+
+				String subject = "Job " + context.getJobName()
+						+ " is complete.";
+				String message = "Dear "
+						+ name
+						+ ",\nthe password for the imputation results is: "
+						+ password
+						+ "\n\nThe results can be downloaded from https://imputationserver.sph.umich.edu/start.html#!jobs/"
+						+ context.getJobName() + "/results";
+
+				try {
+					context.sendMail(subject, message);
 					context.ok("We have sent an email to <b>" + mail
 							+ "</b> with the password.");
-
-					String subject = "Job " + context.getJobName()
-							+ " is complete.";
-					String message = "Dear "
-							+ name
-							+ ",\nthe password for the imputation results is: "
-							+ password
-							+ "\n\nThe results can be downloaded from https://imputationserver.sph.umich.edu/start.html#!jobs/"
-							+ context.getJobName() + "/results";
-
-					return context.sendMail(subject, message);
-
-				} else {
-					context.error("No email address found. Please enter your email address (Account -> Profile).");
+					return true;
+				} catch (Exception e) {
+					context.error("Data compression failed: " + e.getMessage());
 					return false;
 				}
 
 			} else {
-
-				return true;
+				context.error("No email address found. Please enter your email address (Account -> Profile).");
+				return false;
 			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			context.error("Data compression failed: " + e.getMessage());
-			return false;
+		} else {
+
+			return true;
 		}
 
 	}
