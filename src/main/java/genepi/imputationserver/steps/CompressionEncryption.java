@@ -104,6 +104,11 @@ public class CompressionEncryption extends WorkflowStep {
 		context.submitCounter("genotypes");
 		context.submitCounter("chromosomes");
 		context.submitCounter("runs");
+		// submit panel and phasing method counters
+		String reference = context.get("refpanel");
+		String phasing = context.get("phasing");
+		context.submitCounter("refpanel_" + reference);
+		context.submitCounter("phasing_" + phasing);
 
 		// send email
 

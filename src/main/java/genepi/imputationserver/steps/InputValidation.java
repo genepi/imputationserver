@@ -36,6 +36,7 @@ public class InputValidation extends WorkflowStep {
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
 		String population = context.get("population");
+		String phasing = context.get("phasing");
 
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 		String tabix = FileUtil.path(folder, "bin", "tabix");
@@ -219,6 +220,7 @@ public class InputValidation extends WorkflowStep {
 			context.incCounter("chromosomes", noSamples * chromosomes.size());
 			context.incCounter("runs", 1);
 			context.incCounter("refpanel_" + reference, 1);
+			context.incCounter("phasing_" + phasing, 1);
 
 			return true;
 
