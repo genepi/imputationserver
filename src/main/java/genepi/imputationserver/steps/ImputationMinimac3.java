@@ -27,6 +27,8 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	private String errorChr = "";
 
+	private boolean running = true;
+
 	public ImputationMinimac3() {
 		super(10);
 		jobs = new HashMap<String, HadoopJob>();
@@ -152,6 +154,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			}
 
 			waitForAll();
+			running = false;
 			context.println("All jobs terminated.");
 
 			// one job was failed
@@ -363,7 +366,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	public void updateProgress() {
 
 		super.updateProgress();
-		if (!error && !isCanceled()) {
+		if (running) {
 			String text = updateMessage();
 			context.updateTask(text, WorkflowContext.RUNNING);
 		}
