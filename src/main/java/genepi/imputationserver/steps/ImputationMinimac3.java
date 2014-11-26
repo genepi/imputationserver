@@ -196,7 +196,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			printSummary();
 
 			String text = updateMessage();
-			context.updateTask(text, WorkflowContext.OK);
+			context.endTask(text, WorkflowContext.OK);
 
 			return true;
 
