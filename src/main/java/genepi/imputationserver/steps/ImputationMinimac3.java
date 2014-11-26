@@ -200,26 +200,16 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			return true;
 
-		} catch (IOException e1) {
+		} catch (Exception e) {
 
 			// unexpected exception
 
 			updateProgress();
 			printSummary();
 
-			context.updateTask(e1.getMessage(), WorkflowContext.ERROR);
+			context.updateTask(e.getMessage(), WorkflowContext.ERROR);
 			return false;
-
-		} catch (InterruptedException e1) {
-
-			// canceled by user
-
-			updateProgress();
-			printSummary();
-
-			context.updateTask("Canceled by user.", WorkflowContext.ERROR);
-			return false;
-
+			
 		}
 
 	}
