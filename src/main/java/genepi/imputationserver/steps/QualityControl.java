@@ -109,9 +109,9 @@ public class QualityControl extends HadoopJobStep {
 			text.append("Match: " + formatter.format(job.getMatch()) + "<br>");
 			text.append("Allele switch: "
 					+ formatter.format(job.getAlleleSwitch()) + "<br>");
-			text.append("Strand switch: "
+			text.append("Strand flip: "
 					+ formatter.format(job.getStrandSwitch1()) + "<br>");
-			text.append("Strand switch and allele switch: "
+			text.append("Strand flip and allele switch: "
 					+ formatter.format(job.getStrandSwitch3()) + "<br>");
 			text.append("A/T, C/G genotypes: "
 					+ formatter.format(job.getStrandSwitch2()) + "<br>");
@@ -170,6 +170,9 @@ public class QualityControl extends HadoopJobStep {
 						+ context.createLinkToFile("statistics")
 						+ " for details).");
 			}
+			
+			
+			
 
 			long excludedChunks = job.getRemovedChunksSnps()
 					+ job.getRemovedChunksCallRate()
@@ -188,7 +191,17 @@ public class QualityControl extends HadoopJobStep {
 
 				return false;
 
-			} else {
+			}
+			// strand flips (normal flip + allele switch AND strand flip)
+			else if(job.getStrandSwitch1() + job.getStrandSwitch3() > 100){
+					text.append("<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
+					context.error(text.toString());
+
+					return false;
+			}
+			
+			
+			else {
 				context.warning(text.toString());
 				return true;
 

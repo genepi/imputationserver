@@ -27,6 +27,12 @@ import org.broadinstitute.variant.vcf.VCFHeaderVersion;
 public class QualityControlMapper extends
 		Mapper<LongWritable, Text, Text, Text> {
 
+	private static final double CALL_RATE = 0.5;
+
+	private static final int MIN_SNPS = 3;
+
+	private static final double OVERLAP = 0.5;
+
 	private String folder;
 
 	private LegendFileReader legendReader;
@@ -135,6 +141,7 @@ public class QualityControlMapper extends
 		int lowCallRate = 0;
 		int filtered = 0;
 		int overallSnps = 0;
+		int validSnps = 0;
 		int monomorphic = 0;
 		int alternativeAlleles = 0;
 		int noSnps = 0;
@@ -145,8 +152,6 @@ public class QualityControlMapper extends
 		int removedChunksSnps = 0;
 		int removedChunksOverlap = 0;
 		int removedChunksCallRate = 0;
-		
-		String tmp = null;
 
 		int[] snpsPerSampleCount = null;
 
@@ -167,7 +172,8 @@ public class QualityControlMapper extends
 
 				boolean insideChunk = position >= chunk.getStart()
 						&& position <= chunk.getEnd();
-
+				
+				
 				// filter invalid alleles
 				if (!GenomicTools.isValid(ref) || !GenomicTools.isValid(alt)) {
 					if (insideChunk) {
@@ -188,17 +194,17 @@ public class QualityControlMapper extends
 						duplicates++;
 						logWriter.write("FILTER - Duplicate: " + snp.getID()
 								+ " - pos: " + snp.getStart());
-						logWriter.write("COPY OF: " + tmp);
+						//logWriter.write("COPY OF: " + tmp);
 						filtered++;
 					}
-					
+
 					lastPos = snp.getStart();
 					continue;
 
 				}
-				
-				tmp = "FILTER - Duplicate: " + snp.getID()
-						+ " - pos: " + snp.getStart();
+
+				String tmp = "FILTER - Duplicate: " + snp.getID() + " - pos: "
+						+ snp.getStart();
 
 				// update last pos only when not filtered
 				if (!snp.isFiltered()) {
@@ -224,8 +230,9 @@ public class QualityControlMapper extends
 						} else {
 
 							logWriter
-									.write("FILTER - Flag is set: " + snp.getID()
-											+ " - pos: " + snp.getStart());
+									.write("FILTER - Flag is set: "
+											+ snp.getID() + " - pos: "
+											+ snp.getStart());
 							filterFlag++;
 							filtered++;
 						}
@@ -248,8 +255,8 @@ public class QualityControlMapper extends
 				// filter indels
 				if (snp.isIndel() || snp.isComplexIndel()) {
 					if (insideChunk) {
-						logWriter.write("FILTER - InDel: " + snp.getID() + " - pos: "
-								+ snp.getStart());
+						logWriter.write("FILTER - InDel: " + snp.getID()
+								+ " - pos: " + snp.getStart());
 						noSnps++;
 						filtered++;
 					}
@@ -257,8 +264,10 @@ public class QualityControlMapper extends
 				}
 
 				// remove monomorphic snps
-				// monomorphic only exclude 0/0; 
-				if (snp.isMonomorphicInSamples() || snp.getHetCount() == 2*(snp.getNSamples()-snp.getNoCallCount())) {
+				// monomorphic only exclude 0/0;
+				if (snp.isMonomorphicInSamples()
+						|| snp.getHetCount() == 2 * (snp.getNSamples() - snp
+								.getNoCallCount())) {
 					if (insideChunk) {
 						// System.out.println(snp.getChr()+":"+snp.getStart());
 						logWriter.write("FILTER - Monomorphic: " + snp.getID()
@@ -272,10 +281,9 @@ public class QualityControlMapper extends
 				LegendEntry refSnp = getReader(snp.getChr()).findByPosition2(
 						snp.getStart());
 
-				// not found in legend file
+				// not found in legend file, don't write to file (Talked to Chr)
 				if (refSnp == null) {
-					// write to vcf file
-					//newFileWriter.write(line);
+
 					if (insideChunk) {
 
 						overallSnps++;
@@ -318,9 +326,9 @@ public class QualityControlMapper extends
 					else if (GenomicTools.complicatedGenotypes(snp, refSnp)) {
 
 						if (insideChunk) {
-							
+
 							strandSwitch2++;
-							
+
 						}
 
 					}
@@ -329,28 +337,33 @@ public class QualityControlMapper extends
 					else if (GenomicTools.alleleSwitch(snp, refSnp)) {
 
 						if (insideChunk) {
+							
 							alleleSwitch++;
-							logWriter.write("INFO - Allele switch: " + snp.getID()
-									+ " - pos: " + snp.getStart() + " (ref: "
-									+ legendRef + "/" + legendAlt + ", data: "
-									+ studyRef + "/" + studyAlt + ")");
+							logWriter.write("INFO - Allele switch: "
+									+ snp.getID() + " - pos: " + snp.getStart()
+									+ " (ref: " + legendRef + "/" + legendAlt
+									+ ", data: " + studyRef + "/" + studyAlt
+									+ ")");
 						}
 
-					} 
-					
+					}
+
 					/** simple strand swaps **/
 					else if (GenomicTools.strandSwap(studyRef, studyAlt,
 							legendRef, legendAlt)) {
 
 						if (insideChunk) {
+							
 							strandSwitch1++;
-							logWriter.write("INFO - Strand switch: "
+							filtered++;
+							logWriter.write("FILTER - Strand switch: "
 									+ snp.getID() + " - pos: " + snp.getStart()
 									+ " (ref: " + legendRef + "/" + legendAlt
 									+ ", data: " + studyRef + "/" + studyAlt
 									+ ")");
-
+							
 						}
+						continue;
 
 					}
 
@@ -358,13 +371,26 @@ public class QualityControlMapper extends
 							studyAlt, legendRef, legendAlt)) {
 
 						if (insideChunk) {
+
+							filtered++;
 							strandSwitch3++;
-							logWriter.write("INFO - Strand switch and Allele switch: "
-									+ snp.getID() + " - pos: " + snp.getStart()
-									+ " (ref: " + legendRef + "/" + legendAlt
-									+ ", data: " + studyRef + "/" + studyAlt
-									+ ")");
+							logWriter
+									.write("FILTER - Strand switch and Allele switch: "
+											+ snp.getID()
+											+ " - pos: "
+											+ snp.getStart()
+											+ " (ref: "
+											+ legendRef
+											+ "/"
+											+ legendAlt
+											+ ", data: "
+											+ studyRef
+											+ "/"
+											+ studyAlt + ")");
+
 						}
+
+						continue;
 
 					}
 
@@ -373,10 +399,11 @@ public class QualityControlMapper extends
 							legendRef, legendAlt)) {
 
 						if (insideChunk) {
-							logWriter.write("FILTER - Allele mismatch: " + snp.getID()
-									+ " - pos: " + snp.getStart() + " (ref: "
-									+ legendRef + "/" + legendAlt + ", data: "
-									+ studyRef + "/" + studyAlt + ")");
+							logWriter.write("FILTER - Allele mismatch: "
+									+ snp.getID() + " - pos: " + snp.getStart()
+									+ " (ref: " + legendRef + "/" + legendAlt
+									+ ", data: " + studyRef + "/" + studyAlt
+									+ ")");
 							alleleMismatch++;
 							filtered++;
 						}
@@ -432,6 +459,7 @@ public class QualityControlMapper extends
 					if (position >= start && position <= end) {
 
 						newFileWriter.write(line);
+						validSnps++;
 
 						// check if all samples have
 						// enough SNPs
@@ -458,7 +486,8 @@ public class QualityControlMapper extends
 		for (int i = 0; i < snpsPerSampleCount.length; i++) {
 			int snps = snpsPerSampleCount[i];
 			double sampleCallRate = snps / (double) overallSnps;
-			if (sampleCallRate < 0.5) {
+			
+			if (sampleCallRate < CALL_RATE) {
 				lowSampleCallRate = true;
 				chunkWriter.write(chunk.toString()
 						+ " Sample "
@@ -474,7 +503,8 @@ public class QualityControlMapper extends
 		double overlap = foundInLegend
 				/ (double) (foundInLegend + notFoundInLegend);
 
-		if (overlap >= 0.1 && foundInLegend >= 3 && !lowSampleCallRate) {
+		
+		if (overlap >= OVERLAP && foundInLegend >= MIN_SNPS && !lowSampleCallRate && validSnps >= MIN_SNPS) {
 
 			// update chunk
 			chunk.setSnps(overallSnps);
@@ -488,15 +518,11 @@ public class QualityControlMapper extends
 					+ ", Reference overlap: " + overlap
 					+ ", low sample call rates: " + lowSampleCallRate + ")");
 
-			if (overlap < 0.5) {
+			if (overlap < OVERLAP) {
 				removedChunksOverlap++;
-			}
-
-			if (overallSnps < 3) {
+			} else if (foundInLegend < MIN_SNPS || validSnps < MIN_SNPS) {
 				removedChunksSnps++;
-			}
-
-			if (lowSampleCallRate) {
+			} else if (lowSampleCallRate) {
 				removedChunksCallRate++;
 			}
 
