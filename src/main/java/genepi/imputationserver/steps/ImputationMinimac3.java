@@ -158,6 +158,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			if (error) {
 				context.println("Imputation on chromosome " + errorChr
 						+ " failed. Imputation was stopped.");
+				updateProgress();
 
 				String text = updateMessage();
 				context.endTask(text, WorkflowContext.ERROR);
@@ -173,6 +174,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			// canceled by user
 			if (isCanceled()) {
 				context.println("Canceled by user.");
+				updateProgress();
 
 				String text = updateMessage();
 				context.endTask(text, WorkflowContext.ERROR);
