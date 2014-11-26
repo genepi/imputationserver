@@ -30,7 +30,7 @@ public class VcfChunkOutput extends VcfChunk {
 		sampleFilename = prefix + ".sample";
 		snpsFilename = prefix + ".snps";
 		doseFilename = prefix + ".dose";
-		vcfOutFilename = prefix + ".dose.vcf";
+		vcfOutFilename = prefix + ".dose.vcf.gz";
 		infoFilename = prefix + ".info";
 		infoFixedFilename = infoFilename + ".fixed";
 
