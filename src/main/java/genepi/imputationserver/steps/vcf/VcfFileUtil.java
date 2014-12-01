@@ -39,6 +39,7 @@ public class VcfFileUtil {
 					false);
 
 			noSamples = reader.getFileHeader().getGenotypeSamples().size();
+
 			reader.close();
 
 			LineReader lineReader = new LineReader(vcfFilename);
@@ -65,20 +66,20 @@ public class VcfFileUtil {
 
 					if (phased) {
 						boolean containsSymbol = tiles[9].contains("/");
-						
+
 						if (containsSymbol) {
 							phased = false;
-						} 
+						}
 
 					}
-					
+
 					if (firstLine) {
-						boolean containsSymbol = tiles[9].contains("/") || tiles[9].contains(".");
-						
+						boolean containsSymbol = tiles[9].contains("/")
+								|| tiles[9].contains(".");
+
 						if (!containsSymbol) {
 							phasedAutodetect = true;
-						} 
-						else {
+						} else {
 							phasedAutodetect = false;
 						}
 						firstLine = false;
@@ -110,6 +111,29 @@ public class VcfFileUtil {
 					}
 					chunks.add(chunk);
 					noSnps++;
+
+				} else {
+
+					if (line.startsWith("#CHROM")) {
+
+						String[] tiles = line.split("\t");
+
+						// check sample names, stop when not unique
+						HashSet<String> samples = new HashSet<>();
+
+						for (int i = 0; i < tiles.length; i++) {
+
+							String sample = tiles[i];
+
+							if (samples.contains(sample)) {
+								reader.close();
+								throw new IOException(
+										"Two individuals or more have the following ID: "
+												+ sample);
+							}
+							samples.add(sample);
+						}
+					}
 
 				}
 			}
