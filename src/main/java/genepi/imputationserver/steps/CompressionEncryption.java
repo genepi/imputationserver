@@ -3,17 +3,25 @@ package genepi.imputationserver.steps;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.steps.vcf.MergedVcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.io.FileUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import cloudgene.mapred.jobs.Message;
 
@@ -49,10 +57,36 @@ public class CompressionEncryption extends WorkflowStep {
 						FileUtil.path(localOutput, "results", "chr" + name
 								+ ".info.gz"), folder, true, ".info");
 
-				// merge vcf output
-				VcfFileUtil.mergeGz(
-						FileUtil.path(localOutput, "results", "chr" + name
-								+ ".dose.vcf.gz"), folder, ".dose.vcf.gz");
+
+				Configuration conf = new Configuration();
+
+				FileSystem fileSystem = FileSystem.get(conf);
+				Path pathFolder = new Path(folder);
+				FileStatus[] files = fileSystem.listStatus(pathFolder);
+
+				List<String> filenames = new Vector<String>();
+
+				// filters by extension and sorts by filename
+				for (FileStatus file : files) {
+					if (!file.isDir()
+							&& !file.getPath().getName().startsWith("_")
+							&& file.getPath().getName()
+									.endsWith(".dose.vcf.gz")) {
+						filenames.add(file.getPath().toString());
+					}
+				}
+				Collections.sort(filenames);
+
+				String vcfOutput = FileUtil.path(localOutput, "results", "chr"
+						+ name + ".dose.vcf.gz");
+				
+				MergedVcfFile vcfFile = new MergedVcfFile(vcfOutput);
+
+				for (String file : filenames) {
+					context.println("Read file " + file);
+					vcfFile.addFile(fileSystem.open(new Path(file)));
+				}
+				vcfFile.close();
 
 			}
 
@@ -69,6 +103,8 @@ public class CompressionEncryption extends WorkflowStep {
 		}
 
 		try {
+			context.println("Start zip process...");
+			
 
 			context.beginTask("Compress data");
 

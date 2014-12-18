@@ -12,10 +12,14 @@ import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.io.FileUtil;
 import genepi.io.bed.BedUtil;
+import genepi.io.text.LineReader;
+import genepi.io.text.LineWriter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -280,9 +284,24 @@ public class ImputationMapperMinimac3 extends
 		HdfsUtil.put(outputChunk.getInfoFixedFilename(),
 				HdfsUtil.path(output, chunk + ".info"));
 
-		// store vcf file
-		HdfsUtil.put(outputChunk.getVcfOutFilename(),
-				HdfsUtil.path(output, chunk + ".dose.vcf.gz"));
+		long start = System.currentTimeMillis();
+		
+		// store vcf file (remove header)
+		GzipCompressorOutputStream out = new GzipCompressorOutputStream(
+				HdfsUtil.create(HdfsUtil.path(output, chunk + ".dose.vcf.gz")));
+		LineReader reader = new LineReader(outputChunk.getVcfOutFilename());
+		while (reader.next()) {
+			String line = reader.get();
+			if (!line.startsWith("#")) {
+				out.write(line.getBytes());
+			}
+		}
+		out.close();
+		reader.close();
+		
+		long end = System.currentTimeMillis();
+		
+		System.out.println("Time filter and put: " + (end-start) + " ms");
 
 	}
 }
