@@ -9,6 +9,7 @@ import genepi.io.FileUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
@@ -50,48 +51,38 @@ public class CompressionEncryption extends WorkflowStep {
 
 				String name = FileUtil.getFilename(folder);
 
-				context.println("Export and merge file " + folder);
+				context.println("Export and merge chromosome " + name);
 
 				// merge all info files
 				HdfsUtil.mergeAndGz(
 						FileUtil.path(localOutput, "results", "chr" + name
 								+ ".info.gz"), folder, true, ".info");
 
-
-				Configuration conf = new Configuration();
-
-				FileSystem fileSystem = FileSystem.get(conf);
-				Path pathFolder = new Path(folder);
-				FileStatus[] files = fileSystem.listStatus(pathFolder);
-
-				List<String> filenames = new Vector<String>();
-
-				// filters by extension and sorts by filename
-				for (FileStatus file : files) {
-					if (!file.isDir()
-							&& !file.getPath().getName().startsWith("_")
-							&& file.getPath().getName()
-									.endsWith(".dose.vcf.gz")) {
-						filenames.add(file.getPath().toString());
-					}
-				}
-				Collections.sort(filenames);
+				List<String> dataFiles = findFiles(folder, ".data.dose.vcf.gz");
+				List<String> headerFiles = findFiles(folder,
+						".header.dose.vcf.gz");
 
 				String vcfOutput = FileUtil.path(localOutput, "results", "chr"
 						+ name + ".dose.vcf.gz");
-				
+
 				MergedVcfFile vcfFile = new MergedVcfFile(vcfOutput);
 
-				for (String file : filenames) {
+				// add one header
+				// TODO: check number of samples per chunk....
+				String header = headerFiles.get(0);
+				vcfFile.addFile(HdfsUtil.open(header));
+
+				// add data files
+				for (String file : dataFiles) {
 					context.println("Read file " + file);
-					vcfFile.addFile(fileSystem.open(new Path(file)));
+					vcfFile.addFile(HdfsUtil.open(file));
 				}
 				vcfFile.close();
 
 			}
 
 			// delete temporary files
-			HdfsUtil.delete(output);
+			//HdfsUtil.delete(output);
 
 			context.endTask("Exported data.", Message.OK);
 
@@ -104,7 +95,6 @@ public class CompressionEncryption extends WorkflowStep {
 
 		try {
 			context.println("Start zip process...");
-			
 
 			context.beginTask("Compress data");
 
@@ -184,6 +174,26 @@ public class CompressionEncryption extends WorkflowStep {
 			return true;
 		}
 
+	}
+
+	private List<String> findFiles(String folder, String pattern)
+			throws IOException {
+
+		Configuration conf = new Configuration();
+
+		FileSystem fileSystem = FileSystem.get(conf);
+		Path pathFolder = new Path(folder);
+		FileStatus[] files = fileSystem.listStatus(pathFolder);
+
+		List<String> dataFiles = new Vector<String>();
+		for (FileStatus file : files) {
+			if (!file.isDir() && !file.getPath().getName().startsWith("_")
+					&& file.getPath().getName().endsWith(pattern)) {
+				dataFiles.add(file.getPath().toString());
+			}
+		}
+		Collections.sort(dataFiles);
+		return dataFiles;
 	}
 
 }

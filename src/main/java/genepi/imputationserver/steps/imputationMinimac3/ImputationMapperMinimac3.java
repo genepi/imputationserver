@@ -285,23 +285,41 @@ public class ImputationMapperMinimac3 extends
 				HdfsUtil.path(output, chunk + ".info"));
 
 		long start = System.currentTimeMillis();
-		
+
 		// store vcf file (remove header)
-		GzipCompressorOutputStream out = new GzipCompressorOutputStream(
-				HdfsUtil.create(HdfsUtil.path(output, chunk + ".dose.vcf.gz")));
+		GzipCompressorOutputStream outData = new GzipCompressorOutputStream(
+				HdfsUtil.create(HdfsUtil.path(output, chunk
+						+ ".data.dose.vcf.gz")));
+
+		GzipCompressorOutputStream outHeader = new GzipCompressorOutputStream(
+				HdfsUtil.create(HdfsUtil.path(output, chunk
+						+ ".header.dose.vcf.gz")));
+
+		boolean firstHeader = true;
+		boolean firstData = true;
+
 		LineReader reader = new LineReader(outputChunk.getVcfOutFilename());
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
-				out.write(line.getBytes());
+				outData.write("\n".getBytes());					
+				outData.write(line.getBytes());
+				firstData = false;
+			} else {
+				if (!firstHeader) {
+					outHeader.write("\n".getBytes());
+				}
+				firstHeader = false;
+				outHeader.write(line.getBytes());
 			}
 		}
-		out.close();
+		outData.close();
+		outHeader.close();
 		reader.close();
-		
+
 		long end = System.currentTimeMillis();
-		
-		System.out.println("Time filter and put: " + (end-start) + " ms");
+
+		System.out.println("Time filter and put: " + (end - start) + " ms");
 
 	}
 }
