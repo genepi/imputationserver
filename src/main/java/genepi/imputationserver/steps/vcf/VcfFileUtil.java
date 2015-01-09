@@ -284,19 +284,65 @@ public class VcfFileUtil {
 
 	}
 
-	// TODO: Sebastian!!
 	public static List<VcfFile> splitMaleFemale(VcfFile file, String tabix)
 			throws IOException {
 		List<VcfFile> files = new Vector<VcfFile>();
+
+		StringBuilder b1 = new StringBuilder();
+		StringBuilder b2 = new StringBuilder();
+
+		final String VCFKEEPSAMPLES = "/bin/vcfkeepsamples";
+		final String PLINK = "/bin/plink";
+
+		Command splitX = new Command(PLINK);
+		splitX.setSilent(false);
+		splitX.setParams("--vcf", file.getVcfFilename(), "--split-x", "b37", "--make-bed",
+				"--out", "tmp");
+		System.out.println("Command: " + splitX.getExecutedCommand());
+		splitX.execute();
+
+		Command sexCheck = new Command(PLINK);
+		sexCheck.setSilent(false);
+		sexCheck.setParams("--bfile", "tmp", "--check-sex");
+		System.out.println("Command: " + sexCheck.getExecutedCommand());
+		sexCheck.execute();
+
+		LineReader lr = new LineReader("plink.sexcheck");
+		while (lr.next()) {
+			String[] a = lr.get().split("\\s+");
+
+			if (a[4].equals("1")) {
+				b1.append(a[1]);
+				b1.append(",");
+			} else if (a[4].equals("2")) {
+				b2.append(a[1]);
+				b2.append(",");
+			}
+
+		}
+
+		Command keepSamples = new Command(VCFKEEPSAMPLES);
+		keepSamples.setSilent(true);
+		keepSamples.setParams(file.getVcfFilename(), b1.toString());
+		System.out.println("Command: " + keepSamples.getExecutedCommand());
+		keepSamples.saveStdOut(file.getVcfFilename() + "-m.vcf");
+		keepSamples.execute();
+
+		keepSamples.setSilent(true);
+		keepSamples.setParams(file.getVcfFilename(), b2.toString());
+		System.out.println("Command: " + keepSamples.getExecutedCommand());
+		keepSamples.saveStdOut(file.getVcfFilename() + "-f.vcf");
+		keepSamples.execute();
+		
 		// males
-		VcfFile males = load(file.getVcfFilename(), file.getChunkSize(), tabix);
+		VcfFile males = load(file.getVcfFilename() + "-m.vcf", file.getChunkSize(), tabix);
 		Set<String> chromosomesMale = new HashSet<String>();
 		chromosomesMale.add("X_male");
 		males.setChromosomes(chromosomesMale);
 		files.add(males);
 
 		// females
-		VcfFile females = load(file.getVcfFilename(), file.getChunkSize(),
+		VcfFile females = load(file.getVcfFilename() + "-f.vcf", file.getChunkSize(),
 				tabix);
 		Set<String> chromosomesFemale = new HashSet<String>();
 		chromosomesFemale.add("X_female");
