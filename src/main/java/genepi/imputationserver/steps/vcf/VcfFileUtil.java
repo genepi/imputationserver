@@ -3,6 +3,7 @@ package genepi.imputationserver.steps.vcf;
 import genepi.hadoop.command.Command;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
+import genepi.io.text.LineWriter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -166,6 +167,7 @@ public class VcfFileUtil {
 			pair.setChromosomes(chromosomes);
 			pair.setPhased(phased);
 			pair.setPhasedAutodetect(phasedAutodetect);
+			pair.setChunkSize(chunksize);
 			return pair;
 
 		} catch (Exception e) {
@@ -279,6 +281,117 @@ public class VcfFileUtil {
 
 			out.close();
 		}
+
+	}
+
+	// TODO: Sebastian!!
+	public static List<VcfFile> splitMaleFemale(VcfFile file, String tabix)
+			throws IOException {
+		List<VcfFile> files = new Vector<VcfFile>();
+		// males
+		VcfFile males = load(file.getVcfFilename(), file.getChunkSize(), tabix);
+		Set<String> chromosomesMale = new HashSet<String>();
+		chromosomesMale.add("X_male");
+		males.setChromosomes(chromosomesMale);
+		files.add(males);
+
+		// females
+		VcfFile females = load(file.getVcfFilename(), file.getChunkSize(),
+				tabix);
+		Set<String> chromosomesFemale = new HashSet<String>();
+		chromosomesFemale.add("X_female");
+		females.setChromosomes(chromosomesFemale);
+		files.add(females);
+		return files;
+	}
+
+	public static void splitChromosomeX(String inputFilename,
+			String nonPseudoAutoFilename, String pseudoAutoFilename)
+			throws IOException {
+
+		LineWriter nonPseudoAuto = new LineWriter(nonPseudoAutoFilename);
+		LineWriter pseudoAuto = new LineWriter(pseudoAutoFilename);
+
+		LineReader reader = new LineReader(inputFilename);
+
+		while (reader.next()) {
+
+			String line = reader.get();
+
+			if (line.startsWith("#")) {
+				// header in booth files
+				nonPseudoAuto.write(line);
+				pseudoAuto.write(line);
+			} else {
+				String tiles[] = line.split("\t", 3);
+
+				if (tiles.length < 3) {
+					throw new IOException(
+							"The provided VCF file is not tab-delimited");
+				}
+
+				String chromosome = tiles[0];
+
+				if (!chromosome.equals("X")) {
+					throw new IOException(
+							"The provided VCF file is not for chromosome X");
+				}
+
+				int position = Integer.parseInt(tiles[1]);
+
+				if (2699520 <= position && position <= 154931044) {
+					nonPseudoAuto.write(line);
+				} else {
+					pseudoAuto.write(line);
+				}
+			}
+
+		}
+		reader.close();
+		pseudoAuto.close();
+		nonPseudoAuto.close();
+
+	}
+
+	public static void extractNonPseudoAuto(String inputFilename,
+			String nonPseudoAutoFilename) throws IOException {
+
+		LineWriter nonPseudoAuto = new LineWriter(nonPseudoAutoFilename);
+
+		LineReader reader = new LineReader(inputFilename);
+
+		while (reader.next()) {
+
+			String line = reader.get();
+
+			if (line.startsWith("#")) {
+				// header
+				nonPseudoAuto.write(line);
+			} else {
+				String tiles[] = line.split("\t", 3);
+
+				if (tiles.length < 3) {
+					throw new IOException(
+							"The provided VCF file is not tab-delimited");
+				}
+
+				String chromosome = tiles[0];
+
+				if (!chromosome.equals("X")) {
+					throw new IOException(
+							"The provided VCF file is not for chromosome X");
+				}
+
+				int position = Integer.parseInt(tiles[1]);
+
+				if (2699520 <= position && position <= 154931044) {
+					nonPseudoAuto.write(line);
+				}
+			}
+
+		}
+		reader.close();
+		nonPseudoAuto.close();
 
 	}
 

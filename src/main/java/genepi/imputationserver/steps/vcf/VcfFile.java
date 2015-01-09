@@ -20,6 +20,8 @@ public class VcfFile {
 	
 	private boolean phasedAutodetect = true;
 
+	private int chunkSize;
+	
 	public VcfFile() {
 
 	}
@@ -115,5 +117,12 @@ public class VcfFile {
 		this.phasedAutodetect = phasedAutodetect;
 	}
 
+	public void setChunkSize(int chunkSize) {
+		this.chunkSize = chunkSize;
+	}
+	
+	public int getChunkSize() {
+		return chunkSize;
+	}
 
 }
