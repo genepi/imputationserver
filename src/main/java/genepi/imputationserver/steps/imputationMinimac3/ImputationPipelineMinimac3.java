@@ -212,6 +212,8 @@ public class ImputationPipelineMinimac3 {
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
 
+		System.out.println(minimac.getExecutedCommand());
+		
 		return (minimac.execute() == 0);
 
 	}

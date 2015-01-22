@@ -82,7 +82,7 @@ public class CompressionEncryption extends WorkflowStep {
 			}
 
 			// delete temporary files
-			//HdfsUtil.delete(output);
+			HdfsUtil.delete(output);
 
 			context.endTask("Exported data.", Message.OK);
 

@@ -135,14 +135,29 @@ public class ImputationMapperMinimac3 extends
 
 		VcfChunk chunk = new VcfChunk(value.toString());
 
+		if (chunk.getChromosome().equals("X.no.auto_male")) {
+			chunk.setChromosome("X");
+		}
+
+		if (chunk.getChromosome().equals("X.no.auto_female")) {
+			chunk.setChromosome("X");
+		}
+
 		VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
 
 		HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
 
 		log.info("Starting pipeline for chunk " + chunk + "...");
 
-		String chrFilename = pattern
-				.replaceAll("\\$chr", chunk.getChromosome());
+		String chrFilename = "";
+
+		if (chunk.getChromosome().equals("X")) {
+
+			chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome()
+					+ ".no.auto");
+		} else {
+			chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome());
+		}
 
 		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
 
@@ -156,19 +171,19 @@ public class ImputationMapperMinimac3 extends
 		if (chunk.isPhased()) {
 
 			// imputation for phased genotypes
-			if (!chunk.getChromosome().equals("23")
-					&& !chunk.getChromosome().equals("X")) {
-				long time = System.currentTimeMillis();
-				boolean successful = pipeline.imputeVCF(chunk, outputChunk);
-				time = (System.currentTimeMillis() - time) / 1000;
+			// if (!chunk.getChromosome().equals("23")
+			// && !chunk.getChromosome().equals("X")) {
+			long time = System.currentTimeMillis();
+			boolean successful = pipeline.imputeVCF(chunk, outputChunk);
+			time = (System.currentTimeMillis() - time) / 1000;
 
-				if (successful) {
-					log.info("  Minimac3 successful. [" + time + " sec]");
-				} else {
-					log.stop("  Minimac3 failed [" + time + " sec]", "");
-					return;
-				}
+			if (successful) {
+				log.info("  Minimac3 successful. [" + time + " sec]");
+			} else {
+				log.stop("  Minimac3 failed [" + time + " sec]", "");
+				return;
 			}
+			// }
 
 		} else {
 
@@ -252,27 +267,27 @@ public class ImputationMapperMinimac3 extends
 			}
 
 			// imputation for unphased genotypes.
-			if (!chunk.getChromosome().equals("23")
-					&& !chunk.getChromosome().equals("X")) {
+			// if (!chunk.getChromosome().equals("23")
+			// && !chunk.getChromosome().equals("X")) {
 
-				time = System.currentTimeMillis();
-				successful = pipeline.imputeVCF(chunk, outputChunk);
-				time = (System.currentTimeMillis() - time) / 1000;
+			time = System.currentTimeMillis();
+			successful = pipeline.imputeVCF(chunk, outputChunk);
+			time = (System.currentTimeMillis() - time) / 1000;
 
-				if (successful) {
-					log.info("  Minimac3 successful.[" + time + " sec]");
-				} else {
+			if (successful) {
+				log.info("  Minimac3 successful.[" + time + " sec]");
+			} else {
 
-					String stdOut = FileUtil.readFileAsString(outputChunk
-							.getPrefix() + ".minimac.out");
-					String stdErr = FileUtil.readFileAsString(outputChunk
-							.getPrefix() + ".minimac.err");
+				String stdOut = FileUtil.readFileAsString(outputChunk
+						.getPrefix() + ".minimac.out");
+				String stdErr = FileUtil.readFileAsString(outputChunk
+						.getPrefix() + ".minimac.err");
 
-					log.stop("  Minimac3 failed[" + time + " sec]", "StdOut:\n"
-							+ stdOut + "\nStdErr:\n" + stdErr);
-					return;
-				}
+				log.stop("  Minimac3 failed[" + time + " sec]", "StdOut:\n"
+						+ stdOut + "\nStdErr:\n" + stdErr);
+				return;
 			}
+			// }
 
 		}
 
@@ -302,7 +317,7 @@ public class ImputationMapperMinimac3 extends
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
-				outData.write("\n".getBytes());					
+				outData.write("\n".getBytes());
 				outData.write(line.getBytes());
 				firstData = false;
 			} else {

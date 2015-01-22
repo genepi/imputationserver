@@ -12,7 +12,12 @@ import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Vector;
+
+import cloudgene.mapred.jobs.Message;
 
 public class QualityControl extends HadoopJobStep {
 
@@ -42,8 +47,15 @@ public class QualityControl extends HadoopJobStep {
 
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
+		int chunks = 0;
 		// create manifest file
-		int chunks = createChunkFile(context, files, chunkfile, chunkSize);
+		try {
+			chunks = createChunkFile(context, files, chunkfile, chunkSize);
+		} catch (Exception e) {
+			e.printStackTrace();
+			context.error(e.toString());
+			return false;
+		}
 
 		if (chunks == -1) {
 			context.error("Error during manifest file creation.");
@@ -75,7 +87,8 @@ public class QualityControl extends HadoopJobStep {
 		}
 
 		// submit qc hadoop job
-		QualityControlJob job = new QualityControlJob(context.getJobId() +  "-quality-control", new ContextLog(context));
+		QualityControlJob job = new QualityControlJob(context.getJobId()
+				+ "-quality-control", new ContextLog(context));
 		job.setLegendHdfs(panel.getLegend());
 		job.setLegendPattern(panel.getLegendPattern());
 		job.setPopulation(population);
@@ -170,9 +183,6 @@ public class QualityControl extends HadoopJobStep {
 						+ context.createLinkToFile("statistics")
 						+ " for details).");
 			}
-			
-			
-			
 
 			long excludedChunks = job.getRemovedChunksSnps()
 					+ job.getRemovedChunksCallRate()
@@ -193,14 +203,13 @@ public class QualityControl extends HadoopJobStep {
 
 			}
 			// strand flips (normal flip + allele switch AND strand flip)
-			else if(job.getStrandSwitch1() + job.getStrandSwitch3() > 100){
-					text.append("<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
-					context.error(text.toString());
+			else if (job.getStrandSwitch1() + job.getStrandSwitch3() > 100) {
+				text.append("<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
+				context.error(text.toString());
 
-					return false;
+				return false;
 			}
-			
-			
+
 			else {
 				context.warning(text.toString());
 				return true;
@@ -217,33 +226,50 @@ public class QualityControl extends HadoopJobStep {
 
 	private int createChunkFile(WorkflowContext context, String inputFiles,
 			String chunkfile, int chunkSize) {
+
+		String folder = getFolder(QualityControl.class);
+		VcfFileUtil.setBinaries(FileUtil.path(folder, "bin"));
+
 		String files = FileUtil.path(context.getLocalTemp(), "input");
-
-		// exports files from hdfs
-		try {
-
-			HdfsUtil.getFolder(inputFiles, files);
-
-		} catch (Exception e) {
-			context.error("Downloading files: " + e.getMessage());
-			return -1;
-
-		}
 
 		int chunks = 0;
 
 		int pairId = 0;
 
-		String[] vcfFiles = FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$");
+		String[] vcfFilenames = FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$");
 
-		for (String vcfFilename : vcfFiles) {
+		for (String vcfFilename : vcfFilenames) {
 
 			try {
 
-				VcfFile vcfFile = VcfFileUtil
-						.load(vcfFilename, chunkSize, null);
+				List<VcfFile> vcfFiles = new Vector<VcfFile>();
 
-				if (VcfFileUtil.isAutosomal(vcfFile.getChromosome())) {
+				VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize,
+						false);
+				if (VcfFileUtil.isAutosomal(myvcfFile.getChromosome())) {
+					// chr 1 - 22
+					vcfFiles.add(myvcfFile);
+				} else {
+					// chr X
+					context.beginTask("Check chromosome X...");
+					try {
+						List<VcfFile> newFiles = VcfFileUtil
+								.splitMaleFemale(myvcfFile);
+
+						context.endTask("<b>Sex-Check:</b>"+"\n"+"Males: "
+								+ newFiles.get(0).getNoSamples() + "\n"
+								+ "Females: " + newFiles.get(1).getNoSamples(),
+								Message.OK);
+
+						vcfFiles.addAll(newFiles);
+					} catch (IOException e) {
+						context.endTask("Chromosome X check failed.",
+								Message.ERROR);
+						throw e;
+					}
+				}
+
+				for (VcfFile vcfFile : vcfFiles) {
 
 					// writes chunk-file
 

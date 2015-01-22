@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -26,8 +27,14 @@ import org.broadinstitute.variant.vcf.VCFFileReader;
 
 public class VcfFileUtil {
 
+	public static String BINARIES = "bin/";
+
+	public static void setBinaries(String binaries) {
+		BINARIES = binaries;
+	}
+
 	public static VcfFile load(String vcfFilename, int chunksize,
-			String tabixPath) throws IOException {
+			boolean createIndex) throws IOException {
 
 		Set<Integer> chunks = new HashSet<Integer>();
 		Set<String> chromosomes = new HashSet<String>();
@@ -141,8 +148,10 @@ public class VcfFileUtil {
 			lineReader.close();
 			reader.close();
 
+			String tabixPath = FileUtil.path(BINARIES, "tabix");
+
 			// create index
-			if (tabixPath != null) {
+			if (new File(tabixPath).exists() && createIndex) {
 
 				Command tabix = new Command(tabixPath);
 
@@ -284,20 +293,39 @@ public class VcfFileUtil {
 
 	}
 
-	public static List<VcfFile> splitMaleFemale(VcfFile file, String tabix)
+	public static List<VcfFile> splitMaleFemale(VcfFile file)
 			throws IOException {
 		List<VcfFile> files = new Vector<VcfFile>();
 
-		StringBuilder b1 = new StringBuilder();
-		StringBuilder b2 = new StringBuilder();
+		List<String> b1 = new Vector<String>();
+		List<String> b2 = new Vector<String>();
 
-		final String VCFKEEPSAMPLES = "/bin/vcfkeepsamples";
-		final String PLINK = "/bin/plink";
+		String VCFKEEPSAMPLES = FileUtil.path(BINARIES, "vcfkeepsamples");
+		String PLINK = FileUtil.path(BINARIES, "plink");
+		String TABIX = FileUtil.path(BINARIES, "tabix");
+		String BGZIP = FileUtil.path(BINARIES, "bgzip");
+
+		if (!new File(VCFKEEPSAMPLES).exists()) {
+			throw new IOException("vcfkeepsamples: file " + VCFKEEPSAMPLES
+					+ " not found.");
+		}
+
+		if (!new File(PLINK).exists()) {
+			throw new IOException("plink: file " + PLINK + " not found.");
+		}
+
+		if (!new File(TABIX).exists()) {
+			throw new IOException("tabix: file " + TABIX + " not found.");
+		}
+
+		if (!new File(BGZIP).exists()) {
+			throw new IOException("bgzip: file " + BGZIP + " not found.");
+		}
 
 		Command splitX = new Command(PLINK);
 		splitX.setSilent(false);
-		splitX.setParams("--vcf", file.getVcfFilename(), "--split-x", "b37", "--make-bed",
-				"--out", "tmp");
+		splitX.setParams("--vcf", file.getVcfFilename(), "--split-x", "b37",
+				"--make-bed", "--out", "tmp");
 		System.out.println("Command: " + splitX.getExecutedCommand());
 		splitX.execute();
 
@@ -312,40 +340,79 @@ public class VcfFileUtil {
 			String[] a = lr.get().split("\\s+");
 
 			if (a[4].equals("1")) {
-				b1.append(a[1]);
-				b1.append(",");
+				b1.add(a[1]);
 			} else if (a[4].equals("2")) {
-				b2.append(a[1]);
-				b2.append(",");
+				b2.add(a[1]);
 			}
 
 		}
 
+		// Extract no.auto
+		VcfFileUtil.extractNonPseudoAuto(file.getVcfFilename(),
+				file.getVcfFilename() + ".no.auto.vcf");
+
+		// bgzip
+		Command bgzip3 = new Command(BGZIP);
+		bgzip3.setSilent(true);
+		bgzip3.setParams(file.getVcfFilename() + ".no.auto.vcf");
+		bgzip3.execute();
+
+		// bgzip
+		Command tabix2 = new Command(TABIX);
+		tabix2.setSilent(true);
+		tabix2.setParams(file.getVcfFilename() + ".no.auto.vcf.gz");
+		tabix2.execute();
+
 		Command keepSamples = new Command(VCFKEEPSAMPLES);
 		keepSamples.setSilent(true);
-		keepSamples.setParams(file.getVcfFilename(), b1.toString());
+
+		String[] params = new String[b1.size() + 1];
+		params[0] = file.getVcfFilename() + ".no.auto.vcf.gz";
+		for (int i = 0; i < b1.size(); i++) {
+			params[i + 1] = b1.get(i);
+		}
+		keepSamples.setParams(params);
 		System.out.println("Command: " + keepSamples.getExecutedCommand());
 		keepSamples.saveStdOut(file.getVcfFilename() + "-m.vcf");
-		keepSamples.execute();
+		System.out.println(keepSamples.execute());
 
+		// bgzip
+		Command bgzip = new Command(BGZIP);
+		bgzip.setSilent(true);
+		bgzip.setParams(file.getVcfFilename() + "-m.vcf");
+		bgzip.execute();
+
+		params = new String[b2.size() + 1];
+		params[0] = file.getVcfFilename() + ".no.auto.vcf.gz";
+		for (int i = 0; i < b2.size(); i++) {
+			params[i + 1] = b2.get(i);
+		}
 		keepSamples.setSilent(true);
-		keepSamples.setParams(file.getVcfFilename(), b2.toString());
+
+		keepSamples.setParams(params);
 		System.out.println("Command: " + keepSamples.getExecutedCommand());
 		keepSamples.saveStdOut(file.getVcfFilename() + "-f.vcf");
 		keepSamples.execute();
-		
-		// males
-		VcfFile males = load(file.getVcfFilename() + "-m.vcf", file.getChunkSize(), tabix);
+
+		// bgzip
+		Command bgzip2 = new Command(BGZIP);
+		bgzip2.setSilent(true);
+		bgzip2.setParams(file.getVcfFilename() + "-f.vcf");
+		bgzip2.execute();
+
+		// males-auto
+		VcfFile males = load(file.getVcfFilename() + "-m.vcf.gz",
+				file.getChunkSize(), true);
 		Set<String> chromosomesMale = new HashSet<String>();
-		chromosomesMale.add("X_male");
+		chromosomesMale.add("X.no.auto_male");
 		males.setChromosomes(chromosomesMale);
 		files.add(males);
 
-		// females
-		VcfFile females = load(file.getVcfFilename() + "-f.vcf", file.getChunkSize(),
-				tabix);
+		// females-auto
+		VcfFile females = load(file.getVcfFilename() + "-f.vcf.gz",
+				file.getChunkSize(), true);
 		Set<String> chromosomesFemale = new HashSet<String>();
-		chromosomesFemale.add("X_female");
+		chromosomesFemale.add("X.no.auto_female");
 		females.setChromosomes(chromosomesFemale);
 		files.add(females);
 		return files;

@@ -39,7 +39,9 @@ public class InputValidation extends WorkflowStep {
 		String phasing = context.get("phasing");
 
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
-		String tabix = FileUtil.path(folder, "bin", "tabix");
+		
+		VcfFileUtil.setBinaries(FileUtil.path(folder, "bin"));
+		
 		String files = FileUtil.path(context.getLocalTemp(), "input");
 
 		// exports files from hdfs
@@ -91,102 +93,99 @@ public class InputValidation extends WorkflowStep {
 
 			try {
 
-				VcfFile vcfFile = VcfFileUtil.load(filename, chunkSize, tabix);
+				VcfFile vcfFile = VcfFileUtil.load(filename, chunkSize, true);
 
-				if (VcfFileUtil.isAutosomal(vcfFile.getChromosome())) {
+				// if (VcfFileUtil.isAutosomal(vcfFile.getChromosome())) {
 
-					validVcfFiles.add(vcfFile);
-					chromosomes.add(vcfFile.getChromosome());
-					String chromosomeString = "";
-					for (String chr : chromosomes) {
-						chromosomeString += " " + chr;
-					}
-
-					// check if all files have same amount of samples
-					if (noSamples != 0 && noSamples != vcfFile.getNoSamples()) {
-						context.endTask(
-								"Please double check, if all uploaded VCF files include the same amount of samples ("
-										+ vcfFile.getNoSamples()
-										+ " vs "
-										+ noSamples + ")",
-								WorkflowContext.ERROR);
-						return false;
-					}
-
-					noSamples = vcfFile.getNoSamples();
-					noSnps += vcfFile.getNoSnps();
-					chunks += vcfFile.getChunks().size();
-
-					phased = phased && vcfFile.isPhased();
-
-					// check reference panel
-					if (vcfFile.isPhasedAutodetect() && !vcfFile.isPhased()) {
-
-						context.endTask(
-								"File should be phased, but also includes unphased and/or missing genotypes! Please double-check!",
-								WorkflowContext.ERROR);
-						return false;
-					}
-
-					RefPanelList panels = null;
-					try {
-						panels = RefPanelList.loadFromFile(FileUtil.path(
-								folder, "panels.txt"));
-
-					} catch (Exception e) {
-
-						context.endTask("panels.txt not found.",
-								WorkflowContext.ERROR);
-						return false;
-					}
-
-					RefPanel panel = panels.getById(reference);
-					if (panel == null) {
-						context.endTask("Reference '" + reference
-								+ "' not found.", WorkflowContext.ERROR);
-
-						return false;
-					}
-
-					if ((panel.getId().equals("hapmap2") && !population
-							.equals("eur"))) {
-
-						context.endTask(
-								"Please select the EUR population for the HapMap reference panel",
-								WorkflowContext.ERROR);
-
-						return false;
-					}
-
-					if ((panel.getId().equals("phase1") && population
-							.equals("sas"))
-							|| (panel.getId().equals("phase1") && population
-									.equals("eas"))) {
-
-						context.endTask(
-								"The selected population (SAS, EAS) is not allowed for this panel",
-								WorkflowContext.ERROR);
-
-						return false;
-					}
-
-					if ((panel.getId().equals("phase3") && population
-							.equals("asn"))) {
-
-						context.endTask(
-								"The selected population (ASN) is not allowed for the 1000G Phase3 reference panel",
-								WorkflowContext.ERROR);
-
-						return false;
-					}
-
-					infos = "Samples: " + noSamples + "\n" + "Chromosomes:"
-							+ chromosomeString + "\n" + "SNPs: " + noSnps
-							+ "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
-							+ (phased ? "phased" : "unphased") + "\n"
-							+ "Reference Panel: " + panel.getId();
-
+				validVcfFiles.add(vcfFile);
+				chromosomes.add(vcfFile.getChromosome());
+				String chromosomeString = "";
+				for (String chr : chromosomes) {
+					chromosomeString += " " + chr;
 				}
+
+				// check if all files have same amount of samples
+				if (noSamples != 0 && noSamples != vcfFile.getNoSamples()) {
+					context.endTask(
+							"Please double check, if all uploaded VCF files include the same amount of samples ("
+									+ vcfFile.getNoSamples()
+									+ " vs "
+									+ noSamples + ")", WorkflowContext.ERROR);
+					return false;
+				}
+
+				noSamples = vcfFile.getNoSamples();
+				noSnps += vcfFile.getNoSnps();
+				chunks += vcfFile.getChunks().size();
+
+				phased = phased && vcfFile.isPhased();
+
+				// check reference panel
+				if (vcfFile.isPhasedAutodetect() && !vcfFile.isPhased()) {
+
+					context.endTask(
+							"File should be phased, but also includes unphased and/or missing genotypes! Please double-check!",
+							WorkflowContext.ERROR);
+					return false;
+				}
+
+				RefPanelList panels = null;
+				try {
+					panels = RefPanelList.loadFromFile(FileUtil.path(folder,
+							"panels.txt"));
+
+				} catch (Exception e) {
+
+					context.endTask("panels.txt not found.",
+							WorkflowContext.ERROR);
+					return false;
+				}
+
+				RefPanel panel = panels.getById(reference);
+				if (panel == null) {
+					context.endTask("Reference '" + reference + "' not found.",
+							WorkflowContext.ERROR);
+
+					return false;
+				}
+
+				if ((panel.getId().equals("hapmap2") && !population
+						.equals("eur"))) {
+
+					context.endTask(
+							"Please select the EUR population for the HapMap reference panel",
+							WorkflowContext.ERROR);
+
+					return false;
+				}
+
+				if ((panel.getId().equals("phase1") && population.equals("sas"))
+						|| (panel.getId().equals("phase1") && population
+								.equals("eas"))) {
+
+					context.endTask(
+							"The selected population (SAS, EAS) is not allowed for this panel",
+							WorkflowContext.ERROR);
+
+					return false;
+				}
+
+				if ((panel.getId().equals("phase3") && population.equals("asn"))) {
+
+					context.endTask(
+							"The selected population (ASN) is not allowed for the 1000G Phase3 reference panel",
+							WorkflowContext.ERROR);
+
+					return false;
+				}
+
+				infos = "Samples: " + noSamples + "\n" + "Chromosomes:"
+						+ chromosomeString + "\n" + "SNPs: " + noSnps + "\n"
+						+ "Chunks: " + chunks + "\n" + "Datatype: "
+						+ (phased ? "phased" : "unphased") + "\n"
+						+ "Reference Panel: " + panel.getId();
+
+				// }
 
 			} catch (IOException e) {
 
