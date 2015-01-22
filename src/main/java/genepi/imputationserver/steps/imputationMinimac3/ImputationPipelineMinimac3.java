@@ -165,7 +165,8 @@ public class ImputationPipelineMinimac3 {
 		return (shapeItConvert.execute() == 0);
 	}
 
-	public boolean phaseWithShapeIt(VcfChunk input, VcfChunkOutput output) {
+	public boolean phaseWithShapeIt(VcfChunk input, VcfChunkOutput output,
+			boolean chrX) {
 
 		// +/- 1 Mbases
 		int start = input.getStart() - phasingWindow;
@@ -177,11 +178,19 @@ public class ImputationPipelineMinimac3 {
 
 		Command shapeIt = new Command(shapeItCommand);
 		shapeIt.setSilent(false);
-
-		shapeIt.setParams("--input-bed", output.getBedFilename(),
-				output.getBimFilename(), output.getFamFilename(),
-				"--input-map", mapFilename, "--output-max", output.getPrefix(),
-				"--input-from", start + "", "--input-to", end + "");
+		if (chrX) {
+			shapeIt.setParams("--input-bed", output.getBedFilename(),
+					output.getBimFilename(), output.getFamFilename(),
+					"--input-map", mapFilename, "--output-max",
+					output.getPrefix(), "--input-from", start + "",
+					"--input-to", end + "", "--chrX");
+		} else {
+			shapeIt.setParams("--input-bed", output.getBedFilename(),
+					output.getBimFilename(), output.getFamFilename(),
+					"--input-map", mapFilename, "--output-max",
+					output.getPrefix(), "--input-from", start + "",
+					"--input-to", end + "");
+		}
 		shapeIt.saveStdOut(output.getPrefix() + ".shapeit.out");
 		shapeIt.saveStdErr(output.getPrefix() + ".shapeit.err");
 		System.out.println("Command: " + shapeIt.getExecutedCommand());
@@ -191,10 +200,37 @@ public class ImputationPipelineMinimac3 {
 		Command shapeItConvert = new Command(shapeItCommand);
 		shapeItConvert.setSilent(false);
 		shapeItConvert.setParams("-convert", "--input-haps",
-				output.getPrefix(), "--output-vcf", output.getVcfFilename());
+				output.getPrefix(), "--output-vcf", output.getVcfFilename()
+						+ "_temp");
 		System.out.println("Command: " + shapeItConvert.getExecutedCommand());
+		shapeItConvert.execute();
+		if (chrX) {
+			// replace 23 with X
+			try {
+				LineWriter writer = new LineWriter(output.getVcfFilename());
+				LineReader reader = new LineReader(output.getVcfFilename()
+						+ "_temp");
+				while (reader.next()) {
 
-		return (shapeItConvert.execute() == 0);
+					String line = reader.get();
+
+					if (line.startsWith("#")) {
+						writer.write(line);
+					} else {
+						String[] tiles = line.split("\t", 2);
+						writer.write("X\t" + tiles[1]);
+					}
+
+				}
+				reader.close();
+				writer.close();
+			} catch (Exception e) {
+				return false;
+			}
+
+		}
+
+		return true;
 	}
 
 	public boolean imputeVCF(VcfChunk input, VcfChunkOutput output)
@@ -213,7 +249,7 @@ public class ImputationPipelineMinimac3 {
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
 
 		System.out.println(minimac.getExecutedCommand());
-		
+
 		return (minimac.execute() == 0);
 
 	}

@@ -143,6 +143,14 @@ public class ImputationMapperMinimac3 extends
 			chunk.setChromosome("X");
 		}
 
+		if (chunk.getChromosome().equals("X.auto_male")) {
+			chunk.setChromosome("X");
+		}
+
+		if (chunk.getChromosome().equals("X.auto_female")) {
+			chunk.setChromosome("X");
+		}
+
 		VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
 
 		HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
@@ -254,7 +262,8 @@ public class ImputationMapperMinimac3 extends
 				pipeline.setMapFilename(mapfilePath);
 
 				time = System.currentTimeMillis();
-				successful = pipeline.phaseWithShapeIt(chunk, outputChunk);
+				successful = pipeline.phaseWithShapeIt(chunk, outputChunk,
+						chunk.getChromosome().equals("X"));
 				time = (System.currentTimeMillis() - time) / 1000;
 
 				if (successful) {

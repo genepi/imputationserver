@@ -325,13 +325,13 @@ public class VcfFileUtil {
 		Command splitX = new Command(PLINK);
 		splitX.setSilent(false);
 		splitX.setParams("--vcf", file.getVcfFilename(), "--split-x", "b37",
-				"--make-bed", "--out", "tmp");
+				"--make-bed", "--out", "tmp", "--const-fid");
 		System.out.println("Command: " + splitX.getExecutedCommand());
 		splitX.execute();
 
 		Command sexCheck = new Command(PLINK);
 		sexCheck.setSilent(false);
-		sexCheck.setParams("--bfile", "tmp", "--check-sex");
+		sexCheck.setParams("--bfile", "tmp", "--check-sex", "--const-fid");
 		System.out.println("Command: " + sexCheck.getExecutedCommand());
 		sexCheck.execute();
 
@@ -340,9 +340,9 @@ public class VcfFileUtil {
 			String[] a = lr.get().split("\\s+");
 
 			if (a[4].equals("1")) {
-				b1.add(a[1]);
+				b1.add(a[2]);
 			} else if (a[4].equals("2")) {
-				b2.add(a[1]);
+				b2.add(a[2]);
 			}
 
 		}
@@ -411,6 +411,9 @@ public class VcfFileUtil {
 		// females-auto
 		VcfFile females = load(file.getVcfFilename() + "-f.vcf.gz",
 				file.getChunkSize(), true);
+		
+		System.out.println("!!!!!!!!!!!!!!!!!Output: " + females.getChromosome());
+		
 		Set<String> chromosomesFemale = new HashSet<String>();
 		chromosomesFemale.add("X.no.auto_female");
 		females.setChromosomes(chromosomesFemale);
@@ -505,6 +508,48 @@ public class VcfFileUtil {
 		}
 		reader.close();
 		nonPseudoAuto.close();
+
+	}
+
+	public static void extractPseudoAuto(String inputFilename,
+			String nonPseudoAutoFilename) throws IOException {
+
+		LineWriter pseudoAuto = new LineWriter(nonPseudoAutoFilename);
+
+		LineReader reader = new LineReader(inputFilename);
+
+		while (reader.next()) {
+
+			String line = reader.get();
+
+			if (line.startsWith("#")) {
+				// header
+				pseudoAuto.write(line);
+			} else {
+				String tiles[] = line.split("\t", 3);
+
+				if (tiles.length < 3) {
+					throw new IOException(
+							"The provided VCF file is not tab-delimited");
+				}
+
+				String chromosome = tiles[0];
+
+				if (!chromosome.equals("X")) {
+					throw new IOException(
+							"The provided VCF file is not for chromosome X");
+				}
+
+				int position = Integer.parseInt(tiles[1]);
+
+				if (!(2699520 <= position && position <= 154931044)) {
+					pseudoAuto.write(line);
+				}
+			}
+
+		}
+		reader.close();
+		pseudoAuto.close();
 
 	}
 
