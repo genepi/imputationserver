@@ -167,8 +167,8 @@ mapred:
     - id: report
       description: Imputation Report
       type: local-file
-      download: false
-      temp: true
+      download: true
+      temp: false
 
 
     - id: outputmaf
