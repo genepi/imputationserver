@@ -17,7 +17,13 @@ panels:
     hdfs: minimac-data/phase3_m3.tgz
     legendPattern: ALL_1000G_phase3_integrated_v5_chr$chr.legend.gz
     legend: minimac-data/legends/ALL_1000G_phase3_integrated_v5.legend.tgz
-    
+
+  - id: chrX
+    pattern: chr$chr.vcf.gz
+    hdfs: minimac-data/chrX.tgz
+    legendPattern: ALL_1000G_phase3_integrated_v5_chr$chr.legend.gz
+    legend: minimac-data/legends/ALL_1000G_phase3_integrated_v5.legend.tgz
+        
   - id: hrc
     pattern: Chr.20.All.Cohorts.MAC.5.2.Cohorts.optm.gz
     hdfs: minimac-data/hrc_optm.tgz
