@@ -503,7 +503,7 @@ public class QualityControlMapper extends
 				/ (double) (foundInLegend + notFoundInLegend);
 
 		
-		//if (overlap >= OVERLAP && foundInLegend >= MIN_SNPS && !lowSampleCallRate && validSnps >= MIN_SNPS) {
+		if (overlap >= OVERLAP && foundInLegend >= MIN_SNPS && !lowSampleCallRate && validSnps >= MIN_SNPS) {
 
 			// update chunk
 			chunk.setSnps(overallSnps);
@@ -511,7 +511,7 @@ public class QualityControlMapper extends
 			chunk.setVcfFilename(hdfsFilename);
 			context.write(new Text(chunk.getChromosome()),
 					new Text(chunk.serialize()));
-		/*} else {
+		} else {
 
 			chunkWriter.write(chunk.toString() + " (Snps: " + overallSnps
 					+ ", Reference overlap: " + overlap
@@ -525,7 +525,7 @@ public class QualityControlMapper extends
 				removedChunksCallRate++;
 			}
 
-		}*/
+		}
 
 		vcfReader.close();
 		reader.close();
