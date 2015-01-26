@@ -146,10 +146,21 @@ public class ImputationPipelineMinimac3 {
 		Command hapiUr = new Command(hapiUrCommand);
 		hapiUr.setSilent(false);
 
-		hapiUr.setParams("-g", output.getBedFilename(), "-s", bimWthMap, "-i",
-				output.getFamFilename(), "-w", "73", "-o", output.getPrefix(),
-				"-c", input.getChromosome(), "--start", start + "", "--end",
-				end + "", "--impute2");
+		hapiUr.setParams(
+				"-g",
+				output.getBedFilename(),
+				"-s",
+				bimWthMap,
+				"-i",
+				output.getFamFilename(),
+				"-w",
+				"73",
+				"-o",
+				output.getPrefix(),
+				"-c",
+				input.getChromosome().equals("X") ? "23" : input
+						.getChromosome(), "--start", start + "", "--end", end
+						+ "", "--impute2");
 		hapiUr.saveStdOut(output.getPrefix() + ".hapiur.out");
 		hapiUr.saveStdErr(output.getPrefix() + ".hapiur.err");
 		System.out.println("Command: " + hapiUr.getExecutedCommand());
@@ -159,8 +170,35 @@ public class ImputationPipelineMinimac3 {
 		Command shapeItConvert = new Command(shapeItCommand);
 		shapeItConvert.setSilent(false);
 		shapeItConvert.setParams("-convert", "--input-haps",
-				output.getPrefix(), "--output-vcf", output.getVcfFilename());
+				output.getPrefix(), "--output-vcf", output.getVcfFilename()
+						+ "_temp");
 		System.out.println("Command: " + shapeItConvert.getExecutedCommand());
+		shapeItConvert.execute();
+		if (input.getChromosome().equals("X")) {
+			// replace 23 with X
+			try {
+				LineWriter writer = new LineWriter(output.getVcfFilename());
+				LineReader reader = new LineReader(output.getVcfFilename()
+						+ "_temp");
+				while (reader.next()) {
+
+					String line = reader.get();
+
+					if (line.startsWith("#")) {
+						writer.write(line);
+					} else {
+						String[] tiles = line.split("\t", 2);
+						writer.write("X\t" + tiles[1]);
+					}
+
+				}
+				reader.close();
+				writer.close();
+			} catch (Exception e) {
+				return false;
+			}
+
+		}
 
 		return (shapeItConvert.execute() == 0);
 	}
