@@ -19,7 +19,7 @@ for (file in list.files(path=mypath, pattern="*.info.gz",full.names = TRUE)){
   
     cat(paste("<h2>Overal performance</h2>"))       
                 
-  t = read.table(gzfile(file), header=T)
+  t = read.table(gzfile(file), header=T,fill=TRUE)
 info = t;
 
   t$br <- cut(t$MAF,hist(t$MAF,60,plot=F)$breaks);
