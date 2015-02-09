@@ -135,22 +135,6 @@ public class ImputationMapperMinimac3 extends
 
 		VcfChunk chunk = new VcfChunk(value.toString());
 
-		if (chunk.getChromosome().equals("X.no.auto_male")) {
-			chunk.setChromosome("X");
-		}
-
-		if (chunk.getChromosome().equals("X.no.auto_female")) {
-			chunk.setChromosome("X");
-		}
-
-		if (chunk.getChromosome().equals("X.auto_male")) {
-			chunk.setChromosome("X");
-		}
-
-		if (chunk.getChromosome().equals("X.auto_female")) {
-			chunk.setChromosome("X");
-		}
-
 		VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
 
 		HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
@@ -159,10 +143,12 @@ public class ImputationMapperMinimac3 extends
 
 		String chrFilename = "";
 
-		if (chunk.getChromosome().equals("X")) {
+		if (chunk.getChromosome().contains("X.no.auto")) {
 
-			chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome()
-					+ ".no.auto");
+			chrFilename = pattern.replaceAll("\\$chr", "X.no.auto");
+		} else if (chunk.getChromosome().contains("X.auto")) {
+
+			chrFilename = pattern.replaceAll("\\$chr", "X.auto");
 		} else {
 			chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome());
 		}
@@ -178,9 +164,11 @@ public class ImputationMapperMinimac3 extends
 
 		if (chunk.isPhased()) {
 
-			// imputation for phased genotypes
-			// if (!chunk.getChromosome().equals("23")
-			// && !chunk.getChromosome().equals("X")) {
+			// replace X.nonpar / X.par with X
+			if (chunk.getChromosome().contains("X")) {
+				chunk.setChromosome("X");
+			}
+
 			long time = System.currentTimeMillis();
 			boolean successful = pipeline.imputeVCF(chunk, outputChunk);
 			time = (System.currentTimeMillis() - time) / 1000;
@@ -191,7 +179,6 @@ public class ImputationMapperMinimac3 extends
 				log.stop("  Minimac3 failed [" + time + " sec]", "");
 				return;
 			}
-			// }
 
 		} else {
 
@@ -201,6 +188,16 @@ public class ImputationMapperMinimac3 extends
 			// convert vcf to bim/bed/fam
 			long time = System.currentTimeMillis();
 			boolean successful = pipeline.vcfToBed(outputChunk);
+
+			if (chunk.getChromosome().equals("X.no.auto_male")) {
+				pipeline.writeMaleFam(outputChunk);
+			}
+
+			// replace X.nonpar / X.par with X
+			if (chunk.getChromosome().contains("X")) {
+				chunk.setChromosome("X");
+			}
+
 			time = (System.currentTimeMillis() - time) / 1000;
 
 			if (successful) {
@@ -250,6 +247,7 @@ public class ImputationMapperMinimac3 extends
 			} else {
 
 				// shapeit
+
 				chrFilename = mapShapeITPattern.replaceAll("\\$chr",
 						chunk.getChromosome());
 				String mapfilePath = FileUtil.path(mapShapeITFilename,
@@ -274,10 +272,6 @@ public class ImputationMapperMinimac3 extends
 				}
 
 			}
-
-			// imputation for unphased genotypes.
-			// if (!chunk.getChromosome().equals("23")
-			// && !chunk.getChromosome().equals("X")) {
 
 			time = System.currentTimeMillis();
 			successful = pipeline.imputeVCF(chunk, outputChunk);

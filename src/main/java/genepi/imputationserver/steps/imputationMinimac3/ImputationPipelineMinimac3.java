@@ -12,6 +12,9 @@ import genepi.io.text.LineWriter;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.CopyUtils;
+import org.apache.commons.io.FileUtils;
+
 public class ImputationPipelineMinimac3 {
 
 	private String minimacCommand;
@@ -73,7 +76,7 @@ public class ImputationPipelineMinimac3 {
 	public boolean vcfToBed(VcfChunkOutput output) {
 
 		Command vcfCooker = new Command(vcfCookerCommand);
-		vcfCooker.setSilent(false);
+		vcfCooker.setSilent(true);
 
 		vcfCooker.setParams("--in-vcf", output.getVcfFilename(), "--write-bed",
 				"--out", output.getPrefix());
@@ -82,6 +85,33 @@ public class ImputationPipelineMinimac3 {
 		System.out.println("Command: " + vcfCooker.getExecutedCommand());
 		return (vcfCooker.execute() == 0);
 
+	}
+	
+	public void writeMaleFam(VcfChunkOutput output) {
+
+		try {
+			FileUtils.copyFile(new File(output.getFamFilename()), new File(output.getFamFilename()+"_tmp"));
+			LineReader reader = new LineReader(output.getFamFilename()+"_tmp");
+			LineWriter writer = new LineWriter(output.getFamFilename());
+			while (reader.next()) {
+				String str = "";
+				String[] token = reader.get().split("\\s+");
+				//set male as gender
+				token[4]="1";
+				for (String i:token){
+					  str += i+"\t";
+				}
+				writer.write(str);
+				
+			}
+			writer.close();
+			reader.close();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	public boolean vcfToHap2(VcfChunkOutput output) {
@@ -274,6 +304,31 @@ public class ImputationPipelineMinimac3 {
 	public boolean imputeVCF(VcfChunk input, VcfChunkOutput output)
 			throws InterruptedException, IOException {
 
+		
+		if(output.getVcfFilename().contains("no.auto_male")){
+			LineReader reader = new LineReader(output.getVcfFilename());
+			LineWriter writer = new LineWriter(output.getVcfFilename()+"_male");
+			while (reader.next()) {
+
+				String line = reader.get();
+				if(line.startsWith("#")){
+					writer.write(line);
+				}
+				else{
+					String tiles[] = line.split("\t", 10);
+					tiles[9] = tiles[9].replaceAll("0\\|0","0").replaceAll("1\\|1", "1");
+					StringBuffer result = new StringBuffer();
+					for (int i = 0; i < tiles.length; i++) {
+					   result.append( tiles[i] +"\t");
+					}
+					writer.write(result.toString());
+				}
+			}
+			reader.close();
+			writer.close();
+			output.setVcfFilename(output.getVcfFilename()+"_male");
+		}
+		
 		// mini-mac
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
@@ -313,7 +368,7 @@ public class ImputationPipelineMinimac3 {
 			String line = readerInfo.get();
 			String[] tiles = line.split("\t", 2);
 			int position = Integer.parseInt(tiles[0].split(":")[1]);
-			if (position > input.getStart() && position < input.getEnd()) {
+			if (position >= input.getStart() && position <= input.getEnd()) {
 				startIndex = Math.min(startIndex, index);
 				endIndex = Math.max(endIndex, index);
 				writerInfo.write(line);
