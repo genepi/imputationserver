@@ -249,16 +249,17 @@ public class QualityControl extends HadoopJobStep {
 				if (VcfFileUtil.isAutosomal(myvcfFile.getChromosome())) {
 					// chr 1 - 22
 					vcfFiles.add(myvcfFile);
-				} else {
+				} 
+				else if(myvcfFile.getChromosome().equals("X")) {
 					// chr X
 					context.beginTask("Check chromosome X...");
 					try {
 						List<VcfFile> newFiles = VcfFileUtil
-								.splitMaleFemale(myvcfFile);
+								.prepareChrX(myvcfFile);
 
 						context.endTask("<b>Sex-Check:</b>"+"\n"+"Males: "
 								+ newFiles.get(0).getNoSamples() + "\n"
-								+ "Females: " + newFiles.get(1).getNoSamples(),
+								+ "Females: " + newFiles.get(1).getNoSamples()+"\n"+"No Sex dedected and therefore filtered: "+(myvcfFile.getNoSamples()-newFiles.get(0).getNoSamples()-newFiles.get(1).getNoSamples()),
 								Message.OK);
 
 						vcfFiles.addAll(newFiles);
@@ -268,7 +269,7 @@ public class QualityControl extends HadoopJobStep {
 						throw e;
 					}
 				}
-
+			
 				for (VcfFile vcfFile : vcfFiles) {
 
 					// writes chunk-file

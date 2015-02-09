@@ -276,8 +276,8 @@ public class GenomicTools {
 
 		double chisq = 0;
 
-		// TODO 1000G REF 1 samples count
-		int refN = 1092 * 2;
+		// TODO 1000G REF 3 samples count
+		int refN = 2535 * 2;
 
 		double refA = refSnp.getFrequencyA();
 		double refB = refSnp.getFrequencyB();

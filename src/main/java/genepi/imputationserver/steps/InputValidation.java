@@ -99,7 +99,9 @@ public class InputValidation extends WorkflowStep {
 				boolean chrXTester = mail.toLowerCase().equals(
 						"narisu@mai.nih.gov")
 						|| mail.toLowerCase().equals(
-								"sebastian.schoenherr@uibk.ac.at");
+								"sebastian.schoenherr@uibk.ac.at") || mail.toLowerCase().equals(
+										"lukas.forer@i-med.ac.at") || mail.toLowerCase().equals(
+												"cfuchsb@umich.edu");
 				if (chrXTester
 						|| VcfFileUtil.isAutosomal(vcfFile.getChromosome())) {
 
@@ -235,7 +237,7 @@ public class InputValidation extends WorkflowStep {
 		} else {
 
 			context.endTask(
-					"The provided files are not VCF files  (see <a href=\"/start.html#!pages/help\">Help</a>).",
+					"The provided files are not VCF files  (see <a href=\"/start.html#!pages/help\">Help</a>). Chromosome X is currently in Beta.",
 					WorkflowContext.ERROR);
 
 			return false;
