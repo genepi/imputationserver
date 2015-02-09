@@ -51,6 +51,7 @@ public class VcfFileUtil {
 			reader.close();
 
 			LineReader lineReader = new LineReader(vcfFilename);
+			
 
 			boolean phased = true;
 			boolean phasedAutodetect = true;
@@ -121,7 +122,7 @@ public class VcfFileUtil {
 					noSnps++;
 
 				} else {
-
+					
 					if (line.startsWith("#CHROM")) {
 
 						String[] tiles = line.split("\t");
@@ -144,6 +145,7 @@ public class VcfFileUtil {
 					}
 
 				}
+			
 			}
 			lineReader.close();
 			reader.close();
@@ -153,8 +155,8 @@ public class VcfFileUtil {
 			// create index
 			if (new File(tabixPath).exists() && createIndex) {
 
+				
 				Command tabix = new Command(tabixPath);
-
 				tabix.setParams("-p", "vcf", vcfFilename);
 				tabix.saveStdErr("tabix.output");
 				int returnCode = tabix.execute();
@@ -293,7 +295,7 @@ public class VcfFileUtil {
 
 	}
 
-	public static List<VcfFile> splitMaleFemale(VcfFile file)
+	public static List<VcfFile> prepareChrX(VcfFile file)
 			throws IOException {
 		List<VcfFile> files = new Vector<VcfFile>();
 
@@ -322,20 +324,28 @@ public class VcfFileUtil {
 			throw new IOException("bgzip: file " + BGZIP + " not found.");
 		}
 
-		Command splitX = new Command(PLINK);
-		splitX.setSilent(false);
-		splitX.setParams("--vcf", file.getVcfFilename(), "--split-x", "b37",
-				"--make-bed", "--out", "tmp", "--const-fid");
-		System.out.println("Command: " + splitX.getExecutedCommand());
-		splitX.execute();
+		/** Split file into no.auto (or nonpar) and auto (or par) region */
+		VcfFileUtil.splitFileByRegion(file.getVcfFilename());
+		
+		// bgzip
+		Command bgzip3 = new Command(BGZIP);
+		bgzip3.setSilent(true);
+		bgzip3.setParams(file.getVcfFilename() + ".no.auto.vcf");
+		bgzip3.execute();
 
+		// tabix
+		Command tabix2 = new Command(TABIX);
+		tabix2.setSilent(true);
+		tabix2.setParams(file.getVcfFilename() + ".no.auto.vcf.gz");
+		tabix2.execute();
+		
 		Command sexCheck = new Command(PLINK);
 		sexCheck.setSilent(false);
-		sexCheck.setParams("--bfile", "tmp", "--check-sex", "--const-fid");
+		sexCheck.setParams("--vcf", file.getVcfFilename() + ".no.auto.vcf.gz", "--check-sex", "--const-fid", "--out", file.getVcfFilename());
 		System.out.println("Command: " + sexCheck.getExecutedCommand());
 		sexCheck.execute();
 
-		LineReader lr = new LineReader("plink.sexcheck");
+		LineReader lr = new LineReader(file.getVcfFilename()+".sexcheck");
 		while (lr.next()) {
 			String[] a = lr.get().split("\\s+");
 
@@ -347,22 +357,7 @@ public class VcfFileUtil {
 
 		}
 
-		// Extract no.auto
-		VcfFileUtil.extractNonPseudoAuto(file.getVcfFilename(),
-				file.getVcfFilename() + ".no.auto.vcf");
-
-		// bgzip
-		Command bgzip3 = new Command(BGZIP);
-		bgzip3.setSilent(true);
-		bgzip3.setParams(file.getVcfFilename() + ".no.auto.vcf");
-		bgzip3.execute();
-
-		// bgzip
-		Command tabix2 = new Command(TABIX);
-		tabix2.setSilent(true);
-		tabix2.setParams(file.getVcfFilename() + ".no.auto.vcf.gz");
-		tabix2.execute();
-
+		/** Write for nonpar region a seperate file for male and female */
 		Command keepSamples = new Command(VCFKEEPSAMPLES);
 		keepSamples.setSilent(true);
 
@@ -374,7 +369,7 @@ public class VcfFileUtil {
 		keepSamples.setParams(params);
 		System.out.println("Command: " + keepSamples.getExecutedCommand());
 		keepSamples.saveStdOut(file.getVcfFilename() + "-m.vcf");
-		System.out.println(keepSamples.execute());
+		keepSamples.execute();
 
 		// bgzip
 		Command bgzip = new Command(BGZIP);
@@ -400,7 +395,7 @@ public class VcfFileUtil {
 		bgzip2.setParams(file.getVcfFilename() + "-f.vcf");
 		bgzip2.execute();
 
-		// males-auto
+		/** males-nopar*/
 		VcfFile males = load(file.getVcfFilename() + "-m.vcf.gz",
 				file.getChunkSize(), true);
 		Set<String> chromosomesMale = new HashSet<String>();
@@ -408,20 +403,82 @@ public class VcfFileUtil {
 		males.setChromosomes(chromosomesMale);
 		files.add(males);
 
-		// females-auto
+		/** females-nopar*/
 		VcfFile females = load(file.getVcfFilename() + "-f.vcf.gz",
 				file.getChunkSize(), true);
-		
-		System.out.println("!!!!!!!!!!!!!!!!!Output: " + females.getChromosome());
-		
+
 		Set<String> chromosomesFemale = new HashSet<String>();
 		chromosomesFemale.add("X.no.auto_female");
 		females.setChromosomes(chromosomesFemale);
 		files.add(females);
+
+		/** par, no SEX split*/
+		// bgzip
+		 bgzip3 = new Command(BGZIP);
+		bgzip3.setSilent(true);
+		bgzip3.setParams(file.getVcfFilename() + ".auto.vcf");
+		bgzip3.execute();
+
+		VcfFile par = load(file.getVcfFilename() + ".auto.vcf.gz",
+		file.getChunkSize(), true);
+		Set<String> chromosomesXPar = new HashSet<String>();
+		chromosomesXPar.add("X.auto");
+		par.setChromosomes(chromosomesXPar);
+		files.add(par);
+
 		return files;
 	}
 
-	public static void splitChromosomeX(String inputFilename,
+	
+	public static void splitFileByRegion(String inputFilename) throws IOException {
+
+		LineWriter nonPar = new LineWriter(inputFilename + ".no.auto.vcf");
+
+		LineWriter par = new LineWriter(inputFilename + ".auto.vcf");
+
+		LineReader reader = new LineReader(inputFilename);
+
+		while (reader.next()) {
+
+			String line = reader.get();
+
+			if (line.startsWith("#")) {
+				// header
+				nonPar.write(line);
+				par.write(line);
+			} else {
+				String tiles[] = line.split("\t", 3);
+
+				if (tiles.length < 3) {
+					throw new IOException(
+							"The provided VCF file is not tab-delimited");
+				}
+
+				String chromosome = tiles[0];
+
+				if (!chromosome.equals("X")) {
+					throw new IOException(
+							"The provided VCF file is not for chromosome X");
+				}
+
+				int position = Integer.parseInt(tiles[1]);
+
+				if (2699520 <= position && position <= 154931044) {
+					nonPar.write(line);
+				} else {
+					par.write(line);
+				}
+			}
+
+		}
+		reader.close();
+		nonPar.close();
+		par.close();
+
+	}
+	
+	
+/*	public static void splitChromosomeX(String inputFilename,
 			String nonPseudoAutoFilename, String pseudoAutoFilename)
 			throws IOException {
 
@@ -435,7 +492,7 @@ public class VcfFileUtil {
 			String line = reader.get();
 
 			if (line.startsWith("#")) {
-				// header in booth files
+				// header in both files
 				nonPseudoAuto.write(line);
 				pseudoAuto.write(line);
 			} else {
@@ -467,9 +524,9 @@ public class VcfFileUtil {
 		pseudoAuto.close();
 		nonPseudoAuto.close();
 
-	}
+	}*/
 
-	public static void extractNonPseudoAuto(String inputFilename,
+/*	public static void extractNonPseudoAuto(String inputFilename,
 			String nonPseudoAutoFilename) throws IOException {
 
 		LineWriter nonPseudoAuto = new LineWriter(nonPseudoAutoFilename);
@@ -509,9 +566,10 @@ public class VcfFileUtil {
 		reader.close();
 		nonPseudoAuto.close();
 
-	}
+	}*/
 
-	public static void extractPseudoAuto(String inputFilename,
+
+/*	public static void extractPseudoAuto(String inputFilename,
 			String nonPseudoAutoFilename) throws IOException {
 
 		LineWriter pseudoAuto = new LineWriter(nonPseudoAutoFilename);
@@ -551,6 +609,6 @@ public class VcfFileUtil {
 		reader.close();
 		pseudoAuto.close();
 
-	}
+	}*/
 
 }
