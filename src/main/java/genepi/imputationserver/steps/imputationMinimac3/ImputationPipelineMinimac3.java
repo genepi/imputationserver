@@ -347,7 +347,7 @@ public class ImputationPipelineMinimac3 {
 
 	}
 
-	public int[] fixInfoFile(VcfChunk input, VcfChunkOutput output)
+	public int fixInfoFile(VcfChunk input, VcfChunkOutput output)
 			throws IOException, InterruptedException {
 
 		// fix window bug in minimac
@@ -377,12 +377,10 @@ public class ImputationPipelineMinimac3 {
 			index++;
 		}
 
-		// log.info("After imputation: " + snps + " SNPs");
-
 		readerInfo.close();
 		writerInfo.close();
 
-		return new int[] { startIndex, endIndex };
+		return snps;
 
 	}
 

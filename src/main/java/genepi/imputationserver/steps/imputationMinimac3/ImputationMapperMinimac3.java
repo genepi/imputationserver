@@ -296,8 +296,10 @@ public class ImputationMapperMinimac3 extends
 
 		// fix window bug in minimac
 		// TODO ask lukas what this is for
-		pipeline.fixInfoFile(chunk, outputChunk);
+		int snpInfo = pipeline.fixInfoFile(chunk, outputChunk);
+		log.info("  " + chunk.toString() + " Snps in info chunk: " + snpInfo);
 
+		
 		// store info file
 		HdfsUtil.put(outputChunk.getInfoFixedFilename(),
 				HdfsUtil.path(output, chunk + ".info"));
@@ -315,7 +317,7 @@ public class ImputationMapperMinimac3 extends
 
 		boolean firstHeader = true;
 		boolean firstData = true;
-
+		int snps = 0;
 		LineReader reader = new LineReader(outputChunk.getVcfOutFilename());
 		while (reader.next()) {
 			String line = reader.get();
@@ -323,6 +325,7 @@ public class ImputationMapperMinimac3 extends
 				outData.write("\n".getBytes());
 				outData.write(line.getBytes());
 				firstData = false;
+				snps++;
 			} else {
 				if (!firstHeader) {
 					outHeader.write("\n".getBytes());
@@ -331,6 +334,7 @@ public class ImputationMapperMinimac3 extends
 				outHeader.write(line.getBytes());
 			}
 		}
+		log.info("  " + chunk.toString() + " Snps in vcf chunk: " + snps);
 		outData.close();
 		outHeader.close();
 		reader.close();
