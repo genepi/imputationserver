@@ -64,7 +64,7 @@ mapred:
        type: list
        value: phase1
        values:
-         phase1: 1000G PhaseI v3 Shapeit2 (no singletons)
+         phase1: 1000G Phase 1 v3 Shapeit2 (no singletons)
          phase3: 1000G Phase 3 v5
          hapmap2: HapMap 2
          hrc: HRC OPTM chr20
