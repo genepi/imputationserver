@@ -92,6 +92,11 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			return false;
 		}
 
+		context.println("Reference Panel: ");
+		context.println("  Name: " + reference);
+		context.println("  Location: " + panel.getHdfs());
+		context.println("  Version: " + panel.getVersion());
+		
 		// load maps
 
 		MapList maps = null;
@@ -209,7 +214,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			context.updateTask(e.getMessage(), WorkflowContext.ERROR);
 			return false;
-			
+
 		}
 
 	}
