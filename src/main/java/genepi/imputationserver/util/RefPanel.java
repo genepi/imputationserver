@@ -1,5 +1,13 @@
 package genepi.imputationserver.util;
 
+import java.io.IOException;
+import java.util.Date;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 public class RefPanel {
 
 	private String id;
@@ -22,6 +30,20 @@ public class RefPanel {
 
 	public String getHdfs() {
 		return hdfs;
+	}
+
+	public String getVersion() {
+
+		FileStatus status;
+		try {
+			status = FileSystem.get(new Configuration()).getFileStatus(
+					new Path(hdfs));
+			return new Date(status.getModificationTime()).toString() + " ("
+					+ status.getLen() + " Bytes)";
+		} catch (IOException e) {
+			return "??";
+		}
+
 	}
 
 	public void setHdfs(String hdfs) {
