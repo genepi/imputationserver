@@ -99,9 +99,9 @@ public class InputValidation extends WorkflowStep {
 				boolean chrXTester = mail.toLowerCase().equals(
 						"narisu@mai.nih.gov")
 						|| mail.toLowerCase().equals(
-								"sebastian.schoenherr@uibk.ac.at") || mail.toLowerCase().equals(
-										"lukas.forer@i-med.ac.at") || mail.toLowerCase().equals(
-												"cfuchsb@umich.edu");
+								"sebastian.schoenherr@uibk.ac.at")
+						|| mail.toLowerCase().equals("lukas.forer@i-med.ac.at")
+						|| mail.toLowerCase().equals("cfuchsb@umich.edu");
 				if (chrXTester
 						|| VcfFileUtil.isAutosomal(vcfFile.getChromosome())) {
 
@@ -210,13 +210,13 @@ public class InputValidation extends WorkflowStep {
 
 		}
 
-		/*if (!phased && noSamples < 50) {
-			context.endTask(
-					"At least 50 samples must be included for pre-phasing",
-					WorkflowContext.ERROR);
-
-			return false;
-		}*/
+		/*
+		 * if (!phased && noSamples < 50) { context.endTask(
+		 * "At least 50 samples must be included for pre-phasing",
+		 * WorkflowContext.ERROR);
+		 * 
+		 * return false; }
+		 */
 
 		if (validVcfFiles.size() > 0) {
 

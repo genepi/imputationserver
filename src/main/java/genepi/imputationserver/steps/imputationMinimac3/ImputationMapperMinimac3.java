@@ -5,18 +5,11 @@ import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.ParameterStore;
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.log.Log;
-import genepi.imputationserver.steps.imputation.ImputationJob;
-import genepi.imputationserver.steps.imputation.sort.ChunkKey;
-import genepi.imputationserver.steps.imputation.sort.ChunkValue;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.io.FileUtil;
-import genepi.io.bed.BedUtil;
 import genepi.io.text.LineReader;
-import genepi.io.text.LineWriter;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -25,7 +18,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 public class ImputationMapperMinimac3 extends
-		Mapper<LongWritable, Text, ChunkKey, ChunkValue> {
+		Mapper<LongWritable, Text, Text, Text> {
 
 	private ImputationPipelineMinimac3 pipeline;
 
@@ -61,17 +54,19 @@ public class ImputationMapperMinimac3 extends
 		// get parameters
 		ParameterStore parameters = new ParameterStore(context);
 		pattern = parameters.get(ImputationJobMinimac3.REF_PANEL_PATTERN);
-		mapShapeITPattern = parameters.get(ImputationJob.MAP_SHAPEIT_PATTERN);
-		mapHapiURPattern = parameters.get(ImputationJob.MAP_HAPIUR_PATTERN);
+		mapShapeITPattern = parameters
+				.get(ImputationJobMinimac3.MAP_SHAPEIT_PATTERN);
+		mapHapiURPattern = parameters
+				.get(ImputationJobMinimac3.MAP_HAPIUR_PATTERN);
 		output = parameters.get(ImputationJobMinimac3.OUTPUT);
 		phasing = parameters.get(ImputationJobMinimac3.PHASING);
 		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
 		window = parameters.get(ImputationJobMinimac3.WINDOW);
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String hdfsPathShapeITMap = parameters
-				.get(ImputationJob.MAP_SHAPEIT_HDFS);
+				.get(ImputationJobMinimac3.MAP_SHAPEIT_HDFS);
 		String hdfsPathHapiURMap = parameters
-				.get(ImputationJob.MAP_HAPIUR_HDFS);
+				.get(ImputationJobMinimac3.MAP_HAPIUR_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
 		String mapShapeIT = FileUtil.getFilename(hdfsPathShapeITMap);
 		String mapHapiUR = FileUtil.getFilename(hdfsPathHapiURMap);
@@ -139,167 +134,27 @@ public class ImputationMapperMinimac3 extends
 
 		HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
 
-		log.info("Starting pipeline for chunk " + chunk + "...");
-
-		String chrFilename = "";
-
-		if (chunk.getChromosome().contains("X.no.auto")) {
-
-			chrFilename = pattern.replaceAll("\\$chr", "X.Non.Pseudo.Auto");
-		} else if (chunk.getChromosome().contains("X.auto")) {
-
-			chrFilename = pattern.replaceAll("\\$chr", "X.Pseudo.Auto");
-		} else {
-			chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome());
-		}
-
-		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
-
-		if (!new File(refPanelFilename).exists()) {
-			log.stop("ReferencePanel '" + refPanelFilename + "' not found.", "");
-		}
-
+		pipeline.setRefFilename(refFilename);
+		pipeline.setPattern(pattern);
+		pipeline.setMapShapeITPattern(mapShapeITPattern);
+		pipeline.setMapShapeITFilename(mapShapeITFilename);
+		pipeline.setMapHapiURFilename(mapHapiURFilename);
+		pipeline.setMapHapiURPattern(mapHapiURPattern);
+		pipeline.setPhasing(phasing);
 		pipeline.init();
-		pipeline.setReferencePanel(refPanelFilename);
 
-		if (chunk.isPhased()) {
-
-			// replace X.nonpar / X.par with X
-			if (chunk.getChromosome().contains("X")) {
-				chunk.setChromosome("X");
-			}
-
-			long time = System.currentTimeMillis();
-			boolean successful = pipeline.imputeVCF(chunk, outputChunk);
-			time = (System.currentTimeMillis() - time) / 1000;
-
-			if (successful) {
-				log.info("  Minimac3 successful. [" + time + " sec]");
-			} else {
-				log.stop("  Minimac3 failed [" + time + " sec]", "");
-				return;
-			}
-
+		boolean succesfull = pipeline.execute(chunk, outputChunk);
+		if (succesfull) {
+			log.info("Imputation for chunk " + chunk + " successful.");
 		} else {
-
-			System.out.println("vcf lines: "
-					+ FileUtil.getLineCount(outputChunk.getVcfFilename()));
-
-			// convert vcf to bim/bed/fam
-			long time = System.currentTimeMillis();
-			boolean successful = pipeline.vcfToBed(outputChunk);
-
-			if (chunk.getChromosome().equals("X.no.auto_male")) {
-				pipeline.writeMaleFam(outputChunk);
-			}
-
-			// replace X.nonpar / X.par with X
-			if (chunk.getChromosome().contains("X")) {
-				chunk.setChromosome("X");
-			}
-
-			time = (System.currentTimeMillis() - time) / 1000;
-
-			if (successful) {
-				log.info("  vcfCooker successful [" + time + " sec]");
-			} else {
-				log.stop("  vcfCooker failed[" + time + " sec]", "");
-				return;
-			}
-
-			// ignore small chunks
-			int noSnps = pipeline.getNoSnps(chunk, outputChunk);
-			if (noSnps <= 2) {
-				log.info("  Chunk " + chunk + " has only " + noSnps
-						+ " markers. Ignore it.");
-				return;
-			} else {
-				log.info("  Before imputation: " + noSnps + " SNPs");
-			}
-
-			// phasing
-			if (!phasing.equals("shapeit")) {
-
-				// hapiur
-				time = System.currentTimeMillis();
-
-				chrFilename = mapHapiURPattern.replaceAll("\\$chr",
-						chunk.getChromosome());
-				String mapfilePath = FileUtil.path(mapHapiURFilename,
-						chrFilename);
-
-				if (!new File(mapfilePath).exists()) {
-					log.stop("Map '" + mapfilePath + "' not found.", "");
-				}
-
-				pipeline.setMapFilename(mapfilePath);
-
-				successful = pipeline.phaseWithHapiUr(chunk, outputChunk);
-				time = (System.currentTimeMillis() - time) / 1000;
-
-				if (successful) {
-					log.info("  HapiUR successful [" + time + " sec]");
-				} else {
-					log.stop("  HapiUR failed[" + time + " sec]", "");
-					return;
-				}
-
-			} else {
-
-				// shapeit
-
-				chrFilename = mapShapeITPattern.replaceAll("\\$chr",
-						chunk.getChromosome());
-				String mapfilePath = FileUtil.path(mapShapeITFilename,
-						chrFilename);
-
-				if (!new File(mapfilePath).exists()) {
-					log.stop("Map '" + mapfilePath + "' not found.", "");
-				}
-
-				pipeline.setMapFilename(mapfilePath);
-
-				time = System.currentTimeMillis();
-				successful = pipeline.phaseWithShapeIt(chunk, outputChunk,
-						chunk.getChromosome().equals("X"));
-				time = (System.currentTimeMillis() - time) / 1000;
-
-				if (successful) {
-					log.info("  ShapeIt successful. [" + time + " sec]");
-				} else {
-					log.stop("  ShapeIt failed [" + time + " sec]", "");
-					return;
-				}
-
-			}
-
-			time = System.currentTimeMillis();
-			successful = pipeline.imputeVCF(chunk, outputChunk);
-			time = (System.currentTimeMillis() - time) / 1000;
-
-			if (successful) {
-				log.info("  Minimac3 successful.[" + time + " sec]");
-			} else {
-
-				String stdOut = FileUtil.readFileAsString(outputChunk
-						.getPrefix() + ".minimac.out");
-				String stdErr = FileUtil.readFileAsString(outputChunk
-						.getPrefix() + ".minimac.err");
-
-				log.stop("  Minimac3 failed[" + time + " sec]", "StdOut:\n"
-						+ stdOut + "\nStdErr:\n" + stdErr);
-				return;
-			}
-			// }
-
+			log.stop("Imputation failed!", "");
+			return;
 		}
 
 		// fix window bug in minimac
-		// TODO ask lukas what this is for
 		int snpInfo = pipeline.fixInfoFile(chunk, outputChunk);
 		log.info("  " + chunk.toString() + " Snps in info chunk: " + snpInfo);
 
-		
 		// store info file
 		HdfsUtil.put(outputChunk.getInfoFixedFilename(),
 				HdfsUtil.path(output, chunk + ".info"));
@@ -315,8 +170,8 @@ public class ImputationMapperMinimac3 extends
 				HdfsUtil.create(HdfsUtil.path(output, chunk
 						+ ".header.dose.vcf.gz")));
 
+		// split vcf in header and data
 		boolean firstHeader = true;
-		boolean firstData = true;
 		int snps = 0;
 		LineReader reader = new LineReader(outputChunk.getVcfOutFilename());
 		while (reader.next()) {
@@ -324,7 +179,6 @@ public class ImputationMapperMinimac3 extends
 			if (!line.startsWith("#")) {
 				outData.write("\n".getBytes());
 				outData.write(line.getBytes());
-				firstData = false;
 				snps++;
 			} else {
 				if (!firstHeader) {

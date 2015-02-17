@@ -12,7 +12,6 @@ import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,16 +95,14 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		context.println("  Name: " + reference);
 		context.println("  Location: " + panel.getHdfs());
 		context.println("  Version: " + panel.getVersion());
-		
+
 		// load maps
 
 		MapList maps = null;
 		try {
 			maps = MapList.loadFromFile(FileUtil.path(folder,
 					"genetic-maps.txt"));
-
 		} catch (Exception e) {
-
 			context.error("genetic-maps.txt not found.");
 			return false;
 		}

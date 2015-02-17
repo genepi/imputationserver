@@ -4,13 +4,9 @@ import genepi.hadoop.CacheStore;
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.log.LogCollector;
-import genepi.imputationserver.steps.imputation.sort.ChunkKey;
-import genepi.imputationserver.steps.imputation.sort.ChunkValue;
-import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.io.FileUtil;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.io.Text;
@@ -49,8 +45,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String folder;
 
-	private String minimacBin;
-
 	private boolean noCache = false;
 
 	private String mapShapeITHDFS;
@@ -73,8 +67,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		job.setMapperClass(ImputationMapperMinimac3.class);
 		job.setInputFormatClass(NLineInputFormat.class);
 
-		job.setMapOutputKeyClass(ChunkKey.class);
-		job.setMapOutputValueClass(ChunkValue.class);
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(Text.class);
 
 		job.setOutputKeyClass(Text.class);
 		job.setNumReduceTasks(0);
@@ -189,7 +183,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	}
 
 	public void setMinimacBin(String minimacBin) {
-		this.minimacBin = minimacBin;
 		set(MINIMAC_BIN, minimacBin);
 	}
 

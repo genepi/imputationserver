@@ -9,6 +9,7 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.CounterGroup;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
 
@@ -42,7 +43,7 @@ public class QualityControlJob extends HadoopJob {
 	private long removedChunksSnps;
 	private long removedChunksCallRate;
 	private long removedChunksOverlap;
-	
+
 	private long alleleMismatch;
 	private long alleleSwitch;
 	private long strandSwitch1;
@@ -55,7 +56,7 @@ public class QualityControlJob extends HadoopJob {
 		super(name, log);
 		getConfiguration().set("mapred.task.timeout", "360000000");
 		getConfiguration().set("mapred.reduce.tasks", "22");
-		//getConfiguration().set("mapred.job.queue.name", "qc");
+		getConfiguration().set("mapred.job.queue.name", "qc");
 
 	}
 
@@ -93,55 +94,33 @@ public class QualityControlJob extends HadoopJob {
 
 		try {
 
-			monomorphic = job.getCounters().getGroup("minimac")
-					.findCounter("monomorphic").getValue();
-			alternativeAlleles = job.getCounters().getGroup("minimac")
-					.findCounter("alternativeAlleles").getValue();
-			noSnps = job.getCounters().getGroup("minimac")
-					.findCounter("noSnps").getValue();
-			duplicates = job.getCounters().getGroup("minimac")
-					.findCounter("duplicates").getValue();
-			filtered = job.getCounters().getGroup("minimac")
-					.findCounter("filtered").getValue();
-			foundInLegend = job.getCounters().getGroup("minimac")
-					.findCounter("foundInLegend").getValue();
-			notFoundInLegend = job.getCounters().getGroup("minimac")
-					.findCounter("notFoundInLegend").getValue();
-			alleleMismatch = job.getCounters().getGroup("minimac")
-					.findCounter("alleleMismatch").getValue();
-			toLessSamples = job.getCounters().getGroup("minimac")
-					.findCounter("toLessSamples").getValue();
-			filterFlag = job.getCounters().getGroup("minimac")
-					.findCounter("filterFlag").getValue();
-			invalidAlleles = job.getCounters().getGroup("minimac")
-					.findCounter("invalidAlleles").getValue();
-			remainingSnps = job.getCounters().getGroup("minimac")
-					.findCounter("remainingSnps").getValue();
+			CounterGroup counters = job.getCounters().getGroup("minimac");
 
-			removedChunksSnps = job.getCounters().getGroup("minimac")
-					.findCounter("removedChunksSnps").getValue();
-
-			removedChunksOverlap = job.getCounters().getGroup("minimac")
-					.findCounter("removedChunksOverlap").getValue();
-
-			removedChunksCallRate = job.getCounters().getGroup("minimac")
-					.findCounter("removedChunksCallRate").getValue();
-			
-			strandSwitch1 = job.getCounters().getGroup("minimac")
-					.findCounter("strandSwitch1").getValue();
-			
-			strandSwitch2 = job.getCounters().getGroup("minimac")
-					.findCounter("strandSwitch2").getValue();
-			
-			strandSwitch3 = job.getCounters().getGroup("minimac")
-					.findCounter("strandSwitch3").getValue();
-			
-			setAlleleSwitch(job.getCounters().getGroup("minimac")
-					.findCounter("alleleSwitch").getValue());
-			
-			setMatch(job.getCounters().getGroup("minimac")
-					.findCounter("match").getValue());
-
+			monomorphic = counters.findCounter("monomorphic").getValue();
+			alternativeAlleles = counters.findCounter("alternativeAlleles")
+					.getValue();
+			noSnps = counters.findCounter("noSnps").getValue();
+			duplicates = counters.findCounter("duplicates").getValue();
+			filtered = counters.findCounter("filtered").getValue();
+			foundInLegend = counters.findCounter("foundInLegend").getValue();
+			notFoundInLegend = counters.findCounter("notFoundInLegend")
+					.getValue();
+			alleleMismatch = counters.findCounter("alleleMismatch").getValue();
+			toLessSamples = counters.findCounter("toLessSamples").getValue();
+			filterFlag = counters.findCounter("filterFlag").getValue();
+			invalidAlleles = counters.findCounter("invalidAlleles").getValue();
+			remainingSnps = counters.findCounter("remainingSnps").getValue();
+			removedChunksSnps = counters.findCounter("removedChunksSnps")
+					.getValue();
+			removedChunksOverlap = counters.findCounter("removedChunksOverlap")
+					.getValue();
+			removedChunksCallRate = counters.findCounter(
+					"removedChunksCallRate").getValue();
+			strandSwitch1 = counters.findCounter("strandSwitch1").getValue();
+			strandSwitch2 = counters.findCounter("strandSwitch2").getValue();
+			strandSwitch3 = counters.findCounter("strandSwitch3").getValue();
+			alleleSwitch = counters.findCounter("alleleSwitch").getValue();
+			match = counters.findCounter("match").getValue();
 
 		} catch (IOException e) {
 			e.printStackTrace();

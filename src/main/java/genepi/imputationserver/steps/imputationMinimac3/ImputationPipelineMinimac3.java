@@ -12,7 +12,6 @@ import genepi.io.text.LineWriter;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.io.CopyUtils;
 import org.apache.commons.io.FileUtils;
 
 public class ImputationPipelineMinimac3 {
@@ -28,6 +27,81 @@ public class ImputationPipelineMinimac3 {
 	private int phasingWindow;
 	private int rounds;
 	private String mapFilename;
+
+	private String refFilename;
+	private String pattern;
+
+	private String mapShapeITPattern;
+	private String mapShapeITFilename;
+
+	private String mapHapiURFilename;
+	private String mapHapiURPattern;
+
+	private String phasing;
+
+	public String getRefPanelFilename() {
+		return refPanelFilename;
+	}
+
+	public void setRefPanelFilename(String refPanelFilename) {
+		this.refPanelFilename = refPanelFilename;
+	}
+
+	public String getRefFilename() {
+		return refFilename;
+	}
+
+	public void setRefFilename(String refFilename) {
+		this.refFilename = refFilename;
+	}
+
+	public String getPattern() {
+		return pattern;
+	}
+
+	public void setPattern(String pattern) {
+		this.pattern = pattern;
+	}
+
+	public String getMapShapeITPattern() {
+		return mapShapeITPattern;
+	}
+
+	public void setMapShapeITPattern(String mapShapeITPattern) {
+		this.mapShapeITPattern = mapShapeITPattern;
+	}
+
+	public String getMapShapeITFilename() {
+		return mapShapeITFilename;
+	}
+
+	public void setMapShapeITFilename(String mapShapeITFilename) {
+		this.mapShapeITFilename = mapShapeITFilename;
+	}
+
+	public String getMapHapiURFilename() {
+		return mapHapiURFilename;
+	}
+
+	public void setMapHapiURFilename(String mapHapiURFilename) {
+		this.mapHapiURFilename = mapHapiURFilename;
+	}
+
+	public String getMapHapiURPattern() {
+		return mapHapiURPattern;
+	}
+
+	public void setMapHapiURPattern(String mapHapiURPattern) {
+		this.mapHapiURPattern = mapHapiURPattern;
+	}
+
+	public String getPhasing() {
+		return phasing;
+	}
+
+	public void setPhasing(String phasing) {
+		this.phasing = phasing;
+	}
 
 	public void init() {
 
@@ -71,6 +145,171 @@ public class ImputationPipelineMinimac3 {
 
 	public void setRounds(int rounds) {
 		this.rounds = rounds;
+	}
+
+	public boolean execute(VcfChunk chunk, VcfChunkOutput output)
+			throws InterruptedException, IOException {
+
+		System.out.println("Starting pipeline for chunk " + chunk + "...");
+
+		String chrFilename = "";
+
+		if (chunk.getChromosome().contains("X.no.auto")) {
+
+			chrFilename = pattern.replaceAll("\\$chr", "X.Non.Pseudo.Auto");
+		} else if (chunk.getChromosome().contains("X.auto")) {
+
+			chrFilename = pattern.replaceAll("\\$chr", "X.Pseudo.Auto");
+		} else {
+			chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome());
+		}
+
+		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
+
+		if (!new File(refPanelFilename).exists()) {
+			System.out.println("ReferencePanel '" + refPanelFilename
+					+ "' not found.");
+			return false;
+		}
+
+		init();
+		setReferencePanel(refPanelFilename);
+
+		if (chunk.isPhased()) {
+
+			// replace X.nonpar / X.par with X
+			if (chunk.getChromosome().contains("X")) {
+				chunk.setChromosome("X");
+			}
+
+			long time = System.currentTimeMillis();
+			boolean successful = imputeVCF(chunk, output);
+			time = (System.currentTimeMillis() - time) / 1000;
+
+			if (successful) {
+				System.out.println("  Minimac3 successful. [" + time + " sec]");
+				return true;
+			} else {
+				System.out.println("  Minimac3 failed [" + time + " sec]");
+				return false;
+			}
+
+		} else {
+
+			System.out.println("vcf lines: "
+					+ FileUtil.getLineCount(output.getVcfFilename()));
+
+			// convert vcf to bim/bed/fam
+			long time = System.currentTimeMillis();
+			boolean successful = vcfToBed(output);
+
+			if (chunk.getChromosome().equals("X.no.auto_male")) {
+				writeMaleFam(output);
+			}
+
+			// replace X.nonpar / X.par with X
+			if (chunk.getChromosome().contains("X")) {
+				chunk.setChromosome("X");
+			}
+
+			time = (System.currentTimeMillis() - time) / 1000;
+
+			if (successful) {
+				System.out.println("  vcfCooker successful [" + time + " sec]");
+			} else {
+				System.out.println("  vcfCooker failed[" + time + " sec]");
+				return false;
+			}
+
+			// ignore small chunks
+			int noSnps = getNoSnps(chunk, output);
+			if (noSnps <= 2) {
+				System.out.println("  Chunk " + chunk + " has only " + noSnps
+						+ " markers. Ignore it.");
+				return false;
+			} else {
+				System.out.println("  Before imputation: " + noSnps + " SNPs");
+			}
+
+			// phasing
+			if (!phasing.equals("shapeit")) {
+
+				// hapiur
+				time = System.currentTimeMillis();
+
+				chrFilename = mapHapiURPattern.replaceAll("\\$chr",
+						chunk.getChromosome());
+				String mapfilePath = FileUtil.path(mapHapiURFilename,
+						chrFilename);
+
+				if (!new File(mapfilePath).exists()) {
+					System.out.println("Map '" + mapfilePath + "' not found.");
+					return false;
+				}
+
+				setMapFilename(mapfilePath);
+
+				successful = phaseWithHapiUr(chunk, output);
+				time = (System.currentTimeMillis() - time) / 1000;
+
+				if (successful) {
+					System.out
+							.println("  HapiUR successful [" + time + " sec]");
+				} else {
+					System.out.println("  HapiUR failed[" + time + " sec]");
+					return false;
+				}
+
+			} else {
+
+				// shapeit
+
+				chrFilename = mapShapeITPattern.replaceAll("\\$chr",
+						chunk.getChromosome());
+				String mapfilePath = FileUtil.path(mapShapeITFilename,
+						chrFilename);
+
+				if (!new File(mapfilePath).exists()) {
+					System.out.println("Map '" + mapfilePath + "' not found.");
+					return false;
+				}
+
+				setMapFilename(mapfilePath);
+
+				time = System.currentTimeMillis();
+				successful = phaseWithShapeIt(chunk, output, chunk
+						.getChromosome().equals("X"));
+				time = (System.currentTimeMillis() - time) / 1000;
+
+				if (successful) {
+					System.out.println("  ShapeIt successful. [" + time
+							+ " sec]");
+				} else {
+					System.out.println("  ShapeIt failed [" + time + " sec]");
+					return false;
+				}
+
+			}
+
+			time = System.currentTimeMillis();
+			successful = imputeVCF(chunk, output);
+			time = (System.currentTimeMillis() - time) / 1000;
+
+			if (successful) {
+				System.out.println("  Minimac3 successful.[" + time + " sec]");
+				return true;
+			} else {
+				String stdOut = FileUtil.readFileAsString(output.getPrefix()
+						+ ".minimac.out");
+				String stdErr = FileUtil.readFileAsString(output.getPrefix()
+						+ ".minimac.err");
+
+				System.out.println("  Minimac3 failed[" + time
+						+ " sec]\n\nStdOut:\n" + stdOut + "\nStdErr:\n"
+						+ stdErr);
+				return false;
+			}
+		}
 	}
 
 	public boolean vcfToBed(VcfChunkOutput output) {
@@ -171,9 +410,11 @@ public class ImputationPipelineMinimac3 {
 		hapiUrPre.setParams(output.getBimFilename(), mapFilename);
 		hapiUrPre.saveStdOut(bimWthMap);
 		hapiUrPre.setSilent(true);
-		hapiUrPre.execute();
 		System.out.println("Command: " + hapiUrPre.getExecutedCommand());
-
+		if (hapiUrPre.execute() != 0){
+			return false;
+		}
+		
 		Command hapiUr = new Command(hapiUrCommand);
 		hapiUr.setSilent(false);
 
@@ -195,7 +436,10 @@ public class ImputationPipelineMinimac3 {
 		hapiUr.saveStdOut(output.getPrefix() + ".hapiur.out");
 		hapiUr.saveStdErr(output.getPrefix() + ".hapiur.err");
 		System.out.println("Command: " + hapiUr.getExecutedCommand());
-		hapiUr.execute();
+		if (hapiUr.execute() != 0){
+			return false;
+		}
+		
 
 		// haps to vcf
 		Command shapeItConvert = new Command(shapeItCommand);
@@ -204,7 +448,11 @@ public class ImputationPipelineMinimac3 {
 				output.getPrefix(), "--output-vcf", output.getVcfFilename()
 						+ "_temp");
 		System.out.println("Command: " + shapeItConvert.getExecutedCommand());
-		shapeItConvert.execute();
+		if (shapeItConvert.execute() != 0){
+			return false;
+		}
+		
+		
 		if (input.getChromosome().equals("X")) {
 			// replace 23 with X
 			try {
@@ -252,18 +500,20 @@ public class ImputationPipelineMinimac3 {
 					output.getBimFilename(), output.getFamFilename(),
 					"--input-map", mapFilename, "--output-max",
 					output.getPrefix(), "--input-from", start + "",
-					"--input-to", end + "", "--chrX");
+					"--input-to", end + "", "--chrX","--effective-size", "11418");
 		} else {
 			shapeIt.setParams("--input-bed", output.getBedFilename(),
 					output.getBimFilename(), output.getFamFilename(),
 					"--input-map", mapFilename, "--output-max",
 					output.getPrefix(), "--input-from", start + "",
-					"--input-to", end + "");
+					"--input-to", end + "","--effective-size", "11418");
 		}
 		shapeIt.saveStdOut(output.getPrefix() + ".shapeit.out");
 		shapeIt.saveStdErr(output.getPrefix() + ".shapeit.err");
 		System.out.println("Command: " + shapeIt.getExecutedCommand());
-		shapeIt.execute();
+		if (shapeIt.execute() != 0){
+			return false;
+		}
 
 		// haps to vcf
 		Command shapeItConvert = new Command(shapeItCommand);
@@ -272,7 +522,10 @@ public class ImputationPipelineMinimac3 {
 				output.getPrefix(), "--output-vcf", output.getVcfFilename()
 						+ "_temp");
 		System.out.println("Command: " + shapeItConvert.getExecutedCommand());
-		shapeItConvert.execute();
+		if (shapeItConvert.execute() != 0){
+			return false;
+		}
+		
 		if (chrX) {
 			// replace 23 with X
 			try {
@@ -339,7 +592,7 @@ public class ImputationPipelineMinimac3 {
 				output.getVcfFilename(), "--rounds", rounds + "", "--start",
 				input.getStart() + "", "--end", input.getEnd() + "",
 				"--window", minimacWindow + "", "--prefix", output.getPrefix(),
-				"--chr", input.getChromosome(), "--noPhoneHome");
+				"--chr", input.getChromosome(), "--noPhoneHome", "--format" ,"GT,DS,GP");
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
