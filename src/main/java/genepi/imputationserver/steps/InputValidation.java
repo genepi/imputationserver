@@ -97,7 +97,7 @@ public class InputValidation extends WorkflowStep {
 
 				String mail = context.getData("cloudgene.user.mail").toString();
 				boolean chrXTester = mail.toLowerCase().equals(
-						"narisu@mai.nih.gov")
+						"narisu@mail.nih.gov")
 						|| mail.toLowerCase().equals(
 								"sebastian.schoenherr@uibk.ac.at")
 						|| mail.toLowerCase().equals("lukas.forer@i-med.ac.at")

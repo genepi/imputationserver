@@ -14,7 +14,9 @@ public class VcfChunkOutput extends VcfChunk {
 	private String sampleFilename;
 	private String snpsFilename;
 	private String doseFilename;
-	private String vcfOutFilename;
+	private String imputedVcfFilename;
+	private String phasedVcfFilename;
+
 	private String infoFilename;
 	private String infoFixedFilename;
 
@@ -30,10 +32,12 @@ public class VcfChunkOutput extends VcfChunk {
 		sampleFilename = prefix + ".sample";
 		snpsFilename = prefix + ".snps";
 		doseFilename = prefix + ".dose";
-		vcfOutFilename = prefix + ".dose.vcf.gz";
+		imputedVcfFilename = prefix + ".dose.vcf.gz";
 		infoFilename = prefix + ".info";
 		infoFixedFilename = infoFilename + ".fixed";
+		phasedVcfFilename = prefix + ".phased.vcf";
 
+		
 		setVcfFilename(prefix + ".vcf");
 		setChromosome(chunk.getChromosome());
 		setStart(chunk.getStart());
@@ -90,8 +94,12 @@ public class VcfChunkOutput extends VcfChunk {
 		return bedFilename;
 	}
 	
-	public String getVcfOutFilename() {
-		return vcfOutFilename;
+	public String getImputedVcfFilename() {
+		return imputedVcfFilename;
+	}
+		
+	public String getPhasedVcfFilename() {
+		return phasedVcfFilename;
 	}
 
 }

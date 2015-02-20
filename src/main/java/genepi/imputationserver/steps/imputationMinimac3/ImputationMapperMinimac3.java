@@ -141,7 +141,6 @@ public class ImputationMapperMinimac3 extends
 		pipeline.setMapHapiURFilename(mapHapiURFilename);
 		pipeline.setMapHapiURPattern(mapHapiURPattern);
 		pipeline.setPhasing(phasing);
-		pipeline.init();
 
 		boolean succesfull = pipeline.execute(chunk, outputChunk);
 		if (succesfull) {
@@ -173,7 +172,7 @@ public class ImputationMapperMinimac3 extends
 		// split vcf in header and data
 		boolean firstHeader = true;
 		int snps = 0;
-		LineReader reader = new LineReader(outputChunk.getVcfOutFilename());
+		LineReader reader = new LineReader(outputChunk.getImputedVcfFilename());
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
