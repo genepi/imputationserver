@@ -178,7 +178,7 @@ public class ImputationPipelineMinimac3 {
 				output.setChromosome("X");
 			}
 
-			FileUtil.copy(chunk.getVcfFilename(),
+			FileUtil.copy(output.getVcfFilename(),
 					output.getPhasedVcfFilename());
 
 			long time = System.currentTimeMillis();
