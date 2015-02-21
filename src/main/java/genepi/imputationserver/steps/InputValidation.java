@@ -210,13 +210,13 @@ public class InputValidation extends WorkflowStep {
 
 		}
 
-		/*
-		 * if (!phased && noSamples < 50) { context.endTask(
-		 * "At least 50 samples must be included for pre-phasing",
-		 * WorkflowContext.ERROR);
-		 * 
-		 * return false; }
-		 */
+		if (!phased && noSamples < 50) {
+			context.endTask(
+					"At least 50 samples must be included for pre-phasing",
+					WorkflowContext.ERROR);
+
+			return false;
+		}
 
 		if (validVcfFiles.size() > 0) {
 
