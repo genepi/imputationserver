@@ -89,6 +89,7 @@ public class QualityControl extends HadoopJobStep {
 		// submit qc hadoop job
 		QualityControlJob job = new QualityControlJob(context.getJobId()
 				+ "-quality-control", new ContextLog(context));
+		job.setPanelId(panel.getId());
 		job.setLegendHdfs(panel.getLegend());
 		job.setLegendPattern(panel.getLegendPattern());
 		job.setPopulation(population);
