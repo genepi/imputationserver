@@ -523,7 +523,7 @@ public class ImputationPipelineMinimac3 {
 				"--start", output.getStart() + "", "--end", output.getEnd()
 						+ "", "--window", minimacWindow + "", "--prefix",
 				output.getPrefix(), "--chr", output.getChromosome(),
-				"--noPhoneHome");//, "--format", "GT,DS,GP");
+				"--noPhoneHome", "--format", "GT,DS,GP");
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
