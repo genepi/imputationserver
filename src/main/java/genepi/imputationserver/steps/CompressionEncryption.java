@@ -5,6 +5,7 @@ import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.util.FileMerger;
 import genepi.io.FileUtil;
 
 import java.io.File;
@@ -54,7 +55,7 @@ public class CompressionEncryption extends WorkflowStep {
 				context.println("Export and merge chromosome " + name);
 
 				// merge all info files
-				HdfsUtil.mergeAndGz(
+				FileMerger.mergeAndGz(
 						FileUtil.path(localOutput, "results", "chr" + name
 								+ ".info.gz"), folder, true, ".info");
 
