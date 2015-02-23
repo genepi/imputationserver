@@ -32,6 +32,8 @@ public class QualityControlMapper extends
 	private static final int MIN_SNPS = 3;
 
 	private static final double OVERLAP = 0.5;
+	
+	public static String PANEL_ID = "1092";
 
 	private String folder;
 
@@ -52,12 +54,14 @@ public class QualityControlMapper extends
 	private int lastPos = 0;
 
 	private int phasingWindow;
-
+	
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
 
 		// read parameters
 		ParameterStore parameters = new ParameterStore(context);
+		
+		PANEL_ID = parameters.get(QualityControlJob.PANEL_ID);
 		legendPattern = parameters.get(QualityControlJob.LEGEND_PATTERN);
 		population = parameters.get(QualityControlJob.LEGEND_POPULATION);
 		output = parameters.get(QualityControlJob.OUTPUT_MAF);
@@ -579,7 +583,7 @@ public class QualityControlMapper extends
 
 		// calculate allele frequency
 		SnpStats output = new SnpStats();
-
+		
 		int position = snp.getStart();
 
 		ChiSquareObject chiObj = GenomicTools

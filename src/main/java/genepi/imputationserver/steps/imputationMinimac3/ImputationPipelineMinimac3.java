@@ -3,6 +3,7 @@ package genepi.imputationserver.steps.imputationMinimac3;
 import genepi.hadoop.command.Command;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
+import genepi.imputationserver.util.GenomicTools;
 import genepi.io.FileUtil;
 import genepi.io.plink.MapFileReader;
 import genepi.io.plink.Snp;
@@ -37,6 +38,7 @@ public class ImputationPipelineMinimac3 {
 	private String mapHapiURFilename;
 	private String mapHapiURPattern;
 
+	private String population;
 	private String phasing;
 
 	public String getRefPanelFilename() {
@@ -101,6 +103,14 @@ public class ImputationPipelineMinimac3 {
 
 	public void setPhasing(String phasing) {
 		this.phasing = phasing;
+	}
+
+	public String getPopulation() {
+		return population;
+	}
+
+	public void setPopulation(String population) {
+		this.population = population;
 	}
 
 	public void setMinimacCommand(String minimacCommand) {
@@ -475,13 +485,14 @@ public class ImputationPipelineMinimac3 {
 					"--input-map", mapFilename, "--output-max",
 					output.getPrefix(), "--input-from", start + "",
 					"--input-to", end + "", "--chrX", "--effective-size",
-					"11418");
+					GenomicTools.getPopSize(population) + "");
 		} else {
 			shapeIt.setParams("--input-bed", output.getBedFilename(),
 					output.getBimFilename(), output.getFamFilename(),
 					"--input-map", mapFilename, "--output-max",
 					output.getPrefix(), "--input-from", start + "",
-					"--input-to", end + "", "--effective-size", "11418");
+					"--input-to", end + "", "--effective-size",
+					GenomicTools.getPopSize(population) + "");
 		}
 		shapeIt.saveStdOut(output.getPrefix() + ".shapeit.out");
 		shapeIt.saveStdErr(output.getPrefix() + ".shapeit.err");
@@ -647,5 +658,7 @@ public class ImputationPipelineMinimac3 {
 	public void setMapFilename(String mapFilename) {
 		this.mapFilename = mapFilename;
 	}
+
+	
 
 }

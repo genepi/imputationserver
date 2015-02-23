@@ -28,6 +28,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String MAP_HAPIUR_HDFS = "MINIMAC_MAP_HAPIUR_HDFS";
 
 	public static final String MAP_HAPIUR_PATTERN = "MINIMAC_MAP_HAPIUR_PATTERN";
+	
+	public static final String POPULATION = "MINIMAC_USES_POP";
 
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
 
@@ -166,6 +168,10 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		this.logFilename = logFilename;
 	}
 
+	public void setPopulation(String population) {
+		set(POPULATION, population);
+	}
+	
 	public void setPhasing(String phasing) {
 		set(PHASING, phasing);
 	}

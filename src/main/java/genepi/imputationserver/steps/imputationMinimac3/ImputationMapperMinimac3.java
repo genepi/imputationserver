@@ -26,6 +26,8 @@ public class ImputationMapperMinimac3 extends
 
 	private String pattern;
 
+	private String population;
+	
 	private String phasing;
 
 	private String rounds;
@@ -59,6 +61,7 @@ public class ImputationMapperMinimac3 extends
 		mapHapiURPattern = parameters
 				.get(ImputationJobMinimac3.MAP_HAPIUR_PATTERN);
 		output = parameters.get(ImputationJobMinimac3.OUTPUT);
+		population = parameters.get(ImputationJobMinimac3.POPULATION);
 		phasing = parameters.get(ImputationJobMinimac3.PHASING);
 		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
 		window = parameters.get(ImputationJobMinimac3.WINDOW);
@@ -141,6 +144,7 @@ public class ImputationMapperMinimac3 extends
 		pipeline.setMapHapiURFilename(mapHapiURFilename);
 		pipeline.setMapHapiURPattern(mapHapiURPattern);
 		pipeline.setPhasing(phasing);
+		pipeline.setPopulation(population);
 
 		boolean succesfull = pipeline.execute(chunk, outputChunk);
 		if (succesfull) {

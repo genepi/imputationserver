@@ -26,6 +26,8 @@ public class QualityControlJob extends HadoopJob {
 	public static final String OUTPUT_MANIFEST = "MINIMAC_MANIFEST";
 
 	public static final String OUTPUT_REMOVED_SNPS = "MINIMAC_REMOVED_SNPS";
+	
+	public static final String PANEL_ID = "PANEL_ID";
 
 	private String refPanelHdfs;
 
@@ -130,6 +132,10 @@ public class QualityControlJob extends HadoopJob {
 
 	public void setLegendPattern(String refPanelPattern) {
 		set(LEGEND_PATTERN, refPanelPattern);
+	}
+	
+	public void setPanelId(String id) {
+		set(PANEL_ID, id);
 	}
 
 	public void setLegendHdfs(String refPanelHdfs) {
