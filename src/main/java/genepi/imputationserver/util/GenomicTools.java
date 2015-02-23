@@ -1,7 +1,7 @@
 package genepi.imputationserver.util;
 
+import genepi.imputationserver.steps.qc.QualityControlMapper;
 import genepi.io.legend.LegendEntry;
-
 
 import org.broadinstitute.variant.variantcontext.VariantContext;
 
@@ -71,7 +71,6 @@ public class GenomicTools {
 		return false;
 
 	}
-
 
 	public static boolean alleleSwitchChiSquare(VariantContext snp,
 			LegendEntry refEntry) {
@@ -276,8 +275,9 @@ public class GenomicTools {
 
 		double chisq = 0;
 
-		// TODO 1000G REF 3 samples count
-		int refN = 2535 * 2;
+		int refN = getPanelSize(QualityControlMapper.PANEL_ID);
+		
+		System.out.println("id is " + refN);
 
 		double refA = refSnp.getFrequencyA();
 		double refB = refSnp.getFrequencyB();
@@ -316,6 +316,35 @@ public class GenomicTools {
 				+ (Math.pow(deltaP, 2) / (totalP - expectedP));
 
 		return new ChiSquareObject(chisq, p, q);
+	}
+
+	public static int getPanelSize(String panelId) {
+		switch (panelId) {
+		case "phase1":
+			return 1092;
+		case "phase3":
+			return 2535;
+		case "hapmap2":
+			return 1301;
+		default:
+			return 1092;
+		}
+	}
+
+	public static int getPopSize(String pop) {
+
+		switch (pop) {
+		case "eur":
+			return 11418;
+		case "afr":
+			return 17469;
+		case "asn":
+		case "sas":
+		case "eas":
+			return 14269;
+		default:
+			return 15000;
+		}
 	}
 
 	public static boolean alleleMismatch(char studyRef, char studyAlt,
