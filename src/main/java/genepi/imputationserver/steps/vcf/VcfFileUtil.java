@@ -331,19 +331,31 @@ public class VcfFileUtil {
 		Command bgzip3 = new Command(BGZIP);
 		bgzip3.setSilent(true);
 		bgzip3.setParams(file.getVcfFilename() + ".no.auto.vcf");
-		bgzip3.execute();
+		
+		if (bgzip3.execute() != 0) {
+			throw new IOException(
+					"Something went wrong with the bgzip no.auto command");
+		}
 
 		// tabix
 		Command tabix2 = new Command(TABIX);
 		tabix2.setSilent(true);
 		tabix2.setParams(file.getVcfFilename() + ".no.auto.vcf.gz");
-		tabix2.execute();
+		
+		if (tabix2.execute() != 0) {
+			throw new IOException(
+					"Something went wrong with the tabix no.auto command");
+		}
 		
 		Command sexCheck = new Command(PLINK);
 		sexCheck.setSilent(false);
 		sexCheck.setParams("--vcf", file.getVcfFilename() + ".no.auto.vcf.gz", "--check-sex", "--const-fid", "--out", file.getVcfFilename());
 		System.out.println("Command: " + sexCheck.getExecutedCommand());
-		sexCheck.execute();
+		
+		if (sexCheck.execute() != 0) {
+			throw new IOException(
+					"Something went wrong with the plink command");
+		}
 
 		LineReader lr = new LineReader(file.getVcfFilename()+".sexcheck");
 		while (lr.next()) {
@@ -369,14 +381,22 @@ public class VcfFileUtil {
 		keepSamples.setParams(params);
 		System.out.println("Command: " + keepSamples.getExecutedCommand());
 		keepSamples.saveStdOut(file.getVcfFilename() + "-m.vcf");
-		keepSamples.execute();
+		
+		if (keepSamples.execute() != 0) {
+			throw new IOException(
+					"Something went wrong with the keepSamples male command");
+		}
+
 
 		// bgzip
 		Command bgzip = new Command(BGZIP);
 		bgzip.setSilent(true);
 		bgzip.setParams(file.getVcfFilename() + "-m.vcf");
-		bgzip.execute();
 
+		if (bgzip.execute() != 0) {
+			throw new IOException(
+					"Something went wrong with the bgzip male command");
+		}
 		params = new String[b2.size() + 1];
 		params[0] = file.getVcfFilename() + ".no.auto.vcf.gz";
 		for (int i = 0; i < b2.size(); i++) {
@@ -387,13 +407,21 @@ public class VcfFileUtil {
 		keepSamples.setParams(params);
 		System.out.println("Command: " + keepSamples.getExecutedCommand());
 		keepSamples.saveStdOut(file.getVcfFilename() + "-f.vcf");
-		keepSamples.execute();
+		
+		if (keepSamples.execute() != 0) {
+			throw new IOException(
+					"Something went wrong with the kepsample female command");
+		}
 
 		// bgzip
 		Command bgzip2 = new Command(BGZIP);
 		bgzip2.setSilent(true);
 		bgzip2.setParams(file.getVcfFilename() + "-f.vcf");
-		bgzip2.execute();
+		
+		if (bgzip2.execute() != 0) {
+			throw new IOException(
+					"Something went wrong with the bgzip female command");
+		}
 
 		/** males-nopar*/
 		VcfFile males = load(file.getVcfFilename() + "-m.vcf.gz",
@@ -417,7 +445,11 @@ public class VcfFileUtil {
 		 bgzip3 = new Command(BGZIP);
 		bgzip3.setSilent(true);
 		bgzip3.setParams(file.getVcfFilename() + ".auto.vcf");
-		bgzip3.execute();
+		
+		if (bgzip3.execute() != 0) {
+			throw new IOException(
+					"Something went wrong with the bgzip auto command");
+		}
 
 		VcfFile par = load(file.getVcfFilename() + ".auto.vcf.gz",
 		file.getChunkSize(), true);
