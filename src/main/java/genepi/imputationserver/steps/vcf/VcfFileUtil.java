@@ -51,7 +51,6 @@ public class VcfFileUtil {
 			reader.close();
 
 			LineReader lineReader = new LineReader(vcfFilename);
-			
 
 			boolean phased = true;
 			boolean phasedAutodetect = true;
@@ -122,7 +121,7 @@ public class VcfFileUtil {
 					noSnps++;
 
 				} else {
-					
+
 					if (line.startsWith("#CHROM")) {
 
 						String[] tiles = line.split("\t");
@@ -145,7 +144,7 @@ public class VcfFileUtil {
 					}
 
 				}
-			
+
 			}
 			lineReader.close();
 			reader.close();
@@ -155,9 +154,8 @@ public class VcfFileUtil {
 			// create index
 			if (new File(tabixPath).exists() && createIndex) {
 
-				
 				Command tabix = new Command(tabixPath);
-				tabix.setParams("-p", "vcf", vcfFilename);
+				tabix.setParams("-f", "-p", "vcf", vcfFilename);
 				tabix.saveStdErr("tabix.output");
 				int returnCode = tabix.execute();
 
@@ -295,8 +293,7 @@ public class VcfFileUtil {
 
 	}
 
-	public static List<VcfFile> prepareChrX(VcfFile file)
-			throws IOException {
+	public static List<VcfFile> prepareChrX(VcfFile file) throws IOException {
 		List<VcfFile> files = new Vector<VcfFile>();
 
 		List<String> b1 = new Vector<String>();
@@ -326,11 +323,12 @@ public class VcfFileUtil {
 
 		/** Split file into no.auto (or nonpar) and auto (or par) region */
 		VcfFileUtil.splitFileByRegion(file.getVcfFilename());
-		
+
 		// bgzip
 		Command bgzip3 = new Command(BGZIP);
 		bgzip3.setSilent(true);
 		bgzip3.setParams(file.getVcfFilename() + ".no.auto.vcf");
+		System.out.println("Command: " + bgzip3.getExecutedCommand());
 		
 		if (bgzip3.execute() != 0) {
 			throw new IOException(
@@ -340,24 +338,26 @@ public class VcfFileUtil {
 		// tabix
 		Command tabix2 = new Command(TABIX);
 		tabix2.setSilent(true);
-		tabix2.setParams(file.getVcfFilename() + ".no.auto.vcf.gz");
+		tabix2.setParams("-f", file.getVcfFilename() + ".no.auto.vcf.gz");
+		System.out.println("Command: " + tabix2.getExecutedCommand());
+
 		
 		if (tabix2.execute() != 0) {
 			throw new IOException(
 					"Something went wrong with the tabix no.auto command");
 		}
-		
+
 		Command sexCheck = new Command(PLINK);
 		sexCheck.setSilent(false);
-		sexCheck.setParams("--vcf", file.getVcfFilename() + ".no.auto.vcf.gz", "--check-sex", "--const-fid", "--out", file.getVcfFilename());
+		sexCheck.setParams("--vcf", file.getVcfFilename() + ".no.auto.vcf.gz",
+				"--check-sex", "--const-fid", "--out", file.getVcfFilename());
 		System.out.println("Command: " + sexCheck.getExecutedCommand());
-		
+
 		if (sexCheck.execute() != 0) {
-			throw new IOException(
-					"Something went wrong with the plink command");
+			throw new IOException("Something went wrong with the plink command");
 		}
 
-		LineReader lr = new LineReader(file.getVcfFilename()+".sexcheck");
+		LineReader lr = new LineReader(file.getVcfFilename() + ".sexcheck");
 		while (lr.next()) {
 			String[] a = lr.get().split("\\s+");
 
@@ -381,12 +381,11 @@ public class VcfFileUtil {
 		keepSamples.setParams(params);
 		System.out.println("Command: " + keepSamples.getExecutedCommand());
 		keepSamples.saveStdOut(file.getVcfFilename() + "-m.vcf");
-		
+
 		if (keepSamples.execute() != 0) {
 			throw new IOException(
 					"Something went wrong with the keepSamples male command");
 		}
-
 
 		// bgzip
 		Command bgzip = new Command(BGZIP);
@@ -407,7 +406,7 @@ public class VcfFileUtil {
 		keepSamples.setParams(params);
 		System.out.println("Command: " + keepSamples.getExecutedCommand());
 		keepSamples.saveStdOut(file.getVcfFilename() + "-f.vcf");
-		
+
 		if (keepSamples.execute() != 0) {
 			throw new IOException(
 					"Something went wrong with the kepsample female command");
@@ -417,13 +416,13 @@ public class VcfFileUtil {
 		Command bgzip2 = new Command(BGZIP);
 		bgzip2.setSilent(true);
 		bgzip2.setParams(file.getVcfFilename() + "-f.vcf");
-		
+
 		if (bgzip2.execute() != 0) {
 			throw new IOException(
 					"Something went wrong with the bgzip female command");
 		}
 
-		/** males-nopar*/
+		/** males-nopar */
 		VcfFile males = load(file.getVcfFilename() + "-m.vcf.gz",
 				file.getChunkSize(), true);
 		Set<String> chromosomesMale = new HashSet<String>();
@@ -431,7 +430,7 @@ public class VcfFileUtil {
 		males.setChromosomes(chromosomesMale);
 		files.add(males);
 
-		/** females-nopar*/
+		/** females-nopar */
 		VcfFile females = load(file.getVcfFilename() + "-f.vcf.gz",
 				file.getChunkSize(), true);
 
@@ -440,19 +439,19 @@ public class VcfFileUtil {
 		females.setChromosomes(chromosomesFemale);
 		files.add(females);
 
-		/** par, no SEX split*/
+		/** par, no SEX split */
 		// bgzip
-		 bgzip3 = new Command(BGZIP);
+		bgzip3 = new Command(BGZIP);
 		bgzip3.setSilent(true);
 		bgzip3.setParams(file.getVcfFilename() + ".auto.vcf");
-		
+
 		if (bgzip3.execute() != 0) {
 			throw new IOException(
 					"Something went wrong with the bgzip auto command");
 		}
 
 		VcfFile par = load(file.getVcfFilename() + ".auto.vcf.gz",
-		file.getChunkSize(), true);
+				file.getChunkSize(), true);
 		Set<String> chromosomesXPar = new HashSet<String>();
 		chromosomesXPar.add("X.auto");
 		par.setChromosomes(chromosomesXPar);
@@ -461,8 +460,8 @@ public class VcfFileUtil {
 		return files;
 	}
 
-	
-	public static void splitFileByRegion(String inputFilename) throws IOException {
+	public static void splitFileByRegion(String inputFilename)
+			throws IOException {
 
 		LineWriter nonPar = new LineWriter(inputFilename + ".no.auto.vcf");
 
@@ -508,139 +507,106 @@ public class VcfFileUtil {
 		par.close();
 
 	}
-	
-	
-/*	public static void splitChromosomeX(String inputFilename,
-			String nonPseudoAutoFilename, String pseudoAutoFilename)
-			throws IOException {
 
-		LineWriter nonPseudoAuto = new LineWriter(nonPseudoAutoFilename);
-		LineWriter pseudoAuto = new LineWriter(pseudoAutoFilename);
+	/*
+	 * public static void splitChromosomeX(String inputFilename, String
+	 * nonPseudoAutoFilename, String pseudoAutoFilename) throws IOException {
+	 * 
+	 * LineWriter nonPseudoAuto = new LineWriter(nonPseudoAutoFilename);
+	 * LineWriter pseudoAuto = new LineWriter(pseudoAutoFilename);
+	 * 
+	 * LineReader reader = new LineReader(inputFilename);
+	 * 
+	 * while (reader.next()) {
+	 * 
+	 * String line = reader.get();
+	 * 
+	 * if (line.startsWith("#")) { // header in both files
+	 * nonPseudoAuto.write(line); pseudoAuto.write(line); } else { String
+	 * tiles[] = line.split("\t", 3);
+	 * 
+	 * if (tiles.length < 3) { throw new IOException(
+	 * "The provided VCF file is not tab-delimited"); }
+	 * 
+	 * String chromosome = tiles[0];
+	 * 
+	 * if (!chromosome.equals("X")) { throw new IOException(
+	 * "The provided VCF file is not for chromosome X"); }
+	 * 
+	 * int position = Integer.parseInt(tiles[1]);
+	 * 
+	 * if (2699520 <= position && position <= 154931044) {
+	 * nonPseudoAuto.write(line); } else { pseudoAuto.write(line); } }
+	 * 
+	 * } reader.close(); pseudoAuto.close(); nonPseudoAuto.close();
+	 * 
+	 * }
+	 */
 
-		LineReader reader = new LineReader(inputFilename);
+	/*
+	 * public static void extractNonPseudoAuto(String inputFilename, String
+	 * nonPseudoAutoFilename) throws IOException {
+	 * 
+	 * LineWriter nonPseudoAuto = new LineWriter(nonPseudoAutoFilename);
+	 * 
+	 * LineReader reader = new LineReader(inputFilename);
+	 * 
+	 * while (reader.next()) {
+	 * 
+	 * String line = reader.get();
+	 * 
+	 * if (line.startsWith("#")) { // header nonPseudoAuto.write(line); } else {
+	 * String tiles[] = line.split("\t", 3);
+	 * 
+	 * if (tiles.length < 3) { throw new IOException(
+	 * "The provided VCF file is not tab-delimited"); }
+	 * 
+	 * String chromosome = tiles[0];
+	 * 
+	 * if (!chromosome.equals("X")) { throw new IOException(
+	 * "The provided VCF file is not for chromosome X"); }
+	 * 
+	 * int position = Integer.parseInt(tiles[1]);
+	 * 
+	 * if (2699520 <= position && position <= 154931044) {
+	 * nonPseudoAuto.write(line); } }
+	 * 
+	 * } reader.close(); nonPseudoAuto.close();
+	 * 
+	 * }
+	 */
 
-		while (reader.next()) {
-
-			String line = reader.get();
-
-			if (line.startsWith("#")) {
-				// header in both files
-				nonPseudoAuto.write(line);
-				pseudoAuto.write(line);
-			} else {
-				String tiles[] = line.split("\t", 3);
-
-				if (tiles.length < 3) {
-					throw new IOException(
-							"The provided VCF file is not tab-delimited");
-				}
-
-				String chromosome = tiles[0];
-
-				if (!chromosome.equals("X")) {
-					throw new IOException(
-							"The provided VCF file is not for chromosome X");
-				}
-
-				int position = Integer.parseInt(tiles[1]);
-
-				if (2699520 <= position && position <= 154931044) {
-					nonPseudoAuto.write(line);
-				} else {
-					pseudoAuto.write(line);
-				}
-			}
-
-		}
-		reader.close();
-		pseudoAuto.close();
-		nonPseudoAuto.close();
-
-	}*/
-
-/*	public static void extractNonPseudoAuto(String inputFilename,
-			String nonPseudoAutoFilename) throws IOException {
-
-		LineWriter nonPseudoAuto = new LineWriter(nonPseudoAutoFilename);
-
-		LineReader reader = new LineReader(inputFilename);
-
-		while (reader.next()) {
-
-			String line = reader.get();
-
-			if (line.startsWith("#")) {
-				// header
-				nonPseudoAuto.write(line);
-			} else {
-				String tiles[] = line.split("\t", 3);
-
-				if (tiles.length < 3) {
-					throw new IOException(
-							"The provided VCF file is not tab-delimited");
-				}
-
-				String chromosome = tiles[0];
-
-				if (!chromosome.equals("X")) {
-					throw new IOException(
-							"The provided VCF file is not for chromosome X");
-				}
-
-				int position = Integer.parseInt(tiles[1]);
-
-				if (2699520 <= position && position <= 154931044) {
-					nonPseudoAuto.write(line);
-				}
-			}
-
-		}
-		reader.close();
-		nonPseudoAuto.close();
-
-	}*/
-
-
-/*	public static void extractPseudoAuto(String inputFilename,
-			String nonPseudoAutoFilename) throws IOException {
-
-		LineWriter pseudoAuto = new LineWriter(nonPseudoAutoFilename);
-
-		LineReader reader = new LineReader(inputFilename);
-
-		while (reader.next()) {
-
-			String line = reader.get();
-
-			if (line.startsWith("#")) {
-				// header
-				pseudoAuto.write(line);
-			} else {
-				String tiles[] = line.split("\t", 3);
-
-				if (tiles.length < 3) {
-					throw new IOException(
-							"The provided VCF file is not tab-delimited");
-				}
-
-				String chromosome = tiles[0];
-
-				if (!chromosome.equals("X")) {
-					throw new IOException(
-							"The provided VCF file is not for chromosome X");
-				}
-
-				int position = Integer.parseInt(tiles[1]);
-
-				if (!(2699520 <= position && position <= 154931044)) {
-					pseudoAuto.write(line);
-				}
-			}
-
-		}
-		reader.close();
-		pseudoAuto.close();
-
-	}*/
+	/*
+	 * public static void extractPseudoAuto(String inputFilename, String
+	 * nonPseudoAutoFilename) throws IOException {
+	 * 
+	 * LineWriter pseudoAuto = new LineWriter(nonPseudoAutoFilename);
+	 * 
+	 * LineReader reader = new LineReader(inputFilename);
+	 * 
+	 * while (reader.next()) {
+	 * 
+	 * String line = reader.get();
+	 * 
+	 * if (line.startsWith("#")) { // header pseudoAuto.write(line); } else {
+	 * String tiles[] = line.split("\t", 3);
+	 * 
+	 * if (tiles.length < 3) { throw new IOException(
+	 * "The provided VCF file is not tab-delimited"); }
+	 * 
+	 * String chromosome = tiles[0];
+	 * 
+	 * if (!chromosome.equals("X")) { throw new IOException(
+	 * "The provided VCF file is not for chromosome X"); }
+	 * 
+	 * int position = Integer.parseInt(tiles[1]);
+	 * 
+	 * if (!(2699520 <= position && position <= 154931044)) {
+	 * pseudoAuto.write(line); } }
+	 * 
+	 * } reader.close(); pseudoAuto.close();
+	 * 
+	 * }
+	 */
 
 }

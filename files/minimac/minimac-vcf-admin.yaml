@@ -1,6 +1,6 @@
 name:  Minimac3 (Experimental Mode)
 description: <a href="http://genome.sph.umich.edu/wiki/Minimac">Minimac</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
-version: 0.5.0
+version: 0.5.1
 website: http://genome.sph.umich.edu/wiki/Minimac
 category: MiniMac
 
