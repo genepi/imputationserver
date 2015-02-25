@@ -8,11 +8,12 @@
 <br />
 The underlying imputation engine is based on minimac, which implements a low memory, computationally efficient algorithm for genotype imputation that can handle very large reference panels with thousands of haplotypes.
 <br />
-The current version of this server uses the 1000 Genomes Project Phase I or III release as a reference for imputation.
+The current version of this server uses the 1000 genomes project phase I release as a reference for imputation.
 </p>
 <div id="login-form">
 
 </div>
+
 
 <hr>
 
@@ -150,6 +151,36 @@ The current version of this server uses the 1000 Genomes Project Phase I or III 
 
 <div id="counter" >
 
+
+<table class="table table-bordered">
+	<tbody>
+		<tr class="well">
+			<td colspan="2"><i class="icon-signal"></i> <b>Statistics</b></td>
+		</tr>
+		<tr >
+			<td>Chromosomes</td>
+			<td><%= (counter.attr('complete.chromosomes')* 1).toLocaleString() %></td>
+		</tr>
+		<tr >
+			<td>Genomes</td>
+			<td><%= Math.round(counter.attr('complete.chromosomes') / 22).toLocaleString() %></td>
+		</tr>
+	</tbody>
+</table>
+<br>
+<table class="table table-bordered">
+	<tbody>
+		<tr class="well">
+			<td colspan="2"><i class="icon-signal"></i> <b>Server Status</b></td>
+		</tr>
+		<tr >
+			<td colspan="2"><b><%= counter.attr('running.chromosomes')? (counter.attr('running.chromosomes')* 1).toLocaleString() : '0' %></b> Chromosomes are currently in progress.</td>
+		</tr>
+		<tr >
+			<td colspan="2"><b><%= counter.attr('waiting.chromosomes')? (counter.attr('waiting.chromosomes')* 1).toLocaleString() : '0' %></b> Chromosomes are in the queue.</td>
+		</tr>		
+	</tbody>
+</table>
 
 </div>
 
