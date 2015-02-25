@@ -277,8 +277,6 @@ public class GenomicTools {
 
 		int refN = getPanelSize(QualityControlMapper.PANEL_ID);
 		
-		System.out.println("id is " + refN);
-
 		double refA = refSnp.getFrequencyA();
 		double refB = refSnp.getFrequencyB();
 
