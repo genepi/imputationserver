@@ -528,7 +528,7 @@ public class ImputationPipelineMinimac3 {
 
 		// mini-mac
 		Command minimac = new Command(minimacCommand);
-		minimac.setSilent(true);
+		minimac.setSilent(false);
 		minimac.setParams("--refHaps", refPanelFilename, "--haps",
 				output.getPhasedVcfFilename(), "--rounds", rounds + "",
 				"--start", output.getStart() + "", "--end", output.getEnd()
