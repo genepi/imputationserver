@@ -7,6 +7,8 @@ import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.log.Log;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
+import genepi.imputationserver.util.FileMerger;
+import genepi.imputationserver.util.FileMerger.BgzipSplitOutputStream;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 
@@ -27,7 +29,7 @@ public class ImputationMapperMinimac3 extends
 	private String pattern;
 
 	private String population;
-	
+
 	private String phasing;
 
 	private String rounds;
@@ -165,37 +167,16 @@ public class ImputationMapperMinimac3 extends
 		long start = System.currentTimeMillis();
 
 		// store vcf file (remove header)
-		GzipCompressorOutputStream outData = new GzipCompressorOutputStream(
+		BgzipSplitOutputStream outData = new BgzipSplitOutputStream(
 				HdfsUtil.create(HdfsUtil.path(output, chunk
 						+ ".data.dose.vcf.gz")));
 
-		GzipCompressorOutputStream outHeader = new GzipCompressorOutputStream(
+		BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 				HdfsUtil.create(HdfsUtil.path(output, chunk
 						+ ".header.dose.vcf.gz")));
 
-		// split vcf in header and data
-		boolean firstHeader = true;
-		int snps = 0;
-		LineReader reader = new LineReader(outputChunk.getImputedVcfFilename());
-		while (reader.next()) {
-			String line = reader.get();
-			if (!line.startsWith("#")) {
-				outData.write("\n".getBytes());
-				outData.write(line.getBytes());
-				snps++;
-			} else {
-				if (!firstHeader) {
-					outHeader.write("\n".getBytes());
-				}
-				firstHeader = false;
-				outHeader.write(line.getBytes());
-			}
-		}
-		log.info("  " + chunk.toString() + " Snps in vcf chunk: " + snps);
-		outData.close();
-		outHeader.close();
-		reader.close();
-
+		FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(),
+				outHeader, outData);
 		long end = System.currentTimeMillis();
 
 		System.out.println("Time filter and put: " + (end - start) + " ms");

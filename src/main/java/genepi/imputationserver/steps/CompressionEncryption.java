@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.command.Command;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
@@ -31,6 +32,8 @@ public class CompressionEncryption extends WorkflowStep {
 
 	@Override
 	public boolean run(WorkflowContext context) {
+
+		String workingDirectory = getFolder(InputValidation.class);
 
 		String output = context.get("outputimputation");
 		String localOutput = context.get("local");
@@ -79,6 +82,17 @@ public class CompressionEncryption extends WorkflowStep {
 					vcfFile.addFile(HdfsUtil.open(file));
 				}
 				vcfFile.close();
+
+				Command tabix = new Command(FileUtil.path(workingDirectory,
+						"bin", "tabix"));
+				tabix.setSilent(false);
+				tabix.setParams("-f", vcfOutput);
+				if (tabix.execute() != 0) {
+					context.endTask(
+							"Error during index creation: " + tabix.getStdOut(),
+							Message.ERROR);
+					return false;
+				}
 
 			}
 
