@@ -25,7 +25,8 @@ public class InputValidation extends WorkflowStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		URLClassLoader cl = (URLClassLoader) InputValidation.class.getClassLoader();
+		URLClassLoader cl = (URLClassLoader) InputValidation.class
+				.getClassLoader();
 		try {
 			URL url = cl.findResource("META-INF/MANIFEST.MF");
 			Manifest manifest = new Manifest(url.openStream());
@@ -33,12 +34,13 @@ public class InputValidation extends WorkflowStep {
 			String buildVesion = attr.getValue("Version");
 			String buildTime = attr.getValue("Build-Time");
 			String builtBy = attr.getValue("Built-By");
-			context.println("Version: " + buildVesion + " (Built by " + builtBy + " on " + buildTime+")");
+			context.println("Version: " + buildVesion + " (Built by " + builtBy
+					+ " on " + buildTime + ")");
 
 		} catch (IOException E) {
 			// handle
 		}
-		
+
 		if (!importVcfFiles(context)) {
 			return false;
 		}
@@ -231,6 +233,14 @@ public class InputValidation extends WorkflowStep {
 		if (!phased && noSamples < 50) {
 			context.endTask(
 					"At least 50 samples must be included for pre-phasing",
+					WorkflowContext.ERROR);
+
+			return false;
+		}
+
+		if (noSamples > 6000) {
+			context.endTask(
+					"The maximum allowed number of samples is 6,000. Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
 					WorkflowContext.ERROR);
 
 			return false;
