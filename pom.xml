@@ -4,7 +4,7 @@
 
 	<groupId>genepi</groupId>
 	<artifactId>minimac-cloud</artifactId>
-	<version>0.5.2</version>
+	<version>0.5.3</version>
 	<packaging>jar</packaging>
 
 	<name>University of Michigan Imputation-Server</name>
@@ -146,7 +146,7 @@
 		<dependency>
 			<groupId>cloudgene</groupId>
 			<artifactId>cloudgene</artifactId>
-			<version>1.9.4</version>
+			<version>1.9.5</version>
 			<scope>provided</scope>
 			<type>zip</type>
 			<classifier>assembly</classifier>
@@ -155,7 +155,7 @@
 		<dependency>
 			<groupId>cloudgene</groupId>
 			<artifactId>cloudgene</artifactId>
-			<version>1.9.4</version>
+			<version>1.9.5</version>
 		</dependency>
 		
 
