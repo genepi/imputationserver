@@ -7,25 +7,13 @@ panels:
     legend: minimac-data/hapmap_r22.CEU.hg19.legends.tgz
 
   - id: phase1
-    pattern: ALL.chr$chr.SHAPEIT2_integrated_phase1_v3.20101123.snps_indels_svs.genotypes.all.noSingleton.m3.m3vcf.gz
-    hdfs: minimac-data/giant_m3.tgz
+    pattern: $chr.1000g.Phase1.v5.With.Parameter.Estimates.m3vcf.gz
+    hdfs: ref-panels/G1K_P1_M3VCF_FILES_WITH_ESTIMATES.tar.gz
     legendPattern: ALL_1000G_phase1integrated_v3_annotated_legends/ALL_1000G_phase1integrated_v3_chr$chr_impute.legend.gz
     legend: minimac-data/ALL_1000G_phase1integrated_v3_annotated_legends.tgz
     
   - id: phase3
-    pattern: reduced.ALL.chr$chr.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.m3vcf.gz
-    hdfs: minimac-data/phase3_m3.tgz
+    pattern: $chr.1000g.Phase3.v5.With.Parameter.Estimates.m3vcf.gz
+    hdfs: ref-panels/G1K_P3_M3VCF_FILES_WITH_ESTIMATES.tar.gz
     legendPattern: ALL_1000G_phase3_integrated_v5_chr$chr.legend.gz
     legend: minimac-data/legends/ALL_1000G_phase3_integrated_v5.legend.tgz
-
-  - id: chrX
-    pattern: chr$chr.vcf.gz
-    hdfs: minimac-data/chrX.tgz
-    legendPattern: ALL_1000G_phase3_integrated_v5_chr$chr.legend.gz
-    legend: minimac-data/legends/ALL_1000G_phase3_integrated_v5.legend.tgz
-        
-  - id: hrc
-    pattern: Chr.20.All.Cohorts.MAC.5.2.Cohorts.optm.gz
-    hdfs: minimac-data/hrc_optm.tgz
-    legendPattern: ALL_1000G_phase3_integrated_6_2014_chr$chr_impute.legend.gz
-    legend: minimac-data/ALL_1000G_phase3_integrated_6_2014_annotated_legends.tar.gz
