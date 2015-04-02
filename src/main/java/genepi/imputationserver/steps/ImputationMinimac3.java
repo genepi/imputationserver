@@ -93,6 +93,11 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			return false;
 		}
 
+		if (!panel.exists()){
+			context.error("Reference File '" + panel.getHdfs() + "' not found.");
+			return false;	
+		}
+		
 		context.println("Reference Panel: ");
 		context.println("  Name: " + reference);
 		context.println("  Location: " + panel.getHdfs());

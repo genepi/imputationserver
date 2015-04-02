@@ -46,6 +46,16 @@ public class RefPanel {
 
 	}
 
+	public boolean exists() {
+
+		try {
+			return FileSystem.get(new Configuration()).exists(new Path(hdfs));
+		} catch (IOException e) {
+			return false;
+		}
+
+	}
+
 	public void setHdfs(String hdfs) {
 		this.hdfs = hdfs;
 	}
