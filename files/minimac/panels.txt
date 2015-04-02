@@ -7,7 +7,7 @@ panels:
     legend: minimac-data/hapmap_r22.CEU.hg19.legends.tgz
 
   - id: phase1
-    pattern: $chr.1000g.Phase1.v5.With.Parameter.Estimates.m3vcf.gz
+    pattern: $chr.1000g.Phase1.v3.With.Parameter.Estimates.m3vcf.gz
     hdfs: ref-panels/G1K_P1_M3VCF_FILES_WITH_ESTIMATES.tar.gz
     legendPattern: ALL_1000G_phase1integrated_v3_annotated_legends/ALL_1000G_phase1integrated_v3_chr$chr_impute.legend.gz
     legend: minimac-data/ALL_1000G_phase1integrated_v3_annotated_legends.tgz
