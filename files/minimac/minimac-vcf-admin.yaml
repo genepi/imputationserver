@@ -107,7 +107,7 @@ mapred:
        type: number
        value: 0
        visible: true
-       
+
      - id: window
        description: Window size
        type: number
@@ -120,6 +120,12 @@ mapred:
        value: 10000000
        visible: true
 
+     - id: sample-limit
+       description: Limit
+       type: number
+       value: 0
+       visible: false
+       
      - id: encryption
        description: Result Encryption
        type: checkbox

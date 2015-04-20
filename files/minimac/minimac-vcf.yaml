@@ -118,6 +118,12 @@ mapred:
        type: number
        value: 10000000
        visible: false
+   
+     - id: sample-limit
+       description: Limit
+       type: number
+       value: 6000
+       visible: false
        
      - id: encryption
        description: Result Encryption
