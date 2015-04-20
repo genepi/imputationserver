@@ -104,10 +104,10 @@ public class CompressionEncryption extends WorkflowStep {
 				}
 
 				// create zip file
-				ArrayList<String> files = new ArrayList<String>();
-				files.add(vcfOutput);
-				files.add(vcfOutput + ".tbi");
-				files.add(doseOutput);
+				ArrayList<File> files = new ArrayList<File>();
+				files.add(new File(vcfOutput));
+				files.add(new File(vcfOutput + ".tbi"));
+				files.add(new File(doseOutput));
 
 				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput,
 						"chr_" + name + ".zip")));
