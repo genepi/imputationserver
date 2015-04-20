@@ -111,7 +111,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput,
 						"chr_" + name + ".zip")));
-				file.createZipFile(files, param, false, 0);
+				file.createZipFile(files, param);
 
 				// delete temp dir
 				FileUtil.deleteDirectory(temp);
