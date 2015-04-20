@@ -211,10 +211,15 @@ public class VcfFileUtil {
 		validChromosomes.add("20");
 		validChromosomes.add("21");
 		validChromosomes.add("22");
+		validChromosomes.add("X");
 	}
 
-	public static boolean isAutosomal(String chromosome) {
+	public static boolean isValidChromosome(String chromosome) {
 		return validChromosomes.contains(chromosome);
+	}
+	
+	public static boolean isChrX(String chromosome) {
+		return chromosome.equals("X") || chromosome.equals("23");
 	}
 
 	public static void mergeGz(String local, String hdfs, String ext)
