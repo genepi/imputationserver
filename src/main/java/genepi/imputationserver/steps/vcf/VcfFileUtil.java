@@ -219,7 +219,7 @@ public class VcfFileUtil {
 	}
 	
 	public static boolean isChrX(String chromosome) {
-		return chromosome.equals("X") || chromosome.equals("23");
+		return chromosome.equals("X");
 	}
 
 	public static void mergeGz(String local, String hdfs, String ext)
