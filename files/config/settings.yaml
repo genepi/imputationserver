@@ -6,6 +6,12 @@ apps:
   - id: minimac-admin
     permission: admin
     filename: minimac/minimac-vcf-admin.yaml
+  - id: minimac-hrc
+    permission: hrc
+    filename: minimac/minimac-vcf-hrc.yaml
+  - id: minimac-no-limit
+    permission: nolimit
+    filename: minimac/minimac-vcf-nolimit.yaml
 outputPath: output
 tempPath: tmp
 localWorkspace: cloudgene-workspace

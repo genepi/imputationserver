@@ -1,0 +1,231 @@
+name:  Minimac Unlimited
+description: <a href="http://genome.sph.umich.edu/wiki/Minimac">Minimac</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
+version: 0.5.3
+website: http://genome.sph.umich.edu/wiki/Minimac
+category: MiniMac
+
+cluster:
+
+  image: us-east-1/ami-7341831a
+  type: m1.large
+  ports: 80,50030,50070
+  user: ec2-user
+  creationOnly: false
+  installMapred: true
+  service: hadoop
+ 
+mapred:
+
+  setup:
+    name: Input Validation
+    jar: minimac-cloud.jar
+    classname: genepi.imputationserver.steps.InputValidation
+
+  steps:
+
+    - name: Quality Control
+      jar: minimac-cloud.jar
+      classname: genepi.imputationserver.steps.QualityControl
+      generates: $outputmaf $mafchunkfile $qcstat $statistics
+
+#if( $population != "mixed")
+
+    - name: Quality Control (Report)
+      rmd: qc-report.Rmd
+      params: $outputmaf
+      output: ${qcreport}.html
+      generates: $qcreport
+      
+#end
+
+#if($mode == "imputation")
+    - name: Pre-phasing and Imputation
+      jar: minimac-cloud.jar
+      classname: genepi.imputationserver.steps.ImputationMinimac3
+      params: $mafchunkfile $refpanel $chunksize $window $phasing      
+      generates: $local $outputimputation $logfile $hadooplogs
+
+    - name: Imputation (Report)
+      rmd: report.Rmd
+      params: $local/results
+      output: $report
+      generates: $report
+
+    - name: Data Compression and Encryption
+      jar: minimac-cloud.jar
+      classname: genepi.imputationserver.steps.CompressionEncryption
+      params: $local $report $encryption
+#end
+
+  inputs:
+
+     - id: refpanel
+       description: Reference Panel
+       type: list
+       value: phase1
+       values:
+         phase1: 1000G Phase 1 v3 Shapeit2 (no singletons)
+         phase3: 1000G Phase 3 v5
+         hapmap2: HapMap 2
+         hrc-5chr: HRC chr18-22
+
+     - id: files
+       description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
+       type: hdfs-folder
+
+     - id: phasing
+       description: Phasing
+       type: list
+       value: shapeit
+       values:
+         hapiur: HapiUR
+         shapeit: SHAPEIT
+  
+     - id: population
+       description: Population
+       type: list
+       value: eur
+       values:
+         eur: EUR
+         afr: AFR
+         asn: ASN (Phase1 only)
+         amr: AMR
+         sas: SAS (Phase3 only)
+         eas: EAS (Phase3 only)
+         mixed: Mixed
+                
+     - id: mode
+       description: Mode
+       type: list
+       value: imputation
+       values:
+          qconly: Quality Control Only 
+          imputation: Quality Control & Imputation
+         
+     - id: rounds
+       description: Rounds
+       type: number
+       value: 5
+       visible: false
+       
+     - id: window
+       description: Window size
+       type: number
+       value: 500000
+       visible: false
+
+     - id: chunksize
+       description: Chunk size
+       type: number
+       value: 10000000
+       visible: false
+   
+     - id: sample-limit
+       description: Limit
+       type: number
+       value: 0
+       visible: false
+       
+     - id: encryption
+       description: Result Encryption
+       type: checkbox
+       value: yes
+       values:
+         true: yes
+         false: no
+       visible: false
+       
+     - id: minimacbin
+       description: <b>Minimac Binary</b>
+       type: list
+       visible: false
+       value: Minimac3
+       values:
+          Minimac3: Minimac3 
+            
+     - id: nocache
+       description: <b>Disable Cache</b>
+       type: checkbox
+       value: no
+       values:
+         true: yes
+         false: no
+       visible: false  
+         
+  outputs:
+
+    - id: outputimputation
+      description: Imputated Genotypes
+      type: hdfs-folder
+      download: false
+      temp: true
+      zip: false
+      removeHeader: false
+      mergeOutput: false
+
+    - id: qcreport
+      description: Quality-Control Results
+      type: local-file
+      download: true
+      temp: false
+      autoExport: true
+
+ 
+    - id: report
+      description: Imputation Report
+      type: local-file
+      download: true
+      temp: false
+
+
+    - id: outputmaf
+      description: Output MAF
+      type: hdfs-folder
+      download: false
+      temp: true
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+       
+    - id: local
+      description: Imputation Results
+      type: local-folder
+      download: true
+      temp: true
+
+    - id: chunkfile
+      description: Chunk File
+      type: hdfs-folder
+      download: false
+      temp: true
+
+    - id: mafchunkfile
+      description: Chunk File Maf
+      type: hdfs-folder
+      download: false
+      temp: true
+      mergeOutput: false
+
+    - id: statistics
+      description: SNP Statistics
+      type: hdfs-folder
+      download: true
+      temp: false
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+      autoExport: true
+ 
+    - id: logfile
+      description: Logs
+      type: local-folder
+      download: true
+      temp: false
+           
+    - id: hadooplogs
+      description: Hadoop Task Logs
+      type: local-folder
+      download: true
+      temp: false
+      autoExport: true
+      adminOnly: true
