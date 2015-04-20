@@ -5,13 +5,12 @@ import genepi.hadoop.command.Command;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
-import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.FileMerger;
 import genepi.io.FileUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
@@ -39,6 +38,7 @@ public class CompressionEncryption extends WorkflowStep {
 		String localOutput = context.get("local");
 		String encryption = context.get("encryption");
 
+		// create one-time password
 		String password = RandomStringUtils.randomAlphabetic(10);
 
 		try {
@@ -47,27 +47,29 @@ public class CompressionEncryption extends WorkflowStep {
 
 			List<String> folders = HdfsUtil.getDirectories(output);
 
-			FileUtil.createDirectory(FileUtil.path(localOutput, "results"));
-
 			// export all chromosomes
 
 			for (String folder : folders) {
 
 				String name = FileUtil.getFilename(folder);
-
 				context.println("Export and merge chromosome " + name);
 
+				// create temp fir
+				String temp = FileUtil.path(localOutput, "temp");
+				FileUtil.createDirectory(temp);
+
+				// output files
+				String doseOutput = FileUtil.path(temp, "chr" + name
+						+ ".info.gz");
+				String vcfOutput = FileUtil.path(temp, "chr" + name
+						+ ".dose.vcf.gz");
+
 				// merge all info files
-				FileMerger.mergeAndGz(
-						FileUtil.path(localOutput, "results", "chr" + name
-								+ ".info.gz"), folder, true, ".info");
+				FileMerger.mergeAndGz(doseOutput, folder, true, ".info");
 
 				List<String> dataFiles = findFiles(folder, ".data.dose.vcf.gz");
 				List<String> headerFiles = findFiles(folder,
 						".header.dose.vcf.gz");
-
-				String vcfOutput = FileUtil.path(localOutput, "results", "chr"
-						+ name + ".dose.vcf.gz");
 
 				MergedVcfFile vcfFile = new MergedVcfFile(vcfOutput);
 
@@ -94,44 +96,32 @@ public class CompressionEncryption extends WorkflowStep {
 					return false;
 				}
 
+				ZipParameters param = new ZipParameters();
+				if (encryption.equals("yes")) {
+					param.setEncryptFiles(true);
+					param.setPassword(password);
+					param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
+				}
+
+				// create zip file
+				ArrayList<String> files = new ArrayList<String>();
+				files.add(vcfOutput);
+				files.add(vcfOutput + ".tbi");
+				files.add(doseOutput);
+
+				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput,
+						"chr_" + name + ".zip")));
+				file.createZipFile(files, param, false, 0);
+
+				// delete temp dir
+				FileUtil.deleteDirectory(temp);
+
 			}
 
 			// delete temporary files
 			HdfsUtil.delete(output);
 
 			context.endTask("Exported data.", Message.OK);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			context.endTask("Data compression failed: " + e.getMessage(),
-					Message.ERROR);
-			return false;
-		}
-
-		try {
-			context.println("Start zip process...");
-
-			context.beginTask("Compress data");
-
-			if (!new File(FileUtil.path(localOutput, "results")).exists()) {
-				context.endTask("no results found.", Message.ERROR);
-				return false;
-			}
-
-			ZipParameters param = new ZipParameters();
-			if (encryption.equals("yes")) {
-				param.setEncryptFiles(true);
-				param.setPassword(password);
-				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
-			}
-
-			ZipFile file = new ZipFile(new File(FileUtil.path(localOutput,
-					"results.zip")));
-			file.createZipFileFromFolder(FileUtil.path(localOutput, "results"),
-					param, false, 0);
-			FileUtil.deleteDirectory(FileUtil.path(localOutput, "results"));
-
-			context.endTask("Data compression successful.", Message.OK);
 
 		} catch (Exception e) {
 			e.printStackTrace();
