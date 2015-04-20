@@ -247,11 +247,13 @@ public class QualityControl extends HadoopJobStep {
 
 				VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize,
 						false);
-				if (VcfFileUtil.isAutosomal(myvcfFile.getChromosome())) {
-					// chr 1 - 22
+				
+				if (VcfFileUtil.isValidChromosome(myvcfFile.getChromosome())) {
+					// chr 1 - 22 and Chr X
 					vcfFiles.add(myvcfFile);
 				} 
-				else if(myvcfFile.getChromosome().equals("X")) {
+				
+				if(myvcfFile.getChromosome().equals("X")) {
 					// chr X
 					context.beginTask("Check chromosome X...");
 					try {
