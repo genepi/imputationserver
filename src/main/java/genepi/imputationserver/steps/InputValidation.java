@@ -57,6 +57,7 @@ public class InputValidation extends WorkflowStep {
 		String reference = context.get("refpanel");
 		String population = context.get("population");
 		String phasing = context.get("phasing");
+		int sampleLimit = Integer.valueOf(context.get("sample-limit"));
 
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
@@ -122,8 +123,19 @@ public class InputValidation extends WorkflowStep {
 								"sebastian.schoenherr@uibk.ac.at")
 						|| mail.toLowerCase().equals("lukas.forer@i-med.ac.at")
 						|| mail.toLowerCase().equals("cfuchsb@umich.edu");
-				if (chrXTester
-						|| VcfFileUtil.isAutosomal(vcfFile.getChromosome())) {
+
+				if (VcfFileUtil.isValidChromosome(vcfFile.getChromosome())) {
+
+					if (VcfFileUtil.isChrX(vcfFile.getChromosome())) {
+
+						if (!chrXTester) {
+
+							context.endTask(
+									"Chromosome X is currently in beta. Please contact Christian Fuchsberger to become a beta tester",
+									WorkflowContext.ERROR);
+							return false;
+						}
+					}
 
 					validVcfFiles.add(vcfFile);
 					chromosomes.add(vcfFile.getChromosome());
@@ -238,9 +250,11 @@ public class InputValidation extends WorkflowStep {
 			return false;
 		}
 
-		if (noSamples > 6000) {
+		if (noSamples > sampleLimit && sampleLimit != 0) {
 			context.endTask(
-					"The maximum number of samples is 6,000. Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
+					"The maximum number of samples is "
+							+ sampleLimit
+							+ ". Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
 					WorkflowContext.ERROR);
 
 			return false;
@@ -252,7 +266,7 @@ public class InputValidation extends WorkflowStep {
 					+ " valid VCF file(s) found.\n\n" + infos,
 					WorkflowContext.OK);
 
-			// init counteres
+			// init counters
 			context.incCounter("samples", noSamples);
 			context.incCounter("genotypes", noSamples * noSnps);
 			context.incCounter("chromosomes", noSamples * chromosomes.size());
