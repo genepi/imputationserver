@@ -17,3 +17,9 @@ panels:
     hdfs: ref-panels/G1K_P3_M3VCF_FILES_WITH_ESTIMATES.tar.gz
     legendPattern: ALL_1000G_phase3_integrated_v5_chr$chr.legend.gz
     legend: minimac-data/legends/ALL_1000G_phase3_integrated_v5.legend.tgz
+    
+  - id: HRC
+    pattern: HRC.r1.20150417.GRCh37.chr$chr.shapeit3.mac5.genotypes.m3vcf.gz
+    hdfs: ref-panels/HRC_20150417_5chr.tgz
+    legendPattern: HRC.r1.chr$chr.legend.gz
+    legend: ref-panels-legends/HRC_20150417_5chr_legends.tgz
