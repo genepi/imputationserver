@@ -240,7 +240,7 @@ public class InputValidation extends WorkflowStep {
 
 		if (noSamples > 6000) {
 			context.endTask(
-					"The maximum allowed number of samples is 6,000. Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
+					"The maximum number of samples is 6,000. Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
 					WorkflowContext.ERROR);
 
 			return false;
