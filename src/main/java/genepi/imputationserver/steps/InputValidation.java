@@ -131,14 +131,16 @@ public class InputValidation extends WorkflowStep {
 						if (!chrXTester) {
 
 							context.endTask(
-									"Chromosome X is currently in beta. Please contact Christian Fuchsberger to become a beta tester",
+									"Chromosome X imputation is currently under preperation. Please upload only autosomale chromosomes.",
 									WorkflowContext.ERROR);
 							return false;
+							
 						}
 					}
 
 					validVcfFiles.add(vcfFile);
 					chromosomes.add(vcfFile.getChromosome());
+					
 					String chromosomeString = "";
 					for (String chr : chromosomes) {
 						chromosomeString += " " + chr;
@@ -190,6 +192,25 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
+					if ((panel.getId().equals("hrc") && !vcfFile.isPhased())) {
+
+						context.endTask(
+								"For the HRC Panel, only phased genotypes are supported",
+								WorkflowContext.ERROR);
+
+						return false;
+					}
+					
+					if ((panel.getId().equals("hrc") && !population
+							.equals("eur"))) {
+
+						context.endTask(
+								"Please select the EUR population for the HRC reference panel",
+								WorkflowContext.ERROR);
+
+						return false;
+					}
+					
 					if ((panel.getId().equals("hapmap2") && !population
 							.equals("eur"))) {
 
@@ -228,6 +249,12 @@ public class InputValidation extends WorkflowStep {
 							+ (phased ? "phased" : "unphased") + "\n"
 							+ "Reference Panel: " + panel.getId();
 
+				}
+				else {
+					context.endTask(
+							"No valid chromosomes found!",
+							WorkflowContext.ERROR);
+					return false;
 				}
 
 			} catch (IOException e) {
