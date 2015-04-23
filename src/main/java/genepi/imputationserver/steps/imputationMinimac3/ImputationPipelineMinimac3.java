@@ -529,12 +529,25 @@ public class ImputationPipelineMinimac3 {
 		// mini-mac
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
-		minimac.setParams("--refHaps", refPanelFilename, "--haps",
-				output.getPhasedVcfFilename(), "--rounds", rounds + "",
-				"--start", output.getStart() + "", "--end", output.getEnd()
-						+ "", "--window", minimacWindow + "", "--prefix",
-				output.getPrefix(), "--chr", output.getChromosome(),
-				"--noPhoneHome", "--format", "GT,DS,GP");
+
+		if (phasing.equals("shapeit") && !output.isPhased()) {
+			
+			minimac.setParams("--refHaps", refPanelFilename, "--haps",
+					output.getPhasedVcfFilename(), "--rounds", rounds + "",
+					"--start", output.getStart() + "", "--end", output.getEnd()
+							+ "", "--window", minimacWindow + "", "--prefix",
+					output.getPrefix(), "--chr", output.getChromosome(),
+					"--noPhoneHome", "--format", "GT,DS,GP", "--unphasedOutput");
+		}
+
+		else {
+			minimac.setParams("--refHaps", refPanelFilename, "--haps",
+					output.getPhasedVcfFilename(), "--rounds", rounds + "",
+					"--start", output.getStart() + "", "--end", output.getEnd()
+							+ "", "--window", minimacWindow + "", "--prefix",
+					output.getPrefix(), "--chr", output.getChromosome(),
+					"--noPhoneHome", "--format", "GT,DS,GP");
+		}
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
@@ -658,7 +671,5 @@ public class ImputationPipelineMinimac3 {
 	public void setMapFilename(String mapFilename) {
 		this.mapFilename = mapFilename;
 	}
-
-	
 
 }
