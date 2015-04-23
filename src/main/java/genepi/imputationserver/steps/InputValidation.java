@@ -205,7 +205,7 @@ public class InputValidation extends WorkflowStep {
 							.equals("eur"))) {
 
 						context.endTask(
-								"Please select the EUR population for the HRC reference panel",
+								"Please select the EUR population for the HRC panel",
 								WorkflowContext.ERROR);
 
 						return false;
