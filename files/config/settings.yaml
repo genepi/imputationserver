@@ -1,4 +1,5 @@
-hadoopPath: /opt/hadoop
+!cloudgene.mapred.util.Settings
+name: UM Imputationserver
 apps:
   - id: minimac
     permission: user
@@ -15,17 +16,23 @@ apps:
   - id: minimac-hrc-no-limit
     permission: hrc-nolimit
     filename: minimac/minimac-vcf-hrc-nolimit.yaml
-outputPath: output
-tempPath: tmp
-localWorkspace: cloudgene-workspace
+hadoopPath: /usr
 hdfsWorkspace: cloudgene-workspace
 https: true
-name: UM Imputationserver
+httpsKeystore: /home/hadoop/cert/impute-keystore
+httpsPassword: 1andonly
+localWorkspace: cloudgene-workspace
+mail: 
+   port: 25
+   smtp: localhost
+   name: noreply@imputationserver.sph.umich.edu
+   password: 
+   user: 
+maintenance: true
+maxRunningJobs: 10
+maxRunningJobsPerUser: 1
+notificationAfter: 7
 removeHdfsWorkspace: true
-
-mail:
-  smtp: localhost
-  port: 25
-  user: 
-  password: 
-  name: noreply@imputationserver.sph.umich.edu
+retireAfter: 10
+streaming: false
+streamingJar: /usr/contrib/streaming/hadoop-streaming-2.5.0-cdh5.3.1.jar

@@ -173,7 +173,7 @@ mapred:
     - id: report
       description: Imputation Report
       type: local-file
-      download: true
+      download: false
       temp: false
 
 
