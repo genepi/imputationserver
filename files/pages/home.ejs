@@ -6,9 +6,8 @@
 
 <p>This server provides a free genotype imputation service. You can upload GWAS genotypes and receive imputed genomes in return.
 <br />
-The underlying imputation engine is based on minimac, which implements a low memory, computationally efficient algorithm for genotype imputation that can handle very large reference panels with thousands of haplotypes.
-<br />
-The current version of this server uses the 1000 genomes project phase 3 release as a reference for imputation.
+Our server offers imputation from HapMap, 1000 Genomes (Phase 1 and Phase 3), and <a href="http://www.haplotype-reference-consortium.org">HRC</a>.
+
 </p>
 <div id="login-form">
 
@@ -16,79 +15,6 @@ The current version of this server uses the 1000 genomes project phase 3 release
 
 
 <hr>
-
-<h3>News</h3>
-
-<p><b>24. April 2015</b>
-
-<ul>
-<li>Bug fixes</li>
-<li>Updated to latest Minimac3 (1.0.11) and Cloudgene version</li>
-</ul>
-
-<p><b>31. March 2015</b>
-
-<ul>
-<li>Imputation server operates at reduced speed, since we are replacing hardware</li>
-<li>New Fair Use Policy: please contact us if you want to impute >6,000 samples</li>
-</ul>
-
-
-<p><b>12. March 2015</b>
-
-<ul>
-<li>Supporting bgzip output format</li>
-<li>Fixing 1000G Phase 3 legend file for chr 10</li>
-</ul>
-
-<p><b>5. February 2015</b>
-
-<ul>
-<li>Fixed password recovery and missing site in chr6 info file</li>
-</ul>
-
-<p><b>29. January 2015</b>
-
-<ul>
-<li>X chromosome: extended support expected by Feb 14th</li>
-</ul>
-
-<p><b>19. December 2014</b>
-
-<ul>
-<li>Improving data export</li>
-</ul>
-</p>
-
-<p><b>26. November 2014</b>
-
-<ul>
-<li>Improved QC for detecting strand flips</li>
-<li>More restrictive filters during QC</li>
-</ul>
-</p>
-
-<p><b>25. October 2014</b>
-
-<ul>
-<li>Integrated genetic maps for phasing</li>
-</ul>
-</p>
-
-<p><b>20. October 2014</b>
-
-<ul>
-<li>Integrated 1000 Genomes phase3 panel</li>
-<li>Updated to minimac3 for imputation</li>
-</ul>
-</p>
-
-
-<hr>
-
-<h3>How does it work?</h3>
-
-
 
 <div id="myCarousel" class="carousel slide" style="height: 100px">
   <ol class="carousel-indicators">
@@ -106,14 +32,15 @@ The current version of this server uses the 1000 genomes project phase 3 release
 	<tr class="">
 		<td width="100px"><center><img src="assets/img/upload.png" width="70px"></img></center></td><td>
 		<h4>1. Upload your genotypes</h4>
-		<p>Upload your data to our server located in Michigan. The complete interaction with the server is secured with HTTPS.  After the imputation process has finished all input data is deleted from our server.</p></td>
+		<p>Upload your data to our server located in Michigan. All interactions with the server are secured.</p></td>
 	</tr>
 		</tbody>
 </table>
 </div>
 
 </div>
-    <div class="item">
+
+<div class="item">
 
 
 <div  style="height: 100px; padding-left: 70px; padding-right: 70px;" >
@@ -122,7 +49,7 @@ The current version of this server uses the 1000 genomes project phase 3 release
 	<tr class="">
 		<td width="100px"><center><img src="assets/img/impute.png" width="70px"></img></center></td><td>
 		<h4>2. Impute your genotypes</h4>
-		<p>Start the imputation by selecting the reference panel and the phasing algorithm (ShapeIT, HAPI-UR). </p></td>
+		<p>Choose a reference panel. We will take care of pre-phasing and imputation.</p></td>
 	</tr>
 		</tbody>
 </table>
@@ -137,7 +64,7 @@ The current version of this server uses the 1000 genomes project phase 3 release
 	<tr class="">
 		<td width="100px"><center><img src="assets/img/download.png" width="70px"></img></center></td><td>
 		<h4>3. Download the results</h4>
-		<p>All results are encrypted with a one-time password which is sent to you via email. After 7 days, all imputation results are deleted from our server. </p>
+		<p>All results are encrypted with a one-time password. After 7 days, all results are deleted from our server.</p>
 		</td>
 	</tr>
 		</tbody>
@@ -153,11 +80,16 @@ The current version of this server uses the 1000 genomes project phase 3 release
 </div>
 
 
+<h3>News</h3>
 
+<p><b>23. March 2015</b>
 
-
+<ul>
+<li>New Fair Use Policy: please contact us if you want to impute >6,000 samples</li>
+</ul>
 
 <hr>
+
 
 <h3>Project Partners</h3>
 
