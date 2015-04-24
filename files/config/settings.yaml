@@ -10,12 +10,16 @@ apps:
     permission: hrc
     filename: minimac/minimac-vcf-hrc.yaml
   - id: minimac-no-limit
-    permission: nolimit
+    permission: user-nolimit
     filename: minimac/minimac-vcf-nolimit.yaml
+  - id: minimac-hrc-no-limit
+    permission: hrc-nolimit
+    filename: minimac/minimac-vcf-hrc-nolimit.yaml
 outputPath: output
 tempPath: tmp
 localWorkspace: cloudgene-workspace
 hdfsWorkspace: cloudgene-workspace
+https: true
 name: UM Imputationserver
 removeHdfsWorkspace: true
 
