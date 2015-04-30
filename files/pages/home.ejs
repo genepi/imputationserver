@@ -1,143 +1,189 @@
 
+<!-- Header -->
+<div class="hero-unit">
+	<div class="row-fluid">
+	
+		<div class="span10 pull-left" >
+			<h1>UM Imputationserver</h1>
+			<p>
+				This server provides a free genotype imputation service. You can
+				upload GWAS genotypes and receive imputed genomes in return. Our
+				server offers imputation from HapMap, 1000 Genomes (Phase 1 and 3),
+				and the new HRC reference panel. <a href="/#!pages/help"> Learn
+					more.</a><br>
+				<br>
+			</p>
+			<a class="btn btn-large btn-primary" href="/#!pages/register">Sign
+				up now</a>
+		</div>
+		
+		<!-- Counter -->
+		
+		<div class="pull-right span2">
+			<div class="alert alert-info pull-right" style="float right; text-align:center; padding:5px; width: 120px; margin-top:20px ">
+				<p></p>
+				<span style="font-height: 100%; font-size: 40px; fonty-style: bold; width: 100%; text-align: center; padding: 10px;"><%= Math.round(counter.attr('complete.chromosomes') / 22 /1000).toLocaleString() %>K</span>
+				<span style="font-size: 20px; fonty-style: bold; width: 100%; text-align: center;  padding: 10px;">Genomes</span>
+			</div>
 
-<h2>Welcome</h2>
-<div class="row">
-  <div class="span8">
-
-<p>This server provides a free genotype imputation service. You can upload GWAS genotypes and receive imputed genomes in return.
-<br />
-Our server offers imputation from HapMap, 1000 Genomes (Phase 1 and Phase 3), and <a href="http://www.haplotype-reference-consortium.org">HRC</a>.
-
-</p>
-<div id="login-form">
-
-</div>
-
-
-<hr>
-
-<div id="myCarousel" class="carousel slide" style="height: 100px">
-  <ol class="carousel-indicators">
-    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-    <li data-target="#myCarousel" data-slide-to="1"></li>
-    <li data-target="#myCarousel" data-slide-to="2"></li>
-  </ol>
-  <!-- Carousel items -->
-  <div class="carousel-inner">
-    <div class="active item">
-
-<div  style="height: 100px; padding-left: 70px; padding-right: 70px;" >
-<table>
-<tbody>
-	<tr class="">
-		<td width="100px"><center><img src="assets/img/upload.png" width="70px"></img></center></td><td>
-		<h4>1. Upload your genotypes</h4>
-		<p>Upload your data to our server located in Michigan. All interactions with the server are secured.</p></td>
-	</tr>
-		</tbody>
-</table>
-</div>
-
-</div>
-
-<div class="item">
+			<div class="alert alert-info pull-right" style="text-align: center; padding:5px; width: 120px;">
+				<p></p>
+				<span style="font-size: 40px; fonty-style: bold; width: 100%; text-align: center"><%= Math.round(counter.attr('users')).toLocaleString() %></span>
+				<span style="font-size: 20px; fonty-style: bold; width: 100%; text-align: center">Users</span>
+			</div>
 
 
-<div  style="height: 100px; padding-left: 70px; padding-right: 70px;" >
-<table>
-<tbody>	
-	<tr class="">
-		<td width="100px"><center><img src="assets/img/impute.png" width="70px"></img></center></td><td>
-		<h4>2. Impute your genotypes</h4>
-		<p>Choose a reference panel. We will take care of pre-phasing and imputation.</p></td>
-	</tr>
-		</tbody>
-</table>
-</div>
-
-</div>
-    <div class="item">
-
-<div  style="height: 100px; padding-left: 70px; padding-right: 70px;" >
-<table >
-<tbody>	
-	<tr class="">
-		<td width="100px"><center><img src="assets/img/download.png" width="70px"></img></center></td><td>
-		<h4>3. Download the results</h4>
-		<p>All results are encrypted with a one-time password. After 7 days, all results are deleted from our server.</p>
-		</td>
-	</tr>
-		</tbody>
-</table>	
-</div>
-
-
-</div>
-  </div>
-  <!-- Carousel nav -->
-  <a class="carousel-control left" href="#myCarousel" data-slide="prev">&lsaquo;</a>
-  <a class="carousel-control right" href="#myCarousel" data-slide="next">&rsaquo;</a>
-</div>
-
-
-<h3>News</h3>
-
-<p><b>23. March 2015</b>
-
-<ul>
-<li>New Fair Use Policy: please contact us if you want to impute >6,000 samples</li>
-</ul>
-
-<hr>
-
-
-<h3>Project Partners</h3>
-
-
-<a href="http://csg.sph.umich.edu/"><img src="/assets/img/umich.png" class="img-rounded"></a> &nbsp;<a href="http://genepi.i-med.ac.at"><img src="/assets/img/genepi.png"></a>
-
+		</div>
+	</div>
 
 </div>
 
 
-<div class="span2">
-
-
-<div id="counter" >
-
-
-<table class="table table-bordered">
-	<tbody>
-		<tr class="well">
-			<td colspan="2"><i class="icon-signal"></i> <b>Statistics</b></td>
-		</tr>
-		<tr >
-			<td>Chromosomes</td>
-			<td><%= (counter.attr('complete.chromosomes')* 1).toLocaleString() %></td>
-		</tr>
-		<tr >
-			<td>Genomes</td>
-			<td><%= Math.round(counter.attr('complete.chromosomes') / 22).toLocaleString() %></td>
-		</tr>
-	</tbody>
-</table>
 <br>
-<table class="table table-bordered">
-	<tbody>
-		<tr class="well">
-			<td colspan="2"><i class="icon-signal"></i> <b>Server Status</b></td>
-		</tr>
-		<tr >
-			<td colspan="2"><b><%= counter.attr('running.chromosomes')? (counter.attr('running.chromosomes')* 1).toLocaleString() : '0' %></b> Chromosomes are currently in progress.</td>
-		</tr>
-		<tr >
-			<td colspan="2"><b><%= counter.attr('waiting.chromosomes')? (counter.attr('waiting.chromosomes')* 1).toLocaleString() : '0' %></b> Chromosomes are in the queue.</td>
-		</tr>		
-	</tbody>
-</table>
 
+<!-- Workflow Description -->
+
+<h2 style="text-align: center">The easiest way to impute genotypes</h2>
+
+<div class="row">
+	<div class="span4">
+		<div class="hero-unit"
+			style="background-color: #fff; text-align: center">
+			<p style="text-align: center">
+				<img src="/static/images/up-cloud.png">
+			</p>
+			<p>
+				<b>Upload your genotypes</b> to our server located in Michigan.<br>
+				All interactions with the server are <b>secured</b>.
+			</p>
+		</div>
+	</div>
+
+	<div class="span4">
+		<div class="hero-unit"
+			style="background-color: #fff; text-align: center">
+			<p style="text-align: center">
+				<img src="/static/images/impute.png">
+			</p>
+			<p>
+				<b>Choose a reference panel</b>. We will take care of pre-phasing
+				and imputation.<br>
+				<br>
+			</p>
+		</div>
+	</div>
+
+	<div class="span4">
+		<div class="hero-unit"
+			style="background-color: #fff; text-align: center">
+			<p style="text-align: center">
+				<img src="/static/images/down-cloud.png">
+			</p>
+			<p>
+				<b>Download the results</b>.<br>All results are encrypted with
+				a one-time password. After 7 days, all results are deleted from our
+				server.
+			</p>
+		</div>
+	</div>
 </div>
 
+<hr>
+<br>
 
+
+<!-- Get your own Description -->
+
+<h2 style="text-align: center">Build your own Imputation Server</h2>
+
+<div class="row">
+	<div class="span4">
+		<div class="hero-unit"
+			style="background-color: #fff; text-align: center">
+			<p style="text-align: center">
+				<img src="/static/images/hosting.png">
+			</p>
+			<p>
+				The software behind Imputationserver is <b>Open Source</b> and easy to install on your own <b>Hadoop cluster</b>.
+			</p>
+		</div>
+	</div>
+
+	<div class="span4">
+		<div class="hero-unit"
+			style="background-color: #fff; text-align: center">
+			<p style="text-align: center">
+				<img src="/static/images/secure.png">
+			</p>
+			<p>
+				You can host your own confidential reference panels in a <b>secure</b> and <b>private</b> environment.<br>
+				<br>
+			</p>
+		</div>
+	</div>
+
+	<div class="span4">
+		<div class="hero-unit"
+			style="background-color: #fff; text-align: center">
+			<p style="text-align: center">
+				<img src="/static/images/control.png">
+			</p>
+			<p>
+				You have <b>full control</b> about the service. <a href="mailto:cfuchsb@umich.edu"> Write us</a> to get more details about the installation.
+			</p>
+		</div>
+	</div>
 </div>
+
+<hr>
+<br>
+
+<!-- News and Logos -->
+
+
+<div class="row">
+
+	<div class="span8">
+		<h2 style="text-align: center">News</h2>
+
+		<div class="row">
+			<div class="span8">
+				<div
+					style="font-size: 18px; font-weight: 200; line-height: 30px; padding-top: 30px; padding-left: 60px; padding-right: 60px;">
+					<p>
+						<b>24. April 2015</b> &raquo; <a href="http://www.haplotype-reference-consortium.org/">HRC release 1</a> (64,976 haplotypes at
+						39,235,157 SNPs) is now ready for use for HRC consortium members.
+					</p>
+					<p>
+						<b>23. March 2015</b> &raquo; New Fair Use Policy: please contact us if
+						you want to impute more than 6,000 samples.
+					</p>
+					<p>
+						<b>12. March 2015</b> &raquo; Our service supports now the bgzip output
+						format.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="span4" style="text-align: center">
+		<h2 style="text-align: center">Partners</h2>
+		<div
+			style="font-size: 18px; font-weight: 200; line-height: 30px; padding-top: 30px; padding-left: 60px; padding-right: 60px;">
+			<a href="http://csg.sph.umich.edu/"><img
+				src="/assets/img/umich.png" class="img-rounded"></a><br> <a
+				href="http://genepi.i-med.ac.at"><img width="145"
+				src="/assets/img/genepi.png"></a><br>
+		</div>
+
+	</div>
 </div>
+
+<br>
+<br>
+
+
+
+
+
