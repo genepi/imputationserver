@@ -76,7 +76,7 @@ public class InputValidation extends WorkflowStep {
 
 		// exports files from hdfs
 		try {
-			tester = loadChrXTesterFromFile(FileUtil.path(folder,"tester.txt"));
+			tester = loadChrXTesterFromFile(FileUtil.path(folder,"ChrX-tester.txt"));
 			HdfsUtil.getFolder(inputFiles, files);
 
 		} catch (Exception e) {
