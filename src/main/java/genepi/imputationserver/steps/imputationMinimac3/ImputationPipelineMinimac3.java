@@ -162,10 +162,12 @@ public class ImputationPipelineMinimac3 {
 
 		if (chunk.getChromosome().contains("X.no.auto")) {
 
-			chrFilename = pattern.replaceAll("\\$chr", "X.no.auto");
+			chrFilename = pattern.replaceAll("\\$chr", "X.Non.Pseudo.Auto");
+			
 		} else if (chunk.getChromosome().contains("X.auto")) {
 
-			chrFilename = pattern.replaceAll("\\$chr", "X.auto");
+			chrFilename = pattern.replaceAll("\\$chr", "X.Pseudo.Auto");
+			
 		} else {
 			chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome());
 		}

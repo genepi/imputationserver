@@ -9,6 +9,9 @@ import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -16,6 +19,9 @@ import java.util.List;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+
+import com.esotericsoftware.yamlbeans.YamlException;
+import com.esotericsoftware.yamlbeans.YamlReader;
 
 import cloudgene.mapred.steps.importer.IImporter;
 import cloudgene.mapred.steps.importer.ImporterFactory;
@@ -27,6 +33,9 @@ public class InputValidation extends WorkflowStep {
 
 		URLClassLoader cl = (URLClassLoader) InputValidation.class
 				.getClassLoader();
+		
+		
+		
 		try {
 			URL url = cl.findResource("META-INF/MANIFEST.MF");
 			Manifest manifest = new Manifest(url.openStream());
@@ -51,7 +60,7 @@ public class InputValidation extends WorkflowStep {
 
 	private boolean checkVcfFiles(WorkflowContext context) {
 		String folder = getFolder(InputValidation.class);
-
+		String tester; 
 		// inputs
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
@@ -67,7 +76,7 @@ public class InputValidation extends WorkflowStep {
 
 		// exports files from hdfs
 		try {
-
+			tester = loadChrXTesterFromFile(FileUtil.path(folder,"tester.txt"));
 			HdfsUtil.getFolder(inputFiles, files);
 
 		} catch (Exception e) {
@@ -117,18 +126,12 @@ public class InputValidation extends WorkflowStep {
 				VcfFile vcfFile = VcfFileUtil.load(filename, chunkSize, true);
 
 				String mail = context.getData("cloudgene.user.mail").toString();
-				boolean chrXTester = mail.toLowerCase().equals(
-						"narisu@mail.nih.gov")
-						|| mail.toLowerCase().equals(
-								"sebastian.schoenherr@uibk.ac.at")
-						|| mail.toLowerCase().equals("lukas.forer@i-med.ac.at")
-						|| mail.toLowerCase().equals("cfuchsb@umich.edu");
 
 				if (VcfFileUtil.isValidChromosome(vcfFile.getChromosome())) {
 
 					if (VcfFileUtil.isChrX(vcfFile.getChromosome())) {
-
-						if (!chrXTester) {
+						System.out.println(tester);
+						if (!tester.contains(mail.toLowerCase())) {
 
 							context.endTask(
 									"Chromosome X imputation is currently under preperation. Please upload only autosomale chromosomes.",
@@ -396,6 +399,13 @@ public class InputValidation extends WorkflowStep {
 		}
 
 		return true;
+
+	}
+	
+	public static String loadChrXTesterFromFile(String filename)
+			throws YamlException, FileNotFoundException {
+
+			return FileUtil.readFileAsString(filename);
 
 	}
 

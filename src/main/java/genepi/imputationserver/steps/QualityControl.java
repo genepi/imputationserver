@@ -250,28 +250,31 @@ public class QualityControl extends HadoopJobStep {
 				
 				if (VcfFileUtil.isValidChromosome(myvcfFile.getChromosome())) {
 					// chr 1 - 22 and Chr X
+					
+					if(VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
+						// chr X
+						context.beginTask("Check chromosome X...");
+						try {
+							List<VcfFile> newFiles = VcfFileUtil
+									.prepareChrX(myvcfFile);
+
+							context.endTask("<b>Sex-Check:</b>"+"\n"+"Males: "
+									+ newFiles.get(0).getNoSamples() + "\n"
+									+ "Females: " + newFiles.get(1).getNoSamples()+"\n"+"No Sex dedected and therefore filtered: "+(myvcfFile.getNoSamples()-newFiles.get(0).getNoSamples()-newFiles.get(1).getNoSamples()),
+									Message.OK);
+
+							vcfFiles.addAll(newFiles);
+						} catch (IOException e) {
+							context.endTask("Chromosome X check failed.",
+									Message.ERROR);
+							throw e;
+						}
+					}
+					else{
 					vcfFiles.add(myvcfFile);
+					}
 				} 
 				
-				if(myvcfFile.getChromosome().equals("X")) {
-					// chr X
-					context.beginTask("Check chromosome X...");
-					try {
-						List<VcfFile> newFiles = VcfFileUtil
-								.prepareChrX(myvcfFile);
-
-						context.endTask("<b>Sex-Check:</b>"+"\n"+"Males: "
-								+ newFiles.get(0).getNoSamples() + "\n"
-								+ "Females: " + newFiles.get(1).getNoSamples()+"\n"+"No Sex dedected and therefore filtered: "+(myvcfFile.getNoSamples()-newFiles.get(0).getNoSamples()-newFiles.get(1).getNoSamples()),
-								Message.OK);
-
-						vcfFiles.addAll(newFiles);
-					} catch (IOException e) {
-						context.endTask("Chromosome X check failed.",
-								Message.ERROR);
-						throw e;
-					}
-				}
 			
 				for (VcfFile vcfFile : vcfFiles) {
 
