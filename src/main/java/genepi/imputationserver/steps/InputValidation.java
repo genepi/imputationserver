@@ -245,6 +245,24 @@ public class InputValidation extends WorkflowStep {
 
 						return false;
 					}
+					
+					if (!phased && noSamples < 50) {
+						context.endTask(
+								"At least 50 samples must be included for pre-phasing",
+								WorkflowContext.ERROR);
+
+						return false;
+					}
+					
+					if (noSamples > sampleLimit && sampleLimit != 0) {
+						context.endTask(
+								"The maximum number of samples is "
+										+ sampleLimit
+										+ ". Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
+								WorkflowContext.ERROR);
+
+						return false;
+					}
 
 					infos = "Samples: " + noSamples + "\n" + "Chromosomes:"
 							+ chromosomeString + "\n" + "SNPs: " + noSnps
@@ -272,23 +290,6 @@ public class InputValidation extends WorkflowStep {
 
 		}
 
-		if (!phased && noSamples < 50) {
-			context.endTask(
-					"At least 50 samples must be included for pre-phasing",
-					WorkflowContext.ERROR);
-
-			return false;
-		}
-
-		if (noSamples > sampleLimit && sampleLimit != 0) {
-			context.endTask(
-					"The maximum number of samples is "
-							+ sampleLimit
-							+ ". Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
-					WorkflowContext.ERROR);
-
-			return false;
-		}
 
 		if (validVcfFiles.size() > 0) {
 
