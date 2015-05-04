@@ -76,7 +76,7 @@ public class InputValidation extends WorkflowStep {
 
 		// exports files from hdfs
 		try {
-			tester = loadChrXTesterFromFile(FileUtil.path(folder,"ChrX-tester.txt"));
+			tester = loadChrXTesterFromFile(FileUtil.path(folder,"chrX-tester.txt"));
 			HdfsUtil.getFolder(inputFiles, files);
 
 		} catch (Exception e) {
@@ -130,7 +130,6 @@ public class InputValidation extends WorkflowStep {
 				if (VcfFileUtil.isValidChromosome(vcfFile.getChromosome())) {
 
 					if (VcfFileUtil.isChrX(vcfFile.getChromosome())) {
-						System.out.println(tester);
 						if (!tester.contains(mail.toLowerCase())) {
 
 							context.endTask(
