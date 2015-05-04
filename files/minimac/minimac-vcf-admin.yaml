@@ -21,6 +21,11 @@ mapred:
     jar: minimac-cloud.jar
     classname: genepi.imputationserver.steps.InputValidation
 
+  onFailure:
+    name: Send Notification on Failure
+    jar: minimac-cloud.jar
+    classname: genepi.imputationserver.steps.FailureNotification
+
   steps:
 
     - name: Quality Control
