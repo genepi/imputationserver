@@ -195,14 +195,14 @@ public class InputValidation extends WorkflowStep {
 					}
 
 					//TODO if sampleLimit is unlimited then phasing is allowed: allowed for hrc-unlimited
-					if ((panel.getId().equals("hrc") && !vcfFile.isPhased() &&  sampleLimit != 0)) {
+					/*if ((panel.getId().equals("hrc") && !vcfFile.isPhased() &&  sampleLimit != 0)) {
 
 						context.endTask(
 								"For the HRC Panel, only phased genotypes are supported",
 								WorkflowContext.ERROR);
 
 						return false;
-					}
+					}*/
 					
 					if ((panel.getId().equals("hrc") && !population
 							.equals("eur"))) {
