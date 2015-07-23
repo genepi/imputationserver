@@ -107,7 +107,16 @@ mapred:
        values:
           qconly: Quality Control Only 
           imputation: Quality Control & Imputation
-         
+
+     - id: queues
+       description: Mode
+       type: list
+       visible: false
+       value: default
+       values:
+          default: Default Queue
+          ltq: Longtime Queue
+                   
      - id: rounds
        description: Rounds
        type: number

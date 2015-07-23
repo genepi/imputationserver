@@ -1,4 +1,4 @@
-name:  Minimac3 Unlimited
+name:  Minimac3 HRC Unlimited
 description: <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
 version: (Minimac3 1.0.11 - Cloudgene 0.9.8)
 website: http://genome.sph.umich.edu/wiki/Minimac
@@ -68,7 +68,7 @@ mapred:
      - id: refpanel
        description: Reference Panel
        type: list
-       value: phase1
+       value: hrc
        values:
          phase1: 1000G Phase 1 v3 Shapeit2 (no singletons)
          phase3: 1000G Phase 3 v5
@@ -107,16 +107,17 @@ mapred:
        values:
           qconly: Quality Control Only 
           imputation: Quality Control & Imputation
+         
 
      - id: queues
        description: Mode
        type: list
        visible: false
-       value: default
+       value: ltq
        values:
           default: Default Queue
           ltq: Longtime Queue
-                   
+       
      - id: rounds
        description: Rounds
        type: number
@@ -240,7 +241,7 @@ mapred:
     - id: hadooplogs
       description: Hadoop Task Logs
       type: local-folder
-      download: true
+      download: false
       temp: false
       autoExport: true
       adminOnly: true
