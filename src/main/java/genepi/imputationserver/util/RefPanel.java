@@ -46,7 +46,17 @@ public class RefPanel {
 
 	}
 
-	public boolean exists() {
+	public boolean existsReference() {
+
+		try {
+			return FileSystem.get(new Configuration()).exists(new Path(hdfs));
+		} catch (IOException e) {
+			return false;
+		}
+
+	}
+	
+	public boolean existsLegend() {
 
 		try {
 			return FileSystem.get(new Configuration()).exists(new Path(hdfs));

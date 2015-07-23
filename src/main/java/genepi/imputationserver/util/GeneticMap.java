@@ -1,5 +1,11 @@
 package genepi.imputationserver.util;
 
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 public class GeneticMap {
 
 	private String id;
@@ -52,4 +58,24 @@ public class GeneticMap {
 		this.mapHapiUR = mapHapiUR;
 	}
 
+	
+	public boolean checkHapiUR() {
+
+		try {
+			return FileSystem.get(new Configuration()).exists(new Path(mapHapiUR));
+		} catch (IOException e) {
+			return false;
+		}
+
+	}
+	public boolean checkShapeIT() {
+
+		try {
+			return FileSystem.get(new Configuration()).exists(new Path(mapShapeIT));
+		} catch (IOException e) {
+			return false;
+		}
+
+	}
+	
 }
