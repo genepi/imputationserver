@@ -85,9 +85,11 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			return false;
 		}
 
-		// check reference panel
-
 		RefPanel panel = panels.getById(reference);
+		
+		/*// check reference panel
+
+	
 		if (panel == null) {
 			context.error("Reference Panel '" + reference + "' not found.");
 			return false;
@@ -96,11 +98,12 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		if (!panel.exists()){
 			context.error("Reference File '" + panel.getHdfs() + "' not found.");
 			return false;	
-		}
+		}*/
 		
 		context.println("Reference Panel: ");
 		context.println("  Name: " + reference);
 		context.println("  Location: " + panel.getHdfs());
+		context.println("  Legend: " + panel.getLegend());
 		context.println("  Version: " + panel.getVersion());
 
 		// load maps
@@ -117,7 +120,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		// check map for hapmap2
 		GeneticMap map = maps.getById("hapmap2");
 		if (map == null) {
-			context.error("hapmap2 not found.");
+			context.error("genetic map not found.");
 			return false;
 		}
 
