@@ -5,6 +5,8 @@ import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.util.GeneticMap;
+import genepi.imputationserver.util.MapList;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -188,23 +190,55 @@ public class InputValidation extends WorkflowStep {
 
 					RefPanel panel = panels.getById(reference);
 					if (panel == null) {
-						context.endTask("Reference '" + reference
-								+ "' not found.", WorkflowContext.ERROR);
+						StringBuilder report = new StringBuilder();
+						report.append("Reference '" + reference + "' not found.\n");
+						report.append("Available reference IDs:");
+						for (RefPanel p : panels.getPanels()) {
+							report.append("\n - "+p.getId());
+						}
+						context.error(report.toString());
+						return false;
+					}
+					
+					if (!panel.existsReference()){
+						context.error("Reference File '" + panel.getHdfs() + "' not found.");
+						return false;	
+					}
+					
+					if (!panel.existsLegend()){
+						context.error("Reference File '" + panel.getLegend() + "' not found.");
+						return false;	
+					}
+					
+					// load maps
 
+					MapList maps = null;
+					try {
+						maps = MapList.loadFromFile(FileUtil.path(folder,
+								"genetic-maps.txt"));
+					} catch (Exception e) {
+						context.error("genetic-maps.txt not found.");
 						return false;
 					}
 
-					//TODO if sampleLimit is unlimited then phasing is allowed: allowed for hrc-unlimited
-					/*if ((panel.getId().equals("hrc") && !vcfFile.isPhased() &&  sampleLimit != 0)) {
-
-						context.endTask(
-								"For the HRC Panel, only phased genotypes are supported",
-								WorkflowContext.ERROR);
-
+					// check map; hapmap2 map for all files used!
+					GeneticMap map = maps.getById("hapmap2");
+					if (map == null) {
+						context.error("genetic map file not found.");
 						return false;
-					}*/
+					}
 					
-					if ((panel.getId().equals("hrc") && !population
+					if (!map.checkHapiUR()){
+						context.error("Map HapiUR  '" + map.getMapHapiUR() + "' not found.");
+						return false;	
+					}
+					
+					if (!map.checkShapeIT()){
+						context.error("Map ShapeIT  '" + map.getMapShapeIT() + "' not found.");
+						return false;	
+					}
+
+				if ((panel.getId().equals("hrc") && !population
 							.equals("eur"))) {
 
 						context.endTask(
