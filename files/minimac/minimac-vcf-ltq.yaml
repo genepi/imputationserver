@@ -110,7 +110,7 @@ mapred:
          
 
      - id: queues
-       description: Mode
+       description: Queue
        type: list
        visible: false
        value: ltq

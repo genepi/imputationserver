@@ -108,7 +108,7 @@ mapred:
           imputation: Quality Control & Imputation       
 
      - id: queues
-       description: Mode
+       description: Queue
        type: list
        visible: true
        value: default
