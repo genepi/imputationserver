@@ -51,6 +51,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String rounds = context.get("rounds");
 		String window = context.get("window");
 		String population = context.get("population");
+		String queue = context.get("queues");
 		
 		boolean noCache = false;
 		String minimacBin = "minimac";
@@ -86,20 +87,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		}
 
 		RefPanel panel = panels.getById(reference);
-		
-		/*// check reference panel
 
-	
-		if (panel == null) {
-			context.error("Reference Panel '" + reference + "' not found.");
-			return false;
-		}
-
-		if (!panel.exists()){
-			context.error("Reference File '" + panel.getHdfs() + "' not found.");
-			return false;	
-		}*/
-		
 		context.println("Reference Panel: ");
 		context.println("  Name: " + reference);
 		context.println("  Location: " + panel.getHdfs());
@@ -107,7 +95,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		context.println("  Version: " + panel.getVersion());
 
 		// load maps
-
 		MapList maps = null;
 		try {
 			maps = MapList.loadFromFile(FileUtil.path(folder,
@@ -125,7 +112,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		}
 
 		// execute one job per chromosome
-
 		try {
 			List<String> chunkFiles = HdfsUtil.getFiles(input);
 
@@ -160,6 +146,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setJarByClass(ImputationJobMinimac3.class);
 				job.setNoCache(noCache);
 				job.setMinimacBin(minimacBin);
+				job.setQueue(queue);
 
 				executeJarInBackground(chr, context, job);
 				jobs.put(chr, job);

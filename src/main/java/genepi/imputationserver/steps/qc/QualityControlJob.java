@@ -76,7 +76,6 @@ public class QualityControlJob extends HadoopJob {
 
 	@Override
 	protected void setupDistributedCache(CacheStore cache) throws IOException {
-
 		// add Legend file
 		if (HdfsUtil.exists(refPanelHdfs)) {
 			String name = FileUtil.getFilename(refPanelHdfs);

@@ -47,6 +47,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String folder;
 
+	private String queue = "default";
+	
 	private boolean noCache = false;
 
 	private String mapShapeITHDFS;
@@ -58,6 +60,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		set("mapred.task.timeout", "720000000");
 		set("mapred.map.tasks.speculative.execution", false);
 		set("mapred.reduce.tasks.speculative.execution", false);
+		log.info("setting queue to "+queue);
+		getConfiguration().set("mapred.job.queue.name", queue);
 		getConfiguration().set("mapred.reduce.tasks", "22");
 	}
 
@@ -208,6 +212,14 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public void setMapHapiURHdfs(String mapHDFS2) {
 		this.mapHapiURHDFS = mapHDFS2;
 		set(MAP_HAPIUR_HDFS, mapHDFS2);
+	}
+
+	public String getQueue() {
+		return queue;
+	}
+
+	public void setQueue(String queue) {
+		this.queue = queue;
 	}
 
 }
