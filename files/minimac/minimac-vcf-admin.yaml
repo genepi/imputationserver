@@ -111,7 +111,7 @@ mapred:
        description: Queue
        type: list
        visible: true
-       value: ltq
+       value: default
        values:
           default: Default Queue
           ltq: Longtime Queue
