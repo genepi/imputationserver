@@ -124,7 +124,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				ImputationJobMinimac3 job = new ImputationJobMinimac3(
 						context.getJobName() + "-chr-" + chr, new ContextLog(
-								context));
+								context), queue);
 				job.setFolder(folder);
 				job.setRefPanelHdfs(panel.getHdfs());
 				job.setRefPanelPattern(panel.getPattern());
@@ -143,10 +143,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setPopulation(population);
 				job.setRounds(rounds);
 				job.setWindow(window);
-				job.setJarByClass(ImputationJobMinimac3.class);
 				job.setNoCache(noCache);
 				job.setMinimacBin(minimacBin);
-				job.setQueue(queue);
+				job.setJarByClass(ImputationJobMinimac3.class);
 
 				executeJarInBackground(chr, context, job);
 				jobs.put(chr, job);
