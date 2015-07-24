@@ -47,7 +47,7 @@ mapred:
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.ImputationMinimac3
-      params: $mafchunkfile $refpanel $chunksize $window $phasing $rounds     
+      params: $mafchunkfile $refpanel $chunksize $window $phasing $rounds $queues     
       generates: $local $outputimputation $logfile
 
     - name: Imputation (Report)
@@ -111,7 +111,7 @@ mapred:
        description: Queue
        type: list
        visible: true
-       value: default
+       value: ltq
        values:
           default: Default Queue
           ltq: Longtime Queue

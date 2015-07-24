@@ -48,7 +48,7 @@ mapred:
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.ImputationMinimac3
-      params: $mafchunkfile $refpanel $chunksize $window $phasing      
+      params: $mafchunkfile $refpanel $chunksize $window $phasing  $queues      
       generates: $local $outputimputation $logfile $hadooplogs
 
     - name: Imputation (Report)
