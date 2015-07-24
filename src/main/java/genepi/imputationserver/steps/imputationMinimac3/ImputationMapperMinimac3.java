@@ -148,8 +148,8 @@ public class ImputationMapperMinimac3 extends
 		pipeline.setPhasing(phasing);
 		pipeline.setPopulation(population);
 
-		boolean succesfull = pipeline.execute(chunk, outputChunk);
-		if (succesfull) {
+		boolean succesful = pipeline.execute(chunk, outputChunk);
+		if (succesful) {
 			log.info("Imputation for chunk " + chunk + " successful.");
 		} else {
 			log.stop("Imputation failed!", "");

@@ -182,14 +182,19 @@ public class ImputationPipelineMinimac3 {
 
 		setReferencePanel(refPanelFilename);
 
-		if (chunk.isPhased()) {
+		if (chunk.isPhased() || chunk.getChromosome().equals("X.no.auto_male")) {
+			
+			if (chunk.getChromosome().equals("X.no.auto_male")) {
+				//writeMaleFam(output);
+				replaceMale(output.getVcfFilename());
+			}
 
 			// replace X.nonpar / X.par with X
 			if (chunk.getChromosome().contains("X")) {
 				chunk.setChromosome("X");
 				output.setChromosome("X");
 			}
-
+			
 			FileUtil.copy(output.getVcfFilename(),
 					output.getPhasedVcfFilename());
 
@@ -210,10 +215,6 @@ public class ImputationPipelineMinimac3 {
 			// convert vcf to bim/bed/fam
 			long time = System.currentTimeMillis();
 			boolean successful = vcfToBed(output);
-
-			if (chunk.getChromosome().equals("X.no.auto_male")) {
-				writeMaleFam(output);
-			}
 
 			// replace X.nonpar / X.par with X
 			if (chunk.getChromosome().contains("X")) {
@@ -524,10 +525,6 @@ public class ImputationPipelineMinimac3 {
 	public boolean imputeVCF(VcfChunkOutput output)
 			throws InterruptedException, IOException {
 
-		if (output.getPhasedVcfFilename().contains("no.auto_male")) {
-			replaceMale(output.getPhasedVcfFilename());
-		}
-
 		// mini-mac
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
@@ -638,8 +635,8 @@ public class ImputationPipelineMinimac3 {
 					writer.write(line);
 				} else {
 					String tiles[] = line.split("\t", 10);
-					tiles[9] = tiles[9].replaceAll("0\\|0", "0").replaceAll(
-							"1\\|1", "1");
+					tiles[9] = tiles[9].replaceAll("0\\/0", "0").replaceAll(
+							"1\\/1", "1");
 					StringBuffer result = new StringBuffer();
 					for (int i = 0; i < tiles.length; i++) {
 						result.append(tiles[i] + "\t");
@@ -651,7 +648,7 @@ public class ImputationPipelineMinimac3 {
 			writer.close();
 			FileUtil.deleteFile(filename);
 			FileUtil.copy(tempFilename, filename);
-			FileUtil.deleteFile(tempFilename);
+			//FileUtil.deleteFile(tempFilename);
 			return true;
 		} catch (Exception e) {
 			return false;
