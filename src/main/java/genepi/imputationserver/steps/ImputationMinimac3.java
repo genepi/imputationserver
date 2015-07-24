@@ -51,7 +51,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String rounds = context.get("rounds");
 		String window = context.get("window");
 		String population = context.get("population");
-		String queue = context.get("queues");
+		
+		String queue = "default";
+		queue = context.get("queues");
 		
 		boolean noCache = false;
 		String minimacBin = "minimac";
