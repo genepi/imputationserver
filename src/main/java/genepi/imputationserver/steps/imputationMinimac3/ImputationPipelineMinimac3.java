@@ -648,7 +648,7 @@ public class ImputationPipelineMinimac3 {
 			writer.close();
 			FileUtil.deleteFile(filename);
 			FileUtil.copy(tempFilename, filename);
-			//FileUtil.deleteFile(tempFilename);
+			FileUtil.deleteFile(tempFilename);
 			return true;
 		} catch (Exception e) {
 			return false;
