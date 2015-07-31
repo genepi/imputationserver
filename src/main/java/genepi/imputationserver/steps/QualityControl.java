@@ -247,6 +247,7 @@ public class QualityControl extends HadoopJobStep {
 				VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize,
 						false);
 				
+				
 				if (VcfFileUtil.isValidChromosome(myvcfFile.getChromosome())) {
 					// chr 1 - 22 and Chr X
 					
@@ -264,7 +265,7 @@ public class QualityControl extends HadoopJobStep {
 
 							vcfFiles.addAll(newFiles);
 						} catch (IOException e) {
-							context.endTask("Chromosome X check failed.",
+							context.endTask("Chromosome X check failed! \n " + e,
 									Message.ERROR);
 							throw e;
 						}
