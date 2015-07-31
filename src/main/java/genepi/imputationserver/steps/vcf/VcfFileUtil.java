@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -391,7 +392,9 @@ public class VcfFileUtil {
 			throw new IOException(
 					"Something went wrong with the keepSamples male command");
 		}
-
+		
+		checkDoubleHaplotypes(file.getVcfFilename() + "-m.vcf");
+		
 		// bgzip
 		Command bgzip = new Command(BGZIP);
 		bgzip.setSilent(true);
@@ -465,6 +468,36 @@ public class VcfFileUtil {
 		return files;
 	}
 
+	private static void checkDoubleHaplotypes(String filename) throws IOException {
+		LineReader reader = new LineReader(filename);
+		HashMap<Integer, String> probandsbyId = new HashMap<Integer, String>();
+		StringBuilder doubleHaplotypes = new StringBuilder();
+		boolean doubleHT = false;
+		while (reader.next()) {
+			int i = 0;
+			String line = reader.get();
+			String[] splits = line.split("\t");
+
+			// ading probands
+			for (String column : splits) {
+				if (line.startsWith("#CHROM")) {
+					probandsbyId.put(i,column);
+				}
+				
+				if(column.contains("1/0") || column.contains("0/1")){
+					doubleHaplotypes.append("Found haplotype "+ column + " at pos "+ splits[1]+ " for male proband "+  probandsbyId.get(i)+ "\n");
+					doubleHT = true;
+				}
+				
+				i++;
+			}
+		}
+		if (doubleHT){
+			throw new IOException(
+					doubleHaplotypes.toString());
+		}
+	}
+
 	public static void splitFileByRegion(String inputFilename)
 			throws IOException {
 
@@ -498,7 +531,6 @@ public class VcfFileUtil {
 				}
 
 				int position = Integer.parseInt(tiles[1]);
-
 				if (2699520 <= position && position <= 154931044) {
 					nonPar.write(line);
 				} else {
