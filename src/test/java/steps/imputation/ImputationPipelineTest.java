@@ -115,6 +115,33 @@ public class ImputationPipelineTest extends TestCase {
 
 	}
 
+	public void testMaleNonPar() throws InterruptedException, IOException {
+		
+		FileUtil.createDirectory(TEMP_FOLDER);
+
+	
+		// chunk
+		VcfChunk chunk = new VcfChunk();
+		chunk.setChromosome("X.no.auto_male");
+		chunk.setStart(1);
+		chunk.setEnd(10000000);
+		chunk.setPhased(false);
+		chunk.setVcfFilename("test-data/test-chrX/seb-test-400male.vcf.gz");
+
+		pipeline.setPattern(REF_PHASE3);
+		pipeline.setPhasing("shapeit");
+
+
+		VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, TEMP_FOLDER);
+		outputChunk.setVcfFilename(chunk.getVcfFilename());
+
+		assertTrue(pipeline.execute(chunk, outputChunk));
+		
+		
+	}
+	
+	
+	
 	public void testUnphasedChrX() throws InterruptedException, IOException {
 
 		FileUtil.createDirectory(TEMP_FOLDER);
