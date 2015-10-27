@@ -16,24 +16,23 @@
 
 	<repositories>
 		<repository>
-			<id>genepi-io</id>
-			<url>https://raw.github.com/genepi/maven/genepi-io</url>
+			<id>genepi-hadoop</id>
+			<url>https://raw.github.com/genepi/maven-repository/mvn-repo/</url>
 			<snapshots>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
+
 
 		<repository>
-			<id>genepi-hadoop</id>
-			<url>https://raw.github.com/genepi/maven/genepi-hadoop</url>
+			<id>genepi-io</id>
+			<url>https://raw.github.com/genepi/maven-repository/genepi-io</url>
 			<snapshots>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
-
-
 
 		<repository>
 			<id>hadoop-bam-sourceforge</id>
@@ -45,7 +44,7 @@
 
 	<build>
 		<plugins>
-		
+
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
@@ -54,8 +53,8 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-			
-			
+
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -146,18 +145,18 @@
 		<dependency>
 			<groupId>cloudgene</groupId>
 			<artifactId>cloudgene</artifactId>
-			<version>1.9.9</version>
+			<version>1.10.0</version>
 			<scope>provided</scope>
 			<type>zip</type>
 			<classifier>assembly</classifier>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>cloudgene</groupId>
 			<artifactId>cloudgene</artifactId>
-			<version>1.9.9</version>
+			<version>1.10.0</version>
 		</dependency>
-		
+
 
 		<dependency>
 			<groupId>genepi-hadoop</groupId>
