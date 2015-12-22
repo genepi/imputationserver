@@ -24,16 +24,6 @@
 			</snapshots>
 		</repository>
 
-
-		<repository>
-			<id>genepi-io</id>
-			<url>https://raw.github.com/genepi/maven-repository/genepi-io</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
-
 		<repository>
 			<id>hadoop-bam-sourceforge</id>
 			<url>http://hadoop-bam.sourceforge.net/maven/</url>
@@ -130,11 +120,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>genepi-io</groupId>
-			<artifactId>genepi-io</artifactId>
-			<version>0.6.4</version>
-		</dependency>
 
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
@@ -157,11 +142,16 @@
 			<version>1.10.0</version>
 		</dependency>
 
-
 		<dependency>
-			<groupId>genepi-hadoop</groupId>
+			<groupId>genepi</groupId>
+			<artifactId>genepi-io</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>genepi</groupId>
 			<artifactId>genepi-hadoop</artifactId>
-			<version>0.7.9</version>
+			<version>mr1-1.0.0</version>
 		</dependency>
 
 		<dependency>
