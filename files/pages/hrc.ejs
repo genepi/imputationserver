@@ -1,0 +1,54 @@
+<div class="span12">
+<div class="span8">
+<h2>Release notes HRC version 1 - July 1st 2015</h2>
+
+
+<h3>Summary</h3>
+
+The first release (version 1) consists of 64,976 haplotypes at 39,235,157 SNPs, all with an estimated minor allele count of >= 5.
+
+<h3>Known issue description by Goncalo Abecasis</h3>
+<p>
+There is a small bug in our haplotypes, we have a very good idea of its source, we should have a fix in a month or two, and we don't think that it affects imputation performance noticeably in the meantime.
+</p>
+<p>
+The problem is as follows: for most of the genome, HRC allele frequencies track other estimates for Europe very well. However, for some portions of chromosomes 9 and 11-16, frequency estimates appear to be shifted by about 10% or so. As far as we can tell, this problem is noticeable in the HRC panel itself - not so much in downstream imputed genotypes.
+</p>
+<p>
+We have tracked this down to a bug in our process for collecting and merging evidence for each genotype across samples. For a subset of samples, this evidence was lost for a fraction of the genome and an arbitrary sample was "cloned" in its place. This sometimes happened for a subset of the samples processed in Michigan, sometimes for a subset of those processed at Sanger.
+</p>
+<p>
+A consequence is that, for these stretches of chromosome, HRC may have lost up to about 10% of its chromosomes and replaced these with duplicates copies of another two chromosomes. A result is that, in these regions you end up effectively imputing against a pool of say ~60,000 haplotypes rather than say ~66,000. Another result is that HRC frequencies are shifted; given that these duplicated templates are unlikely to be used, we don't (so far) see a noticeable shift in imputed frequencies or accuracy.
+</p>
+<p>
+When we have looked at imputation quality per chromosome this effect is not noticeable and HRC still provides excellent imputation, improving upon 1000 genomes (by a lot!) and other constituent panels. Given what we know about how imputation improves with sample size, it makes sense to us that the effect is very small.
+</p>
+<p>
+Our plan is to recalculate genotype evidence for the affected samples and to rephase the problem chromosomes. Given the scale of the dataset, this will take 4-8 weeks. In the meantime, we will be taking the file with allele frequencies offline. This is a massive computational job, and will just require time to run, unfortunately.
+</p>
+<h4>What to do?</h4>
+In analyses where I am responsible, we are generally proceeding with imputation and downstream analyzes - I don't want to wait for perfection, when I have something excellent in hand. We have certainly seen very good imputation accuracy in our assessments so far.
+
+
+
+<hr>
+
+<h3>HRC Contact</h3>
+
+If you would like to contribute sequence data, or if you have any questions about the project, please contact all three of the co-leaders of the project:
+<a href="mailto:marchini@stats.ox.ac.uk">Prof Jonathan Marchini</a>,
+<a href="mailto:goncalo@umich.edu">Prof Goncalo Abecasis</a>, and
+<a href="mailto:rd@sanger.ac.uk">Prof Richard Durbin</a>.
+
+<hr>
+
+Or visit the project website <a href="http://www.haplotype-reference-consortium.org" target="_blank" >http://www.haplotype-reference-consortium.org</>
+
+
+<hr>
+
+<br><br>
+
+</div> 
+
+<div>
