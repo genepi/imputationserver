@@ -326,6 +326,8 @@ public class GenomicTools {
 			return 32611;
 		case "hapmap2":
 			return 1301;
+		case "caapa":
+			return 883;
 		default:
 			return 1092;
 		}
