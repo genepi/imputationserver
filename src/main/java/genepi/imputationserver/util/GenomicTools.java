@@ -322,6 +322,8 @@ public class GenomicTools {
 			return 1092;
 		case "phase3":
 			return 2535;
+		case "hrc":
+			return 32611;
 		case "hapmap2":
 			return 1301;
 		default:
