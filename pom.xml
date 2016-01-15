@@ -66,8 +66,8 @@
 
 							<artifactSet>
 								<includes>
-									<include>genepi-io:genepi-io:*:*</include>
-									<include>genepi-hadoop:genepi-hadoop:*:*</include>
+									<include>genepi:genepi-io:*:*</include>
+									<include>genepi:genepi-hadoop:*:*</include>
 									<include>picard:picard:*:*</include>
 									<include>samtools:samtools:*:*</include>
 									<include>tribble:tribble:*:*</include>
@@ -151,7 +151,7 @@
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-hadoop</artifactId>
-			<version>mr1-1.0.0</version>
+			<version>mr1-1.0.1</version>
 		</dependency>
 
 		<dependency>
