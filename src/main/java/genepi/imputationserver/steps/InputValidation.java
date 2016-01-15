@@ -247,6 +247,16 @@ public class InputValidation extends WorkflowStep {
 
 						return false;
 					}
+				
+				if ((panel.getId().equals("caapa") && !population
+						.equals("AA"))) {
+
+					context.endTask(
+							"Please select the AA population for the CAAPA panel",
+							WorkflowContext.ERROR);
+
+					return false;
+				}
 					
 					if ((panel.getId().equals("hapmap2") && !population
 							.equals("eur"))) {
