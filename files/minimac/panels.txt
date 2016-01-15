@@ -20,6 +20,12 @@ panels:
     
   - id: hrc
     pattern: HRC.r1.20150417.GRCh37.chr$chr.shapeit3.mac5.genotypes.m3vcf.gz
-    hdfs: ref-panels/HRC_20150417_5chr.tgz
+    hdfs: ref-panels/HRC.r1.tgz
     legendPattern: HRC.r1.chr$chr.legend.gz
-    legend: ref-panels-legends/HRC_20150417_5chr_legends.tgz
+    legend: ref-panels-legends/HRC.r1.legends.tgz
+
+  - id: caapa
+    pattern: chr$chr.CAAPA.m3vcf.gz
+    hdfs: ref-panels/CAAPA.tar.gz
+    legendPattern: CAAPA$chr.legend.gz
+    legend: ref-panels-legends/CAAPA.legends.tgz
