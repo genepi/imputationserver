@@ -4,13 +4,13 @@
 	<div class="row-fluid">
 	
 		<div class="span10 pull-left" >
-			<h1>Michigan Imputationserver</h1>
+			<h1>Michigan Imputation Server</h1>
 			<p>
 				This server provides a free genotype imputation service. You can
 				upload GWAS genotypes and receive imputed genomes in return. Our
-				server offers imputation from HapMap, 1000 Genomes (Phase 1 and 3)
-				and the new <a target="_blank" href="http://www.haplotype-reference-consortium.org/">HRC</a> reference panel. <a href="/#!pages/help"> Learn
-					more.</a><br>
+				server offers imputation from HapMap, 1000 Genomes (Phase 1 and 3), <a href="/#!pages/caapa">CAAPA</a>
+				and the new <a target="_blank" href="http://www.haplotype-reference-consortium.org/">Haplotype Reference Consortium (HRC version 1)</a> panel. We expect an <a href="/#!pages/hrc">HRC update</a> to be available later in the summer</a>. <a href="/#!pages/help"> Learn
+					more</a> or <a href="https://twitter.com/umimpute">follow us</a> on Twitter.<br>
 				<br>
 			</p>
 			
@@ -30,7 +30,7 @@
 		<div class="pull-right span2">
 			<div class="alert alert-info pull-right" style="float right; text-align:center; padding:5px; width: 120px; margin-top:20px ">
 				<p></p>
-				<span style="font-height: 100%; font-size: 40px; fonty-style: bold; width: 100%; text-align: center; padding: 10px;"><%= Math.round(counter.attr('complete.chromosomes') / 22 /1000).toLocaleString() %>K</span>
+				<span style="font-height: 100%; font-size: 40px; fonty-style: bold; width: 100%; text-align: center; padding: 10px;"><%= (Math.round(counter.attr('complete.chromosomes') / 22.0 /1000.0/1000.0 * 100) / 100).toLocaleString() %>M</span>
 				<span style="font-size: 20px; fonty-style: bold; width: 100%; text-align: center;  padding: 10px;">Genomes</span>
 			</div>
 
@@ -158,35 +158,68 @@
 			<div class="span8">
 				<div
 					style="font-size: 18px; font-weight: 200; line-height: 30px; padding-top: 30px; padding-left: 60px; padding-right: 60px;">
-					<p>
+
+	<p>
+						<b>12. January 2016</b> &raquo; New Reference Panel (<a href="/#!pages/caapa">CAAPA</a>) available.
+					</p>
+					
+<p>
+                                                <b>2. July 2015</b> &raquo; <a href="http://www.haplotype-reference-consortium.org/">HRC release 1</a> is now ready for public use. Please read the <a href="/#!pages/hrc">release notes</a>.
+                                        </p>
+
+<p>
 						<b>24. April 2015</b> &raquo; <a href="http://www.haplotype-reference-consortium.org/">HRC release 1</a> (64,976 haplotypes at
 						39,235,157 SNPs) is now ready for use for HRC consortium members.
 					</p>
-					<p>
-						<b>23. March 2015</b> &raquo; New Fair Use Policy: please contact us if
-						you want to impute more than 6,000 samples.
-					</p>
-					<p>
-						<b>12. March 2015</b> &raquo; Our service supports now the bgzip output
-						format.
-					</p>
+					
 				</div>
 			</div>
 		</div>
 	</div>
 
 	<div class="span4" style="text-align: center">
-		<h2 style="text-align: center">Partners</h2>
-		<div
-			style="font-size: 18px; font-weight: 200; line-height: 30px; padding-top: 30px; padding-left: 60px; padding-right: 60px;">
-			<a href="http://csg.sph.umich.edu/"><img
-				src="/assets/img/umich.png" class="img-rounded"></a><br> <a
-				href="http://genepi.i-med.ac.at"><img width="145"
-				src="/assets/img/genepi.png"></a><br>
-		</div>
+		<h2 style="text-align: center"></h2>
 
+<a class="twitter-timeline" href="https://twitter.com/umimpute" data-widget-id="593759360838414337">Tweets by @umimpute</a>
+<% !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs"); %>
+
+	
 	</div>
 </div>
+
+<hr>
+<br>
+
+
+<!-- Get your own Description -->
+
+<h2 style="text-align: center">About</h2>
+
+
+<div class="row">
+
+	<div class="span4">
+	<div
+					style="font-size: 18px; font-weight: 200; line-height: 30px; padding-top: 30px; padding-left: 60px; padding-right: 60px;">
+	
+	
+<a href="http://csg.sph.umich.edu/"><img
+				src="/assets/img/umich.png" class="img-rounded"></a>
+				</div>
+	</div>
+
+	<div class="span4" style="text-align: center">
+		<div
+					style="font-size: 18px; font-weight: 200; line-height: 30px; padding-top: 30px; padding-left: 60px; padding-right: 60px;">
+		
+		<img width="145"
+				src="/assets/img/genepi.png"></a>
+				
+				</div>
+		
+	</div>
+</div>
+
 
 <hr>
 <br>
