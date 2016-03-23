@@ -130,7 +130,7 @@
 		<dependency>
 			<groupId>cloudgene</groupId>
 			<artifactId>cloudgene</artifactId>
-			<version>1.10.0</version>
+			<version>1.12.0</version>
 			<scope>provided</scope>
 			<type>zip</type>
 			<classifier>assembly</classifier>
