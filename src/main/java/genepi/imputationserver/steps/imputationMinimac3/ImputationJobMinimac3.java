@@ -31,7 +31,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String REF_PANEL_EAGLE_HDFS = "MINIMAC_REFPANEL_EAGLE_HDFS";
 
-	public static final String REF_PANEL_EAGLE_PATTERN = "MINIMAC_REFPANEL_EAGLE_HDFS";
+	public static final String REF_PANEL_EAGLE_PATTERN = "MINIMAC_REFPANEL_EAGLE_PATTERN";
 
 	public static final String MAP_EAGLE_HDFS = "MINIMAC_MAP_EAGLE_HDFS";
 

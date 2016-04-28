@@ -219,7 +219,7 @@ public class InputValidation extends WorkflowStep {
 						maps = MapList.loadFromFile(FileUtil.path(folder,
 								"genetic-maps.txt"));
 					} catch (Exception e) {
-						context.error("genetic-maps.txt not found.");
+						context.error("genetic-maps.txt not found." + e);
 						return false;
 					}
 

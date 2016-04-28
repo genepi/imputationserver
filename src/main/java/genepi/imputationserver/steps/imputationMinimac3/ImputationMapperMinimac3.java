@@ -91,7 +91,7 @@ public class ImputationMapperMinimac3 extends
 
 		String hdfsPathMapEagle = parameters
 				.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
-		mapEagleFilename = cache.getArchive(FileUtil
+		mapEagleFilename = cache.getFile(FileUtil
 				.getFilename(hdfsPathMapEagle));
 
 		String hdfsPathRefEagle = parameters
