@@ -1,6 +1,6 @@
-name:  Minimac3
+name:  Michigan Imputation Server
 description: <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
-version: (Minimac3 1.0.11 - Cloudgene 0.9.8)
+version: (Minimac3 1.0.13 - Cloudgene 1.12.0)
 website: http://genome.sph.umich.edu/wiki/Minimac
 category: MiniMac
 
@@ -68,12 +68,14 @@ mapred:
      - id: refpanel
        description: Reference Panel
        type: list
-       value: phase1
+       value: phase3
        values:
          phase1: 1000G Phase 1 v3 Shapeit2 (no singletons)
          phase3: 1000G Phase 3 v5
          hapmap2: HapMap 2
-         hrc: HRC
+         hrc: HRC r1 2015 (deprecated)
+         hrc.r1.1.2016: HRC r1.1 2016
+         caapa: CAAPA - African American Panel
 
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
@@ -98,6 +100,7 @@ mapred:
          amr: AMR
          sas: SAS (Phase3 only)
          eas: EAS (Phase3 only)
+         AA: AA (CAAPA)
          mixed: Mixed
                 
      - id: mode
@@ -138,7 +141,7 @@ mapred:
      - id: sample-limit
        description: Limit
        type: number
-       value: 6000
+       value: 12000
        visible: false
        
      - id: encryption
@@ -166,6 +169,16 @@ mapred:
          true: yes
          false: no
        visible: false  
+
+     - id: check1
+       description: I will not attempt to re-identify or contact research participants.
+       type: agbcheckbox
+
+
+     - id: check2
+       description: I will report any inadvertent data release, security breach or other data management incident of which I become aware.
+       type: agbcheckbox
+
          
   outputs:
 
