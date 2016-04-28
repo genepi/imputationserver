@@ -26,7 +26,7 @@ public class PipelineTest {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 				/*{ PipelineFactory.REF_PHASE1, "shapeit" },*/
-				{ PipelineFactory.REF_PHASE1, "hapiur" },
+				{ PipelineFactory.REF_PHASE1, "eagle" },
 				/*{ PipelineFactory.REF_PHASE3, "shapeit" }/*,
 				{ PipelineFactory.REF_PHASE3, "hapiur" } */});
 	}

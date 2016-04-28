@@ -130,7 +130,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setFolder(folder);
 				job.setRefPanelHdfs(panel.getHdfs());
 				job.setRefPanelPattern(panel.getPattern());
-
+				job.setChromosome(chr);
+				
+				
 				//shapeit
 				job.setMapShapeITHdfs(map.getMapShapeIT());
 				job.setMapShapeITPattern(map.getMapPatternShapeIT());

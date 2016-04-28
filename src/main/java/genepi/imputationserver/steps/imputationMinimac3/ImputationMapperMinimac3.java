@@ -109,7 +109,9 @@ public class ImputationMapperMinimac3 extends
 		String vcf2HapCommand = cache.getFile("vcf2hap");
 		String shapeItCommand = cache.getFile("shapeit");
 		String eagleCommand = cache.getFile("eagle_r373");
-
+		String tabixCommand = cache.getFile("tabix");
+		String bgzipCommand = cache.getFile("bgzip");
+		
 		// create temp directory
 		PreferenceStore store = new PreferenceStore(context.getConfiguration());
 		folder = store.getString("minimac.tmp");
@@ -129,6 +131,8 @@ public class ImputationMapperMinimac3 extends
 		pipeline.setVcf2HapCommand(vcf2HapCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
 		pipeline.setEagleCommand(eagleCommand);
+		pipeline.setTabixCommand(tabixCommand);
+		pipeline.setBgzipCommand(bgzipCommand);
 		pipeline.setHapiUrPreprocessCommand(hapiUrPreprocessCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 

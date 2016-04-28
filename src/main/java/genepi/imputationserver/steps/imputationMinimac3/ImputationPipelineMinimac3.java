@@ -15,6 +15,8 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import cloudgene.mapred.jobs.Message;
+
 public class ImputationPipelineMinimac3 {
 
 	private String minimacCommand;
@@ -22,8 +24,10 @@ public class ImputationPipelineMinimac3 {
 	private String hapiUrPreprocessCommand;
 	private String shapeItCommand;
 	private String eagleCommand;
+	private String tabixCommand;
 	private String vcfCookerCommand;
 	private String vcf2HapCommand;
+	private String bgzipCommand;
 	private String refPanelFilename;
 	private int minimacWindow;
 	private int phasingWindow;
@@ -39,6 +43,7 @@ public class ImputationPipelineMinimac3 {
 	private String mapHapiURPattern;
 
 	private String mapEagleFilename = "";
+
 	private String refEagleFilename = "";
 	private String refEaglePattern = "";
 
@@ -456,6 +461,53 @@ public class ImputationPipelineMinimac3 {
 
 		int end = input.getEnd() + phasingWindow;
 
+		if (!new File(output.getVcfFilename()).exists()) {
+			System.out.println("vcf file not created!");
+			return false;
+		}
+		
+		System.out.println("vcf file content:");
+		System.out.println(FileUtil.readFileAsString(output.getVcfFilename()));
+		
+		// bgzip
+		Command bgzip = new Command(bgzipCommand);
+		bgzip.setSilent(false);
+		bgzip.setParams("-f", output.getVcfFilename());
+		System.out.println("Command: " + bgzip.getExecutedCommand());
+		if (bgzip.execute() != 0) {
+			System.out.println("Error during bgzip: " + bgzip.getStdOut());
+			return false;
+		}
+
+		String[] files = new File(new File(output.getVcfFilename()).getParent()).list();
+		System.out.println("Files:");
+		for (String file : files){
+			System.out.println(file);
+		}
+		 
+		if (!new File(output.getVcfFilename()).exists()) {
+			System.out.println("vcf file not created!");
+			return false;
+		}
+		
+		if (!new File(output.getVcfFilename() + ".gz").exists()) {
+			System.out.println("vcf.gz file not created!");
+			return false;
+		}
+
+		
+		// create tabix index
+		Command tabix = new Command(tabixCommand);
+		tabix.setSilent(false);
+		tabix.setParams(output.getVcfFilename() + ".gz");
+		System.out.println("Command: " + tabix.getExecutedCommand());
+		if (tabix.execute() != 0) {
+			System.out.println("Error during index creation: "
+					+ tabix.getStdOut());
+			return false;
+		}
+
+		// start eagle
 		Command eagle = new Command(eagleCommand);
 		eagle.setSilent(false);
 
@@ -463,7 +515,7 @@ public class ImputationPipelineMinimac3 {
 				"--vcfRef",
 				reference,
 				"--vcfTarget",
-				input.getVcfFilename(),
+				output.getVcfFilename() + ".gz",
 				"--geneticMapFile",
 				mapFilename,
 				"--outPrefix",
@@ -622,6 +674,10 @@ public class ImputationPipelineMinimac3 {
 		this.hapiUrPreprocessCommand = hapiUrPreprocessCommand;
 	}
 
+	public void setTabixCommand(String tabixCommand) {
+		this.tabixCommand = tabixCommand;
+	}
+
 	public void setRefPanelFilename(String refPanelFilename) {
 		this.refPanelFilename = refPanelFilename;
 	}
@@ -696,6 +752,10 @@ public class ImputationPipelineMinimac3 {
 
 	public void setEagleCommand(String eagleCommand) {
 		this.eagleCommand = eagleCommand;
+	}
+
+	public void setBgzipCommand(String bgzipCommand) {
+		this.bgzipCommand = bgzipCommand;
 	}
 
 	public void setPhasingWindow(int phasingWindow) {

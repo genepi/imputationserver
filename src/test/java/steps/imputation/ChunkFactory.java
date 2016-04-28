@@ -23,7 +23,7 @@ public class ChunkFactory {
 		chunk.setEnd(20050000);
 		// chunk.setEnd(30000000);
 		chunk.setPhased(true);
-		chunk.setVcfFilename("test-data/gckd/gckd-chr20.renamed.vcf.gz");
+		chunk.setVcfFilename("test-data/gckd/gckd-chr20.renamed.vcf");
 		return chunk;
 	}
 

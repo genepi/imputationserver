@@ -27,6 +27,9 @@ public class PipelineFactory {
 			pipeline.setVcfCookerCommand(FileUtil.path(BINARIES, "vcfCooker"));
 			pipeline.setVcf2HapCommand(FileUtil.path(BINARIES, "vcf2hap"));
 			pipeline.setShapeItCommand(FileUtil.path(BINARIES, "shapeit"));
+			pipeline.setBgzipCommand(FileUtil.path(BINARIES, "bgzip"));
+			pipeline.setTabixCommand(FileUtil.path(BINARIES, "tabix"));
+
 			pipeline.setHapiUrPreprocessCommand(FileUtil.path(BINARIES,
 					"insert-map.pl"));
 			pipeline.setEagleCommand(FileUtil.path(BINARIES, "eagle_r373"));

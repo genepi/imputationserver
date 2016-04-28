@@ -63,6 +63,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String refPanelEagleHDFS;
 
+	private String chr;
+	
 	public ImputationJobMinimac3(String name, Log log, String queue) {
 		super(name, log);
 		set("mapred.task.timeout", "720000000");
@@ -121,7 +123,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		// add Eagle Map File to cache
 		if (HdfsUtil.exists(mapEagleHDFS)) {
 			name = FileUtil.getFilename(mapEagleHDFS);
-			cache.addArchive(name, mapEagleHDFS);
+			cache.addFile(mapEagleHDFS);
 		} else {
 			throw new IOException("Map " + mapEagleHDFS + " not found.");
 		}
@@ -251,6 +253,10 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public void setRefPatternEagle(String refPanelPattern) {
 		set(REF_PANEL_EAGLE_PATTERN, refPanelPattern);
+	}
+	
+	public void setChromosome(String chr){
+		this.chr = chr;
 	}
 
 }
