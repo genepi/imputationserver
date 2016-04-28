@@ -27,7 +27,7 @@ public class PipelineTest {
 		return Arrays.asList(new Object[][] {
 				/*{ PipelineFactory.REF_PHASE1, "shapeit" },*/
 				{ PipelineFactory.REF_PHASE1, "hapiur" },
-				{ PipelineFactory.REF_PHASE3, "shapeit" }/*,
+				/*{ PipelineFactory.REF_PHASE3, "shapeit" }/*,
 				{ PipelineFactory.REF_PHASE3, "hapiur" } */});
 	}
 
@@ -87,7 +87,7 @@ public class PipelineTest {
 		reader.close();
 
 		//run snptest to check control snp		
-		Command snptest =new Command(FileUtil.path(PipelineFactory.BINARIES, "snptest_v2.5.2"));
+		/*Command snptest =new Command(FileUtil.path(PipelineFactory.BINARIES, "snptest_v2.5.2"));
 		List<String> params = new Vector<String>();
 		params.add("-data");
 		params.add(outputChunk.getImputedVcfFilename());
@@ -106,9 +106,9 @@ public class PipelineTest {
 		params.add("-cov_all");
 		params.add("-use_raw_phenotypes");		
 		snptest.setParams(params);
-		int result = snptest.execute();
+		int result = snptest.execute();*/
 		
-		assertEquals(0, result);
+		//assertEquals(0, result);
 		
 	}
 

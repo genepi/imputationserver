@@ -35,9 +35,7 @@ public class InputValidation extends WorkflowStep {
 
 		URLClassLoader cl = (URLClassLoader) InputValidation.class
 				.getClassLoader();
-		
-		
-		
+
 		try {
 			URL url = cl.findResource("META-INF/MANIFEST.MF");
 			Manifest manifest = new Manifest(url.openStream());
@@ -62,7 +60,7 @@ public class InputValidation extends WorkflowStep {
 
 	private boolean checkVcfFiles(WorkflowContext context) {
 		String folder = getFolder(InputValidation.class);
-		String tester; 
+		String tester;
 		// inputs
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
@@ -78,7 +76,8 @@ public class InputValidation extends WorkflowStep {
 
 		// exports files from hdfs
 		try {
-			tester = loadChrXTesterFromFile(FileUtil.path(folder,"chrX-tester.txt"));
+			tester = loadChrXTesterFromFile(FileUtil.path(folder,
+					"chrX-tester.txt"));
 			HdfsUtil.getFolder(inputFiles, files);
 
 		} catch (Exception e) {
@@ -138,13 +137,13 @@ public class InputValidation extends WorkflowStep {
 									"Chromosome X imputation is currently under preperation. Please upload only autosomale chromosomes.",
 									WorkflowContext.ERROR);
 							return false;
-							
+
 						}
 					}
 
 					validVcfFiles.add(vcfFile);
 					chromosomes.add(vcfFile.getChromosome());
-					
+
 					String chromosomeString = "";
 					for (String chr : chromosomes) {
 						chromosomeString += " " + chr;
@@ -191,25 +190,28 @@ public class InputValidation extends WorkflowStep {
 					RefPanel panel = panels.getById(reference);
 					if (panel == null) {
 						StringBuilder report = new StringBuilder();
-						report.append("Reference '" + reference + "' not found.\n");
+						report.append("Reference '" + reference
+								+ "' not found.\n");
 						report.append("Available reference IDs:");
 						for (RefPanel p : panels.getPanels()) {
-							report.append("\n - "+p.getId());
+							report.append("\n - " + p.getId());
 						}
 						context.error(report.toString());
 						return false;
 					}
-					
-					if (!panel.existsReference()){
-						context.error("Reference File '" + panel.getHdfs() + "' not found.");
-						return false;	
+
+					if (!panel.existsReference()) {
+						context.error("Reference File '" + panel.getHdfs()
+								+ "' not found.");
+						return false;
 					}
-					
-					if (!panel.existsLegend()){
-						context.error("Reference File '" + panel.getLegend() + "' not found.");
-						return false;	
+
+					if (!panel.existsLegend()) {
+						context.error("Reference File '" + panel.getLegend()
+								+ "' not found.");
+						return false;
 					}
-					
+
 					// load maps
 
 					MapList maps = null;
@@ -227,18 +229,26 @@ public class InputValidation extends WorkflowStep {
 						context.error("genetic map file not found.");
 						return false;
 					}
-					
-					if (!map.checkHapiUR()){
-						context.error("Map HapiUR  '" + map.getMapHapiUR() + "' not found.");
-						return false;	
-					}
-					
-					if (!map.checkShapeIT()){
-						context.error("Map ShapeIT  '" + map.getMapShapeIT() + "' not found.");
-						return false;	
+
+					if (!map.checkHapiUR()) {
+						context.error("Map HapiUR  '" + map.getMapHapiUR()
+								+ "' not found.");
+						return false;
 					}
 
-				if ((panel.getId().equals("hrc") && !population
+					if (!map.checkShapeIT()) {
+						context.error("Map ShapeIT  '" + map.getMapShapeIT()
+								+ "' not found.");
+						return false;
+					}
+					
+
+					if (!map.checkEagle()) {
+						context.error("Eagle reference files not found.");
+						return false;
+					}
+
+					if ((panel.getId().equals("hrc") && !population
 							.equals("eur"))) {
 
 						context.endTask(
@@ -247,17 +257,17 @@ public class InputValidation extends WorkflowStep {
 
 						return false;
 					}
-				
-				if ((panel.getId().equals("caapa") && !population
-						.equals("AA"))) {
 
-					context.endTask(
-							"Please select the AA population for the CAAPA panel",
-							WorkflowContext.ERROR);
+					if ((panel.getId().equals("caapa") && !population
+							.equals("AA"))) {
 
-					return false;
-				}
-					
+						context.endTask(
+								"Please select the AA population for the CAAPA panel",
+								WorkflowContext.ERROR);
+
+						return false;
+					}
+
 					if ((panel.getId().equals("hapmap2") && !population
 							.equals("eur"))) {
 
@@ -289,15 +299,16 @@ public class InputValidation extends WorkflowStep {
 
 						return false;
 					}
-					
-					if (!phased && noSamples < 50) {
+
+					if (!phased && noSamples < 50 && !phasing.equals("eagle")) {
 						context.endTask(
-								"At least 50 samples must be included for pre-phasing",
+								"At least 50 samples must be included for pre-phasing using "
+										+ phasing + ". Please select eagle.",
 								WorkflowContext.ERROR);
 
 						return false;
 					}
-					
+
 					if (noSamples > sampleLimit && sampleLimit != 0) {
 						context.endTask(
 								"The maximum number of samples is "
@@ -314,10 +325,8 @@ public class InputValidation extends WorkflowStep {
 							+ (phased ? "phased" : "unphased") + "\n"
 							+ "Reference Panel: " + panel.getId();
 
-				}
-				else {
-					context.endTask(
-							"No valid chromosomes found!",
+				} else {
+					context.endTask("No valid chromosomes found!",
 							WorkflowContext.ERROR);
 					return false;
 				}
@@ -333,7 +342,6 @@ public class InputValidation extends WorkflowStep {
 			}
 
 		}
-
 
 		if (validVcfFiles.size() > 0) {
 
@@ -446,11 +454,11 @@ public class InputValidation extends WorkflowStep {
 		return true;
 
 	}
-	
+
 	public static String loadChrXTesterFromFile(String filename)
 			throws YamlException, FileNotFoundException {
 
-			return FileUtil.readFileAsString(filename);
+		return FileUtil.readFileAsString(filename);
 
 	}
 

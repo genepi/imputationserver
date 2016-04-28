@@ -11,12 +11,18 @@ public class GeneticMap {
 	private String id;
 
 	private String mapPatternShapeIT;
-	
+
 	private String mapPatternHapiUR;
-	
+
 	private String mapShapeIT;
-	
+
 	private String mapHapiUR;
+
+	private String mapEagle;
+
+	private String refEagle;
+
+	private String refPatternEagle;
 
 	public String getId() {
 		return id;
@@ -58,24 +64,63 @@ public class GeneticMap {
 		this.mapHapiUR = mapHapiUR;
 	}
 
-	
+	public void setMapEagle(String mapEagle) {
+		this.mapEagle = mapEagle;
+	}
+
+	public String getMapEagle() {
+		return mapEagle;
+	}
+
+	public void setRefEagle(String refEagle) {
+		this.refEagle = refEagle;
+	}
+
+	public String getRefEagle() {
+		return refEagle;
+	}
+
+	public String getRefPatternEagle() {
+		return refPatternEagle;
+	}
+
+	public void setRefPatternEagle(String refPatternEagle) {
+		this.refPatternEagle = refPatternEagle;
+	}
+
+	public boolean checkEagle() {
+
+		try {
+			return FileSystem.get(new Configuration()).exists(
+					new Path(mapEagle))
+					&& FileSystem.get(new Configuration()).exists(
+							new Path(refEagle));
+		} catch (IOException e) {
+			return false;
+		}
+
+	}
+
 	public boolean checkHapiUR() {
 
 		try {
-			return FileSystem.get(new Configuration()).exists(new Path(mapHapiUR));
+			return FileSystem.get(new Configuration()).exists(
+					new Path(mapHapiUR));
 		} catch (IOException e) {
 			return false;
 		}
 
 	}
+
 	public boolean checkShapeIT() {
 
 		try {
-			return FileSystem.get(new Configuration()).exists(new Path(mapShapeIT));
+			return FileSystem.get(new Configuration()).exists(
+					new Path(mapShapeIT));
 		} catch (IOException e) {
 			return false;
 		}
 
 	}
-	
+
 }

@@ -28,7 +28,13 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String MAP_HAPIUR_HDFS = "MINIMAC_MAP_HAPIUR_HDFS";
 
 	public static final String MAP_HAPIUR_PATTERN = "MINIMAC_MAP_HAPIUR_PATTERN";
-	
+
+	public static final String REF_PANEL_EAGLE_HDFS = "MINIMAC_REFPANEL_EAGLE_HDFS";
+
+	public static final String REF_PANEL_EAGLE_PATTERN = "MINIMAC_REFPANEL_EAGLE_HDFS";
+
+	public static final String MAP_EAGLE_HDFS = "MINIMAC_MAP_EAGLE_HDFS";
+
 	public static final String POPULATION = "MINIMAC_USES_POP";
 
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
@@ -53,12 +59,16 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String mapHapiURHDFS;
 
+	private String mapEagleHDFS;
+
+	private String refPanelEagleHDFS;
+
 	public ImputationJobMinimac3(String name, Log log, String queue) {
 		super(name, log);
 		set("mapred.task.timeout", "720000000");
 		set("mapred.map.tasks.speculative.execution", false);
 		set("mapred.reduce.tasks.speculative.execution", false);
-		log.info("setting queue to "+queue);
+		log.info("setting queue to " + queue);
 		getConfiguration().set("mapred.job.queue.name", queue);
 		getConfiguration().set("mapred.reduce.tasks", "22");
 	}
@@ -106,6 +116,23 @@ public class ImputationJobMinimac3 extends HadoopJob {
 			cache.addArchive(name, mapHapiURHDFS);
 		} else {
 			throw new IOException("Map " + mapHapiURHDFS + " not found.");
+		}
+
+		// add Eagle Map File to cache
+		if (HdfsUtil.exists(mapEagleHDFS)) {
+			name = FileUtil.getFilename(mapEagleHDFS);
+			cache.addArchive(name, mapEagleHDFS);
+		} else {
+			throw new IOException("Map " + mapEagleHDFS + " not found.");
+		}
+
+		// add Eagle Refpanel File to cache
+		if (HdfsUtil.exists(refPanelEagleHDFS)) {
+			name = FileUtil.getFilename(refPanelEagleHDFS);
+			cache.addArchive(name, refPanelEagleHDFS);
+		} else {
+			throw new IOException("Eagle Reference Panel " + refPanelEagleHDFS
+					+ " not found.");
 		}
 
 	}
@@ -173,7 +200,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public void setPopulation(String population) {
 		set(POPULATION, population);
 	}
-	
+
 	public void setPhasing(String phasing) {
 		set(PHASING, phasing);
 	}
@@ -210,6 +237,20 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public void setMapHapiURHdfs(String mapHDFS2) {
 		this.mapHapiURHDFS = mapHDFS2;
 		set(MAP_HAPIUR_HDFS, mapHDFS2);
+	}
+
+	public void setMapEagleHdfs(String mapHdfs) {
+		this.mapEagleHDFS = mapHdfs;
+		set(MAP_EAGLE_HDFS, mapHdfs);
+	}
+
+	public void setRefEagleHdfs(String refPanelHdfs) {
+		this.refPanelEagleHDFS = refPanelHdfs;
+		set(REF_PANEL_EAGLE_HDFS, refPanelHdfs);
+	}
+
+	public void setRefPatternEagle(String refPanelPattern) {
+		set(REF_PANEL_EAGLE_PATTERN, refPanelPattern);
 	}
 
 }

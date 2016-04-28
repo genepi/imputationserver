@@ -48,6 +48,12 @@ public class ImputationMapperMinimac3 extends
 
 	private String mapHapiURFilename = "";
 
+	private String mapEagleFilename = "";
+
+	private String refEagleFilename = "";
+
+	private String refEaglePattern = "";
+
 	private Log log;
 
 	protected void setup(Context context) throws IOException,
@@ -82,12 +88,27 @@ public class ImputationMapperMinimac3 extends
 		refFilename = cache.getArchive(referencePanel);
 		mapShapeITFilename = cache.getArchive(mapShapeIT);
 		mapHapiURFilename = cache.getArchive(mapHapiUR);
+
+		String hdfsPathMapEagle = parameters
+				.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
+		mapEagleFilename = cache.getArchive(FileUtil
+				.getFilename(hdfsPathMapEagle));
+
+		String hdfsPathRefEagle = parameters
+				.get(ImputationJobMinimac3.REF_PANEL_EAGLE_HDFS);
+		refEagleFilename = cache.getArchive(FileUtil
+				.getFilename(hdfsPathRefEagle));
+
+		refEaglePattern = parameters
+				.get(ImputationJobMinimac3.REF_PANEL_EAGLE_PATTERN);
+
 		String minimacCommand = cache.getFile(minimacBin);
 		String hapiUrCommand = cache.getFile("hapi-ur");
 		String hapiUrPreprocessCommand = cache.getFile("insert-map.pl");
 		String vcfCookerCommand = cache.getFile("vcfCooker");
 		String vcf2HapCommand = cache.getFile("vcf2hap");
 		String shapeItCommand = cache.getFile("shapeit");
+		String eagleCommand = cache.getFile("eagle_r373");
 
 		// create temp directory
 		PreferenceStore store = new PreferenceStore(context.getConfiguration());
@@ -107,6 +128,7 @@ public class ImputationMapperMinimac3 extends
 		pipeline.setVcfCookerCommand(vcfCookerCommand);
 		pipeline.setVcf2HapCommand(vcf2HapCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
+		pipeline.setEagleCommand(eagleCommand);
 		pipeline.setHapiUrPreprocessCommand(hapiUrPreprocessCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 
@@ -145,6 +167,9 @@ public class ImputationMapperMinimac3 extends
 		pipeline.setMapShapeITFilename(mapShapeITFilename);
 		pipeline.setMapHapiURFilename(mapHapiURFilename);
 		pipeline.setMapHapiURPattern(mapHapiURPattern);
+		pipeline.setMapEagleFilename(mapEagleFilename);
+		pipeline.setRefEagleFilename(refEagleFilename);
+		pipeline.setRefEaglePattern(refEaglePattern);
 		pipeline.setPhasing(phasing);
 		pipeline.setPopulation(population);
 

@@ -7,8 +7,9 @@ public class PipelineFactory {
 
 	public static final String BINARIES = "files/minimac/bin";
 	
-	public static final int DEFAULT_PHASING_WINDOW = 1000000;
-	public static final int DEFAULT_MINIMAC_WINDOW = 500000;
+	public static final int DEFAULT_PHASING_WINDOW = 250000;
+	//public static final int DEFAULT_PHASING_WINDOW = 1000000;
+	public static final int DEFAULT_MINIMAC_WINDOW = 50000;
 	public static final int DEFAULT_ROUNDS = 0;
 	public static final String TEMP_FOLDER = "temp";
 
@@ -28,6 +29,8 @@ public class PipelineFactory {
 			pipeline.setShapeItCommand(FileUtil.path(BINARIES, "shapeit"));
 			pipeline.setHapiUrPreprocessCommand(FileUtil.path(BINARIES,
 					"insert-map.pl"));
+			pipeline.setEagleCommand(FileUtil.path(BINARIES, "eagle_r373"));
+
 
 			String refFilename = "test-data/reference-panels";
 
@@ -37,6 +40,10 @@ public class PipelineFactory {
 			String mapHapiURPattern = "genetic_map_chr$chr_combined_hapiur_b37.txt";
 			String mapHapiURFilename = refFilename;
 
+			String mapEagleFilename = FileUtil.path(refFilename, "genetic_map_hg19.txt.gz");
+			String refEagleFilename = refFilename;
+			String refEaglePattern = "HRC.r1-1.GRCh37.chr$chr.shapeit3.mac5.aa.genotypes.bcf";
+			
 			pipeline.setPhasingWindow(DEFAULT_PHASING_WINDOW);
 			pipeline.setRounds(DEFAULT_ROUNDS);
 			pipeline.setMinimacWindow(DEFAULT_MINIMAC_WINDOW);
@@ -47,6 +54,15 @@ public class PipelineFactory {
 			pipeline.setMapHapiURFilename(mapHapiURFilename);
 			pipeline.setMapHapiURPattern(mapHapiURPattern);
 
+			pipeline.setMapShapeITPattern(mapShapeITPattern);
+			pipeline.setMapShapeITFilename(mapShapeITFilename);
+			pipeline.setMapHapiURFilename(mapHapiURFilename);
+			pipeline.setMapHapiURPattern(mapHapiURPattern);
+			
+			pipeline.setMapEagleFilename(mapEagleFilename);
+			pipeline.setRefEagleFilename(refEagleFilename);
+			pipeline.setRefEaglePattern(refEaglePattern);
+			
 			pipeline.setPopulation("EUR");
 			pipeline.setPhasing("shapeit");
 
