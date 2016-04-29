@@ -33,8 +33,7 @@ public class InputValidation extends WorkflowStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		URLClassLoader cl = (URLClassLoader) InputValidation.class
-				.getClassLoader();
+		URLClassLoader cl = (URLClassLoader) InputValidation.class.getClassLoader();
 
 		try {
 			URL url = cl.findResource("META-INF/MANIFEST.MF");
@@ -43,8 +42,7 @@ public class InputValidation extends WorkflowStep {
 			String buildVesion = attr.getValue("Version");
 			String buildTime = attr.getValue("Build-Time");
 			String builtBy = attr.getValue("Built-By");
-			context.println("Version: " + buildVesion + " (Built by " + builtBy
-					+ " on " + buildTime + ")");
+			context.println("Version: " + buildVesion + " (Built by " + builtBy + " on " + buildTime + ")");
 
 		} catch (IOException E) {
 			// handle
@@ -76,8 +74,7 @@ public class InputValidation extends WorkflowStep {
 
 		// exports files from hdfs
 		try {
-			tester = loadChrXTesterFromFile(FileUtil.path(folder,
-					"chrX-tester.txt"));
+			tester = loadChrXTesterFromFile(FileUtil.path(folder, "chrX-tester.txt"));
 			HdfsUtil.getFolder(inputFiles, files);
 
 		} catch (Exception e) {
@@ -100,8 +97,7 @@ public class InputValidation extends WorkflowStep {
 		String[] vcfFiles = FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$");
 
 		if (vcfFiles.length == 0) {
-			context.endTask(
-					"The provided files are not VCF files (see <a href=\"/start.html#!pages/help\">Help</a>).",
+			context.endTask("The provided files are not VCF files (see <a href=\"/start.html#!pages/help\">Help</a>).",
 					WorkflowContext.ERROR);
 			return false;
 		}
@@ -112,14 +108,11 @@ public class InputValidation extends WorkflowStep {
 
 			if (infos == null) {
 				// first files, no infos available
-				context.updateTask(
-						"Analyze file " + FileUtil.getFilename(filename)
-								+ "...", WorkflowContext.RUNNING);
+				context.updateTask("Analyze file " + FileUtil.getFilename(filename) + "...", WorkflowContext.RUNNING);
 
 			} else {
-				context.updateTask(
-						"Analyze file " + FileUtil.getFilename(filename)
-								+ "...\n\n" + infos, WorkflowContext.RUNNING);
+				context.updateTask("Analyze file " + FileUtil.getFilename(filename) + "...\n\n" + infos,
+						WorkflowContext.RUNNING);
 			}
 
 			try {
@@ -153,9 +146,7 @@ public class InputValidation extends WorkflowStep {
 					if (noSamples != 0 && noSamples != vcfFile.getNoSamples()) {
 						context.endTask(
 								"Please double check, if all uploaded VCF files include the same amount of samples ("
-										+ vcfFile.getNoSamples()
-										+ " vs "
-										+ noSamples + ")",
+										+ vcfFile.getNoSamples() + " vs " + noSamples + ")",
 								WorkflowContext.ERROR);
 						return false;
 					}
@@ -177,21 +168,18 @@ public class InputValidation extends WorkflowStep {
 
 					RefPanelList panels = null;
 					try {
-						panels = RefPanelList.loadFromFile(FileUtil.path(
-								folder, "panels.txt"));
+						panels = RefPanelList.loadFromFile(FileUtil.path(folder, "panels.txt"));
 
 					} catch (Exception e) {
 
-						context.endTask("panels.txt not found.",
-								WorkflowContext.ERROR);
+						context.endTask("panels.txt not found.", WorkflowContext.ERROR);
 						return false;
 					}
 
 					RefPanel panel = panels.getById(reference);
 					if (panel == null) {
 						StringBuilder report = new StringBuilder();
-						report.append("Reference '" + reference
-								+ "' not found.\n");
+						report.append("Reference '" + reference + "' not found.\n");
 						report.append("Available reference IDs:");
 						for (RefPanel p : panels.getPanels()) {
 							report.append("\n - " + p.getId());
@@ -201,14 +189,12 @@ public class InputValidation extends WorkflowStep {
 					}
 
 					if (!panel.existsReference()) {
-						context.error("Reference File '" + panel.getHdfs()
-								+ "' not found.");
+						context.error("Reference File '" + panel.getHdfs() + "' not found.");
 						return false;
 					}
 
 					if (!panel.existsLegend()) {
-						context.error("Reference File '" + panel.getLegend()
-								+ "' not found.");
+						context.error("Reference File '" + panel.getLegend() + "' not found.");
 						return false;
 					}
 
@@ -216,8 +202,7 @@ public class InputValidation extends WorkflowStep {
 
 					MapList maps = null;
 					try {
-						maps = MapList.loadFromFile(FileUtil.path(folder,
-								"genetic-maps.txt"));
+						maps = MapList.loadFromFile(FileUtil.path(folder, "genetic-maps.txt"));
 					} catch (Exception e) {
 						context.error("genetic-maps.txt not found." + e);
 						return false;
@@ -231,67 +216,52 @@ public class InputValidation extends WorkflowStep {
 					}
 
 					if (!map.checkHapiUR()) {
-						context.error("Map HapiUR  '" + map.getMapHapiUR()
-								+ "' not found.");
+						context.error("Map HapiUR  '" + map.getMapHapiUR() + "' not found.");
 						return false;
 					}
 
 					if (!map.checkShapeIT()) {
-						context.error("Map ShapeIT  '" + map.getMapShapeIT()
-								+ "' not found.");
+						context.error("Map ShapeIT  '" + map.getMapShapeIT() + "' not found.");
 						return false;
 					}
-					
 
 					if (!map.checkEagle()) {
 						context.error("Eagle reference files not found.");
 						return false;
 					}
 
-					if ((panel.getId().equals("hrc") && !population
-							.equals("eur"))) {
+					if ((panel.getId().equals("hrc") && !population.equals("eur"))) {
 
-						context.endTask(
-								"Please select the EUR population for the HRC panel",
+						context.endTask("Please select the EUR population for the HRC panel", WorkflowContext.ERROR);
+
+						return false;
+					}
+
+					if ((panel.getId().equals("caapa") && !population.equals("AA"))) {
+
+						context.endTask("Please select the AA population for the CAAPA panel", WorkflowContext.ERROR);
+
+						return false;
+					}
+
+					if ((panel.getId().equals("hapmap2") && !population.equals("eur"))) {
+
+						context.endTask("Please select the EUR population for the HapMap reference panel",
 								WorkflowContext.ERROR);
 
 						return false;
 					}
 
-					if ((panel.getId().equals("caapa") && !population
-							.equals("AA"))) {
+					if ((panel.getId().equals("phase1") && population.equals("sas"))
+							|| (panel.getId().equals("phase1") && population.equals("eas"))) {
 
-						context.endTask(
-								"Please select the AA population for the CAAPA panel",
+						context.endTask("The selected population (SAS, EAS) is not allowed for this panel",
 								WorkflowContext.ERROR);
 
 						return false;
 					}
 
-					if ((panel.getId().equals("hapmap2") && !population
-							.equals("eur"))) {
-
-						context.endTask(
-								"Please select the EUR population for the HapMap reference panel",
-								WorkflowContext.ERROR);
-
-						return false;
-					}
-
-					if ((panel.getId().equals("phase1") && population
-							.equals("sas"))
-							|| (panel.getId().equals("phase1") && population
-									.equals("eas"))) {
-
-						context.endTask(
-								"The selected population (SAS, EAS) is not allowed for this panel",
-								WorkflowContext.ERROR);
-
-						return false;
-					}
-
-					if ((panel.getId().equals("phase3") && population
-							.equals("asn"))) {
+					if ((panel.getId().equals("phase3") && population.equals("asn"))) {
 
 						context.endTask(
 								"The selected population (ASN) is not allowed for the 1000G Phase3 reference panel",
@@ -301,41 +271,34 @@ public class InputValidation extends WorkflowStep {
 					}
 
 					if (!phased && noSamples < 50 && !phasing.equals("eagle")) {
-						context.endTask(
-								"At least 50 samples must be included for pre-phasing using "
-										+ phasing + ". Please select eagle.",
-								WorkflowContext.ERROR);
+						context.endTask("At least 50 samples must be included for pre-phasing using " + phasing
+								+ ". Please select eagle.", WorkflowContext.ERROR);
 
 						return false;
 					}
 
 					if (noSamples > sampleLimit && sampleLimit != 0) {
 						context.endTask(
-								"The maximum number of samples is "
-										+ sampleLimit
+								"The maximum number of samples is " + sampleLimit
 										+ ". Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
 								WorkflowContext.ERROR);
 
 						return false;
 					}
 
-					infos = "Samples: " + noSamples + "\n" + "Chromosomes:"
-							+ chromosomeString + "\n" + "SNPs: " + noSnps
-							+ "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
-							+ (phased ? "phased" : "unphased") + "\n"
-							+ "Reference Panel: " + panel.getId();
+					infos = "Samples: " + noSamples + "\n" + "Chromosomes:" + chromosomeString + "\n" + "SNPs: "
+							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
+							+ (phased ? "phased" : "unphased") + "\n" + "Reference Panel: " + panel.getId() + "\n"
+							+ "Phasing: " + phasing;
 
 				} else {
-					context.endTask("No valid chromosomes found!",
-							WorkflowContext.ERROR);
+					context.endTask("No valid chromosomes found!", WorkflowContext.ERROR);
 					return false;
 				}
 
 			} catch (IOException e) {
 
-				context.endTask(
-						e.getMessage()
-								+ " (see <a href=\"/start.html#!pages/help\">Help</a>).",
+				context.endTask(e.getMessage() + " (see <a href=\"/start.html#!pages/help\">Help</a>).",
 						WorkflowContext.ERROR);
 				return false;
 
@@ -345,9 +308,7 @@ public class InputValidation extends WorkflowStep {
 
 		if (validVcfFiles.size() > 0) {
 
-			context.endTask(validVcfFiles.size()
-					+ " valid VCF file(s) found.\n\n" + infos,
-					WorkflowContext.OK);
+			context.endTask(validVcfFiles.size() + " valid VCF file(s) found.\n\n" + infos, WorkflowContext.OK);
 
 			// init counters
 			context.incCounter("samples", noSamples);
@@ -377,8 +338,7 @@ public class InputValidation extends WorkflowStep {
 
 				context.beginTask("Importing files...");
 
-				String[] urlList = context.get(input).split(";")[0]
-						.split("\\s+");
+				String[] urlList = context.get(input).split(";")[0].split("\\s+");
 
 				String username = "";
 				if (context.get(input).split(";").length > 1) {
@@ -394,16 +354,13 @@ public class InputValidation extends WorkflowStep {
 
 					String url = url2 + ";" + username + ";" + password;
 
-					String target = HdfsUtil.path(context.getHdfsTemp(),
-							"importer", input);
+					String target = HdfsUtil.path(context.getHdfsTemp(), "importer", input);
 
 					try {
 
-						context.updateTask("Import " + url2 + "...",
-								WorkflowContext.RUNNING);
+						context.updateTask("Import " + url2 + "...", WorkflowContext.RUNNING);
 
-						IImporter importer = ImporterFactory.createImporter(
-								url, target);
+						IImporter importer = ImporterFactory.createImporter(url, target);
 
 						if (importer != null) {
 
@@ -415,9 +372,7 @@ public class InputValidation extends WorkflowStep {
 
 							} else {
 
-								context.updateTask(
-										"Import " + url2 + " failed: "
-												+ importer.getErrorMessage(),
+								context.updateTask("Import " + url2 + " failed: " + importer.getErrorMessage(),
 										WorkflowContext.ERROR);
 
 								return false;
@@ -426,8 +381,7 @@ public class InputValidation extends WorkflowStep {
 
 						} else {
 
-							context.updateTask("Import " + url2
-									+ " failed: Protocol not supported",
+							context.updateTask("Import " + url2 + " failed: Protocol not supported",
 									WorkflowContext.ERROR);
 
 							return false;
@@ -435,8 +389,7 @@ public class InputValidation extends WorkflowStep {
 						}
 
 					} catch (Exception e) {
-						context.updateTask("Import File(s) " + url2
-								+ " failed: " + e.toString(),
+						context.updateTask("Import File(s) " + url2 + " failed: " + e.toString(),
 								WorkflowContext.ERROR);
 
 						return false;
@@ -444,8 +397,7 @@ public class InputValidation extends WorkflowStep {
 
 				}
 
-				context.updateTask("File Import successful. ",
-						WorkflowContext.OK);
+				context.updateTask("File Import successful. ", WorkflowContext.OK);
 
 			}
 
@@ -455,8 +407,7 @@ public class InputValidation extends WorkflowStep {
 
 	}
 
-	public static String loadChrXTesterFromFile(String filename)
-			throws YamlException, FileNotFoundException {
+	public static String loadChrXTesterFromFile(String filename) throws YamlException, FileNotFoundException {
 
 		return FileUtil.readFileAsString(filename);
 

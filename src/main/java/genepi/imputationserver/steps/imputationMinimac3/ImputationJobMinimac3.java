@@ -46,6 +46,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String WINDOW = "MINIMAC_WINDOW";
 
 	public static final String MINIMAC_BIN = "MINIMAC_BIN";
+	
+	public static final String CHROMOSOME = "CHROMOSOME";
 
 	private String refPanelHdfs;
 
@@ -63,8 +65,10 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String refPanelEagleHDFS;
 
+	private String refPanelEaglePattern;
+
 	private String chr;
-	
+
 	public ImputationJobMinimac3(String name, Log log, String queue) {
 		super(name, log);
 		set("mapred.task.timeout", "720000000");
@@ -128,13 +132,21 @@ public class ImputationJobMinimac3 extends HadoopJob {
 			throw new IOException("Map " + mapEagleHDFS + " not found.");
 		}
 
-		// add Eagle Refpanel File to cache
+		// add Eagle Refpanel File for this chromosome to cache
 		if (HdfsUtil.exists(refPanelEagleHDFS)) {
-			name = FileUtil.getFilename(refPanelEagleHDFS);
-			cache.addArchive(name, refPanelEagleHDFS);
+
+			String chrFilename = refPanelEaglePattern.replaceAll("\\$chr", chr);
+			String refFilePath = HdfsUtil.path(refPanelEagleHDFS, chrFilename);
+
+			if (!HdfsUtil.exists(refFilePath)) {
+				throw new IOException("Eagle Reference Panel " + refFilePath + " not found.");
+			}
+
+			cache.addFile(refFilePath);
+			cache.addFile(refFilePath+".csi");
+
 		} else {
-			throw new IOException("Eagle Reference Panel " + refPanelEagleHDFS
-					+ " not found.");
+			throw new IOException("Eagle Reference Panel Folder " + refPanelEagleHDFS + " not found.");
 		}
 
 	}
@@ -146,12 +158,9 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	protected void distribute(String folder, String hdfs, CacheStore cache) {
 		String[] files = FileUtil.getFiles(folder, "");
 		for (String file : files) {
-			if (!HdfsUtil
-					.exists(HdfsUtil.path(hdfs, FileUtil.getFilename(file)))
-					|| noCache) {
+			if (!HdfsUtil.exists(HdfsUtil.path(hdfs, FileUtil.getFilename(file))) || noCache) {
 				HdfsUtil.delete(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
-				HdfsUtil.put(file,
-						HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
+				HdfsUtil.put(file, HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
 			}
 			cache.addFile(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
 		}
@@ -252,11 +261,13 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	}
 
 	public void setRefPatternEagle(String refPanelPattern) {
+		this.refPanelEaglePattern = refPanelPattern;
 		set(REF_PANEL_EAGLE_PATTERN, refPanelPattern);
 	}
-	
-	public void setChromosome(String chr){
+
+	public void setChromosome(String chr) {
 		this.chr = chr;
+		set(CHROMOSOME, chr);
 	}
 
 }

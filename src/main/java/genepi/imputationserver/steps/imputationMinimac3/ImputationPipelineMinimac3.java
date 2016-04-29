@@ -112,15 +112,13 @@ public class ImputationPipelineMinimac3 {
 				// eagle
 				long time = System.currentTimeMillis();
 
-				chrFilename = refEaglePattern.replaceAll("\\$chr", chunk.getChromosome());
-				String refFilePath = FileUtil.path(refEagleFilename, chrFilename);
 
-				if (!new File(refFilePath).exists()) {
-					System.out.println("Eagle: Reference '" + refFilePath + "' not found.");
+				if (!new File(refEagleFilename).exists()) {
+					System.out.println("Eagle: Reference '" + refEagleFilename + "' not found.");
 					return false;
 				}
 
-				boolean successful = phaseWithEagle(chunk, output, refFilePath, mapEagleFilename);
+				boolean successful = phaseWithEagle(chunk, output, refEagleFilename, mapEagleFilename);
 				time = (System.currentTimeMillis() - time) / 1000;
 
 				if (successful) {
