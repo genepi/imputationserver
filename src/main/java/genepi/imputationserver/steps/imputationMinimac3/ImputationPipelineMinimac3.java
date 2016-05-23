@@ -458,7 +458,7 @@ public class ImputationPipelineMinimac3 {
 		eagle.setParams("--vcfRef", reference, "--vcfTarget", output.getVcfFilename() + ".gz", "--geneticMapFile",
 				mapFilename, "--outPrefix", output.getPrefix(), "--chrom",
 				input.getChromosome().equals("X") ? "23" : input.getChromosome(), "--bpStart", start + "", "--bpEnd",
-				end + "");
+				end + "", "--allowRefAltSwap");
 		eagle.saveStdOut(output.getPrefix() + ".eagle.out");
 		eagle.saveStdErr(output.getPrefix() + ".eagle.err");
 		System.out.println("Command: " + eagle.getExecutedCommand());

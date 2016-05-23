@@ -32,7 +32,7 @@ public class PipelineFactory {
 
 			pipeline.setHapiUrPreprocessCommand(FileUtil.path(BINARIES,
 					"insert-map.pl"));
-			pipeline.setEagleCommand(FileUtil.path(BINARIES, "eagle_r373"));
+			pipeline.setEagleCommand(FileUtil.path(BINARIES, "eagle_v2.0.3"));
 
 
 			String refFilename = "test-data/reference-panels";
