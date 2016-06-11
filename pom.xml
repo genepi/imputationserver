@@ -68,10 +68,7 @@
 								<includes>
 									<include>genepi:genepi-io:*:*</include>
 									<include>genepi:genepi-hadoop:*:*</include>
-									<include>picard:picard:*:*</include>
-									<include>samtools:samtools:*:*</include>
-									<include>tribble:tribble:*:*</include>
-									<include>variant:variant:*:*</include>
+									<include>com.github.samtools:htsjdk:*:*</include>
 									<include>org.apache.commons:commons-math3:*:*</include>
 									<include>net.lingala.zip4j:zip4j*:*</include>
 									<include>commons-compress:commons-compress:*:*</include>
@@ -154,28 +151,10 @@
 			<version>mr1-1.0.3</version>
 		</dependency>
 
-		<dependency>
-			<groupId>picard</groupId>
-			<artifactId>picard</artifactId>
-			<version>1.107</version>
-		</dependency>
-
-		<dependency>
-			<groupId>samtools</groupId>
-			<artifactId>samtools</artifactId>
-			<version>1.107</version>
-		</dependency>
-
-		<dependency>
-			<groupId>tribble</groupId>
-			<artifactId>tribble</artifactId>
-			<version>1.107</version>
-		</dependency>
-
-		<dependency>
-			<groupId>variant</groupId>
-			<artifactId>variant</artifactId>
-			<version>1.107</version>
+	<dependency>
+			<groupId>com.github.samtools</groupId>
+			<artifactId>htsjdk</artifactId>
+			<version>2.3.0</version>
 		</dependency>
 
 		<dependency>

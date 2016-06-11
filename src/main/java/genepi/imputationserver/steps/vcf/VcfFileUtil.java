@@ -4,6 +4,7 @@ import genepi.hadoop.command.Command;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
+import htsjdk.variant.vcf.VCFFileReader;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,7 +25,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.broadinstitute.variant.vcf.VCFFileReader;
 
 public class VcfFileUtil {
 

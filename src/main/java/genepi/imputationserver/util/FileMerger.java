@@ -1,6 +1,7 @@
 package genepi.imputationserver.util;
 
 import genepi.io.text.LineReader;
+import htsjdk.samtools.util.BlockCompressedOutputStream;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,8 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.zip.GZIPOutputStream;
-
-import net.sf.samtools.util.BlockCompressedOutputStream;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.hadoop.conf.Configuration;

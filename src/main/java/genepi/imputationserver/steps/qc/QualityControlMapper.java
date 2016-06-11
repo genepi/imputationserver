@@ -12,6 +12,10 @@ import genepi.io.FileUtil;
 import genepi.io.legend.LegendEntry;
 import genepi.io.legend.LegendFileReader;
 import genepi.io.text.LineReader;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFCodec;
+import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeaderVersion;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,10 +23,6 @@ import java.io.IOException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.broadinstitute.variant.variantcontext.VariantContext;
-import org.broadinstitute.variant.vcf.VCFCodec;
-import org.broadinstitute.variant.vcf.VCFFileReader;
-import org.broadinstitute.variant.vcf.VCFHeaderVersion;
 
 public class QualityControlMapper extends
 		Mapper<LongWritable, Text, Text, Text> {

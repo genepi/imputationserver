@@ -9,7 +9,7 @@ import genepi.io.plink.MapFileReader;
 import genepi.io.plink.Snp;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
-import net.sf.samtools.util.BlockCompressedOutputStream;
+import htsjdk.samtools.util.BlockCompressedOutputStream;
 
 import java.io.File;
 import java.io.IOException;

@@ -2,8 +2,7 @@ package genepi.imputationserver.util;
 
 import genepi.imputationserver.steps.qc.QualityControlMapper;
 import genepi.io.legend.LegendEntry;
-
-import org.broadinstitute.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContext;
 
 public class GenomicTools {
 
