@@ -32,7 +32,7 @@ public class QualityControlMapper extends
 	private static final int MIN_SNPS = 3;
 
 	private static final double OVERLAP = 0.5;
-	
+
 	public static String PANEL_ID = "1092";
 
 	private String folder;
@@ -54,13 +54,13 @@ public class QualityControlMapper extends
 	private int lastPos = 0;
 
 	private int phasingWindow;
-	
+
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
 
 		// read parameters
 		ParameterStore parameters = new ParameterStore(context);
-		
+
 		PANEL_ID = parameters.get(QualityControlJob.PANEL_ID);
 		legendPattern = parameters.get(QualityControlJob.LEGEND_PATTERN);
 		population = parameters.get(QualityControlJob.LEGEND_POPULATION);
@@ -175,8 +175,7 @@ public class QualityControlMapper extends
 
 				boolean insideChunk = position >= chunk.getStart()
 						&& position <= chunk.getEnd();
-				
-				
+
 				// filter invalid alleles
 				if (!GenomicTools.isValid(ref) || !GenomicTools.isValid(alt)) {
 					if (insideChunk) {
@@ -197,7 +196,7 @@ public class QualityControlMapper extends
 						duplicates++;
 						logWriter.write("FILTER - Duplicate: " + snp.getID()
 								+ " - pos: " + snp.getStart());
-						//logWriter.write("COPY OF: " + tmp);
+						// logWriter.write("COPY OF: " + tmp);
 						filtered++;
 					}
 
@@ -285,23 +284,20 @@ public class QualityControlMapper extends
 						snp.getStart());
 
 				// not found in legend file, don't write to file (Talked to Chr)
+				// update Jul 8 2016: dont filter and add "allTypedSites" minimac3 option
 				if (refSnp == null) {
 
 					if (insideChunk) {
 
-						overallSnps++;
+						//overallSnps++;
 						notFoundInLegend++;
 
-						int i = 0;
-						for (String sample : snp.getSampleNamesOrderedByName()) {
-							if (snp.getGenotype(sample).isCalled()) {
-								snpsPerSampleCount[i] += 1;
-							}
-							i++;
+						if (position >= start && position <= end) {
+							newFileWriter.write(line);
 						}
 					}
 
-					continue;
+					// continue;
 
 				} else {
 
@@ -340,7 +336,7 @@ public class QualityControlMapper extends
 					else if (GenomicTools.alleleSwitch(snp, refSnp)) {
 
 						if (insideChunk) {
-							
+
 							alleleSwitch++;
 							logWriter.write("INFO - Allele switch: "
 									+ snp.getID() + " - pos: " + snp.getStart()
@@ -356,7 +352,7 @@ public class QualityControlMapper extends
 							legendRef, legendAlt)) {
 
 						if (insideChunk) {
-							
+
 							strandSwitch1++;
 							filtered++;
 							logWriter.write("FILTER - Strand switch: "
@@ -364,7 +360,7 @@ public class QualityControlMapper extends
 									+ " (ref: " + legendRef + "/" + legendAlt
 									+ ", data: " + studyRef + "/" + studyAlt
 									+ ")");
-							
+
 						}
 						continue;
 
@@ -489,7 +485,7 @@ public class QualityControlMapper extends
 		for (int i = 0; i < snpsPerSampleCount.length; i++) {
 			int snps = snpsPerSampleCount[i];
 			double sampleCallRate = snps / (double) overallSnps;
-			
+
 			if (sampleCallRate < CALL_RATE) {
 				lowSampleCallRate = true;
 				chunkWriter.write(chunk.toString()
@@ -506,8 +502,8 @@ public class QualityControlMapper extends
 		double overlap = foundInLegend
 				/ (double) (foundInLegend + notFoundInLegend);
 
-		
-		if (overlap >= OVERLAP && foundInLegend >= MIN_SNPS && !lowSampleCallRate && validSnps >= MIN_SNPS) {
+		if (overlap >= OVERLAP && foundInLegend >= MIN_SNPS
+				&& !lowSampleCallRate && validSnps >= MIN_SNPS) {
 
 			// update chunk
 			chunk.setSnps(overallSnps);
@@ -583,7 +579,7 @@ public class QualityControlMapper extends
 
 		// calculate allele frequency
 		SnpStats output = new SnpStats();
-		
+
 		int position = snp.getStart();
 
 		ChiSquareObject chiObj = GenomicTools

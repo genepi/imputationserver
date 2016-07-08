@@ -484,12 +484,12 @@ public class ImputationPipelineMinimac3 {
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
 					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", output.getChromosome(),
-					"--noPhoneHome", "--format", "GT,DS,GP", "--unphasedOutput");
+					"--noPhoneHome", "--format", "GT,DS,GP", "--unphasedOutput", "--allTypedSites");
 		} else {
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
 					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", output.getChromosome(),
-					"--noPhoneHome", "--format", "GT,DS,GP");
+					"--noPhoneHome", "--format", "GT,DS,GP", "--allTypedSites");
 		}
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
