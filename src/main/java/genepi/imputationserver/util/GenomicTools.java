@@ -323,12 +323,14 @@ public class GenomicTools {
 			return 2535;
 		case "hrc":
 			return 32611;
+		case "hrc.r1.1.2016":
+			return 32470;
 		case "hapmap2":
 			return 1301;
 		case "caapa":
 			return 883;
 		default:
-			return 1092;
+			return 2535;
 		}
 	}
 
