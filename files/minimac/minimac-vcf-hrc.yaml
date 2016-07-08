@@ -1,6 +1,6 @@
 name:  Michigan Imputation Server HRC
 description: <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
-version: (Minimac3 1.0.13 - Cloudgene 1.12.0)
+version: (Minimac3 1.0.13 - Cloudgene 1.13.0)
 website: http://genome.sph.umich.edu/wiki/Minimac
 category: MiniMac
 
@@ -82,12 +82,14 @@ mapred:
        type: hdfs-folder
 
      - id: phasing
-       description: Phasing
+       description: Phasingokay.
        type: list
-       value: shapeit
+       value: eagle
        values:
-         hapiur: HapiUR
-         shapeit: SHAPEIT
+         eagle: Eagle (phased output)
+         hapiur: HapiUR (phased output)
+         shapeit: ShapeIT (unphased output)
+
   
      - id: population
        description: Population
@@ -123,7 +125,7 @@ mapred:
      - id: rounds
        description: Rounds
        type: number
-       value: 5
+       value: 0
        visible: false
        
      - id: window
@@ -135,7 +137,7 @@ mapred:
      - id: chunksize
        description: Chunk size
        type: number
-       value: 10000000
+       value: 20000000
        visible: false
    
      - id: sample-limit

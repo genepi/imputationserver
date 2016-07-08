@@ -24,8 +24,20 @@ panels:
     legendPattern: HRC.r1.chr$chr.legend.gz
     legend: ref-panels-legends/HRC.r1.legends.tgz
 
+  - id: hrc.r1.1.2016
+    pattern: HRC.r1-1.GRCh37.chr$chr.shapeit3.mac5.aa.genotypes.m3vcf.gz
+    hdfs: ref-panels/HRC.r1-1.tgz
+    legendPattern: HRC.r1-1.2016.chr$chr.legend.gz
+    legend: ref-panels-legends/HRC.r1-1.legends.tgz
+
   - id: caapa
     pattern: chr$chr.CAAPA.m3vcf.gz
     hdfs: ref-panels/CAAPA.tar.gz
     legendPattern: CAAPA$chr.legend.gz
     legend: ref-panels-legends/CAAPA.legends.tgz
+
+  - id: hrc-andy
+    pattern: HRC.r1_excluding_inchianti.GRCh37.chr$chr.shapeit3.mac5.genotypes.m3vcf.gz
+    hdfs: ref-panels/HRC-Chianti.tgz
+    legendPattern: HRC.r1.chr$chr.legend.gz
+    legend: ref-panels-legends/HRC.r1.legends.tgz
