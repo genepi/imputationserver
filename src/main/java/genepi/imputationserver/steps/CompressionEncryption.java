@@ -65,7 +65,7 @@ public class CompressionEncryption extends WorkflowStep {
 						+ ".dose.vcf.gz");
 
 				// merge all info files
-				FileMerger.mergeAndGz(doseOutput, folder, true, ".info");
+				FileMerger.mergeAndGz(doseOutput, folder, true, ".info", true);
 
 				List<String> dataFiles = findFiles(folder, ".data.dose.vcf.gz");
 				List<String> headerFiles = findFiles(folder,

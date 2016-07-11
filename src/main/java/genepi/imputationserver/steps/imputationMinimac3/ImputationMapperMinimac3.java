@@ -101,7 +101,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		String vcfCookerCommand = cache.getFile("vcfCooker");
 		String vcf2HapCommand = cache.getFile("vcf2hap");
 		String shapeItCommand = cache.getFile("shapeit");
-		String eagleCommand = cache.getFile("eagle_v2.1");
+		String eagleCommand = cache.getFile("eagle");
 		String tabixCommand = cache.getFile("tabix");
 		String bgzipCommand = cache.getFile("bgzip");
 

@@ -145,7 +145,7 @@ public class FileMerger {
 	}
 
 	public static void mergeAndGz(String local, String hdfs,
-			boolean removeHeader, String ext) throws IOException {
+			boolean removeHeader, String ext, boolean finalNewline) throws IOException {
 
 		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(local));
 
@@ -213,11 +213,14 @@ public class FileMerger {
 						out.write(line.toString().getBytes());
 					}
 				}
-
 				in.close();
 
 			}
-
+			
+			if(finalNewline){
+			out.write('\n');
+			}
+			
 			out.close();
 		}
 
