@@ -116,7 +116,7 @@ public class InputValidation extends WorkflowStep {
 				for (String vcf : FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$")) {
 					HdfsUtil.put(vcf, inputFiles);
 				}
-				context.incCounter("23andme", 1);
+				context.incCounter("23andme-input", 1);
 			} else if (genome.length > 1) {
 				context.endTask(
 						"Please upload your 23andMe data as a single txt or zip file",

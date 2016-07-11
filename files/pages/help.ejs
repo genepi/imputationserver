@@ -196,12 +196,12 @@ The QC report can be displayed and downloaded as well.</p>
 </pre>
 <p><b>Eagle</b></p>
 <pre>
-./eagle_r373 --vcfRef HRC.r1-1.GRCh37.chr20.shapeit3.mac5.aa.genotypes.bcf --vcfTarget chunk_20_0000000001_0020000000.vcf.gz  --./geneticMapFile genetic_map_chr20_combined_b37.txt --outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 --chrom 20
+./eagle --vcfRef HRC.r1-1.GRCh37.chr20.shapeit3.mac5.aa.genotypes.bcf --vcfTarget chunk_20_0000000001_0020000000.vcf.gz  --./geneticMapFile genetic_map_chr20_combined_b37.txt --outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 --chrom 20
 </pre>
 </li>
 
-<li><p>Execute for each chunk minimac in order to impute the phased data (we use a window of 500 Kb)</p>
-<pre>./Minimac3 --refHaps HRC.r1-1.GRCh37.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz --haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000 --window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome --format GT,DS,GP
+<li><p>Execute for each chunk minimac in order to impute the phased data (we use a window of 500 kb)</p>
+<pre>./Minimac3 --refHaps HRC.r1-1.GRCh37.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz --haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000 --window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome --format GT,DS,GP --allTypedSites
 </pre>
 </li>
 

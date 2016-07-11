@@ -8,6 +8,7 @@ import genepi.imputationserver.steps.vcf.MergedVcfFile;
 import genepi.imputationserver.util.FileMerger;
 import genepi.io.FileUtil;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class CompressionEncryption extends WorkflowStep {
 						+ ".dose.vcf.gz");
 
 				// merge all info files
-				FileMerger.mergeAndGz(doseOutput, folder, true, ".info", true);
+				FileMerger.mergeAndGz(doseOutput, folder, true, ".info");
 
 				List<String> dataFiles = findFiles(folder, ".data.dose.vcf.gz");
 				List<String> headerFiles = findFiles(folder,
@@ -83,6 +84,7 @@ public class CompressionEncryption extends WorkflowStep {
 					context.println("Read file " + file);
 					vcfFile.addFile(HdfsUtil.open(file));
 				}
+				
 				vcfFile.close();
 
 				Command tabix = new Command(FileUtil.path(workingDirectory,
@@ -140,6 +142,7 @@ public class CompressionEncryption extends WorkflowStep {
 		String phasing = context.get("phasing");
 		context.submitCounter("refpanel_" + reference);
 		context.submitCounter("phasing_" + phasing);
+		context.submitCounter("23andme-input");
 
 		// send email
 

@@ -3,7 +3,6 @@ package genepi.imputationserver.util;
 import genepi.io.text.LineReader;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -23,19 +22,15 @@ public class FileMerger {
 
 	public static void splitIntoHeaderAndData(String input,
 			OutputStream outHeader, OutputStream outData) throws IOException {
-		boolean firstHeader = true;
 		LineReader reader = new LineReader(input);
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
-				outData.write("\n".getBytes());
 				outData.write(line.getBytes());
+				outData.write("\n".getBytes());
 			} else {
-				if (!firstHeader) {
-					outHeader.write("\n".getBytes());
-				}
-				firstHeader = false;
 				outHeader.write(line.getBytes());
+				outHeader.write("\n".getBytes());
 			}
 		}
 		outData.close();
@@ -145,7 +140,7 @@ public class FileMerger {
 	}
 
 	public static void mergeAndGz(String local, String hdfs,
-			boolean removeHeader, String ext, boolean finalNewline) throws IOException {
+			boolean removeHeader, String ext) throws IOException {
 
 		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(local));
 
@@ -215,10 +210,6 @@ public class FileMerger {
 				}
 				in.close();
 
-			}
-			
-			if(finalNewline){
-			out.write('\n');
 			}
 			
 			out.close();
