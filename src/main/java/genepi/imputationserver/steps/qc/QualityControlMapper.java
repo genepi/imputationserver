@@ -283,7 +283,6 @@ public class QualityControlMapper extends
 				LegendEntry refSnp = getReader(snp.getChr()).findByPosition2(
 						snp.getStart());
 
-				// not found in legend file, don't write to file (Talked to Chr)
 				// update Jul 8 2016: dont filter and add "allTypedSites" minimac3 option
 				if (refSnp == null) {
 
