@@ -134,17 +134,23 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				
 				
 				//shapeit
+				if(map.getMapShapeIT()!=null){
 				job.setMapShapeITHdfs(map.getMapShapeIT());
 				job.setMapShapeITPattern(map.getMapPatternShapeIT());
-
-				//hapiut
+				}
+				
+				//hapiur
+				if(map.getMapHapiUR()!=null){
 				job.setMapHapiURHdfs(map.getMapHapiUR());
 				job.setMapHapiURPattern(map.getMapPatternHapiUR());
+				}
 
 				//eagle
+				if(map.getMapEagle()!=null){
 				job.setMapEagleHdfs(map.getMapEagle());
 				job.setRefEagleHdfs(map.getRefEagle());
 				job.setRefPatternEagle(map.getRefPatternEagle());;
+				}
 				
 				job.setInput(chunkFile);
 				job.setOutput(HdfsUtil.path(output, chr));

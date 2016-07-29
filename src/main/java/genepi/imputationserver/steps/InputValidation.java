@@ -263,19 +263,19 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
-					if (!map.checkHapiUR()) {
-						context.error("Map HapiUR  '" + map.getMapHapiUR()
-								+ "' not found.");
+					if (map.getMapHapiUR()!=null && !map.checkHapiUR()) {
+						context.endTask("Map HapiUR  '" + map.getMapHapiUR()
+								+ "' not found.",WorkflowContext.ERROR);
 						return false;
 					}
 
-					if (!map.checkShapeIT()) {
-						context.error("Map ShapeIT  '" + map.getMapShapeIT()
-								+ "' not found.");
+					if (map.getMapShapeIT()!=null && !map.checkShapeIT()) {
+						context.endTask("Map ShapeIT  '" + map.getMapShapeIT()
+								+ "' not found.",WorkflowContext.ERROR);
 						return false;
 					}
 
-					if (!map.checkEagle()) {
+					if (map.getMapEagle()!=null && !map.checkEagle()) {
 						context.error("Eagle reference files not found.");
 						return false;
 					}

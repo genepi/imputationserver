@@ -46,7 +46,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String WINDOW = "MINIMAC_WINDOW";
 
 	public static final String MINIMAC_BIN = "MINIMAC_BIN";
-	
+
 	public static final String CHROMOSOME = "CHROMOSOME";
 
 	private String refPanelHdfs;
@@ -97,7 +97,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	@Override
 	protected void setupDistributedCache(CacheStore cache) throws IOException {
-
 		// installs and distributed alls binaries
 		String data = "minimac-data-3";
 		distribute(FileUtil.path(folder, "bin"), data, cache);
@@ -109,44 +108,52 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		cache.addArchive(name, refPanelHdfs);
 
 		// add ShapeIT Map File to cache
-		if (HdfsUtil.exists(mapShapeITHDFS)) {
-			name = FileUtil.getFilename(mapShapeITHDFS);
-			cache.addArchive(name, mapShapeITHDFS);
-		} else {
-			throw new IOException("Map " + mapShapeITHDFS + " not found.");
+
+		if (mapShapeITHDFS != null) {
+			if (HdfsUtil.exists(mapShapeITHDFS)) {
+				name = FileUtil.getFilename(mapShapeITHDFS);
+				cache.addArchive(name, mapShapeITHDFS);
+			} else {
+				throw new IOException("Map " + mapShapeITHDFS + " not found.");
+			}
 		}
 
 		// add HapiUR Map File to cache
-		if (HdfsUtil.exists(mapHapiURHDFS)) {
-			name = FileUtil.getFilename(mapHapiURHDFS);
-			cache.addArchive(name, mapHapiURHDFS);
-		} else {
-			throw new IOException("Map " + mapHapiURHDFS + " not found.");
+		if (mapHapiURHDFS != null) {
+			if (HdfsUtil.exists(mapHapiURHDFS)) {
+				name = FileUtil.getFilename(mapHapiURHDFS);
+				cache.addArchive(name, mapHapiURHDFS);
+			} else {
+				throw new IOException("Map " + mapHapiURHDFS + " not found.");
+			}
 		}
 
 		// add Eagle Map File to cache
-		if (HdfsUtil.exists(mapEagleHDFS)) {
-			name = FileUtil.getFilename(mapEagleHDFS);
-			cache.addFile(mapEagleHDFS);
-		} else {
-			throw new IOException("Map " + mapEagleHDFS + " not found.");
+		if (mapEagleHDFS != null) {
+			if (HdfsUtil.exists(mapEagleHDFS)) {
+				name = FileUtil.getFilename(mapEagleHDFS);
+				cache.addFile(mapEagleHDFS);
+			} else {
+				throw new IOException("Map " + mapEagleHDFS + " not found.");
+			}
 		}
 
 		// add Eagle Refpanel File for this chromosome to cache
+		if (refPanelEagleHDFS != null) {
 		if (HdfsUtil.exists(refPanelEagleHDFS)) {
 
 			String chrFilename = refPanelEaglePattern.replaceAll("\\$chr", chr);
 			String refFilePath = HdfsUtil.path(refPanelEagleHDFS, chrFilename);
-
 			if (!HdfsUtil.exists(refFilePath)) {
 				throw new IOException("Eagle Reference Panel " + refFilePath + " not found.");
 			}
 
 			cache.addFile(refFilePath);
-			cache.addFile(refFilePath+".csi");
+			cache.addFile(refFilePath + ".csi");
 
 		} else {
 			throw new IOException("Eagle Reference Panel Folder " + refPanelEagleHDFS + " not found.");
+		}
 		}
 
 	}

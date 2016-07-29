@@ -75,19 +75,32 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String hdfsPathShapeITMap = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_HDFS);
 		String hdfsPathHapiURMap = parameters.get(ImputationJobMinimac3.MAP_HAPIUR_HDFS);
+		String hdfsPathMapEagle = parameters.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
 		String referencePanel = FileUtil.getFilename(hdfsPath);
-		String mapShapeIT = FileUtil.getFilename(hdfsPathShapeITMap);
-		String mapHapiUR = FileUtil.getFilename(hdfsPathHapiURMap);
+
+		String mapShapeIT = "";
+		String mapHapiUR = "";
+		String mapEagle = "";
+
+		if (hdfsPathShapeITMap != null) {
+			mapShapeIT = FileUtil.getFilename(hdfsPathShapeITMap);
+		}
+		if (hdfsPathHapiURMap != null) {
+			mapHapiUR = FileUtil.getFilename(hdfsPathHapiURMap);
+		}
+		if (hdfsPathMapEagle != null) {
+			mapEagle = FileUtil.getFilename(hdfsPathMapEagle);
+		}
+
 		String minimacBin = parameters.get(ImputationJobMinimac3.MINIMAC_BIN);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
 		refFilename = cache.getArchive(referencePanel);
+
 		mapShapeITFilename = cache.getArchive(mapShapeIT);
 		mapHapiURFilename = cache.getArchive(mapHapiUR);
-
-		String hdfsPathMapEagle = parameters.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
-		mapEagleFilename = cache.getFile(FileUtil.getFilename(hdfsPathMapEagle));
+		mapEagleFilename = cache.getFile(mapEagle);
 
 		refEaglePattern = parameters.get(ImputationJobMinimac3.REF_PANEL_EAGLE_PATTERN);
 		String chr = parameters.get(ImputationJobMinimac3.CHROMOSOME);
