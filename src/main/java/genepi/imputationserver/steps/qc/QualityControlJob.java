@@ -26,10 +26,11 @@ public class QualityControlJob extends HadoopJob {
 	public static final String OUTPUT_MANIFEST = "MINIMAC_MANIFEST";
 
 	public static final String OUTPUT_REMOVED_SNPS = "MINIMAC_REMOVED_SNPS";
-	
+
 	public static final String PANEL_ID = "PANEL_ID";
 
 	private String refPanelHdfs;
+	private String qcQueue;
 
 	private long monomorphic;
 	private long alternativeAlleles;
@@ -53,12 +54,14 @@ public class QualityControlJob extends HadoopJob {
 	private long strandSwitch3;
 	private long match;
 
-	public QualityControlJob(String name, Log log) {
+	public QualityControlJob(String name, Log log, String qcQueue) {
 
 		super(name, log);
 		getConfiguration().set("mapred.task.timeout", "360000000");
 		getConfiguration().set("mapred.reduce.tasks", "22");
-		getConfiguration().set("mapred.job.queue.name", "qc");
+		if (qcQueue != null) {
+			getConfiguration().set("mapred.job.queue.name", qcQueue);
+		}
 
 	}
 
@@ -66,12 +69,12 @@ public class QualityControlJob extends HadoopJob {
 	public void setupJob(Job job) {
 
 		NLineInputFormat.setNumLinesPerSplit(job, 1);
-
 		job.setMapperClass(QualityControlMapper.class);
 		job.setMapOutputKeyClass(Text.class);
 		job.setInputFormatClass(NLineInputFormat.class);
 		job.setReducerClass(QualityControlReducer.class);
 		job.setNumReduceTasks(22);
+
 	}
 
 	@Override
@@ -98,25 +101,20 @@ public class QualityControlJob extends HadoopJob {
 			CounterGroup counters = job.getCounters().getGroup("minimac");
 
 			monomorphic = counters.findCounter("monomorphic").getValue();
-			alternativeAlleles = counters.findCounter("alternativeAlleles")
-					.getValue();
+			alternativeAlleles = counters.findCounter("alternativeAlleles").getValue();
 			noSnps = counters.findCounter("noSnps").getValue();
 			duplicates = counters.findCounter("duplicates").getValue();
 			filtered = counters.findCounter("filtered").getValue();
 			foundInLegend = counters.findCounter("foundInLegend").getValue();
-			notFoundInLegend = counters.findCounter("notFoundInLegend")
-					.getValue();
+			notFoundInLegend = counters.findCounter("notFoundInLegend").getValue();
 			alleleMismatch = counters.findCounter("alleleMismatch").getValue();
 			toLessSamples = counters.findCounter("toLessSamples").getValue();
 			filterFlag = counters.findCounter("filterFlag").getValue();
 			invalidAlleles = counters.findCounter("invalidAlleles").getValue();
 			remainingSnps = counters.findCounter("remainingSnps").getValue();
-			removedChunksSnps = counters.findCounter("removedChunksSnps")
-					.getValue();
-			removedChunksOverlap = counters.findCounter("removedChunksOverlap")
-					.getValue();
-			removedChunksCallRate = counters.findCounter(
-					"removedChunksCallRate").getValue();
+			removedChunksSnps = counters.findCounter("removedChunksSnps").getValue();
+			removedChunksOverlap = counters.findCounter("removedChunksOverlap").getValue();
+			removedChunksCallRate = counters.findCounter("removedChunksCallRate").getValue();
 			strandSwitch1 = counters.findCounter("strandSwitch1").getValue();
 			strandSwitch2 = counters.findCounter("strandSwitch2").getValue();
 			strandSwitch3 = counters.findCounter("strandSwitch3").getValue();
@@ -132,7 +130,7 @@ public class QualityControlJob extends HadoopJob {
 	public void setLegendPattern(String refPanelPattern) {
 		set(LEGEND_PATTERN, refPanelPattern);
 	}
-	
+
 	public void setPanelId(String id) {
 		set(PANEL_ID, id);
 	}
@@ -260,6 +258,14 @@ public class QualityControlJob extends HadoopJob {
 
 	public void setStrandSwitch3(long strandSwitch3) {
 		this.strandSwitch3 = strandSwitch3;
+	}
+
+	public String getQcQueue() {
+		return qcQueue;
+	}
+
+	public void setQcQueue(String qcQueue) {
+		this.qcQueue = qcQueue;
 	}
 
 }

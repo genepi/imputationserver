@@ -68,14 +68,9 @@ mapred:
      - id: refpanel
        description: Reference Panel
        type: list
-       value: phase3
+       value: hapmap2
        values:
-         phase1: 1000G Phase 1 v3 Shapeit2 (no singletons)
-         phase3: 1000G Phase 3 v5
          hapmap2: HapMap 2
-         hrc: HRC r1 2015 (deprecated)
-         hrc.r1.1.2016: HRC r1.1 2016
-         caapa: CAAPA - African American Panel
 
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
@@ -87,9 +82,6 @@ mapred:
        value: eagle
        values:
          eagle: Eagle (phased output)
-         hapiur: HapiUR (phased output)
-         shapeit: ShapeIT (unphased output)
-
   
      - id: population
        description: Population

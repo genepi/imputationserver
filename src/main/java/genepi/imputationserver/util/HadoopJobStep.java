@@ -6,7 +6,6 @@ import genepi.hadoop.common.WorkflowStep;
 
 import java.io.IOException;
 
-import cloudgene.mapred.jobs.Message;
 
 public abstract class HadoopJobStep extends WorkflowStep {
 
@@ -19,7 +18,7 @@ public abstract class HadoopJobStep extends WorkflowStep {
 		boolean successful = job.execute();
 
 		if (successful) {
-			context.endTask("Execution successful.", Message.OK);
+			context.endTask("Execution successful.", WorkflowContext.OK);
 			return true;
 		} else {
 
@@ -29,7 +28,7 @@ public abstract class HadoopJobStep extends WorkflowStep {
 			// job.downloadFailedLogs(logs);
 
 			context.endTask("Execution failed. Please have a look at the logfile for details.",
-					Message.ERROR);
+					WorkflowContext.ERROR);
 
 			return false;
 		}

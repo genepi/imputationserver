@@ -1,11 +1,12 @@
 package genepi.imputationserver.steps;
 
-import cloudgene.mapred.jobs.CloudgeneContext;
-import cloudgene.mapred.util.MailUtil;
-import cloudgene.mapred.util.Settings;
+import java.io.File;
+
 import cloudgene.mapred.wdl.WdlStep;
+import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
+import genepi.io.FileUtil;
 
 public class FailureNotification extends WorkflowStep {
 
@@ -16,6 +17,17 @@ public class FailureNotification extends WorkflowStep {
 		Object name = context.getData("cloudgene.user.name");
 		Object stepObject = context.getData("cloudgene.failedStep");
 
+		// read config if mails should be sent
+		String folder = getFolder(FailureNotification.class);
+		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
+
+		String notification = "no";
+		if (store.getString("minimac.sendmail") != null && !store.getString("minimac.sendmail").equals("")) {
+			notification = store.getString("minimac.sendmail");
+		}
+		
+		String errMail = store.getString("minimac.sendmail.error");
+
 		if (stepObject == null) {
 			context.println("No error message sent. Object is empty");
 			return true;
@@ -23,49 +35,49 @@ public class FailureNotification extends WorkflowStep {
 
 		WdlStep step = (WdlStep) stepObject;
 
-		if (mail != null) {
+		if (notification.equals("yes")) {
+			if (mail != null) {
 
-			String subject = "Job " + context.getJobName() + " failed.";
-			String message = "Dear "
-					+ name
-					+ ",\n"
-					+ "unfortunately, your job failed. "
-					+ "\n\nMore details about the error can be found on https://imputationserver.sph.umich.edu/start.html#!jobs/"
-					+ context.getJobName();
+				String subject = "Job " + context.getJobName() + " failed.";
+				String message = "Dear " + name + ",\n" + "unfortunately, your job failed. "
+						+ "\n\nMore details about the error can be found on https://imputationserver.sph.umich.edu/start.html#!jobs/"
+						+ context.getJobName();
 
-			try {
-				context.sendMail(subject, message);
+				try {
+					context.sendMail(subject, message);
 
-				if (!step.getClassname()
-						.equals(InputValidation.class.getName())) {
+					if (!step.getClassname().equals(InputValidation.class.getName())) {
 
-					// send all errors after input validation to us
+						// send all errors after input validation to us
 
-					context.sendMail("sebastian.schoenherr@uibk.ac.at", subject
-							+ " [" + step.getClassname() + "]", message);
+						if (errMail != null) {
+							for (String mailAdress : errMail.split(",")) {
+								context.sendMail(mailAdress, subject + " [" + step.getClassname() + "]", message);
+							}
+						}
+					}
 
-					context.sendMail("lukas.forer@i-med.ac.at", subject + " ["
-							+ step.getClassname() + "]", message);
+					context.ok("We have sent an email to <b>" + mail + "</b> with the error message.");
+					context.println("We have sent an email to <b>" + mail + "</b> with the error message.");
+					return true;
+				} catch (Exception e) {
+					context.error("Sending error message failed: " + e.getMessage());
+					context.println("Sending error message failed: " + e.getMessage());
+					return false;
 				}
 
-				context.ok("We have sent an email to <b>" + mail
-						+ "</b> with the error message.");
-				context.println("We have sent an email to <b>" + mail
-						+ "</b> with the error message.");
-				return true;
-			} catch (Exception e) {
-				context.error("Sending error message failed: " + e.getMessage());
-				context.println("Sending error message failed: "
-						+ e.getMessage());
+			} else {
+				context.error(
+						"Sending error message failed: no mail address found. Please enter your email address (Account -> Profile).");
+				context.println(
+						"Sending error message failed: no mail address found. Please enter your email address (Account -> Profile).");
 				return false;
 			}
 
 		} else {
-			context.error("Sending error message failed: no mail address found. Please enter your email address (Account -> Profile).");
-			context.println("Sending error message failed: no mail address found. Please enter your email address (Account -> Profile).");
+			context.error("No action required. Email notification has been disabled in job.config");
+			context.println("No action required. Email notification has been disabled in job.config");
 			return false;
 		}
-
 	}
-
 }

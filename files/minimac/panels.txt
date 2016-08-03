@@ -1,43 +1,7 @@
 panels:
-
+   
   - id: hapmap2
     pattern: hapmap_r22.chr$chr.CEU.hg19.recode.vcf.gz
-    hdfs: minimac-data/hapmap_r22.CEU.hg19.tgz
+    hdfs: ref-panels/hapmap_r22.CEU.hg19.tgz
     legendPattern: hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
-    legend: minimac-data/hapmap_r22.CEU.hg19.legends.tgz
-
-  - id: phase1
-    pattern: $chr.1000g.Phase1.v3.With.Parameter.Estimates.m3vcf.gz
-    hdfs: ref-panels/G1K_P1_M3VCF_FILES_WITH_ESTIMATES.tar.gz
-    legendPattern: ALL_1000G_phase1integrated_v3_annotated_legends/ALL_1000G_phase1integrated_v3_chr$chr_impute.legend.gz
-    legend: minimac-data/ALL_1000G_phase1integrated_v3_annotated_legends.tgz
-    
-  - id: phase3
-    pattern: $chr.1000g.Phase3.v5.With.Parameter.Estimates.m3vcf.gz
-    hdfs: ref-panels/G1K_P3_M3VCF_FILES_WITH_ESTIMATES.tar.gz
-    legendPattern: ALL_1000G_phase3_integrated_v5_chr$chr.legend.gz
-    legend: minimac-data/legends/ALL_1000G_phase3_integrated_v5.legend.tgz
-    
-  - id: hrc
-    pattern: HRC.r1.20150417.GRCh37.chr$chr.shapeit3.mac5.genotypes.m3vcf.gz
-    hdfs: ref-panels/HRC.r1.tgz
-    legendPattern: HRC.r1.chr$chr.legend.gz
-    legend: ref-panels-legends/HRC.r1.legends.tgz
-
-  - id: hrc.r1.1.2016
-    pattern: HRC.r1-1.GRCh37.chr$chr.shapeit3.mac5.aa.genotypes.m3vcf.gz
-    hdfs: ref-panels/HRC.r1-1.tgz
-    legendPattern: HRC.r1-1.2016.chr$chr.legend.gz
-    legend: ref-panels-legends/HRC.r1-1.legends.tgz
-
-  - id: caapa
-    pattern: chr$chr.CAAPA.m3vcf.gz
-    hdfs: ref-panels/CAAPA.tar.gz
-    legendPattern: CAAPA$chr.legend.gz
-    legend: ref-panels-legends/CAAPA.legends.tgz
-
-  - id: hrc-andy
-    pattern: HRC.r1_excluding_inchianti.GRCh37.chr$chr.shapeit3.mac5.genotypes.m3vcf.gz
-    hdfs: ref-panels/HRC-Chianti.tgz
-    legendPattern: HRC.r1.chr$chr.legend.gz
-    legend: ref-panels-legends/HRC.r1.legends.tgz
+    legend: ref-panels/hapmap_r22.CEU.hg19.legends.tgz

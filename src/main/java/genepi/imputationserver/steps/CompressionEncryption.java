@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.command.Command;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
@@ -8,7 +9,6 @@ import genepi.imputationserver.steps.vcf.MergedVcfFile;
 import genepi.imputationserver.util.FileMerger;
 import genepi.io.FileUtil;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,11 +37,24 @@ public class CompressionEncryption extends WorkflowStep {
 
 		String output = context.get("outputimputation");
 		String localOutput = context.get("local");
-		String encryption = context.get("encryption");
 
-		// create one-time password
-		String password = RandomStringUtils.randomAlphabetic(10);
+		// read config if mails should be sent
+		String folderConfig = getFolder(CompressionEncryption.class);
+		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folderConfig, "job.config")));
 
+		String notification = "no";
+		if (store.getString("minimac.sendmail") != null && !store.getString("minimac.sendmail").equals("")) {
+			notification = store.getString("minimac.sendmail");
+		}
+
+		String password;
+
+		if (notification.equals("yes")) {
+			// create one-time password
+			password = RandomStringUtils.randomAlphanumeric(13);
+		} else {
+			password = "imputation@michigan";
+		}
 		try {
 
 			context.beginTask("Export data...");
@@ -60,17 +73,14 @@ public class CompressionEncryption extends WorkflowStep {
 				FileUtil.createDirectory(temp);
 
 				// output files
-				String doseOutput = FileUtil.path(temp, "chr" + name
-						+ ".info.gz");
-				String vcfOutput = FileUtil.path(temp, "chr" + name
-						+ ".dose.vcf.gz");
+				String doseOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
+				String vcfOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
 
 				// merge all info files
 				FileMerger.mergeAndGz(doseOutput, folder, true, ".info");
 
 				List<String> dataFiles = findFiles(folder, ".data.dose.vcf.gz");
-				List<String> headerFiles = findFiles(folder,
-						".header.dose.vcf.gz");
+				List<String> headerFiles = findFiles(folder, ".header.dose.vcf.gz");
 
 				MergedVcfFile vcfFile = new MergedVcfFile(vcfOutput);
 
@@ -84,26 +94,21 @@ public class CompressionEncryption extends WorkflowStep {
 					context.println("Read file " + file);
 					vcfFile.addFile(HdfsUtil.open(file));
 				}
-				
+
 				vcfFile.close();
 
-				Command tabix = new Command(FileUtil.path(workingDirectory,
-						"bin", "tabix"));
+				Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
 				tabix.setSilent(false);
 				tabix.setParams("-f", vcfOutput);
 				if (tabix.execute() != 0) {
-					context.endTask(
-							"Error during index creation: " + tabix.getStdOut(),
-							Message.ERROR);
+					context.endTask("Error during index creation: " + tabix.getStdOut(), Message.ERROR);
 					return false;
 				}
 
 				ZipParameters param = new ZipParameters();
-				if (encryption.equals("yes")) {
-					param.setEncryptFiles(true);
-					param.setPassword(password);
-					param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
-				}
+				param.setEncryptFiles(true);
+				param.setPassword(password);
+				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
 
 				// create zip file
 				ArrayList<File> files = new ArrayList<File>();
@@ -111,8 +116,7 @@ public class CompressionEncryption extends WorkflowStep {
 				files.add(new File(vcfOutput + ".tbi"));
 				files.add(new File(doseOutput));
 
-				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput,
-						"chr_" + name + ".zip")));
+				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput, "chr_" + name + ".zip")));
 				file.createZipFile(files, param);
 
 				// delete temp dir
@@ -127,8 +131,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			context.endTask("Data compression failed: " + e.getMessage(),
-					Message.ERROR);
+			context.endTask("Data compression failed: " + e.getMessage(), Message.ERROR);
 			return false;
 		}
 
@@ -145,27 +148,21 @@ public class CompressionEncryption extends WorkflowStep {
 		context.submitCounter("23andme-input");
 
 		// send email
-
-		if (encryption.equals("yes")) {
+		if (notification.equals("yes")) {
 
 			Object mail = context.getData("cloudgene.user.mail");
 			Object name = context.getData("cloudgene.user.name");
 
 			if (mail != null) {
 
-				String subject = "Job " + context.getJobName()
-						+ " is complete.";
-				String message = "Dear "
-						+ name
-						+ ",\nthe password for the imputation results is: "
-						+ password
+				String subject = "Job " + context.getJobName() + " is complete.";
+				String message = "Dear " + name + ",\nthe password for the imputation results is: " + password
 						+ "\n\nThe results can be downloaded from https://imputationserver.sph.umich.edu/start.html#!jobs/"
 						+ context.getJobName() + "/results";
 
 				try {
 					context.sendMail(subject, message);
-					context.ok("We have sent an email to <b>" + mail
-							+ "</b> with the password.");
+					context.ok("We have sent an email to <b>" + mail + "</b> with the password.");
 					return true;
 				} catch (Exception e) {
 					context.error("Data compression failed: " + e.getMessage());
@@ -178,14 +175,13 @@ public class CompressionEncryption extends WorkflowStep {
 			}
 
 		} else {
-
+			context.ok("Email notification (and therefore encryption) is disabled. All results are encrypted with password <b>" + password + "</b>");
 			return true;
 		}
 
 	}
 
-	private List<String> findFiles(String folder, String pattern)
-			throws IOException {
+	private List<String> findFiles(String folder, String pattern) throws IOException {
 
 		Configuration conf = new Configuration();
 

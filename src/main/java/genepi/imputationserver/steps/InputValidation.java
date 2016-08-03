@@ -159,19 +159,13 @@ public class InputValidation extends WorkflowStep {
 
 				VcfFile vcfFile = VcfFileUtil.load(filename, chunkSize, true);
 
-				String mail = context.getData("cloudgene.user.mail").toString();
-
 				if (VcfFileUtil.isValidChromosome(vcfFile.getChromosome())) {
 
 					if (VcfFileUtil.isChrX(vcfFile.getChromosome())) {
-						if (!tester.contains(mail.toLowerCase())) {
-
 							context.endTask(
-									"Chromosome X imputation is currently under preperation. Please upload only autosomale chromosomes.",
+									"Chromosome X imputation is currently under preperation. Please upload autosomale chromosomes only.",
 									WorkflowContext.ERROR);
 							return false;
-
-						}
 					}
 
 					validVcfFiles.add(vcfFile);

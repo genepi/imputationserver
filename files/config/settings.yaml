@@ -1,36 +1,21 @@
 !cloudgene.mapred.util.Settings
-name: UM Imputationserver
+name: UM Imputationserver-Docker
 apps:
   - id: minimac
     permission: user
     filename: minimac/minimac-vcf.yaml
-  - id: minimac-admin
-    permission: admin
-    filename: minimac/minimac-vcf-admin.yaml
-  - id: minimac-hrc
-    permission: hrc
-    filename: minimac/minimac-vcf-hrc.yaml
-  - id: minimac-no-limit
-    permission: user-nolimit
-    filename: minimac/minimac-vcf-nolimit.yaml
-  - id: minimac-hrc-no-limit
-    permission: hrc-nolimit
-    filename: minimac/minimac-vcf-hrc-nolimit.yaml
 hadoopPath: /usr
 hdfsWorkspace: cloudgene-workspace
-https: true
-httpsKeystore: /home/hadoop/cert/impute-keystore
-httpsPassword: 1andonly
-localWorkspace: cloudgene-workspace
+https: false
 mail: 
-   port: 25
-   smtp: localhost
-   name: noreply@imputationserver.sph.umich.edu
+   port: 
+   smtp: 
+   name: 
    password: 
    user: 
 maintenance: true
 maxRunningJobs: 10
-maxRunningJobsPerUser: 1
+maxRunningJobsPerUser: 5
 notificationAfter: 7
 removeHdfsWorkspace: true
 retireAfter: 10
