@@ -1,7 +1,7 @@
 
 
 wget cloudgene.uibk.ac.at/downloads/hapmap.tar.gz -O /opt/cloudgene/tmp/hapmap.tar.gz
-cd/opt/cloudgene.tmp; tar xvfz hapmap.tar.gz
+cd/opt/cloudgene/tmp; tar xvfz hapmap.tar.gz
 su - cloudgene
 hadoop fs -mkdir ref-panels
 hadoop fs -mkdir ref-panels/hapmap_r22.eagle
