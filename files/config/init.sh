@@ -15,3 +15,4 @@ rm -rf /opt/cloudgene/tmp/*
 ## Connect Imputation Server with Cloudgene
 sudo cp /opt/cloudgene/applications/imputationserver/files/config/settings.yaml -R /opt/cloudgene/config/settings.yaml
 cp -R /opt/cloudgene/applications/imputationserver/target/minimac-cloud-assembly/minimac /opt/cloudgene/apps/.
+cp -R /opt/cloudgene/applications/imputationserver/target/minimac-cloud-assembly/pages /opt/cloudgene/.
