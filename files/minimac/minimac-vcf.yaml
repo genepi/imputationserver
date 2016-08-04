@@ -112,7 +112,6 @@ mapred:
        value: default
        values:
           default: Default Queue
-          ltq: Longtime Queue
                    
      - id: rounds
        description: Rounds
@@ -135,7 +134,7 @@ mapred:
      - id: sample-limit
        description: Limit
        type: number
-       value: 15000
+       value: 0
        visible: false
        
      - id: encryption

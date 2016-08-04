@@ -2,7 +2,6 @@ package genepi.imputationserver.steps;
 
 import java.io.File;
 
-import cloudgene.mapred.wdl.WdlStep;
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
@@ -15,7 +14,7 @@ public class FailureNotification extends WorkflowStep {
 
 		Object mail = context.getData("cloudgene.user.mail");
 		Object name = context.getData("cloudgene.user.name");
-		Object stepObject = context.getData("cloudgene.failedStep");
+		String step = context.getData("cloudgene.failedStep.classname").toString();
 
 		// read config if mails should be sent
 		String folder = getFolder(FailureNotification.class);
@@ -28,12 +27,10 @@ public class FailureNotification extends WorkflowStep {
 		
 		String errMail = store.getString("minimac.sendmail.error");
 
-		if (stepObject == null) {
+		if (step == null) {
 			context.println("No error message sent. Object is empty");
 			return true;
 		}
-
-		WdlStep step = (WdlStep) stepObject;
 
 		if (notification.equals("yes")) {
 			if (mail != null) {
@@ -46,13 +43,13 @@ public class FailureNotification extends WorkflowStep {
 				try {
 					context.sendMail(subject, message);
 
-					if (!step.getClassname().equals(InputValidation.class.getName())) {
+					if (!step.equals(InputValidation.class.getName())) {
 
 						// send all errors after input validation to us
 
 						if (errMail != null) {
 							for (String mailAdress : errMail.split(",")) {
-								context.sendMail(mailAdress, subject + " [" + step.getClassname() + "]", message);
+								context.sendMail(mailAdress, subject + " [" + step + "]", message);
 							}
 						}
 					}

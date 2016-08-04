@@ -4,6 +4,8 @@ import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
+import genepi.hadoop.importer.IImporter;
+import genepi.hadoop.importer.ImporterFactory;
 import genepi.imputationserver.steps.converter.VCFBuilder;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
@@ -24,9 +26,6 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import com.esotericsoftware.yamlbeans.YamlException;
-
-import cloudgene.mapred.steps.importer.IImporter;
-import cloudgene.mapred.steps.importer.ImporterFactory;
 
 public class InputValidation extends WorkflowStep {
 

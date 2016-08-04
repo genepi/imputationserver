@@ -26,7 +26,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import cloudgene.mapred.jobs.Message;
 
 public class CompressionEncryption extends WorkflowStep {
 
@@ -101,7 +100,7 @@ public class CompressionEncryption extends WorkflowStep {
 				tabix.setSilent(false);
 				tabix.setParams("-f", vcfOutput);
 				if (tabix.execute() != 0) {
-					context.endTask("Error during index creation: " + tabix.getStdOut(), Message.ERROR);
+					context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
 					return false;
 				}
 
@@ -127,11 +126,11 @@ public class CompressionEncryption extends WorkflowStep {
 			// delete temporary files
 			HdfsUtil.delete(output);
 
-			context.endTask("Exported data.", Message.OK);
+			context.endTask("Exported data.", WorkflowContext.OK);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			context.endTask("Data compression failed: " + e.getMessage(), Message.ERROR);
+			context.endTask("Data compression failed: " + e.getMessage(), WorkflowContext.ERROR);
 			return false;
 		}
 

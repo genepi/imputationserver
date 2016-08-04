@@ -16,8 +16,6 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import cloudgene.mapred.jobs.Message;
-
 public class ImputationPipelineMinimac3 {
 
 	private String minimacCommand;
