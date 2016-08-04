@@ -1,6 +1,6 @@
 
 
-wget cloudgene.uibk.ac.at/downloads/hapmap.tar.gz -O /opt/cloudgene/tmp/hapmap.tar.gz
+wget https://imputationserver.sph.umich.edu/static/downloads/hapmap.tar.gz -O /opt/cloudgene/tmp/hapmap.tar.gz
 cd /opt/cloudgene/tmp; tar xvfz hapmap.tar.gz
 su - cloudgene
 hadoop fs -mkdir ref-panels
