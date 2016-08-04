@@ -12,7 +12,7 @@ Please note that currently only the <b>HapMap2 Panel </b> is available within th
 To impute against 1000G or HRC please use the official instance of the <a target="_blank" href="https://imputationserver.sph.umich.edu">Michigan Imputation Server</a>
 
 <hr>
-<h3>0. Requirements</h3>
+<h3>Requirements</h3>
 To run docker images, Docker must be installed on your local computer.
 For Ubuntu Linux:
 <pre> sudo apt-get install docker </pre>
@@ -20,13 +20,16 @@ For Ubuntu Linux:
 <a target="_blank"  href="https://docs.docker.com/engine/installation/">documentation</a> for other systems.
 <p>
 
-<h3>1. Start Michigan Imputation Server</h3>
-<pre>sudo docker run --privileged -it -p 8082:8082 -p 50030:50030 -p 50060:50060 seppinho/cloudgene-docker --repository https://github.com/genepi/imputationserver.git</pre>
+<h3>Get Docker Image </h3>
+<pre>docker pull seppinho/cloudgene-docker</pre>
 
-<h3>2. Connect to Michigan Imputation Server </h3>
+<h3>Start Michigan Imputation Server</h3>
+<pre>sudo docker run --privileged -it -p 8082:8082 seppinho/cloudgene-docker --repository https://github.com/genepi/imputationserver.git</pre>
+
+<h3>Connect to Michigan Imputation Server</h3>
 <pre> http://localhost:8082 or http://your-ip-address:8082</pre>
 
-<h3>3. Contact </h3>
+<h3>Contact </h3>
 Feel free to contact <a href="mailto:sebastian.schoenherr@i-med.ac.at">Sebastian Schoenherr</a>  or <a href="mailto:lukas.forer@i-med.ac.at">Lukas Forer</a> in case of any problems.
 
 
