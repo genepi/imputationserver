@@ -17,3 +17,4 @@ removeHdfsWorkspace: true
 retireAfter: 10
 streaming: false
 streamingJar: /usr/contrib/streaming/hadoop-streaming-2.5.0-cdh5.3.1.jar
+secretKey: docker-default-key
