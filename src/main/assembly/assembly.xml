@@ -31,7 +31,7 @@
 	<files>
 		<file>
 			<outputDirectory>/</outputDirectory>
-			<source>${project.build.directory}/${project.artifactId}-${project.version}.jar</source>
+			<source>${project.build.directory}/${project.artifactId}.jar</source>
 			<destName>minimac/${project.artifactId}.jar</destName>
 		</file>
 	</files>
