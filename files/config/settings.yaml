@@ -1,9 +1,5 @@
 !cloudgene.mapred.util.Settings
 name: UM Imputationserver-Docker
-apps:
-  - id: minimac
-    permission: user
-    filename: minimac/minimac-vcf.yaml
 hadoopPath: /usr
 hdfsWorkspace: cloudgene-workspace
 https: false
