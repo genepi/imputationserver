@@ -1,9 +1,2 @@
-0.6.1
-- updating cloudgene (genepi-io 1.0.1)
-- update minimac to 2.0.1
-- updating eagle to 2.1
-- updating HRC reference panel (new recombination rate)
-- allowing 5 jobs per user
-- fixing CAAPA bug
-- adding new line to infos
-- adding password and username security
+1.0.0
+- initial public release
