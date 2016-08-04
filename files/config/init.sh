@@ -9,6 +9,8 @@ sudo -u cloudgene hadoop fs -put /opt/cloudgene/tmp/panel/hapmap_r22.CEU.hg19.tg
 sudo -u cloudgene hadoop fs -put /opt/cloudgene/tmp/panel/hapmap_r22.CEU.hg19.legends.tgz  ref-panels/.
 sudo -u cloudgene hadoop fs -put /opt/cloudgene/tmp/map/genetic_map_hg19_withX.txt.gz  ref-panels/.
 
+# Delete local files
+rm -rf /opt/cloudgene/tmp/*
 
 ## Connect Imputation Server with Cloudgene
 sudo cp /opt/cloudgene/applications/imputationserver/files/config/settings.yaml -R /opt/cloudgene/config/settings.yaml
