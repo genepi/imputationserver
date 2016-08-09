@@ -8,6 +8,3 @@ sudo -u $1  hadoop fs -put /opt/cloudgene/tmp/bcfs/*.bcf* ref-panels/hapmap_r22.
 sudo -u $1  hadoop fs -put /opt/cloudgene/tmp/panel/hapmap_r22.CEU.hg19.tgz  ref-panels/.
 sudo -u $1  hadoop fs -put /opt/cloudgene/tmp/panel/hapmap_r22.CEU.hg19.legends.tgz  ref-panels/.
 sudo -u $1  hadoop fs -put /opt/cloudgene/tmp/map/genetic_map_hg19_withX.txt.gz  ref-panels/.
-
-# Delete local files
-rm -rf /opt/cloudgene/tmp/*
