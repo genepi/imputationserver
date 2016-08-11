@@ -125,14 +125,16 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		FileUtil.createDirectory(folder);
 
 		// create symbolic link --> index file is in the same folder as data
-		Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf")), Paths.get(refEagleFilename));
-		Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf.csi")), Paths.get(indexFilename));
-		// update reference path to symbolic link
-		refEagleFilename = FileUtil.path(folder, "ref_" + chr + ".bcf");
+		
+		if (!chr.startsWith("X")) {
+			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf")),
+					Paths.get(refEagleFilename));
+			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf.csi")),
+					Paths.get(indexFilename));
+			// update reference path to symbolic link
+			refEagleFilename = FileUtil.path(folder, "ref_" + chr + ".bcf");
+		}
 
-		// load config
-		// int minimacWindow =
-		// Integer.parseInt(store.getString("minimac.window"));
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
 		// config pipeline

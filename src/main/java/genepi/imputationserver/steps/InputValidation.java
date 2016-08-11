@@ -72,6 +72,9 @@ public class InputValidation extends WorkflowStep {
 		VcfFileUtil.setBinaries(FileUtil.path(folder, "bin"));
 
 		String files = FileUtil.path(context.getLocalTemp(), "input");
+		
+		PreferenceStore store = new PreferenceStore(new File(
+				FileUtil.path(folder, "job.config")));
 
 		// exports files from hdfs
 		try {
@@ -102,8 +105,6 @@ public class InputValidation extends WorkflowStep {
 			if (genome.length == 1) {
 				context.updateTask("Check for valid 23andMe data",
 						WorkflowContext.RUNNING);
-				PreferenceStore store = new PreferenceStore(new File(
-						FileUtil.path(folder, "job.config")));
 				VCFBuilder builder = new VCFBuilder(genome[0]);
 
 				builder.setReference(store.getString("ref.fasta"));
@@ -157,14 +158,34 @@ public class InputValidation extends WorkflowStep {
 			try {
 
 				VcfFile vcfFile = VcfFileUtil.load(filename, chunkSize, true);
+				
+				String mail = null;
+				
+				if(store.getString("minimac.sendmail") != null && store.getString("minimac.sendmail").equals("yes")){
+				mail = context.getData("cloudgene.user.mail").toString();
+				}
 
 				if (VcfFileUtil.isValidChromosome(vcfFile.getChromosome())) {
 
 					if (VcfFileUtil.isChrX(vcfFile.getChromosome())) {
+						
+						if (mail != null && !tester.contains(mail.toLowerCase())) {
+
 							context.endTask(
-									"Chromosome X imputation is currently under preperation. Please upload autosomale chromosomes only.",
+									"Chromosome X imputation is currently under preperation. Please contact us to become a beta tester.",
 									WorkflowContext.ERROR);
 							return false;
+
+						}
+						
+						if(!phasing.equals("shapeit") && !vcfFile.isPhased()){
+							context.endTask(
+									"Please select shapeit for phasing chromosome X",
+									WorkflowContext.ERROR);
+							return false;
+						}
+						
+						
 					}
 
 					validVcfFiles.add(vcfFile);
@@ -292,6 +313,7 @@ public class InputValidation extends WorkflowStep {
 
 						return false;
 					}
+					
 
 					if ((panel.getId().equals("hapmap2") && !population
 							.equals("eur"))) {

@@ -140,20 +140,21 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 		// add Eagle Refpanel File for this chromosome to cache
 		if (refPanelEagleHDFS != null) {
-		if (HdfsUtil.exists(refPanelEagleHDFS)) {
+			if (HdfsUtil.exists(refPanelEagleHDFS)) {
+				if (!chr.contains("X")) {
+					String chrFilename = refPanelEaglePattern.replaceAll("\\$chr", chr);
+					String refFilePath = HdfsUtil.path(refPanelEagleHDFS, chrFilename);
+					if (!HdfsUtil.exists(refFilePath)) {
+						throw new IOException("Eagle Reference Panel " + refFilePath + " not found.");
+					}
 
-			String chrFilename = refPanelEaglePattern.replaceAll("\\$chr", chr);
-			String refFilePath = HdfsUtil.path(refPanelEagleHDFS, chrFilename);
-			if (!HdfsUtil.exists(refFilePath)) {
-				throw new IOException("Eagle Reference Panel " + refFilePath + " not found.");
+					cache.addFile(refFilePath);
+					cache.addFile(refFilePath + ".csi");
+
+				}
+			} else {
+				throw new IOException("Eagle Reference Panel Folder " + refPanelEagleHDFS + " not found.");
 			}
-
-			cache.addFile(refFilePath);
-			cache.addFile(refFilePath + ".csi");
-
-		} else {
-			throw new IOException("Eagle Reference Panel Folder " + refPanelEagleHDFS + " not found.");
-		}
 		}
 
 	}

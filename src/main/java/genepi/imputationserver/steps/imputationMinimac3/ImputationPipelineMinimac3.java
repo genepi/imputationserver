@@ -55,11 +55,11 @@ public class ImputationPipelineMinimac3 {
 
 		String chrFilename = "";
 
-		if (chunk.getChromosome().contains("X.no.auto")) {
+		if (chunk.getChromosome().startsWith("X.no.auto")) {
 
 			chrFilename = pattern.replaceAll("\\$chr", "X.Non.Pseudo.Auto");
 
-		} else if (chunk.getChromosome().contains("X.auto")) {
+		} else if (chunk.getChromosome().equals("X.auto")) {
 
 			chrFilename = pattern.replaceAll("\\$chr", "X.Pseudo.Auto");
 
@@ -76,14 +76,14 @@ public class ImputationPipelineMinimac3 {
 
 		setReferencePanel(refPanelFilename);
 
+		//impute only for phased chromosomes and chr X male samples
 		if (chunk.isPhased() || chunk.getChromosome().equals("X.no.auto_male")) {
 
 			if (chunk.getChromosome().equals("X.no.auto_male")) {
-				// writeMaleFam(output);
-				replaceMale(output.getVcfFilename());
+				//replaceMale(output.getVcfFilename());
 			}
 
-			// replace X.nonpar / X.par with X
+			// replace X.nonpar / X.par with X needed by minimac3
 			if (chunk.getChromosome().contains("X")) {
 				chunk.setChromosome("X");
 				output.setChromosome("X");
@@ -554,39 +554,6 @@ public class ImputationPipelineMinimac3 {
 			}
 			reader.close();
 			writer.close();
-			FileUtil.deleteFile(filename);
-			FileUtil.copy(tempFilename, filename);
-			FileUtil.deleteFile(tempFilename);
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
-	public boolean replaceMale(String filename) {
-
-		try {
-			String tempFilename = filename + "_temp";
-			LineReader reader = new LineReader(filename);
-			LineWriter writer = new LineWriter(tempFilename);
-			while (reader.next()) {
-
-				String line = reader.get();
-				if (line.startsWith("#")) {
-					writer.write(line);
-				} else {
-					String tiles[] = line.split("\t", 10);
-					tiles[9] = tiles[9].replaceAll("0\\/0", "0").replaceAll("1\\/1", "1");
-					StringBuffer result = new StringBuffer();
-					for (int i = 0; i < tiles.length; i++) {
-						result.append(tiles[i] + "\t");
-					}
-					writer.write(result.toString());
-				}
-			}
-			reader.close();
-			writer.close();
-			FileUtil.deleteFile(filename);
 			FileUtil.copy(tempFilename, filename);
 			FileUtil.deleteFile(tempFilename);
 			return true;
