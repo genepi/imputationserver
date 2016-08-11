@@ -248,14 +248,14 @@ public class InputValidation extends WorkflowStep {
 					}
 
 					if (!panel.existsReference()) {
-						context.error("Reference File '" + panel.getHdfs()
-								+ "' not found.");
+						context.endTask("Reference File '" + panel.getHdfs()
+								+ "' not found.",WorkflowContext.ERROR);
 						return false;
 					}
 
 					if (!panel.existsLegend()) {
-						context.error("Reference File '" + panel.getLegend()
-								+ "' not found.");
+						context.endTask("Reference File '" + panel.getLegend()
+								+ "' not found.",WorkflowContext.ERROR);
 						return false;
 					}
 
