@@ -1,5 +1,5 @@
 !cloudgene.mapred.util.Settings
-name: UM Imputationserver-Docker
+name: Michigan Imputation Server - Public
 hadoopPath: /usr
 hdfsWorkspace: cloudgene-workspace
 https: false
@@ -9,12 +9,12 @@ mail:
    name: 
    password: 
    user: 
-maintenance: true
+maintenance: false
 maxRunningJobs: 10
 maxRunningJobsPerUser: 5
 notificationAfter: 7
 removeHdfsWorkspace: true
 retireAfter: 10
 streaming: false
-streamingJar: /usr/contrib/streaming/hadoop-streaming-2.5.0-cdh5.3.1.jar
-secretKey: docker-default-key
+streamingJar: /usr/contrib/streaming/hadoop-streaming-2.6.0-cdh5.7.1.jar
+secretKey: a-default-key
