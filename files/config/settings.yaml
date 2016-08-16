@@ -1,24 +1,10 @@
 !cloudgene.mapred.util.Settings
 name: Michigan Imputation Server - Public
 apps:
-  - id: minimac
+  - id: imputationserver
     permission: user
     filename: applications/minimac/minimac-vcf.yaml
 hadoopPath: /usr
-hdfsWorkspace: cloudgene-workspace
-https: false
-mail: 
-   port: 
-   smtp: 
-   name: 
-   password: 
-   user: 
-maintenance: false
-maxRunningJobs: 10
-maxRunningJobsPerUser: 5
-notificationAfter: 7
 removeHdfsWorkspace: true
-retireAfter: 10
 streaming: false
-streamingJar: /usr/contrib/streaming/hadoop-streaming-2.6.0-cdh5.7.1.jar
 secretKey: a-default-key
