@@ -3,6 +3,10 @@ name: Michigan Imputation Server - Public
 hadoopPath: /usr
 hdfsWorkspace: cloudgene-workspace
 https: false
+apps:
+  - id: minimac
+    permission: user
+    filename: apps/minimac/minimac-vcf.yaml
 mail: 
    port: 
    smtp: 
