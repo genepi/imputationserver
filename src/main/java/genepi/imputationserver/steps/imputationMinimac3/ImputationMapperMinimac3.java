@@ -127,7 +127,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		FileUtil.createDirectory(folder);
 
 		// create symbolic link --> index file is in the same folder as data
-		
+
 		if (!chr.startsWith("X")) {
 			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf")),
 					Paths.get(refEagleFilename));
@@ -137,11 +137,11 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			refEagleFilename = FileUtil.path(folder, "ref_" + chr + ".bcf");
 		}
 
-		//read debugging flag
+		// read debugging flag
 		String debuggingString = store.getString("debugging");
-		if (debuggingString == null || debuggingString.equals("false")){
+		if (debuggingString == null || debuggingString.equals("false")) {
 			debugging = true;
-		}else{
+		} else {
 			debugging = false;
 		}
 
@@ -171,23 +171,23 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		// delete temp directory
 		log.close();
 		FileUtil.deleteDirectory(folder);
-		System.out.println("Delete temp folder.")
+		System.out.println("Delete temp folder.");
 	}
 
 	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
-		try{
+		try {
 
 			if (value.toString() == null || value.toString().isEmpty()) {
 				return;
 			}
-	
+
 			VcfChunk chunk = new VcfChunk(value.toString());
-	
+
 			VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
-	
+
 			HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
-	
+
 			pipeline.setRefFilename(refFilename);
 			pipeline.setPattern(pattern);
 			pipeline.setMapShapeITPattern(mapShapeITPattern);
@@ -199,7 +199,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			pipeline.setRefEaglePattern(refEaglePattern);
 			pipeline.setPhasing(phasing);
 			pipeline.setPopulation(population);
-	
+
 			boolean succesful = pipeline.execute(chunk, outputChunk);
 			if (succesful) {
 				log.info("Imputation for chunk " + chunk + " successful.");
@@ -207,31 +207,31 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 				log.stop("Imputation failed!", "");
 				return;
 			}
-	
+
 			// fix window bug in minimac
 			int snpInfo = pipeline.fixInfoFile(chunk, outputChunk);
 			log.info("  " + chunk.toString() + " Snps in info chunk: " + snpInfo);
-	
+
 			// store info file
 			HdfsUtil.put(outputChunk.getInfoFixedFilename(), HdfsUtil.path(output, chunk + ".info"));
-	
+
 			long start = System.currentTimeMillis();
-	
+
 			// store vcf file (remove header)
 			BgzipSplitOutputStream outData = new BgzipSplitOutputStream(
 					HdfsUtil.create(HdfsUtil.path(output, chunk + ".data.dose.vcf.gz")));
-	
+
 			BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 					HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
-	
+
 			FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData);
 			long end = System.currentTimeMillis();
-	
+
 			System.out.println("Time filter and put: " + (end - start) + " ms");
-			
+
 		} catch (Exception e) {
-			if (!debugging){
-				System.out.println("Mapper Task failed.")
+			if (!debugging) {
+				System.out.println("Mapper Task failed.");
 				cleanup(context);
 			}
 			throw e;
