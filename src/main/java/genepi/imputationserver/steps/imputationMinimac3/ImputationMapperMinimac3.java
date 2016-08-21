@@ -228,12 +228,13 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			long end = System.currentTimeMillis();
 	
 			System.out.println("Time filter and put: " + (end - start) + " ms");
+			
 		} catch (Exception e) {
 			if (!debugging){
 				System.out.println("Mapper Task failed.")
 				cleanup(context);
-				throw e;
 			}
+			throw e;
 		}
 	}
 }
