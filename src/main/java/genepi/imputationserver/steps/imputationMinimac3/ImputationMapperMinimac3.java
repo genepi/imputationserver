@@ -140,9 +140,9 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		// read debugging flag
 		String debuggingString = store.getString("debugging");
 		if (debuggingString == null || debuggingString.equals("false")) {
-			debugging = true;
-		} else {
 			debugging = false;
+		} else {
+			debugging = true;
 		}
 
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
