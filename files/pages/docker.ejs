@@ -24,7 +24,7 @@ For Ubuntu Linux:
 <hr>
 
 <h3>Run Michigan Imputation Server on Docker</h3>
-The server can be started with two simple commands. The setup takes about 5 minutes, since everything is compiled from scratch. 
+The server can be started with two simple commands. 
 
 <h4>Setup</h4>
 <pre>docker pull seppinho/cloudgene-docker
@@ -33,6 +33,9 @@ sudo docker run --privileged -it -p 8082:8082 seppinho/cloudgene-docker --reposi
 <h4>Connect</h4>
 <pre> http://localhost:8082 or http://your-ip-address:8082</pre>
 <b>Credentials</b>: admin / admin1978
+
+<h3>Download sample data</h3>
+A sample file (chromosome 1) including ~23k SNPs (simluated HapMap300 chip) can be found  <a target="_blank" href="https://imputationserver.sph.umich.edu/static/downloads/hapmap300.chr1.recode.vcf.gz">here</a>.
 <hr>
 
 <h3>Optional: Checkout source first</h3>
