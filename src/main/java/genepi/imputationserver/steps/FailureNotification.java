@@ -25,6 +25,11 @@ public class FailureNotification extends WorkflowStep {
 			notification = store.getString("minimac.sendmail");
 		}
 		
+		String serverUrl = "https://imputationserver.sph.umich.edu";
+		if (store.getString("server.url") != null && !store.getString("server.url").isEmpty()) {
+			serverUrl = store.getString("server.url");
+		}
+		
 		String errMail = store.getString("minimac.sendmail.error");
 
 		if (step == null) {
@@ -37,7 +42,7 @@ public class FailureNotification extends WorkflowStep {
 
 				String subject = "Job " + context.getJobName() + " failed.";
 				String message = "Dear " + name + ",\n" + "unfortunately, your job failed. "
-						+ "\n\nMore details about the error can be found on https://imputationserver.sph.umich.edu/start.html#!jobs/"
+						+ "\n\nMore details about the error can be found on " + serverUrl + "/start.html#!jobs/"
 						+ context.getJobName();
 
 				try {
