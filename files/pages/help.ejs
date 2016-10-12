@@ -13,8 +13,7 @@ For all uploaded data sets an extensive QC is performed.</p>
 <li><a href="#3">Registration and Login</a></li>
 <li><a href="#4">Upload your data</a></li>
 <li><a href="#5">Start the Imputation</a></li>
-<li><a href="#6">Pipeline Details</a></li>
-<li><a href="#7">Contact</a></li>
+<li><a href="#6">Contact</a></li>
 
 </ol>
 
@@ -25,7 +24,7 @@ For all uploaded data sets an extensive QC is performed.</p>
 <li> To convert your ped/map file into a VCF file, please use either <a target="_blank" href="https://www.cog-genomics.org/plink2/">plink2</a>, <a target="_blank" href="http://vcftools.sourceforge.net/man_latest.html">VCFtools</a> or <a target="_blank"  href="http://genome.sph.umich.edu/wiki/VcfCooker">VcfCooker</a>.<br>
 <pre>plink --ped mystudy_chr1.ped --map mystudy_chr1.map --recode vcf --out mystudy_chr1</pre>
 </li>
-<li> <p>Create a sorted *.vcf.gz file using <a target="_blank" href="http://vcftools.sourceforge.net">VCFtools</a> and <a href="http://sourceforge.net/projects/samtools/files/tabix/"> <a target="_blank" href="http://sourceforge.net/projects/samtools/files/tabix/"> tabix (including bgzip)</a>:</p> 
+<li> <p>Create a sorted *.vcf.gz file using <a target="_blank" href="http://vcftools.sourceforge.net">VCFtools</a> and <a href="http://sourceforge.net/projects/samtools/files/tabix/"> <a target="_blank" href="http://sourceforge.net/projects/samtools/files/tabix/"> tabix (including bgzip)</a>:</p>
 
 <pre>vcf-sort mystudy_chr1.vcf | bgzip -c > mystudy_chr1.vcf.gz</pre>
 </li>
@@ -45,7 +44,7 @@ For all uploaded data sets an extensive QC is performed.</p>
 <li> To avoid long lasting uploads via the browser, files can be imported using the provided sftp upload.</li>
 <li> Use <a href="https://github.com/zhanxw/checkVCF">checkVCF</a> to ensure that the VCF files are valid. checkVCF proposes "Action Items" (e.g. upload to sftp server), which can be ignored. Only the validity should be checked with this command. </li>
 <pre>checkVCF.py -r human_g1k_v37.fasta -o out mystudy_chr1.vcf.gz
-</pre> 
+</pre>
 
 </ul>
 
@@ -59,7 +58,7 @@ For all uploaded data sets an extensive QC is performed.</p>
 <a id="2"><hr></a>
 <h3>1. Data sensitivity</h3>
 
-<p> Since data is transfered to our server located in Michigan, a wide array of security measures are in force: 
+<p> Since data is transfered to our server located in Michigan, a wide array of security measures are in force:
 <ul>
 <li> The complete interaction with the server is secured with HTTPS.</li>
 <li> Input data is deleted from our servers as soon it is not needed anymore.</li>
@@ -79,7 +78,7 @@ encrypted connection to get results back.</li>
 <h3>2. Registration and Login</h3>
 
 <p> To use Michigan Imputation Server, a registration is required. After the email address has been verified (by an activation link), the service can be used without any costs.</p>
-<img src="/static/images/help/impute1.PNG"  class="img-rounded" width="900px"> 
+<img src="/static/images/help/impute1.PNG"  class="img-rounded" width="900px">
 
 <a id="4"><hr></a>
 <h3>3. Upload your data</h3>
@@ -94,8 +93,8 @@ When using the file upload, data is imported from the local file system to the I
 <img src="/static/images/help/impute4_selectFiles.PNG" class="img-rounded" width="900px">
 
 <h4>3.2 sftp Upload</h4>
-A convenient way to upload data is by specifying a remote SSH server location. This can be achieved by selecting "Secure File Transfer Protocol" and using the "add files" button.  
-A URL consists of the server address followed by the full Unix path. Several paths can be specified in consecutive lines. 
+A convenient way to upload data is by specifying a remote SSH server location. This can be achieved by selecting "Secure File Transfer Protocol" and using the "add files" button.
+A URL consists of the server address followed by the full Unix path. Several paths can be specified in consecutive lines.
 <pre>URLs: sftp://192.168.71.201/home/my_user/vcfDir/</pre>
 In this example, the server address is "sftp://192.168.71.201" followed by the full path "/home/my_user/vcfDir/". No colon is included between server path and file path.
 
@@ -104,7 +103,7 @@ The following three screenshots show the process in detail:
 
 <img src="/static/images/help/impute4_sftp_1.PNG" class="img-rounded" width="900px">
 <img src="/static/images/help/impute4_sftp_2.PNG" class="img-rounded" width="900px">
-<img src="/static/images/help/impute4_sftp_3.PNG" class="img-rounded" width="900px"> 
+<img src="/static/images/help/impute4_sftp_3.PNG" class="img-rounded" width="900px">
 
 <a id="5"><hr></a>
 <h3>4. Start the Imputation!</h3>
@@ -115,7 +114,7 @@ The following three screenshots show the process in detail:
 	<li>Reference panel: 1000 Genomes Phase1</li>
 	<li>Phasing: <a target="_blank" href="http://www.shapeit.fr">ShapeIT</a>. This can be toggled to <a target="_blank"  href="https://code.google.com/p/hapi-ur/">HAPI-UR</a>.</li>
 	<li>Population for the allele frequency check: EUR</li>
-	
+
 </ul>
 
 In the background several steps are executed:
@@ -135,89 +134,18 @@ In the background several steps are executed:
 <hr>
 
 <h3>5. Download results</h3>
-<p> The user is notified by an email, as soon as the imputation job has finished. A zip archive including the results can be downloaded directly from the server. To decrypt the results, a one-time password is generated by the server and included in the email. The data is deleted automatically after 7 days. 
+<p> The user is notified by an email, as soon as the imputation job has finished. A zip archive including the results can be downloaded directly from the server. To decrypt the results, a one-time password is generated by the server and included in the email. The data is deleted automatically after 7 days.
 The QC report can be displayed and downloaded as well.</p>
-<img src="/static/images/help/impute_exec5.PNG" class="img-rounded" width="900px"> </p> 
+<img src="/static/images/help/impute_exec5.PNG" class="img-rounded" width="900px"> </p>
 
 <a id="6"><hr></a>
-<h3>6. Pipeline Details</h3>
-
-<p>Our pipeline performs the following steps:</p>
-
-<ol>
-
-<li>Create chunks with a size of 20 Mb</li>
-
-<li><p>For each 20Mb chunk we perform the following checks:</p>
-
-<p><b>On Chunk level:</b></p>
-
-<ul>
-<li>Determine amount of valid variants: A variant is valid iff it is included in the reference panel. At least 3 variants must be included.</li>
-<li>Determine amount of variants found in the reference panel: At least 50 % of the variants must be be included in the reference panel.</li>
-<li>Determine sample call rate: At least 50 % of the variants must be called for each sample.</li>
-
-</ul>
-<br>
-<p>Chunk exclusion:  if (#variants < 3 || #foundVariants < 50% || sampleCallRate < 50%)</p>
-
-<p><b>On Variant level:</b></p>
-
-<ul>
-<li>Check alleles: Only A,C,G,T are allowed</li>
-<li>Calculate alternative allele frequency (AF): Mark all with a AF > 0.5.</li>
-<li>Calculate SNP call rate</li>
-<li>Calculate chi square for each variant (reference panel vs. study data)</li>
-<li>Determine allele switches: Compare ref and alt of reference panel with study data (A/T and C/G variants are ignored).</li>
-<li>Determine strand flips: After eliminating possible allele switches, flip and compare ref/alt from reference panel with study data.</li>
-<li>Determine allele switches in combination with strand flips: Combine the two rules from above.</li>
-</ul>
-<br>
-<p>Variant exclusion: Variants are excluded in case of: [a] invalid alleles occur (!(A,C,G,T)), [b] duplicates (DUP filter or (pos - 1 == pos)), [c] indels, [d] monomorphic sites, [e] allele mismatch between reference panel and study, [g] SNP call rate < 90%.</p>
-<p><b>On Sample level:</b></p>
-
-<ul>
-<li>For chrX, check if sex can be determined. Exclude sample otherwise.</li>
-<li>For chr1-22, a chunk is excluded if one sample has a call rate < 50 %. Only complete chunks are excluded, not samples (see "On Chunk level" above)</li>
-</ul></li>
-
-<li><p>Execute for each chunk one of the following phasing algorithms (we use an overlap of 5 Mb). For example, chr20:1-20000000 and reference population EUR:</p>
-
-<p><b>ShapeIt</b></p>
-<pre>
-./vcfCooker --in-vcf chunk_20_0000000001_0020000000.vcf --write-bed --out chunk_20_0000000001_0020000000
-./shapeit --input-bed chunk_20_0000000001_0020000000.bed chunk_20_0000000001_0020000000.bim chunk_20_0000000001_0020000000.fam --input-map genetic_map_b37.tar.gz/genetic_map_chr20_combined_b37.txt --output-max chunk_20_0000000001_0020000000.phased --input-from 1 --input-to 25000000 --effective-size 11418
-</pre>
-<p><b>HapiUR</b></p>
-<pre>
-./vcfCooker --in-vcf chunk_20_0000000001_0020000000.vcf --write-bed --out chunk_20_0000000001_0020000000
-./insert-map.pl chunk_20_0000000001_0020000000.bim genetic_map_chr20_combined_hapiur_b37.txt
-./hapi-ur -g chunk_20_0000000001_0020000000.bed -s chunk_20_0000000001_0020000000.map.bim -i chunk_20_0000000001_0020000000.fam -w 73 -o chunk_20_0000000001_0020000000 -c 20 --start 1 --end 25000000 --impute2
-</pre>
-<p><b>Eagle</b></p>
-<pre>
-./eagle --vcfRef HRC.r1-1.GRCh37.chr20.shapeit3.mac5.aa.genotypes.bcf --vcfTarget chunk_20_0000000001_0020000000.vcf.gz  --geneticMapFile genetic_map_chr20_combined_b37.txt --outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 --chrom 20 --allowRefAltSwap
-</pre>
-</li>
-
-<li><p>Execute for each chunk minimac in order to impute the phased data (we use a window of 500 Kb)</p>
-<pre>./Minimac3 --refHaps HRC.r1-1.GRCh37.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz --haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000 --window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome --format GT,DS,GP --allTypedSites
-</pre>
-</li>
-
-<li>Merge all chunks of one chromosome into one single vcf </li>
-<li>Create tabix index and encrypt data with one-time password</li>
-</ol>
-
-
-<a id="7"><hr></a>
-<h3>7. Contact </h3>
+<h3>6. Contact </h3>
 Feel free to contact <a href="mailto:cfuchsb@umich.edu">Christian Fuchsberger</a> in case of any problems.
 
 <hr>
 
 <br><br>
 
-</div> 
+</div>
 
 <div>
