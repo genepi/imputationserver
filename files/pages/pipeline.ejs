@@ -14,12 +14,11 @@
     <br>
     <table class="table table-bordered">
       <tr class="info">
-        <td colspan="2">
+        <td colspan="1">
           <b>Step 2: For each 20Mb chunk we perform the following quality checks:</b>
         </td>
       </tr>
       <tr>
-        <td width="20px"></td>
         <td>
           <p><b>On Chunk level:</b></p>
 
@@ -35,7 +34,6 @@
         </td>
       </tr>
       <tr>
-        <td width="20px"></td>
         <td>
           <p><b>On Variant level:</b></p>
 
@@ -55,7 +53,6 @@
         </td>
       </tr>
       <tr>
-        <td width="20px"></td>
         <td>
           <p><b>On Sample level:</b></p>
 
@@ -70,11 +67,10 @@
     <br>
     <table class="table table-bordered">
       <tr class="info">
-        <td colspan="2">
+        <td colspan="1">
           <b>Step 3: Execute for each chunk one of the following phasing algorithms (we use an overlap of 5 Mb).</b> </td>
       </tr>
       <tr>
-        <td width="20px"></td>
         <td>
 
           <p>For example, chr20:1-20000000 and reference population EUR:</p>
@@ -93,12 +89,11 @@
     <br>
     <table class="table table-bordered">
       <tr class="info">
-        <td colspan="2">
+        <td colspan="1">
           <b>Step 4: Execute for each chunk minimac in order to impute the phased data (we use a window of 500 Kb)</b>
         </td>
       </tr>
       <tr>
-        <td width="20px"></td>
         <td>
           <pre>./Minimac3 --refHaps HRC.r1-1.GRCh37.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz --haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000 --window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome --format GT,DS,GP --allTypedSites</pre>
         </td>
