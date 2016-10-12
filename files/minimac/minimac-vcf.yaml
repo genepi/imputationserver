@@ -1,6 +1,6 @@
 name:  Michigan Imputation Server
-description: <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a> is a low memory, computationally efficient implementation of the MaCH algorithm for genotype imputation. It is designed to work on phased genotypes and can handle very large reference panels with hundreds or thousands of haplotypes.
-version: v0.6.1
+description: Michigan Imputation Server provides a free genotype imputation service using <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a>. You can upload phased or unphased GWAS genotypes and receive phased and imputed genomes in return. For all uploaded data sets an extensive QC is performed.
+version: v1.0.0
 website: http://genome.sph.umich.edu/wiki/Minimac
 category: MiniMac
 
@@ -66,14 +66,14 @@ mapred:
   inputs:
 
      - id: refpanel
-       description: Reference Panel
+       description: Reference Panel (<a href="https://imputationserver.sph.umich.edu/start.html#!pages/refpanels" target="_blank">Details</a>)
        type: list
        value: hapmap2
        values:
          hapmap2: HapMap 2
 
      - id: files
-       description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF only</a>)
+       description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF</a> & <a href="https://github.com/genepi/23andme-tools" target="_blank">23andMe</a>)
        type: hdfs-folder
 
      - id: phasing
@@ -81,7 +81,10 @@ mapred:
        type: list
        value: eagle
        values:
-         eagle: Eagle (phased output)
+         eagle: Eagle v2.3 (phased output)
+         hapiur: HapiUR (phased output)
+         shapeit: ShapeIT v2.r790 (unphased)
+
   
      - id: population
        description: Population
@@ -112,6 +115,7 @@ mapred:
        value: default
        values:
           default: Default Queue
+          ltq: Longtime Queue
                    
      - id: rounds
        description: Rounds
