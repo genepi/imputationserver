@@ -46,6 +46,12 @@ public class CompressionEncryption extends WorkflowStep {
 			notification = store.getString("minimac.sendmail");
 		}
 
+		String serverUrl = "https://imputationserver.sph.umich.edu";
+		if (store.getString("server.url") != null && !store.getString("server.url").isEmpty()) {
+			serverUrl = store.getString("server.url");
+		}
+
+
 		String password;
 
 		if (notification.equals("yes")) {
@@ -156,7 +162,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				String subject = "Job " + context.getJobName() + " is complete.";
 				String message = "Dear " + name + ",\nthe password for the imputation results is: " + password
-						+ "\n\nThe results can be downloaded from https://imputationserver.sph.umich.edu/start.html#!jobs/"
+						+ "\n\nThe results can be downloaded from " + serverUrl + "/start.html#!jobs/"
 						+ context.getJobName() + "/results";
 
 				try {
