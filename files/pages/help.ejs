@@ -88,18 +88,18 @@ encrypted connection to get results back.</li>
 <img src="/static/images/help/impute2.PNG"  class="img-rounded" width="900px">
 
 <h4>3.1 File Upload</h4>
-When using the file upload, data is imported from the local file system to the Imputation Server. One (minimac_test.chr01.vcf.gz) or several files (minimac_test.chr01.vcf.gz - minimac_test.chr02.vcf.gz) can be imported at once.
+<p>When using the file upload, data is imported from the local file system to the Imputation Server. One (minimac_test.chr01.vcf.gz) or several files (minimac_test.chr01.vcf.gz - minimac_test.chr02.vcf.gz) can be imported at once.</p>
 <img src="/static/images/help/impute3.PNG"  class="img-rounded" width="900px">
 <img src="/static/images/help/impute4_selectFiles.PNG" class="img-rounded" width="900px">
 
 <h4>3.2 sftp Upload</h4>
-A convenient way to upload data is by specifying a remote SSH server location. This can be achieved by selecting "Secure File Transfer Protocol" and using the "add files" button.
-A URL consists of the server address followed by the full Unix path. Several paths can be specified in consecutive lines.
+<p>A convenient way to upload data is by specifying a remote SSH server location. This can be achieved by selecting "Secure File Transfer Protocol" and using the "add files" button.
+A URL consists of the server address followed by the full Unix path. Several paths can be specified in consecutive lines.</p>
 <pre>URLs: sftp://192.168.71.201/home/my_user/vcfDir/</pre>
-In this example, the server address is "sftp://192.168.71.201" followed by the full path "/home/my_user/vcfDir/". No colon is included between server path and file path.
+<p>In this example, the server address is "sftp://192.168.71.201" followed by the full path "/home/my_user/vcfDir/". No colon is included between server path and file path.</p>
 
 
-The following three screenshots show the process in detail:
+<p>The following three screenshots show the process in detail:</p>
 
 <img src="/static/images/help/impute4_sftp_1.PNG" class="img-rounded" width="900px">
 <img src="/static/images/help/impute4_sftp_2.PNG" class="img-rounded" width="900px">
@@ -111,13 +111,13 @@ The following three screenshots show the process in detail:
 <p> After specifying the data location, the imputation process can be started immediately. The default values are:
 
 <ul>
-	<li>Reference panel: 1000 Genomes Phase1</li>
-	<li>Phasing: <a target="_blank" href="http://www.shapeit.fr">ShapeIT</a>. This can be toggled to <a target="_blank"  href="https://code.google.com/p/hapi-ur/">HAPI-UR</a>.</li>
-	<li>Population for the allele frequency check: EUR</li>
+	<li><b>Reference panel: HRC</b>. All available reference panels can be found <a href="#!pages/refpanels">here</a>.</li>
+	<li><b>Phasing: <a href="https://data.broadinstitute.org/alkesgroup/Eagle">Eagle</a></b>. This can be toggled to <a target="_blank" href="http://www.shapeit.fr">ShapeIT</a> or <a target="_blank"  href="https://code.google.com/p/hapi-ur/">HAPI-UR</a>.</li>
+	<li><b>Population: EUR</b>. The selected population is used for the allele frequency check in quality control. We compare the frequencies of your uploaded data with the reference panel.</li>
 
 </ul>
 
-In the background several steps are executed:
+<p>In the background several steps are executed:</p>
 
 <ul>
 	<li><b>VCF check:</b> validity + statistics such as #samples, chromosomes, SNPs, chunks, phased / unphased, reference build.</li>
