@@ -59,7 +59,7 @@ public class InputValidation extends WorkflowStep {
 
 	private boolean checkVcfFiles(WorkflowContext context) {
 		String folder = getFolder(InputValidation.class);
-		String tester;
+		//String tester;
 		// inputs
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
@@ -78,8 +78,8 @@ public class InputValidation extends WorkflowStep {
 
 		// exports files from hdfs
 		try {
-			tester = loadChrXTesterFromFile(FileUtil.path(folder,
-					"chrX-tester.txt"));
+			//tester = loadChrXTesterFromFile(FileUtil.path(folder,
+			//		"chrX-tester.txt"));
 			HdfsUtil.getFolder(inputFiles, files);
 
 		} catch (Exception e) {
