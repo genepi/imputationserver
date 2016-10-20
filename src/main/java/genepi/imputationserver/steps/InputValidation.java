@@ -169,18 +169,18 @@ public class InputValidation extends WorkflowStep {
 
 					if (VcfFileUtil.isChrX(vcfFile.getChromosome())) {
 						
-						if (mail != null && !tester.contains(mail.toLowerCase())) {
+						/*if (mail != null && !tester.contains(mail.toLowerCase())) {
 
 							context.endTask(
 									"Chromosome X imputation is currently under preperation. Please contact us to become a beta tester.",
 									WorkflowContext.ERROR);
 							return false;
 
-						}
+						}*/
 						
 						if(!phasing.equals("shapeit") && !vcfFile.isPhased()){
 							context.endTask(
-									"Please select shapeit for phasing chromosome X",
+									"Please select shapeit for phasing chromosome X. Eagle2 is under prepartion.",
 									WorkflowContext.ERROR);
 							return false;
 						}
