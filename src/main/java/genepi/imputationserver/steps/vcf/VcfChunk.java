@@ -12,6 +12,8 @@ public class VcfChunk {
 
 	private boolean phased = true;
 	
+	private int pos;
+	
 	private int start;
 
 	private int end;
@@ -121,6 +123,14 @@ public class VcfChunk {
 		return "chunk_" + chromosome + "_" + nf.format(start) + "_"
 				+ nf.format(end);
 
+	}
+
+	public int getPos() {
+		return pos;
+	}
+
+	public void setPos(int pos) {
+		this.pos = pos;
 	}
 
 }
