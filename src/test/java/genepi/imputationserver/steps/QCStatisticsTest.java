@@ -2,6 +2,9 @@ package genepi.imputationserver.steps;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.util.WorkflowTestContext;
 import junit.framework.TestCase;
@@ -78,8 +81,7 @@ public class QCStatisticsTest extends TestCase {
 
 	protected WorkflowTestContext buildContext(String folder, String refpanel) {
 		WorkflowTestContext context = new WorkflowTestContext();
-
-			File file = new File("testdata/tmp");
+			File file = new File("test-data/tmp");
 			file.mkdirs();
 			context.setVerbose(VERBOSE);
 			context.setInput("files", folder);
@@ -91,10 +93,8 @@ public class QCStatisticsTest extends TestCase {
 			context.setOutput("excludeLog", file.getAbsolutePath());
 			context.setOutput("statistics", file.getAbsolutePath());
 			context.setOutput("chunks", file.getAbsolutePath());
-			file.deleteOnExit();
 		
 		return context;
-
 
 	}
 
