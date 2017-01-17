@@ -20,6 +20,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.jar.Attributes;
@@ -118,6 +121,9 @@ public class InputValidation extends WorkflowStep {
 					WorkflowContext.ERROR);
 			return false;
 		}
+		
+		//sort by filename
+		Arrays.sort(vcfFiles);
 
 		String infos = null;
 
@@ -202,24 +208,22 @@ public class InputValidation extends WorkflowStep {
 						context.error(report.toString());
 						return false;
 					}
+					
+					/*
 
+					//TODO: minimac step 
 					if (!panel.existsReference()) {
 						context.endTask("Reference File '" + panel.getHdfs() + "' not found.", WorkflowContext.ERROR);
 						return false;
 					}
 
+					//TODO: qc step
 					if (!panel.existsLegend()) {
 						context.endTask("Reference File '" + panel.getLegend() + "' not found.", WorkflowContext.ERROR);
 						return false;
 					}
 
-					if ((panel.getId().equals("hrc") && !population.equals("eur"))) {
-
-						context.endTask("Please select the EUR population for the HRC panel", WorkflowContext.ERROR);
-
-						return false;
-					}
-
+*/
 					// load maps
 
 					MapList maps = null;
@@ -231,12 +235,13 @@ public class InputValidation extends WorkflowStep {
 					}
 
 					// check map; hapmap2 map for all files used!
-					GeneticMap map = maps.getById("hapmap2");
+					GeneticMap map = maps.getById(reference);
 					if (map == null) {
 						context.error("genetic map file not found.");
 						return false;
 					}
-
+/*
+ * 					//TODO: minimac step 
 					if (map.getMapHapiUR() != null && !map.checkHapiUR()) {
 						context.endTask("Map HapiUR  '" + map.getMapHapiUR() + "' not found.", WorkflowContext.ERROR);
 						return false;
@@ -252,14 +257,23 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
-					if ((panel.getId().equals("caapa") && !population.equals("AA"))) {
+*/
+
+					if ((reference.equals("hrc") && !population.equals("eur"))) {
+
+						context.endTask("Please select the EUR population for the HRC panel", WorkflowContext.ERROR);
+
+						return false;
+					}
+					
+					if ((reference.equals("caapa") && !population.equals("AA"))) {
 
 						context.endTask("Please select the AA population for the CAAPA panel", WorkflowContext.ERROR);
 
 						return false;
 					}
 
-					if ((panel.getId().equals("hapmap2") && !population.equals("eur"))) {
+					if ((reference.equals("hapmap2") && !population.equals("eur"))) {
 
 						context.endTask("Please select the EUR population for the HapMap reference panel",
 								WorkflowContext.ERROR);
@@ -267,8 +281,8 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
-					if ((panel.getId().equals("phase1") && population.equals("sas"))
-							|| (panel.getId().equals("phase1") && population.equals("eas"))) {
+					if ((reference.equals("phase1") && population.equals("sas"))
+							|| (reference.equals("phase1") && population.equals("eas"))) {
 
 						context.endTask("The selected population (SAS, EAS) is not allowed for this panel",
 								WorkflowContext.ERROR);
@@ -276,7 +290,7 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
-					if ((panel.getId().equals("phase3") && population.equals("asn"))) {
+					if ((reference.equals("phase3") && population.equals("asn"))) {
 
 						context.endTask(
 								"The selected population (ASN) is not allowed for the 1000G Phase3 reference panel",
@@ -303,7 +317,7 @@ public class InputValidation extends WorkflowStep {
 
 					infos = "Samples: " + noSamples + "\n" + "Chromosomes:" + chromosomeString + "\n" + "SNPs: "
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
-							+ (phased ? "phased" : "unphased") + "\n" + "Reference Panel: " + panel.getId() + "\n"
+							+ (phased ? "phased" : "unphased") + "\n" + "Reference Panel: " + reference + "\n"
 							+ "Phasing: " + phasing;
 
 				} else {
