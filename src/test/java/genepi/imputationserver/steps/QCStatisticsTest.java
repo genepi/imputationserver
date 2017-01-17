@@ -90,6 +90,7 @@ public class QCStatisticsTest extends TestCase {
 			context.setInput("chunksize", "10000000");
 			context.setInput("phasingsize", "5000000");
 			context.setOutput("outputmaf", file.getAbsolutePath() + "/test.txt");
+			context.setOutput("mafchunkfile", file.getAbsolutePath());
 			context.setOutput("excludeLog", file.getAbsolutePath());
 			context.setOutput("statistics", file.getAbsolutePath());
 			context.setOutput("chunks", file.getAbsolutePath());
