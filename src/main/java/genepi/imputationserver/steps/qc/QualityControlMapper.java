@@ -275,7 +275,7 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 						continue;
 					}
 
-					LegendEntry refSnp = getReader(snp.getChr()).findByPosition2(snp.getStart());
+					LegendEntry refSnp = getReader(snp.getContig()).findByPosition2(snp.getStart());
 
 					// update Jul 8 2016: dont filter and add "allTypedSites"
 					// minimac3 option
@@ -556,7 +556,7 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 
 		output.setType("SNP");
 		output.setPosition(position);
-		output.setChromosome(snp.getChr());
+		output.setChromosome(snp.getContig());
 		output.setRefFrequencyA(refSnp.getFrequencyA());
 		output.setRefFrequencyB(refSnp.getFrequencyB());
 		output.setFrequencyA((float) chiObj.getP());
