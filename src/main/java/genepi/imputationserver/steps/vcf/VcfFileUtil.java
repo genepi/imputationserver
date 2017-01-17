@@ -4,6 +4,11 @@ import genepi.hadoop.command.Command;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
+import htsjdk.tribble.index.IndexFactory;
+import htsjdk.tribble.index.tabix.TabixFormat;
+import htsjdk.tribble.index.tabix.TabixIndex;
+import htsjdk.tribble.util.LittleEndianOutputStream;
+import htsjdk.variant.vcf.VCFCodec;
 import htsjdk.variant.vcf.VCFFileReader;
 
 import java.io.File;
@@ -148,23 +153,24 @@ public class VcfFileUtil {
 
 			}
 			lineReader.close();
-			reader.close();
 
 			String tabixPath = FileUtil.path(BINARIES, "tabix");
 
 			// create index
-			if (new File(tabixPath).exists() && createIndex) {
+			if (createIndex) {
 
-				Command tabix = new Command(tabixPath);
-				tabix.setParams("-f", "-p", "vcf", vcfFilename);
-				tabix.saveStdErr("tabix.output");
-				int returnCode = tabix.execute();
-
-				if (returnCode != 0) {
+				
+				try{
+		        final VCFFileReader readerVcfGz = new VCFFileReader(new File(vcfFilename), false);
+		        final TabixIndex tabixIndexVcfGz =
+		                IndexFactory.createTabixIndex(new File(vcfFilename), new VCFCodec(), TabixFormat.VCF,
+		                        readerVcfGz.getFileHeader().getSequenceDictionary());
+		        tabixIndexVcfGz.write(new File(vcfFilename+".tbi"));
+				}catch (Exception e) {
 					throw new IOException(
 							"The provided VCF file is malformed. Error during index creation: "
-									+ FileUtil.readFileAsString("tabix.output"));
-				}
+									+ e.getMessage());
+				}									
 
 			}
 
