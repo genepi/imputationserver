@@ -1,6 +1,9 @@
 package genepi.imputationserver.util;
 
+import java.io.IOException;
+
 import genepi.imputationserver.steps.qc.QualityControlMapper;
+import genepi.imputationserver.steps.qc.SnpStats;
 import genepi.io.legend.LegendEntry;
 import htsjdk.variant.variantcontext.VariantContext;
 
@@ -355,6 +358,45 @@ public class GenomicTools {
 
 		return studyRef != referenceRef || studyAlt != referenceAlt;
 
+	}
+	
+	public static SnpStats calculateAlleleFreq(VariantContext snp, LegendEntry refSnp, boolean strandSwap)
+			throws IOException, InterruptedException {
+
+		// calculate allele frequency
+		SnpStats output = new SnpStats();
+
+		int position = snp.getStart();
+
+		ChiSquareObject chiObj = GenomicTools.chiSquare(snp, refSnp, strandSwap);
+
+		char majorAllele;
+		char minorAllele;
+
+		if (!strandSwap) {
+			majorAllele = snp.getReference().getBaseString().charAt(0);
+			minorAllele = snp.getAltAlleleWithHighestAlleleCount().getBaseString().charAt(0);
+
+		} else {
+			majorAllele = snp.getAltAlleleWithHighestAlleleCount().getBaseString().charAt(0);
+			minorAllele = snp.getReference().getBaseString().charAt(0);
+		}
+
+		output.setType("SNP");
+		output.setPosition(position);
+		output.setChromosome(snp.getContig());
+		output.setRefFrequencyA(refSnp.getFrequencyA());
+		output.setRefFrequencyB(refSnp.getFrequencyB());
+		output.setFrequencyA((float) chiObj.getP());
+		output.setFrequencyB((float) chiObj.getQ());
+		output.setChisq(chiObj.getChisq());
+		output.setAlleleA(majorAllele);
+		output.setAlleleB(minorAllele);
+		output.setRefAlleleA(refSnp.getAlleleA());
+		output.setRefAlleleB(refSnp.getAlleleB());
+		output.setOverlapWithReference(true);
+
+		return output;
 	}
 
 }
