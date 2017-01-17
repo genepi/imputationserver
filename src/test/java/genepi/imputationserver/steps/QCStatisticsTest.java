@@ -24,13 +24,13 @@ public class QCStatisticsTest extends TestCase {
 		// run and test
 		boolean result = run(context, qcStats);
 		
-		assertTrue(result);
+		assertFalse(result);
 
 		// check statistics
-		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 76"));
-		assertTrue(context.hasInMemory("Excluded sites in total: 116"));
-		assertTrue(context.hasInMemory("Remaining sites in total: 7"));
-		assertTrue(context.hasInMemory("Monomorphic sites: 115"));
+		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 185"));
+		assertTrue(context.hasInMemory("Excluded sites in total: 336"));
+		assertTrue(context.hasInMemory("Remaining sites in total: 96"));
+		assertTrue(context.hasInMemory("Monomorphic sites: 331"));
 
 	}
 
@@ -50,7 +50,6 @@ public class QCStatisticsTest extends TestCase {
 
 		assertFalse(result);
 		// check statistics
-		assertTrue(context.hasInMemory("1 Chunks excluded: reference overlap < 50%"));
 		assertTrue(context.hasInMemory("No chunks passed the QC step"));
 
 	}
