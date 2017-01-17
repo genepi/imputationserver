@@ -36,10 +36,10 @@ public class QCStatistics {
 	String input;
 	String legendFile;
 
-	String outputMaf = "tmp/test.maf";
+	String outputMaf = "tmp/maf.txt";
 	String chunkfile = "tmp";
 	String excludeLog = "tmp";
-	String chunks;
+	String chunks = "tmp";
 
 	LegendFileReader legendReader;
 	LineWriter logWriter;
@@ -84,7 +84,7 @@ public class QCStatistics {
 	int removedChunksOverlap = 0;
 	int removedChunksCallRate = 0;
 
-	boolean start() throws IOException, InterruptedException {
+	public boolean start() throws IOException, InterruptedException {
 
 		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
 		
@@ -98,7 +98,7 @@ public class QCStatistics {
 		chunkLogWriter = new LineWriter(FileUtil.path(excludeLog, "chunks-excluded.txt"));
 
 		for (String vcfFilename : vcfFilenames) {
-
+			
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 			
 			// chunkfile manifest
@@ -530,9 +530,6 @@ public class QCStatistics {
 		foundInLegendChunk = 0;
 		notFoundInLegendChunk = 0;
 		validSnpsChunk = 0;
-		removedChunksSnps = 0;
-		removedChunksOverlap = 0;
-		removedChunksCallRate = 0;
 		snpsPerSampleCount = null;
 	}
 	

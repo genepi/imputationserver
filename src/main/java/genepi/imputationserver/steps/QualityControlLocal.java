@@ -1,20 +1,21 @@
-package genepi.imputationserver.steps.qc;
+package genepi.imputationserver.steps;
 
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.steps.qc.QCStatistics;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 import java.io.File;
 import java.text.DecimalFormat;
 
-public class QCStep extends WorkflowStep {
+public class QualityControlLocal extends WorkflowStep {
 
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		String folder = getFolder(QCStep.class);
+		String folder = getFolder(QualityControlLocal.class);
 
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
@@ -63,7 +64,7 @@ public class QCStep extends WorkflowStep {
 		qcStats.setPhasingWindow(phasingWindow);
 		qcStats.setPopulation(population);
 		qcStats.setLegendFile(panel.getLegend());
-
+		
 		context.beginTask("Calculating QC Statistics...");
 
 		boolean successful;
