@@ -122,7 +122,6 @@ public class InputValidation extends WorkflowStep {
 			return false;
 		}
 		
-		//sort by filename
 		Arrays.sort(vcfFiles);
 
 		String infos = null;
