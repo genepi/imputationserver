@@ -1,9 +1,14 @@
 package genepi.imputationserver.steps;
 
+import java.io.File;
 import java.io.IOException;
 
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.util.WorkflowTestContext;
+import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.tribble.util.TabixUtils;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFFileReader;
 import junit.framework.TestCase;
 
 public class InputValidationTest extends TestCase {
@@ -21,7 +26,7 @@ public class InputValidationTest extends TestCase {
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
 
-		//run and test
+		// run and test
 		boolean result = run(context, inputValidation);
 
 		// check if step is failed
@@ -31,7 +36,7 @@ public class InputValidationTest extends TestCase {
 		assertTrue(context.hasInMemory("[ERROR] Reference 'missing-reference-panel' not found."));
 
 	}
-	
+
 	public void testWithInnsufficientSamples() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -43,7 +48,7 @@ public class InputValidationTest extends TestCase {
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
 
-		//run and test
+		// run and test
 		boolean result = run(context, inputValidation);
 
 		// check if step is failed
@@ -60,7 +65,7 @@ public class InputValidationTest extends TestCase {
 	public void testWrongFiles() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
-		//input folder contains no vcf or vcf.gz files
+		// input folder contains no vcf or vcf.gz files
 		String inputFolder = "test-data/data/wrong_files";
 
 		// create workflow context
@@ -69,7 +74,7 @@ public class InputValidationTest extends TestCase {
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
 
-		//run and test
+		// run and test
 		boolean result = run(context, inputValidation);
 
 		// check if step is failed
@@ -79,11 +84,11 @@ public class InputValidationTest extends TestCase {
 		assertTrue(context.hasInMemory("[ERROR] The provided files are not VCF files"));
 
 	}
-	
+
 	public void testWrongVcfFile() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
-		//input folder contains no vcf or vcf.gz files
+		// input folder contains no vcf or vcf.gz files
 		String inputFolder = "test-data/data/wrong_vcf";
 
 		// create workflow context
@@ -92,7 +97,7 @@ public class InputValidationTest extends TestCase {
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
 
-		//run and test
+		// run and test
 		boolean result = run(context, inputValidation);
 
 		// check if step is failed
@@ -102,11 +107,11 @@ public class InputValidationTest extends TestCase {
 		assertTrue(context.hasInMemory("[ERROR] Unable to parse header with error"));
 
 	}
-	
+
 	public void testUnorderedVcfFile() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
-		//input folder contains no vcf or vcf.gz files
+		// input folder contains no vcf or vcf.gz files
 		String inputFolder = "test-data/data/unorderd";
 
 		// create workflow context
@@ -115,7 +120,7 @@ public class InputValidationTest extends TestCase {
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
 
-		//run and test
+		// run and test
 		boolean result = run(context, inputValidation);
 
 		// check if step is failed
@@ -126,9 +131,7 @@ public class InputValidationTest extends TestCase {
 		assertTrue(context.hasInMemory(" Error during index creation"));
 
 	}
-	
-	
-	
+
 	public void testWrongChromosomes() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -140,7 +143,7 @@ public class InputValidationTest extends TestCase {
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
 
-		//run and test
+		// run and test
 		boolean result = run(context, inputValidation);
 
 		// check if step is failed
@@ -153,7 +156,7 @@ public class InputValidationTest extends TestCase {
 		assertTrue(context.hasInMemory("[ERROR] The provided VCF file contains more than one chromosome."));
 
 	}
-	
+
 	public void testSingleUnphasedVcfWithEagle() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -165,9 +168,8 @@ public class InputValidationTest extends TestCase {
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
 
-		//run and test
+		// run and test
 		boolean result = run(context, inputValidation);
-
 
 		// check if step is failed
 		assertEquals(true, result);
@@ -186,7 +188,7 @@ public class InputValidationTest extends TestCase {
 		assertTrue(context.hasInMemory("Phasing: eagle"));
 
 	}
-	
+
 	public void testThreeUnphasedVcfWithEagle() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -197,9 +199,8 @@ public class InputValidationTest extends TestCase {
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
 
-		//run and test
+		// run and test
 		boolean result = run(context, inputValidation);
-
 
 		// check if step is failed
 		assertEquals(true, result);
@@ -221,6 +222,82 @@ public class InputValidationTest extends TestCase {
 
 	}
 
+	public void testTabixIndexCreationChr20() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		// input folder contains no vcf or vcf.gz files
+		String inputFolder = "test-data/data/chr20";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(true, result);
+		assertTrue(context.hasInMemory("[OK] 1 valid VCF file(s) found."));
+
+		
+		// test tabix index and count snps
+		String vcfFilename = inputFolder + "/chr20.R50.merged.1.330k.recode.unphased.vcf.gz";
+		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFilename),
+				new File(vcfFilename + TabixUtils.STANDARD_INDEX_EXTENSION), true);
+		CloseableIterator<VariantContext> snps = vcfReader.query("20", 1, 1000000000);
+		int count = 0;
+		while (snps.hasNext()) {
+			snps.next();
+			count++;
+		}
+		snps.close();
+		vcfReader.close();
+		
+		//check snps
+		assertEquals(7824, count);
+
+	}
+	
+	public void testTabixIndexCreationChr1() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		// input folder contains no vcf or vcf.gz files
+		String inputFolder = "test-data/data/single";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(true, result);
+		assertTrue(context.hasInMemory("[OK] 1 valid VCF file(s) found."));
+
+		
+		// test tabix index and count snps
+		String vcfFilename = inputFolder + "/minimac_test.50.vcf.gz";
+		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFilename),
+				new File(vcfFilename + TabixUtils.STANDARD_INDEX_EXTENSION), true);
+		CloseableIterator<VariantContext> snps = vcfReader.query("1", 1, 1000000000);
+		int count = 0;
+		while (snps.hasNext()) {
+			snps.next();
+			count++;
+		}
+		snps.close();
+		vcfReader.close();
+		
+		//check snps
+		assertEquals(905, count);
+
+	}
+
 	class InputValidationMock extends InputValidation {
 
 		private String folder;
@@ -238,7 +315,6 @@ public class InputValidationTest extends TestCase {
 
 	}
 
-	
 	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
 		step.setup(context);
 		return step.run(context);
