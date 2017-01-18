@@ -10,6 +10,8 @@ public class WorkflowTestContext extends WorkflowContext {
 
 	private String jobId = "test-job-" + System.currentTimeMillis();
 
+	private String hdfsTemp;
+	
 	private Map<String, String> inputs;
 
 	private Map<String, String> outputs;
@@ -150,15 +152,17 @@ public class WorkflowTestContext extends WorkflowContext {
 		return jobId;
 	}
 
+	public void setHdfsTemp(String hdfsTemp) {
+		this.hdfsTemp = hdfsTemp;
+	}
+	
 	@Override
 	public String getHdfsTemp() {
-		// TODO Auto-generated method stub
-		return null;
+		return hdfsTemp;
 	}
 
 	@Override
 	public String getLocalTemp() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -202,7 +206,7 @@ public class WorkflowTestContext extends WorkflowContext {
 
 	private void printAndKeep(String text) {
 		if (verbose) {
-			System.out.println(text);
+			System.out.println(text.replaceAll("<br>", "\n"));
 		}
 		memory.append(text + "\n");
 	}
