@@ -2,7 +2,6 @@ package genepi.imputationserver.steps.qc;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import genepi.imputationserver.steps.vcf.VcfChunk;
@@ -41,7 +40,6 @@ public class QCStatistics {
 	String excludeLog = "tmp";
 	String chunks = "tmp";
 
-	LegendFileReader legendReader;
 	LineWriter logWriter;
 	LineWriter chunkLogWriter;
 	LineWriter chunkfileWriter;
@@ -98,8 +96,11 @@ public class QCStatistics {
 		
 		// excluded chunks
 		chunkLogWriter = new LineWriter(FileUtil.path(excludeLog, "chunks-excluded.txt"));
+		
 
 		for (String vcfFilename : vcfFilenames) {
+			
+			System.out.println(vcfFilename);
 			
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 			
@@ -130,10 +131,21 @@ public class QCStatistics {
 		
 		lastPos = 0;
 		
+		
 		for (int chunkNumber : myvcfFile.getChunks()) {
 			
 			amountChunks++;
-
+			
+			overallSnpsChunk = 0;
+			
+			foundInLegendChunk = 0;
+			
+			notFoundInLegendChunk = 0;
+			
+			validSnpsChunk = 0;
+			
+			snpsPerSampleCount = null;
+			
 			int chunkStart = chunkNumber * chunkSize + 1;
 
 			int chunkEnd = chunkStart + chunkSize - 1;
@@ -177,7 +189,6 @@ public class QCStatistics {
 
 			chunkSummary(chunk, samples);
 
-			resetChunk();
 		}
 
 		vcfReader.close();
@@ -300,7 +311,7 @@ public class QCStatistics {
 		// update Jul 8 2016: dont filter and add "allTypedSites"
 		// minimac3 option
 		if (refSnp == null) {
-
+			
 			if (insideChunk) {
 
 				notFoundInLegend++;
@@ -309,7 +320,7 @@ public class QCStatistics {
 			}
 
 		} else {
-
+			
 			if (insideChunk) {
 				foundInLegend++;
 				foundInLegendChunk++;
@@ -472,7 +483,7 @@ public class QCStatistics {
 		// smaller than 50 %. At least 3 SNPs must be included in each chunk
 
 		double overlap = foundInLegendChunk / (double) (foundInLegendChunk + notFoundInLegendChunk);
-
+		
 		if (overlap >= OVERLAP && foundInLegendChunk >= MIN_SNPS && !lowSampleCallRate && validSnpsChunk >= MIN_SNPS) {
 
 			// update chunk
@@ -498,14 +509,14 @@ public class QCStatistics {
 
 	private LegendFileReader getReader(String chromosome) throws IOException, InterruptedException {
 
-		legendFile = legendFile.replaceAll("\\$chr", chromosome);
-		String myLegendFile = FileUtil.path(legendFile);
+		String legendFile_ = legendFile.replaceAll("\\$chr", chromosome);
+		String myLegendFile = FileUtil.path(legendFile_);
 
 		if (!new File(myLegendFile).exists()) {
 			throw new InterruptedException("Legendfile '" + myLegendFile + "' not found.");
 		}
 
-		legendReader = new LegendFileReader(myLegendFile, population);
+		LegendFileReader legendReader = new LegendFileReader(myLegendFile, population);
 		legendReader.createIndex();
 		legendReader.initSearch();
 
@@ -513,15 +524,6 @@ public class QCStatistics {
 
 	}
 
-	private void resetChunk() {
-
-		overallSnpsChunk = 0;
-		foundInLegendChunk = 0;
-		notFoundInLegendChunk = 0;
-		validSnpsChunk = 0;
-		snpsPerSampleCount = null;
-	}
-	
 	public static void main(String[] args) {
 
 		QCStatistics qcChecker = new QCStatistics();
@@ -620,14 +622,6 @@ public class QCStatistics {
 
 	public void setLegendFile(String legendFile) {
 		this.legendFile = legendFile;
-	}
-
-	public LegendFileReader getLegendReader() {
-		return legendReader;
-	}
-
-	public void setLegendReader(LegendFileReader legendReader) {
-		this.legendReader = legendReader;
 	}
 
 	public LineWriter getLogWriter() {

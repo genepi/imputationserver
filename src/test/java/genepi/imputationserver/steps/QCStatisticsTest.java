@@ -79,10 +79,10 @@ public void testSnpStatisticsThreeChromosomes() throws IOException {
 		// check statistics
 		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 37,503"));
 		assertTrue(context.hasInMemory("Duplicated sites: 618"));
-		assertTrue(context.hasInMemory("13 Chunk(s) excluded"));
+		assertTrue(context.hasInMemory("36 Chunk(s) excluded"));
 		assertTrue(context.hasInMemory("No chunks passed the QC step"));
 		
-		FileUtil.deleteDirectory(new File("test-data/tmp"));
+		//FileUtil.deleteDirectory(new File("test-data/tmp"));
 	}
 
 	class QcStatisticsMock extends QualityControlLocal {
