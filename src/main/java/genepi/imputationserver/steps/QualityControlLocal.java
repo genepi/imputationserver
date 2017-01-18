@@ -104,6 +104,7 @@ public class QualityControlLocal extends WorkflowStep {
 			text.append("<b>Filtered sites:</b> <br>");
 			text.append("Filter flag set: " + formatter.format(qcStats.getFilterFlag()) + "<br>");
 			text.append("Invalid alleles: " + formatter.format(qcStats.getInvalidAlleles()) + "<br>");
+			text.append("Multiallelic sites: " + formatter.format(qcStats.getMultiallelicSites()) + "<br>");
 			text.append("Duplicated sites: " + formatter.format(qcStats.getDuplicates()) + "<br>");
 			text.append("NonSNP sites: " + formatter.format(qcStats.getNoSnps()) + "<br>");
 			text.append("Monomorphic sites: " + formatter.format(qcStats.getMonomorphic()) + "<br>");
@@ -121,7 +122,7 @@ public class QualityControlLocal extends WorkflowStep {
 
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStats.getRemovedChunksSnps())
 
-						+ " Chunks excluded: < 3 SNPs (see " + context.createLinkToFile("statistics")
+						+ " Chunk(s) excluded: < 3 SNPs (see " + context.createLinkToFile("statistics")
 						+ "  for details).");
 			}
 
@@ -129,7 +130,7 @@ public class QualityControlLocal extends WorkflowStep {
 
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStats.getRemovedChunksCallRate())
 
-						+ " Chunks excluded: at least one sample has a call rate < 50% (see "
+						+ " Chunk(s) excluded: at least one sample has a call rate < 50% (see "
 						+ context.createLinkToFile("statistics") + " for details).");
 			}
 
@@ -137,7 +138,7 @@ public class QualityControlLocal extends WorkflowStep {
 
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStats.getRemovedChunksOverlap())
 
-						+ " Chunks excluded: reference overlap < 50% (see " + context.createLinkToFile("statistics")
+						+ " Chunk(s) excluded: reference overlap < 50% (see " + context.createLinkToFile("statistics")
 						+ " for details).");
 			}
 
@@ -145,7 +146,7 @@ public class QualityControlLocal extends WorkflowStep {
 					+ qcStats.getRemovedChunksOverlap();
 
 			long amountChunks = qcStats.getAmountChunks();
-
+			
 			if (excludedChunks > 0) {
 				text.append("<br>Remaining chunk(s): " + formatter.format(amountChunks - excludedChunks));
 

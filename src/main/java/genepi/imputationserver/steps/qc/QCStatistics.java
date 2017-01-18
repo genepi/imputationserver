@@ -73,6 +73,7 @@ public class QCStatistics {
 	int duplicates = 0;
 	int filterFlag = 0;
 	int invalidAlleles = 0;
+	int multiallelicSites = 0;
 
 	//chunk specific
 	int overallSnpsChunk = 0;
@@ -83,6 +84,7 @@ public class QCStatistics {
 	int removedChunksSnps = 0;
 	int removedChunksOverlap = 0;
 	int removedChunksCallRate = 0;
+	int lastPos = 0;
 
 	public boolean start() throws IOException, InterruptedException {
 
@@ -125,7 +127,9 @@ public class QCStatistics {
 		VCFFileReader vcfReader = new VCFFileReader(new File(myvcfFile.getVcfFilename()), true);
 		
 		ArrayList<String> samples = vcfReader.getFileHeader().getSampleNamesInOrder();
-
+		
+		lastPos = 0;
+		
 		for (int chunkNumber : myvcfFile.getChunks()) {
 			
 			amountChunks++;
@@ -186,13 +190,23 @@ public class QCStatistics {
 		int extendedStart = Math.max(chunk.getStart() - phasingWindow, 1);
 		int extendedEnd = chunk.getEnd() + phasingWindow;
 
-		int lastPos = 0;
 		String ref = snp.getReference().getBaseString();
-		String alt = snp.getAlternateAllele(0).getBaseString();
 		int position = snp.getStart();
-
+		
 		boolean insideChunk = position >= chunk.getStart() && position <= chunk.getEnd();
-
+		
+		if(snp.getAlternateAlleles().size() > 1) {
+				if (insideChunk) {
+					logWriter.write("Multiallelic Site: " + snp.getID() + " (" + ref + "/" + snp.getAlternateAlleles() + ")");
+					multiallelicSites++;
+					filtered++;
+				}
+				return;
+			}
+		
+		String alt = snp.getAlternateAllele(0).getBaseString();
+		
+		
 		// filter invalid alleles
 		if (!GenomicTools.isValid(ref) || !GenomicTools.isValid(alt)) {
 			if (insideChunk) {
@@ -204,8 +218,9 @@ public class QCStatistics {
 		}
 
 		// count duplicates
+		
 		if ((lastPos == snp.getStart() && lastPos > 0)) {
-
+			
 			if (insideChunk) {
 				duplicates++;
 				logWriter.write("FILTER - Duplicate: " + snp.getID() + " - pos: " + snp.getStart());
@@ -496,32 +511,6 @@ public class QCStatistics {
 
 		return legendReader;
 
-	}
-
-	private void printOverallStats() {
-		DecimalFormat df = new DecimalFormat("#.00");
-		System.out.println(" ");
-		System.out.println("Statistics:");
-		System.out.println("Alternative allele frequency > 0.5 site " + alternativeAlleles);
-		
-		System.out.println("Reference Overlap " + df.format((foundInLegend / (double) (foundInLegend + notFoundInLegend)) * 100));
-		System.out.println("Match " + match);
-		System.out.println("Allele switch " + alleleSwitch);
-		System.out.println("Strand flip " + strandSwitch1);
-		System.out.println("Strand flip and allele switch: " + strandSwitch3);
-		System.out.println("A/T, C/G genotypes: " + strandSwitch2);
-		System.out.println(" ");
-		System.out.println("Filtered sites:");
-		System.out.println("Filter flag set:  " + filterFlag);
-		System.out.println("Filtered sites:" + invalidAlleles);
-		System.out.println("Duplicated sites: " + duplicates);
-		System.out.println("NonSNP sites:" + noSnps);
-		System.out.println("Monomorphic sites: " + monomorphic);
-		System.out.println("Allele mismatch: " + alleleMismatch);
-		System.out.println(" ");
-		System.out.println(" ");
-		System.out.println("Excluded sites in total: " + filtered);
-		System.out.println("Remaining sites in total: " + overallSnps);
 	}
 
 	private void resetChunk() {
@@ -879,6 +868,14 @@ public class QCStatistics {
 
 	public void setAmountChunks(int amountChunks) {
 		this.amountChunks = amountChunks;
+	}
+
+	public int getMultiallelicSites() {
+		return multiallelicSites;
+	}
+
+	public void setMultiallelicSites(int multiallelicSites) {
+		this.multiallelicSites = multiallelicSites;
 	}
 
 }
