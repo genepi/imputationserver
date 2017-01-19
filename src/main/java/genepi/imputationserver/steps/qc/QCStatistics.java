@@ -52,7 +52,7 @@ public class QCStatistics {
 	private double OVERLAP = 0.5;
 
 	int amountChunks;
-	
+
 	int notFoundInLegend = 0;
 	int foundInLegend = 0;
 	int alleleMismatch = 0;
@@ -73,7 +73,7 @@ public class QCStatistics {
 	int invalidAlleles = 0;
 	int multiallelicSites = 0;
 
-	//chunk specific
+	// chunk specific
 	int overallSnpsChunk = 0;
 	int validSnpsChunk = 0;
 	int foundInLegendChunk = 0;
@@ -87,23 +87,26 @@ public class QCStatistics {
 	public boolean start() throws IOException, InterruptedException {
 
 		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
-		
+
 		// MAF file for QC report
 		mafWriter = new LineWriter(outputMaf);
-		
+
 		// excluded SNPS
 		logWriter = new LineWriter(FileUtil.path(excludeLog, "snps-excluded.txt"));
-		
+
+		logWriter.write("Position"+ "\t" + "FilterType" + "\t" +" Info");
+
 		// excluded chunks
 		chunkLogWriter = new LineWriter(FileUtil.path(excludeLog, "chunks-excluded.txt"));
 		
+		chunkLogWriter.write("Chunk" + "\t" + "Info");
 
 		for (String vcfFilename : vcfFilenames) {
-			
+
 			System.out.println(vcfFilename);
-			
+
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
-			
+
 			// chunkfile manifest
 			chunkfileWriter = new LineWriter(FileUtil.path(chunkfile, myvcfFile.getChromosome()));
 
@@ -126,26 +129,25 @@ public class QCStatistics {
 	public void processFile(VcfFile myvcfFile) throws IOException, InterruptedException {
 
 		VCFFileReader vcfReader = new VCFFileReader(new File(myvcfFile.getVcfFilename()), true);
-		
+
 		ArrayList<String> samples = vcfReader.getFileHeader().getSampleNamesInOrder();
-		
+
 		lastPos = 0;
-		
-		
+
 		for (int chunkNumber : myvcfFile.getChunks()) {
-			
+
 			amountChunks++;
-			
+
 			overallSnpsChunk = 0;
-			
+
 			foundInLegendChunk = 0;
-			
+
 			notFoundInLegendChunk = 0;
-			
+
 			validSnpsChunk = 0;
-			
+
 			snpsPerSampleCount = null;
-			
+
 			int chunkStart = chunkNumber * chunkSize + 1;
 
 			int chunkEnd = chunkStart + chunkSize - 1;
@@ -154,7 +156,8 @@ public class QCStatistics {
 
 			int extendedEnd = chunkEnd + phasingWindow;
 
-			String chunkName = FileUtil.path(chunks, "chunk_" + chunkNumber + "_" + chunkStart + "_" + chunkEnd + ".vcf.gz");
+			String chunkName = FileUtil.path(chunks,
+					"chunk_" + chunkNumber + "_" + chunkStart + "_" + chunkEnd + ".vcf.gz");
 
 			VcfChunk chunk = new VcfChunk();
 			chunk.setPos(chunkNumber);
@@ -203,25 +206,26 @@ public class QCStatistics {
 
 		String ref = snp.getReference().getBaseString();
 		int position = snp.getStart();
-		
+
+		String chr = chunk.getChromosome();
+
 		boolean insideChunk = position >= chunk.getStart() && position <= chunk.getEnd();
-		
-		if(snp.getAlternateAlleles().size() > 1) {
-				if (insideChunk) {
-					logWriter.write("Multiallelic Site: " + snp.getID() + " (" + ref + "/" + snp.getAlternateAlleles() + ")");
-					multiallelicSites++;
-					filtered++;
-				}
-				return;
+
+		if (snp.getAlternateAlleles().size() > 1) {
+			if (insideChunk) {
+				logWriter.write(snp.getID() + "\t" + "Multiallelic Site");
+				multiallelicSites++;
+				filtered++;
 			}
-		
+			return;
+		}
+
 		String alt = snp.getAlternateAllele(0).getBaseString();
-		
-		
+
 		// filter invalid alleles
 		if (!GenomicTools.isValid(ref) || !GenomicTools.isValid(alt)) {
 			if (insideChunk) {
-				logWriter.write("Invalid Alleles: " + snp.getID() + " (" + ref + "/" + alt + ")");
+				logWriter.write(snp.getID() + "\t" + "Invalid Alleles");
 				invalidAlleles++;
 				filtered++;
 			}
@@ -229,13 +233,12 @@ public class QCStatistics {
 		}
 
 		// count duplicates
-		
+
 		if ((lastPos == snp.getStart() && lastPos > 0)) {
-			
+
 			if (insideChunk) {
 				duplicates++;
-				logWriter.write("FILTER - Duplicate: " + snp.getID() + " - pos: " + snp.getStart());
-				// logWriter.write("COPY OF: " + tmp);
+				logWriter.write(snp.getID() + "\t" + "Duplicate");
 				filtered++;
 			}
 
@@ -262,11 +265,11 @@ public class QCStatistics {
 
 				if (snp.getFilters().contains("DUP")) {
 					duplicates++;
-					logWriter.write("FILTER - Duplicate " + snp.getID() + " - pos: " + snp.getStart());
+					logWriter.write(snp.getID() + "\t" + "Filter Duplicate");
 					filtered++;
 				} else {
 
-					logWriter.write("FILTER - Flag is set: " + snp.getID() + " - pos: " + snp.getStart());
+					logWriter.write(snp.getID() + "\t" + "Filter Other");
 					filterFlag++;
 					filtered++;
 				}
@@ -277,9 +280,9 @@ public class QCStatistics {
 		// alternative allele frequency
 		int hetVarOnes = snp.getHetCount();
 		int homVarOnes = snp.getHomVarCount() * 2;
-		double af = (double) ((hetVarOnes + homVarOnes) / (double) (((snp.getNSamples() - snp.getNoCallCount()) * 2)));
+		double aaf = (double) ((hetVarOnes + homVarOnes) / (double) (((snp.getNSamples() - snp.getNoCallCount()) * 2)));
 
-		if (af > 0.5) {
+		if (aaf > 0.5) {
 			if (insideChunk) {
 				alternativeAlleles++;
 			}
@@ -288,18 +291,17 @@ public class QCStatistics {
 		// filter indels
 		if (snp.isIndel() || snp.isComplexIndel()) {
 			if (insideChunk) {
-				logWriter.write("FILTER - InDel: " + snp.getID() + " - pos: " + snp.getStart());
+				logWriter.write(snp.getID() + "\t" + "InDel");
 				noSnps++;
 				filtered++;
 			}
 			return;
 		}
 
-		// remove monomorphic snps
-		// monomorphic only exclude 0/0;
-		if (snp.isMonomorphicInSamples() || snp.getHetCount() == 2 * (snp.getNSamples() - snp.getNoCallCount())) {
+		// monomorphic only excludes 0/0;
+		if (snp.isMonomorphicInSamples()) {
 			if (insideChunk) {
-				logWriter.write("FILTER - Monomorphic: " + snp.getID() + " - pos: " + snp.getStart());
+				logWriter.write(snp.getID() + "\t" + "Monomorphic");
 				monomorphic++;
 				filtered++;
 			}
@@ -307,11 +309,11 @@ public class QCStatistics {
 		}
 
 		LegendEntry refSnp = legendReader.findByPosition2(snp.getStart());
-		
+
 		// update Jul 8 2016: dont filter and add "allTypedSites"
 		// minimac3 option
 		if (refSnp == null) {
-			
+
 			if (insideChunk) {
 
 				notFoundInLegend++;
@@ -320,7 +322,7 @@ public class QCStatistics {
 			}
 
 		} else {
-			
+
 			if (insideChunk) {
 				foundInLegend++;
 				foundInLegendChunk++;
@@ -359,8 +361,12 @@ public class QCStatistics {
 				if (insideChunk) {
 
 					alleleSwitch++;
-					logWriter.write("INFO - Allele switch: " + snp.getID() + " - pos: " + snp.getStart() + " (ref: "
-							+ legendRef + "/" + legendAlt + ", data: " + studyRef + "/" + studyAlt + ")");
+					/*
+					 * logWriter.write("Allele switch" + snp.getID() + "\t" +
+					 * chr + ":"+ snp.getStart() + "\t" + "ref: " + legendRef +
+					 * "/" + legendAlt + "; data: " + studyRef + "/" + studyAlt
+					 * + ")");
+					 */
 				}
 
 			}
@@ -372,8 +378,8 @@ public class QCStatistics {
 
 					strandSwitch1++;
 					filtered++;
-					logWriter.write("FILTER - Strand switch: " + snp.getID() + " - pos: " + snp.getStart() + " (ref: "
-							+ legendRef + "/" + legendAlt + ", data: " + studyRef + "/" + studyAlt + ")");
+					logWriter
+							.write(snp.getID() + "\t" + "Strand switch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
 
 				}
 				return;
@@ -386,9 +392,8 @@ public class QCStatistics {
 
 					filtered++;
 					strandSwitch3++;
-					logWriter.write("FILTER - Strand switch and Allele switch: " + snp.getID() + " - pos: "
-							+ snp.getStart() + " (ref: " + legendRef + "/" + legendAlt + ", data: " + studyRef + "/"
-							+ studyAlt + ")");
+					logWriter.write(snp.getID() + "\t" + "Strand switch and Allele switch" + "\t" + "Ref:" + legendRef
+							+ "/" + legendAlt);
 
 				}
 
@@ -400,10 +405,10 @@ public class QCStatistics {
 			else if (GenomicTools.alleleMismatch(studyRef, studyAlt, legendRef, legendAlt)) {
 
 				if (insideChunk) {
-					logWriter.write("FILTER - Allele mismatch: " + snp.getID() + " - pos: " + snp.getStart() + " (ref: "
-							+ legendRef + "/" + legendAlt + ", data: " + studyRef + "/" + studyAlt + ")");
 					alleleMismatch++;
 					filtered++;
+					logWriter.write(snp.getID() + "\t" + "Allele mismatch" + "\t" + "Ref:" + legendRef + "/"
+							 + legendAlt);
 				}
 				return;
 			}
@@ -411,10 +416,10 @@ public class QCStatistics {
 			// filter low call rate
 			if (snp.getNoCallCount() / (double) snp.getNSamples() > 0.10) {
 				if (insideChunk) {
-					logWriter.write("FILTER - Low call rate: " + snp.getID() + " - pos: " + snp.getStart() + " ("
-							+ (1.0 - snp.getNoCallCount() / (double) snp.getNSamples()) + ")");
 					lowCallRate++;
 					filtered++;
+					logWriter.write(snp.getID() + "\t" + "Low call rate" + "\t" + "Value: "
+							+ (1.0 - snp.getNoCallCount() / (double) snp.getNSamples()));
 				}
 				return;
 			}
@@ -467,13 +472,15 @@ public class QCStatistics {
 	private void chunkSummary(VcfChunk chunk, ArrayList<String> samples) throws IOException {
 		// this checks if enough SNPs are included in each sample
 		boolean lowSampleCallRate = false;
+		int countLowSamples = 0;
 		for (int i = 0; i < snpsPerSampleCount.length; i++) {
 			int snpss = snpsPerSampleCount[i];
 			double sampleCallRate = snpss / (double) overallSnpsChunk;
 
 			if (sampleCallRate < CALL_RATE) {
 				lowSampleCallRate = true;
-				chunkLogWriter.write(chunk.toString() + " Sample " + samples.get(i) + ": call rate: " + sampleCallRate);
+				countLowSamples++;
+				//chunkLogWriter.write(chunk.toString() + " Sample " + samples.get(i) + ": call rate: " + sampleCallRate);
 			}
 
 		}
@@ -483,7 +490,7 @@ public class QCStatistics {
 		// smaller than 50 %. At least 3 SNPs must be included in each chunk
 
 		double overlap = foundInLegendChunk / (double) (foundInLegendChunk + notFoundInLegendChunk);
-		
+
 		if (overlap >= OVERLAP && foundInLegendChunk >= MIN_SNPS && !lowSampleCallRate && validSnpsChunk >= MIN_SNPS) {
 
 			// update chunk
@@ -493,8 +500,8 @@ public class QCStatistics {
 
 		} else {
 
-			chunkLogWriter.write(chunk.toString() + " (Snps: " + overallSnpsChunk + ", Reference overlap: " + overlap
-					+ ", low sample call rates: " + lowSampleCallRate + ")");
+			chunkLogWriter.write(chunk.toString() + "\t" + " (# SNPs: " + overallSnpsChunk + "; "+ "Reference Overlap: " + overlap
+					+ "; " +  "# Low Sample Call Rates: " + countLowSamples + ")");
 
 			if (overlap < OVERLAP) {
 				removedChunksOverlap++;
@@ -583,7 +590,7 @@ public class QCStatistics {
 	public void setChunks(String chunks) {
 		this.chunks = chunks;
 	}
-	
+
 	public String getPopulation() {
 		return population;
 	}
