@@ -6,7 +6,9 @@ import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.log.LogCollector;
 import genepi.io.FileUtil;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.io.Text;
@@ -48,6 +50,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String MINIMAC_BIN = "MINIMAC_BIN";
 
 	public static final String CHROMOSOME = "CHROMOSOME";
+
+	public static final String DATA_FOLDER = "minimac-data-3";
 
 	private String refPanelHdfs;
 
@@ -97,9 +101,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	@Override
 	protected void setupDistributedCache(CacheStore cache) throws IOException {
-		// installs and distributed alls binaries
-		String data = "minimac-data-3";
-		distribute(FileUtil.path(folder, "bin"), data, cache);
+		// installs and distributed all binaries
+		distribute(FileUtil.path(folder, "bin"), DATA_FOLDER, cache);
 
 		// distributed refpanels
 
@@ -163,14 +166,22 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		this.folder = folder;
 	}
 
-	protected void distribute(String folder, String hdfs, CacheStore cache) {
-		String[] files = FileUtil.getFiles(folder, "");
-		for (String file : files) {
-			if (!HdfsUtil.exists(HdfsUtil.path(hdfs, FileUtil.getFilename(file))) || noCache) {
-				HdfsUtil.delete(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
-				HdfsUtil.put(file, HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
+	protected void distribute(String folder, String hdfs, CacheStore cache) throws IOException {
+		if (new File(folder).exists()) {
+			String[] files = FileUtil.getFiles(folder, "");
+			for (String file : files) {
+				if (!HdfsUtil.exists(HdfsUtil.path(hdfs, FileUtil.getFilename(file))) || noCache) {
+					HdfsUtil.delete(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
+					HdfsUtil.put(file, HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
+				}
+				cache.addFile(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
 			}
-			cache.addFile(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
+		} else {
+			log.warn("Local binary folder not found. Distribute all from hdfs.");
+			List<String> files = HdfsUtil.getFiles(hdfs);
+			for (String file : files) {
+				cache.addFile(file);
+			}
 		}
 	}
 

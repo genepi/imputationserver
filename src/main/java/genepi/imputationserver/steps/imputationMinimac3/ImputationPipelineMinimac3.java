@@ -51,7 +51,7 @@ public class ImputationPipelineMinimac3 {
 
 	public boolean execute(VcfChunk chunk, VcfChunkOutput output) throws InterruptedException, IOException {
 
-		System.out.println("Starting pipeline for chunk " + chunk + "...");
+		System.out.println("Starting pipeline for chunk " + chunk + " [Phased: " + chunk.isPhased() + "]...");
 
 		String chrFilename = "";
 
@@ -76,11 +76,11 @@ public class ImputationPipelineMinimac3 {
 
 		setReferencePanel(refPanelFilename);
 
-		//impute only for phased chromosomes and chr X male samples
+		// impute only for phased chromosomes and chr X male samples
 		if (chunk.isPhased() || chunk.getChromosome().equals("X.no.auto_male")) {
 
 			if (chunk.getChromosome().equals("X.no.auto_male")) {
-				//replaceMale(output.getVcfFilename());
+				// replaceMale(output.getVcfFilename());
 			}
 
 			// replace X.nonpar / X.par with X needed by minimac3
@@ -109,7 +109,6 @@ public class ImputationPipelineMinimac3 {
 
 				// eagle
 				long time = System.currentTimeMillis();
-
 
 				if (!new File(refEagleFilename).exists()) {
 					System.out.println("Eagle: Reference '" + refEagleFilename + "' not found.");

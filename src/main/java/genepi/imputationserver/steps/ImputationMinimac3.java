@@ -1,20 +1,25 @@
 package genepi.imputationserver.steps;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.ContextLog;
 import genepi.hadoop.common.WorkflowContext;
+import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
+import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.util.GeneticMap;
 import genepi.imputationserver.util.MapList;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import genepi.io.text.LineReader;
 
 public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
@@ -51,10 +56,12 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String rounds = context.get("rounds");
 		String window = context.get("window");
 		String population = context.get("population");
-		
+
 		String queue = "default";
-		queue = context.get("queues");
-		
+		if (context.get("queues") != null) {
+			queue = context.get("queues");
+		}
+
 		boolean noCache = false;
 		String minimacBin = "minimac";
 
@@ -70,7 +77,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String output = context.get("outputimputation");
 		String log = context.get("logfile");
 
-		if (!HdfsUtil.exists(input)) {
+		if (!(new File(input)).exists()) {
 			context.error("No chunks passed the QC step.");
 			return false;
 		}
@@ -79,8 +86,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		RefPanelList panels = null;
 		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder,
-					"panels.txt"));
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder, "panels.txt"));
 
 		} catch (Exception e) {
 
@@ -99,8 +105,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		// load maps
 		MapList maps = null;
 		try {
-			maps = MapList.loadFromFile(FileUtil.path(folder,
-					"genetic-maps.txt"));
+			maps = MapList.loadFromFile(FileUtil.path(folder, "genetic-maps.txt"));
 		} catch (Exception e) {
 			context.error("genetic-maps.txt not found." + e);
 			return false;
@@ -115,7 +120,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		// execute one job per chromosome
 		try {
-			List<String> chunkFiles = HdfsUtil.getFiles(input);
+			String[] chunkFiles = FileUtil.getFiles(input, "*.*");
 
 			context.beginTask("Start Imputation...");
 
@@ -124,35 +129,56 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				String[] tiles = chunkFile.split("/");
 				String chr = tiles[tiles.length - 1];
 
-				ImputationJobMinimac3 job = new ImputationJobMinimac3(
-						context.getJobName() + "-chr-" + chr, new ContextLog(
-								context), queue);
+				String newChunkFile = convertChunkfile(chunkFile, context.getHdfsTemp());
+
+				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobName() + "-chr-" + chr,
+						new ContextLog(context), queue) {
+					@Override
+					protected void readConfigFile() {
+						File file = new File(folder + "/" + CONFIG_FILE);
+						if (file.exists()) {
+							log.info("Loading distributed configuration file " + folder + "/" + CONFIG_FILE + "...");
+							PreferenceStore preferenceStore = new PreferenceStore(file);
+							preferenceStore.write(getConfiguration());
+							for (Object key : preferenceStore.getKeys()) {
+								log.info("  " + key + ": " + preferenceStore.getString(key.toString()));
+							}
+
+						} else {
+
+							log.info("No distributed configuration file (" + CONFIG_FILE + ") available.");
+
+						}
+					}
+				};
 				job.setFolder(folder);
 				job.setRefPanelHdfs(panel.getHdfs());
 				job.setRefPanelPattern(panel.getPattern());
 				job.setChromosome(chr);
-				
-				
-				//shapeit
-				if(map.getMapShapeIT()!=null){
-				job.setMapShapeITHdfs(map.getMapShapeIT());
-				job.setMapShapeITPattern(map.getMapPatternShapeIT());
-				}
-				
-				//hapiur
-				if(map.getMapHapiUR()!=null){
-				job.setMapHapiURHdfs(map.getMapHapiUR());
-				job.setMapHapiURPattern(map.getMapPatternHapiUR());
+
+				// shapeit
+				if (map.getMapShapeIT() != null && phasing.equals("shapeit")) {
+					context.println("Setting up shapeit map files...");
+					job.setMapShapeITHdfs(map.getMapShapeIT());
+					job.setMapShapeITPattern(map.getMapPatternShapeIT());
 				}
 
-				//eagle
-				if(map.getMapEagle()!=null){
-				job.setMapEagleHdfs(map.getMapEagle());
-				job.setRefEagleHdfs(map.getRefEagle());
-				job.setRefPatternEagle(map.getRefPatternEagle());;
+				// hapiur
+				if (map.getMapHapiUR() != null && phasing.equals("hapiur")) {
+					context.println("Setting up hapiur map files...");
+					job.setMapHapiURHdfs(map.getMapHapiUR());
+					job.setMapHapiURPattern(map.getMapPatternHapiUR());
+				}
+
+				// eagle
+				if (map.getMapEagle() != null && phasing.equals("eagle")) {
+					context.println("Setting up eagle reference and map files...");
+					job.setMapEagleHdfs(map.getMapEagle());
+					job.setRefEagleHdfs(map.getRefEagle());
+					job.setRefPatternEagle(map.getRefPatternEagle());
 				}
 				
-				job.setInput(chunkFile);
+				job.setInput(newChunkFile);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
@@ -175,8 +201,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			// one job was failed
 			if (error) {
-				context.println("Imputation on chromosome " + errorChr
-						+ " failed. Imputation was stopped.");
+				context.println("Imputation on chromosome " + errorChr + " failed. Imputation was stopped.");
 				updateProgress();
 
 				String text = updateMessage();
@@ -184,8 +209,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				printSummary();
 
-				context.error("Imputation on chromosome " + errorChr
-						+ " failed. Imputation was stopped.");
+				context.error("Imputation on chromosome " + errorChr + " failed. Imputation was stopped.");
 				return false;
 
 			}
@@ -222,7 +246,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			updateProgress();
 			printSummary();
-
+			e.printStackTrace();
 			context.updateTask(e.getMessage(), WorkflowContext.ERROR);
 			return false;
 
@@ -247,23 +271,19 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				if (state == OK) {
 
-					context.println("  [OK]   Chr " + id + " ("
-							+ job.getJobId() + ")");
+					context.println("  [OK]   Chr " + id + " (" + job.getJobId() + ")");
 
 				} else if (state == FAILED) {
 
-					context.println("  [FAIL] Chr " + id + " ("
-							+ job.getJobId() + ")");
+					context.println("  [FAIL] Chr " + id + " (" + job.getJobId() + ")");
 
 				} else {
-					context.println("  [" + state + "]   Chr " + id + " ("
-							+ job.getJobId() + ")");
+					context.println("  [" + state + "]   Chr " + id + " (" + job.getJobId() + ")");
 				}
 
 			} else {
 
-				context.println("  [??]   Chr " + id + " (" + job.getJobId()
-						+ ")");
+				context.println("  [??]   Chr " + id + " (" + job.getJobId() + ")");
 
 			}
 
@@ -344,8 +364,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	}
 
 	@Override
-	protected synchronized void onJobFinish(String id, boolean successful,
-			WorkflowContext context) {
+	protected synchronized void onJobFinish(String id, boolean successful, WorkflowContext context) {
 
 		HadoopJob job = jobs.get(id);
 
@@ -353,14 +372,12 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			// everything fine
 
-			context.println("Job chr_" + id + " (" + job.getJobId()
-					+ ") executed sucessful.");
+			context.println("Job chr_" + id + " (" + job.getJobId() + ") executed sucessful.");
 		} else {
 
 			// one job failed
 
-			context.println("Job chr_" + id + " (" + job.getJobId()
-					+ ") failed.");
+			context.println("Job chr_" + id + " (" + job.getJobId() + ") failed.");
 
 			// kill all running jobs
 
@@ -383,6 +400,37 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			context.updateTask(text, WorkflowContext.RUNNING);
 		}
 
+	}
+
+	private String convertChunkfile(String chunkFile, String output) throws IOException {
+
+		String name = FileUtil.getFilename(chunkFile);
+		String newChunkFile = HdfsUtil.path(output, name);
+
+		LineReader reader = new LineReader(chunkFile);
+		HdfsLineWriter writer = new HdfsLineWriter(newChunkFile);
+
+		while (reader.next()) {
+			VcfChunk chunk = new VcfChunk(reader.get());
+
+			// put vcf file
+			String sourceVcf = chunk.getVcfFilename();
+			String targetVcf = HdfsUtil.path(output, FileUtil.getFilename(sourceVcf));
+			HdfsUtil.put(sourceVcf, targetVcf);
+			chunk.setVcfFilename(targetVcf);
+
+			// put index file
+			String sourceIndex = chunk.getIndexFilename();
+			String targetIndex = HdfsUtil.path(output, FileUtil.getFilename(sourceIndex));
+			HdfsUtil.put(sourceIndex, targetIndex);
+			chunk.setIndexFilename(targetIndex);
+			writer.write(chunk.serialize());
+
+		}
+		reader.close();
+		writer.close();
+
+		return newChunkFile;
 	}
 
 }

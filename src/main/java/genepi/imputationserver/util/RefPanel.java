@@ -3,10 +3,11 @@ package genepi.imputationserver.util;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import genepi.hadoop.HdfsUtil;
 
 public class RefPanel {
 
@@ -36,7 +37,7 @@ public class RefPanel {
 
 		FileStatus status;
 		try {
-			status = FileSystem.get(new Configuration()).getFileStatus(
+			status = FileSystem.get(HdfsUtil.getConfiguration()).getFileStatus(
 					new Path(hdfs));
 			return new Date(status.getModificationTime()).toString() + " ("
 					+ status.getLen() + " Bytes)";
@@ -49,7 +50,7 @@ public class RefPanel {
 	public boolean existsReference() {
 
 		try {
-			return FileSystem.get(new Configuration()).exists(new Path(hdfs));
+			return FileSystem.get(HdfsUtil.getConfiguration()).exists(new Path(hdfs));
 		} catch (IOException e) {
 			return false;
 		}
@@ -59,7 +60,7 @@ public class RefPanel {
 	public boolean existsLegend() {
 
 		try {
-			return FileSystem.get(new Configuration()).exists(new Path(hdfs));
+			return FileSystem.get(HdfsUtil.getConfiguration()).exists(new Path(hdfs));
 		} catch (IOException e) {
 			return false;
 		}

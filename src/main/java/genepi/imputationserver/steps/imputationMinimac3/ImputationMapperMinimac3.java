@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.hadoop.fs.Hdfs;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -52,16 +53,20 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 	private String mapEagleFilename = "";
 
-	private String refEagleFilename = "";
+	private String refEagleFilename = null;
 
 	private String refEaglePattern = "";
 
+	private String indexFilename;
+	
 	private boolean debugging;
 
 	private Log log;
 
 	protected void setup(Context context) throws IOException, InterruptedException {
 
+		HdfsUtil.setDefaultConfiguration(context.getConfiguration());
+		
 		log = new Log(context);
 
 		// get parameters
@@ -106,9 +111,11 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		refEaglePattern = parameters.get(ImputationJobMinimac3.REF_PANEL_EAGLE_PATTERN);
 		String chr = parameters.get(ImputationJobMinimac3.CHROMOSOME);
+		if (refEaglePattern != null){
 		String chrFilename = refEaglePattern.replaceAll("\\$chr", chr);
 		refEagleFilename = cache.getFile(FileUtil.getFilename(chrFilename));
-		String indexFilename = cache.getFile(FileUtil.getFilename(chrFilename + ".csi"));
+		indexFilename = cache.getFile(FileUtil.getFilename(chrFilename + ".csi"));
+		}
 
 		String minimacCommand = cache.getFile(minimacBin);
 		String hapiUrCommand = cache.getFile("hapi-ur");
@@ -128,7 +135,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		// create symbolic link --> index file is in the same folder as data
 
-		if (!chr.startsWith("X")) {
+		if (!chr.startsWith("X") && refEagleFilename != null) {
 			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf")),
 					Paths.get(refEagleFilename));
 			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf.csi")),
