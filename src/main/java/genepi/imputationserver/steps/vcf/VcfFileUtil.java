@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.command.Command;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
@@ -239,7 +240,7 @@ public class VcfFileUtil {
 
 	public static void merge(OutputStream out, String hdfs, String ext) throws IOException {
 
-		Configuration conf = new Configuration();
+		Configuration conf = HdfsUtil.getConfiguration();
 
 		FileSystem fileSystem = FileSystem.get(conf);
 		Path pathFolder = new Path(hdfs);

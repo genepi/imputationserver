@@ -1,8 +1,5 @@
 package genepi.imputationserver.util;
 
-import genepi.io.text.LineReader;
-import htsjdk.samtools.util.BlockCompressedOutputStream;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,6 +14,10 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import genepi.hadoop.HdfsUtil;
+import genepi.io.text.LineReader;
+import htsjdk.samtools.util.BlockCompressedOutputStream;
 
 public class FileMerger {
 
@@ -144,7 +145,7 @@ public class FileMerger {
 
 		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(local));
 
-		Configuration conf = new Configuration();
+		Configuration conf = HdfsUtil.getConfiguration();
 
 		FileSystem fileSystem = FileSystem.get(conf);
 		Path pathFolder = new Path(hdfs);

@@ -188,7 +188,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 	private List<String> findFiles(String folder, String pattern) throws IOException {
 
-		Configuration conf = new Configuration();
+		Configuration conf = HdfsUtil.getConfiguration();
 
 		FileSystem fileSystem = FileSystem.get(conf);
 		Path pathFolder = new Path(folder);

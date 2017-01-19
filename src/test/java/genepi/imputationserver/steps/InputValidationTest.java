@@ -222,11 +222,53 @@ public class InputValidationTest extends TestCase {
 
 	}
 
+	public void testUnphasedVcfWithShapeIt() throws IOException {
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeIt");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is ok
+		assertEquals(true, result);
+
+		// check analyze task and results
+
+		assertTrue(context.hasInMemory("Datatype: unphased"));
+	}
+	
+	public void testPhasedVcfWithShapeIt() throws IOException {
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-phased";
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeIt");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is ok
+		assertEquals(true, result);
+
+		// check analyze task and results
+
+		assertTrue(context.hasInMemory("Datatype: phased"));
+
+	}
+	
+	
 	public void testTabixIndexCreationChr20() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		// input folder contains no vcf or vcf.gz files
-		String inputFolder = "test-data/data/chr20";
+		String inputFolder = "test-data/data/chr20-phased";
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
@@ -243,7 +285,7 @@ public class InputValidationTest extends TestCase {
 
 		
 		// test tabix index and count snps
-		String vcfFilename = inputFolder + "/chr20.R50.merged.1.330k.recode.unphased.vcf.gz";
+		String vcfFilename = inputFolder + "/chr20.R50.merged.1.330k.recode.small.vcf.gz";
 		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFilename),
 				new File(vcfFilename + TabixUtils.STANDARD_INDEX_EXTENSION), true);
 		CloseableIterator<VariantContext> snps = vcfReader.query("20", 1, 1000000000);
