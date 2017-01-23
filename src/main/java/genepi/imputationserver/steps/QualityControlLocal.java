@@ -64,7 +64,7 @@ public class QualityControlLocal extends WorkflowStep {
 		qcStats.setPhasingWindow(phasingWindow);
 		qcStats.setPopulation(population);
 		qcStats.setLegendFile(panel.getLegend());
-		
+
 		context.beginTask("Calculating QC Statistics...");
 
 		boolean successful;
@@ -79,7 +79,7 @@ public class QualityControlLocal extends WorkflowStep {
 		}
 
 		if (successful) {
-			
+
 			context.endTask("QC finished successfully", WorkflowContext.OK);
 
 			DecimalFormat df = new DecimalFormat("#.00");
@@ -88,19 +88,19 @@ public class QualityControlLocal extends WorkflowStep {
 			StringBuffer text = new StringBuffer();
 
 			text.append("<b>Statistics:</b> <br>");
-			text.append("Alternative allele frequency > 0.5 sites: "
-					+ formatter.format(qcStats.getAlternativeAlleles()) + "<br>");
-			text.append("Reference Overlap: "
+			text.append("Alternative allele frequency > 0.5 sites: " + formatter.format(qcStats.getAlternativeAlleles())
+					+ "<br>");
+			text.append("Reference Overlap: " + qcStats.getFoundInLegend() + "/"
+					+ ((qcStats.getFoundInLegend() + qcStats.getNotFoundInLegend())) + " ("
 					+ df.format(qcStats.getFoundInLegend()
 							/ (double) (qcStats.getFoundInLegend() + qcStats.getNotFoundInLegend()) * 100)
-					+ "% " + "<br>");
+					+ "%" + ")<br>");
 
 			text.append("Match: " + formatter.format(qcStats.getMatch()) + "<br>");
 			text.append("Allele switch: " + formatter.format(qcStats.getAlleleSwitch()) + "<br>");
 			text.append("Strand flip: " + formatter.format(qcStats.getStrandSwitch1()) + "<br>");
 			text.append("Strand flip and allele switch: " + formatter.format(qcStats.getStrandSwitch3()) + "<br>");
 			text.append("A/T, C/G genotypes: " + formatter.format(qcStats.getStrandSwitch2()) + "<br>");
-			text.append("Panel-specific sites: " + formatter.format(qcStats.getNotFoundInLegend()) + "<br>");
 
 			text.append("<b>Filtered sites:</b> <br>");
 			text.append("Filter flag set: " + formatter.format(qcStats.getFilterFlag()) + "<br>");
@@ -147,7 +147,7 @@ public class QualityControlLocal extends WorkflowStep {
 					+ qcStats.getRemovedChunksOverlap();
 
 			long amountChunks = qcStats.getAmountChunks();
-			
+
 			if (excludedChunks > 0) {
 				text.append("<br>Remaining chunk(s): " + formatter.format(amountChunks - excludedChunks));
 
@@ -182,7 +182,6 @@ public class QualityControlLocal extends WorkflowStep {
 			return false;
 
 		}
-		
 
 	}
 
