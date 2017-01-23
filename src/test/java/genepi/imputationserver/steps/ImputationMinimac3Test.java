@@ -1,34 +1,47 @@
 package genepi.imputationserver.steps;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
+import genepi.imputationserver.steps.vcf.VcfFile;
+import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import junit.framework.TestCase;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 
-public class ImputationMinimac3Test extends TestCase {
+public class ImputationMinimac3Test {
 
 	public static final boolean VERBOSE = true;
 
-	@BeforeClass
-	public static void setup() throws IOException {
+	public final int TOTAL_REFPANEL = 63407;
+	public final int FILTER_REFPANEL = 5;
+	public final int ONLY_IN_INPUT = 78;
+
+    @BeforeClass
+	public static void setUp() throws Exception {
 		TestCluster.getInstance().start();
 	}
 
-	@AfterClass
-	public static void stop() {
+    @AfterClass
+	public static void tearDown() throws Exception {
 		TestCluster.getInstance().stop();
 	}
-
-	public void testPipelineWithPhased() throws IOException {
+	
+	
+    @Test
+	public void testPipelineWithPhased() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chr20";
 		String inputFolder = "test-data/data/chr20-phased";
@@ -57,16 +70,28 @@ public class ImputationMinimac3Test extends TestCase {
 		result = run(context, export);
 		assertTrue(result);
 
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		assertEquals(TOTAL_REFPANEL - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
+
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
-	public void testPipelineWithUnPhased() throws IOException {
+    @Test
+	public void testPipelineWithUnPhased() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chr20";
 		String inputFolder = "test-data/data/chr20-unphased";
-
-		TestCluster.getInstance().start();
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
@@ -92,7 +117,21 @@ public class ImputationMinimac3Test extends TestCase {
 		result = run(context, export);
 		assertTrue(result);
 
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		assertEquals(TOTAL_REFPANEL - FILTER_REFPANEL, file.getNoSnps());
+
 		FileUtil.deleteDirectory("test-data/tmp");
+
 	}
 
 	protected boolean run(WorkflowTestContext context, WorkflowStep step) {

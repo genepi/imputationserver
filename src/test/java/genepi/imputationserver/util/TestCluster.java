@@ -75,6 +75,7 @@ public class TestCluster {
 	}
 	
 	public void stop(){
+		cluster.shutdown(true);
 		File testCluster = new File(WORKING_DIRECTORY);
 		if (testCluster.exists()) {
 			FileUtil.deleteDirectory(testCluster);

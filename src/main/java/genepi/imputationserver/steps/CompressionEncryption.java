@@ -29,6 +29,8 @@ import org.apache.hadoop.fs.Path;
 
 public class CompressionEncryption extends WorkflowStep {
 
+	public static final String DEFAULT_PASSWORD = "imputation@michigan";
+	
 	@Override
 	public boolean run(WorkflowContext context) {
 
@@ -58,7 +60,7 @@ public class CompressionEncryption extends WorkflowStep {
 			// create one-time password
 			password = RandomStringUtils.randomAlphanumeric(13);
 		} else {
-			password = "imputation@michigan";
+			password = DEFAULT_PASSWORD;
 		}
 		try {
 
