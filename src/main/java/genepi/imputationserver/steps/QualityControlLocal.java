@@ -100,6 +100,7 @@ public class QualityControlLocal extends WorkflowStep {
 			text.append("Strand flip: " + formatter.format(qcStats.getStrandSwitch1()) + "<br>");
 			text.append("Strand flip and allele switch: " + formatter.format(qcStats.getStrandSwitch3()) + "<br>");
 			text.append("A/T, C/G genotypes: " + formatter.format(qcStats.getStrandSwitch2()) + "<br>");
+			text.append("Panel-specific sites: " + formatter.format(qcStats.getNotFoundInLegend()) + "<br>");
 
 			text.append("<b>Filtered sites:</b> <br>");
 			text.append("Filter flag set: " + formatter.format(qcStats.getFilterFlag()) + "<br>");
