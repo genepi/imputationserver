@@ -14,7 +14,7 @@ public class QCStatisticsTest extends TestCase {
 
 	public static final boolean VERBOSE = true;
 
-	public void testSnpStatisticsOneChunk() throws IOException {
+	public void testQcStatisticsOneChunk() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/single";
@@ -43,7 +43,7 @@ public class QCStatisticsTest extends TestCase {
 
 	}
 
-	public void testChunkExklusion() throws IOException {
+	public void testChunkExcluded() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/single";
@@ -68,10 +68,10 @@ public class QCStatisticsTest extends TestCase {
 
 	}
 
-	public void testStatisticsFilteredChunks() throws IOException {
+	public void testQcStatisticsAllChunksFailed() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
-		String inputFolder = "test-data/data/simulated-chip-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-qc";
 		
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
@@ -109,6 +109,40 @@ public class QCStatisticsTest extends TestCase {
 
 		assertEquals("chunk_1_0120000001_0140000000" + "\t" + "108" + "\t" + "0.9391304347826087" + "\t" + "19",
 				testLine);
+
+		FileUtil.deleteDirectory(new File(out));
+	}
+	
+	public void testQcStatisticsAllChunksPassed() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
+		
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		//get output directory
+		String out = context.getOutput("excludeLog");
+		
+		// create step instance
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 37,503"));
+		assertTrue(context.hasInMemory("Duplicated sites: 618"));
+		assertTrue(context.hasInMemory("Remaining sites in total: 117,499"));
+		LineReader reader = new LineReader(FileUtil.path(out, "chunks-excluded.txt"));
+
+		int count = 0;
+
+		while (reader.next()) {
+			count++;
+		}
+
+		assertEquals(1, count);
 
 		FileUtil.deleteDirectory(new File(out));
 	}
