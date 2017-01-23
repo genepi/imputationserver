@@ -131,8 +131,7 @@ public class QCStatisticsTest extends TestCase {
 		boolean result = run(context, qcStats);
 
 		// check statistics
-		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 37,503"));
-		assertTrue(context.hasInMemory("Duplicated sites: 618"));
+		assertTrue(context.hasInMemory("Excluded sites in total: 3,057"));
 		assertTrue(context.hasInMemory("Remaining sites in total: 117,499"));
 		LineReader reader = new LineReader(FileUtil.path(out, "chunks-excluded.txt"));
 
@@ -144,7 +143,7 @@ public class QCStatisticsTest extends TestCase {
 
 		assertEquals(1, count);
 
-		FileUtil.deleteDirectory(new File(out));
+		//FileUtil.deleteDirectory(new File(out));
 	}
 
 	class QcStatisticsMock extends QualityControlLocal {
