@@ -3,6 +3,7 @@ package genepi.imputationserver.steps.qc;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
@@ -101,6 +102,8 @@ public class QCStatistics {
 
 		chunkLogWriter.write("#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
 
+		Arrays.sort(vcfFilenames);
+		
 		for (String vcfFilename : vcfFilenames) {
 
 			System.out.println(vcfFilename);

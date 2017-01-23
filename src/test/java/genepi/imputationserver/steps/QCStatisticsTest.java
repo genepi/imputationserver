@@ -107,7 +107,7 @@ public class QCStatisticsTest extends TestCase {
 
 		assertEquals(37, count);
 
-		assertEquals("chunk_2_0120000001_0140000000" + "\t" + "3111" + "\t" + "0.9546290619251993" + "\t" + "19",
+		assertEquals("chunk_1_0120000001_0140000000" + "\t" + "108" + "\t" + "0.9391304347826087" + "\t" + "19",
 				testLine);
 
 		FileUtil.deleteDirectory(new File(out));
@@ -137,6 +137,7 @@ public class QCStatisticsTest extends TestCase {
 
 	protected WorkflowTestContext buildContext(String folder, String refpanel) {
 		WorkflowTestContext context = new WorkflowTestContext();
+		
 		File file = new File("test-data/tmp");
 		file.mkdirs();
 
