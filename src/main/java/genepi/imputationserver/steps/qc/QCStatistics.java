@@ -94,12 +94,12 @@ public class QCStatistics {
 		// excluded SNPS
 		logWriter = new LineWriter(FileUtil.path(excludeLog, "snps-excluded.txt"));
 
-		logWriter.write("Position" + "\t" + "FilterType" + "\t" + " Info");
+		logWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
 
 		// excluded chunks
 		chunkLogWriter = new LineWriter(FileUtil.path(excludeLog, "chunks-excluded.txt"));
 
-		chunkLogWriter.write("Chunk" + "\t" + "Info");
+		chunkLogWriter.write("#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
 
 		for (String vcfFilename : vcfFilenames) {
 
@@ -213,7 +213,8 @@ public class QCStatistics {
 
 		if (snp.getAlternateAlleles().size() > 1) {
 			if (insideChunk) {
-				logWriter.write(chr + ":" + snp.getStart() + ":" + ref + ":" + snp.getAlternateAlleles() + "\t" + "Multiallelic Site");
+				logWriter.write(chr + ":" + snp.getStart() + ":" + ref + ":" + snp.getAlternateAlleles() + "\t"
+						+ "Multiallelic Site");
 				multiallelicSites++;
 				filtered++;
 			}
@@ -408,8 +409,8 @@ public class QCStatistics {
 				if (insideChunk) {
 					alleleMismatch++;
 					filtered++;
-					logWriter.write(
-							uniqueName + "\t" + "Allele mismatch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
+					logWriter
+							.write(uniqueName + "\t" + "Allele mismatch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
 				}
 				return;
 			}
@@ -502,8 +503,7 @@ public class QCStatistics {
 
 		} else {
 
-			chunkLogWriter.write(chunk.toString() + "\t" + " (# SNPs: " + overallSnpsChunk + "; "
-					+ "Reference Overlap: " + overlap + "; " + "# Low Sample Call Rates: " + countLowSamples + ")");
+			chunkLogWriter.write(chunk.toString() + "\t" + overallSnpsChunk + "\t" + overlap + "\t" + countLowSamples);
 
 			if (overlap < OVERLAP) {
 				removedChunksOverlap++;
