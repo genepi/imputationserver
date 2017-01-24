@@ -7,6 +7,7 @@ import genepi.hadoop.log.LogCollector;
 import genepi.io.FileUtil;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.io.Text;
@@ -48,6 +49,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String MINIMAC_BIN = "MINIMAC_BIN";
 
 	public static final String CHROMOSOME = "CHROMOSOME";
+	
+	public static final int MAX_COMPUTION_IN_DAYS = 30;
 
 	private String refPanelHdfs;
 
@@ -71,7 +74,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public ImputationJobMinimac3(String name, Log log, String queue) {
 		super(name, log);
-		set("mapred.task.timeout", "720000000");
+		set("mapred.task.timeout", TimeUnit.DAYS.toMillis(MAX_COMPUTION_IN_DAYS)+"");
 		set("mapred.map.tasks.speculative.execution", false);
 		set("mapred.reduce.tasks.speculative.execution", false);
 		log.info("setting queue to " + queue);
