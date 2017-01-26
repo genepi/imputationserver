@@ -2,27 +2,34 @@ package genepi.imputationserver.steps;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
+import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFFileReader;
 import junit.framework.TestCase;
 
 public class QCStatisticsTest extends TestCase {
 
+	// baseline for all tests was execution of running pipeline on Impuation
+	// Server and compared to checkVCF
+
 	public static final boolean VERBOSE = true;
 
-	public void testQcStatisticsOneChunk() throws IOException {
+	public void testQcStatistics() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-		
-		//get output directory
+
+		// get output directory
 		String out = context.getOutput("excludeLog");
 
 		// create step instance
@@ -43,15 +50,15 @@ public class QCStatisticsTest extends TestCase {
 
 	}
 
-	public void testChunkExcluded() throws IOException {
+	public void testQcStatisticAllChunksExcluded() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/single";
-		
+
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-		
-		//get output directory
+
+		// get output directory
 		String out = context.getOutput("excludeLog");
 
 		// create step instance
@@ -72,13 +79,13 @@ public class QCStatisticsTest extends TestCase {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
 		String inputFolder = "test-data/data/simulated-chip-3chr-qc";
-		
+
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
-		//get output directory
+		// get output directory
 		String out = context.getOutput("excludeLog");
-		
+
 		// create step instance
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 
@@ -92,6 +99,28 @@ public class QCStatisticsTest extends TestCase {
 		assertTrue(context.hasInMemory("Duplicated sites: 618"));
 		assertTrue(context.hasInMemory("36 Chunk(s) excluded"));
 		assertTrue(context.hasInMemory("No chunks passed the QC step"));
+
+		FileUtil.deleteDirectory(new File(out));
+	}
+
+	public void testCountLinesInFailedChunkFile() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-qc";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// get output directory
+		String out = context.getOutput("excludeLog");
+
+		// create step instance
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		assertFalse(result);
 
 		LineReader reader = new LineReader(FileUtil.path(out, "chunks-excluded.txt"));
 
@@ -110,20 +139,21 @@ public class QCStatisticsTest extends TestCase {
 		assertEquals("chunk_1_0120000001_0140000000" + "\t" + "108" + "\t" + "0.9391304347826087" + "\t" + "19",
 				testLine);
 
+		// check statistics
 		FileUtil.deleteDirectory(new File(out));
 	}
-	
+
 	public void testQcStatisticsAllChunksPassed() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
-		
+
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
-		//get output directory
+		// get output directory
 		String out = context.getOutput("excludeLog");
-		
+
 		// create step instance
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 
@@ -133,17 +163,112 @@ public class QCStatisticsTest extends TestCase {
 		// check statistics
 		assertTrue(context.hasInMemory("Excluded sites in total: 3,057"));
 		assertTrue(context.hasInMemory("Remaining sites in total: 117,499"));
-		LineReader reader = new LineReader(FileUtil.path(out, "chunks-excluded.txt"));
+
+		FileUtil.deleteDirectory(new File(out));
+	}
+
+	public void testCountSitesInCreatedVcfFiles() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// get output directory
+		String out = context.getOutput("excludeLog");
+
+		// create step instance
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		File[] files = new File(out).listFiles();
+		Arrays.sort(files);
+
+		// baseline from a earlier job execution
+		int[] array = { 4750, 5699, 6334, 3188, 5174, 5106, 5832, 5318, 4588, 968, 3002, 5781, 5116 };
+		int pos = 0;
+
+		for (File file : files) {
+			int count = 0;
+			if (file.getName().endsWith(".gz")) {
+				VCFFileReader vcfReader = new VCFFileReader(file, false);
+				CloseableIterator<VariantContext> it = vcfReader.iterator();
+				while (it.hasNext()) {
+					it.next();
+					count++;
+				}
+				assertEquals(array[pos], count);
+				vcfReader.close();
+				pos++;
+			}
+
+		}
+		FileUtil.deleteDirectory(new File(out));
+	}
+
+	public void testCountLinesInChunkMetaFile() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// get output directory
+		String out = context.getOutput("excludeLog");
+
+		// create step instance
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		LineReader reader = new LineReader(FileUtil.path(out, "1"));
 
 		int count = 0;
-
 		while (reader.next()) {
 			count++;
 		}
 
-		assertEquals(1, count);
+		assertEquals(13, count);
 
-		//FileUtil.deleteDirectory(new File(out));
+		FileUtil.deleteDirectory(new File(out));
+	}
+
+	public void testCountSamplesInCreatedChunk() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// get output directory
+		String out = context.getOutput("excludeLog");
+
+		// create step instance
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		for (File file : new File(out).listFiles()) {
+			if (file.getName().endsWith("chunk_4_80000001_100000000.vcf.gz")) {
+				VCFFileReader vcfReader = new VCFFileReader(file, false);
+				CloseableIterator<VariantContext> it = vcfReader.iterator();
+				if (it.hasNext()) {
+					VariantContext a = it.next();
+					assertEquals(255, a.getNSamples());
+				}
+				vcfReader.close();
+			}
+
+		}
+
+		FileUtil.deleteDirectory(new File(out));
 	}
 
 	class QcStatisticsMock extends QualityControlLocal {
@@ -170,7 +295,7 @@ public class QCStatisticsTest extends TestCase {
 
 	protected WorkflowTestContext buildContext(String folder, String refpanel) {
 		WorkflowTestContext context = new WorkflowTestContext();
-		
+
 		File file = new File("test-data/tmp");
 		file.mkdirs();
 
