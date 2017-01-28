@@ -8,25 +8,19 @@ import java.util.Arrays;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
-import genepi.imputationserver.util.ChiSquareObject;
 import genepi.imputationserver.util.GenomicTools;
 import genepi.io.FileUtil;
 import genepi.io.legend.LegendEntry;
 import genepi.io.legend.LegendFileReader;
 import genepi.io.text.LineWriter;
 import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.tribble.index.IndexFactory;
-import htsjdk.tribble.index.tabix.TabixFormat;
-import htsjdk.tribble.index.tabix.TabixIndex;
 import htsjdk.tribble.util.TabixUtils;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder.OutputType;
-import htsjdk.variant.vcf.VCFCodec;
 import htsjdk.variant.vcf.VCFFileReader;
-import htsjdk.variant.vcf.VCFHeader;
 
 public class QCStatistics {
 
@@ -42,8 +36,8 @@ public class QCStatistics {
 	String chunks = "tmp";
 
 	LineWriter logWriter;
-	LineWriter chunkLogWriter;
-	LineWriter chunkfileWriter;
+	LineWriter excludedChunkWriter;
+	LineWriter metafileWriter;
 	LineWriter mafWriter;
 
 	private double CALL_RATE = 0.5;
@@ -98,35 +92,42 @@ public class QCStatistics {
 		logWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
 
 		// excluded chunks
-		chunkLogWriter = new LineWriter(FileUtil.path(excludeLog, "chunks-excluded.txt"));
+		excludedChunkWriter = new LineWriter(FileUtil.path(excludeLog, "chunks-excluded.txt"));
 
-		chunkLogWriter.write("#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
+		excludedChunkWriter.write(
+				"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
 
 		Arrays.sort(vcfFilenames);
-		
+
 		for (String vcfFilename : vcfFilenames) {
 
 			System.out.println(vcfFilename);
 
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
-			// chunkfile manifest
-			chunkfileWriter = new LineWriter(FileUtil.path(chunkfile, myvcfFile.getChromosome()));
+			if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
 
-			processFile(myvcfFile);
+				throw new IOException("new chrX workflow under prepartion");
 
-			chunkfileWriter.close();
+			} else {
 
+				// chunkfile manifest
+				metafileWriter = new LineWriter(FileUtil.path(chunkfile, myvcfFile.getChromosome()));
+
+				processFile(myvcfFile);
+
+				metafileWriter.close();
+
+			}
 		}
-
+		
 		mafWriter.close();
 
 		logWriter.close();
 
-		chunkLogWriter.close();
-
+		excludedChunkWriter.close();
+		
 		return true;
-
 	}
 
 	public void processFile(VcfFile myvcfFile) throws IOException, InterruptedException {
@@ -150,7 +151,7 @@ public class QCStatistics {
 			validSnpsChunk = 0;
 
 			snpsPerSampleCount = null;
-
+			
 			int chunkStart = chunkNumber * chunkSize + 1;
 
 			int chunkEnd = chunkStart + chunkSize - 1;
@@ -158,13 +159,14 @@ public class QCStatistics {
 			int extendedStart = Math.max(chunkStart - phasingWindow, 1);
 
 			int extendedEnd = chunkEnd + phasingWindow;
+			
+			String contig = myvcfFile.getChromosome();
 
 			String chunkName = FileUtil.path(chunks,
-					"chunk_" + chunkNumber + "_" + chunkStart + "_" + chunkEnd + ".vcf.gz");
+					"chunk_" + contig + "_" + chunkStart + "_" + chunkEnd + ".vcf.gz");
 
 			VcfChunk chunk = new VcfChunk();
-			chunk.setPos(chunkNumber);
-			chunk.setChromosome(myvcfFile.getChromosome());
+			chunk.setChromosome(contig);
 			chunk.setStart(chunkStart);
 			chunk.setEnd(chunkEnd);
 			chunk.setVcfFilename(chunkName);
@@ -179,19 +181,21 @@ public class QCStatistics {
 					.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 					.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF);
 
-			VariantContextWriter vcfWriter = builder.build();
+			VariantContextWriter vcfChunkWriter = builder.build();
 
-			vcfWriter.writeHeader(vcfReader.getFileHeader());
+			vcfChunkWriter.writeHeader(vcfReader.getFileHeader());
 
 			LegendFileReader legendReader = getReader(myvcfFile.getChromosome());
 
 			while (snps.hasNext()) {
+				
+				VariantContext d = snps.next();
 
-				processLine(snps.next(), vcfWriter, legendReader, chunk);
+				processLine(d, vcfChunkWriter, legendReader, chunk);
 
 			}
 
-			vcfWriter.close();
+			vcfChunkWriter.close();
 
 			chunkSummary(chunk, samples);
 
@@ -502,11 +506,11 @@ public class QCStatistics {
 			// update chunk
 			chunk.setSnps(overallSnpsChunk);
 			chunk.setInReference(foundInLegendChunk);
-			chunkfileWriter.write(chunk.serialize());
+			metafileWriter.write(chunk.serialize());
 
 		} else {
 
-			chunkLogWriter.write(chunk.toString() + "\t" + overallSnpsChunk + "\t" + overlap + "\t" + countLowSamples);
+			excludedChunkWriter.write(chunk.toString() + "\t" + overallSnpsChunk + "\t" + overlap + "\t" + countLowSamples);
 
 			if (overlap < OVERLAP) {
 				removedChunksOverlap++;
@@ -645,19 +649,19 @@ public class QCStatistics {
 	}
 
 	public LineWriter getChunkLogWriter() {
-		return chunkLogWriter;
+		return excludedChunkWriter;
 	}
 
 	public void setChunkLogWriter(LineWriter chunkLogWriter) {
-		this.chunkLogWriter = chunkLogWriter;
+		this.excludedChunkWriter = chunkLogWriter;
 	}
 
 	public LineWriter getChunkfileWriter() {
-		return chunkfileWriter;
+		return metafileWriter;
 	}
 
 	public void setChunkfileWriter(LineWriter chunkfileWriter) {
-		this.chunkfileWriter = chunkfileWriter;
+		this.metafileWriter = chunkfileWriter;
 	}
 
 	public LineWriter getMafWriter() {

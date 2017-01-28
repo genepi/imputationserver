@@ -3,7 +3,6 @@ package genepi.imputationserver.steps;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Iterator;
 
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.util.WorkflowTestContext;
@@ -158,7 +157,7 @@ public class QCStatisticsTest extends TestCase {
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 
 		// run and test
-		boolean result = run(context, qcStats);
+		run(context, qcStats);
 
 		// check statistics
 		assertTrue(context.hasInMemory("Excluded sites in total: 3,057"));
@@ -167,7 +166,7 @@ public class QCStatisticsTest extends TestCase {
 		FileUtil.deleteDirectory(new File(out));
 	}
 
-	public void testCountSitesInCreatedVcfFiles() throws IOException {
+	public void testCountSitesForOneChunkedContig() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
@@ -182,13 +181,13 @@ public class QCStatisticsTest extends TestCase {
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 
 		// run and test
-		boolean result = run(context, qcStats);
+		run(context, qcStats);
 
 		File[] files = new File(out).listFiles();
 		Arrays.sort(files);
 
 		// baseline from a earlier job execution
-		int[] array = { 4750, 5699, 6334, 3188, 5174, 5106, 5832, 5318, 4588, 968, 3002, 5781, 5116 };
+		int[] array = { 4588, 968, 3002, 5781, 5116, 4750, 5699, 5174, 6334, 3188,  5106, 5832, 5318 };
 		int pos = 0;
 
 		for (File file : files) {
@@ -204,10 +203,82 @@ public class QCStatisticsTest extends TestCase {
 				vcfReader.close();
 				pos++;
 			}
+			
 
 		}
 		FileUtil.deleteDirectory(new File(out));
 	}
+	public void testCountSplitsForSeveralContigs() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// get output directory
+		String out = context.getOutput("excludeLog");
+
+		// create step instance
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		File[] files = new File(out).listFiles();
+		Arrays.sort(files);
+
+		// baseline from a earlier job execution
+
+		int count = 0;
+		for (File file : files) {
+			if (file.getName().endsWith(".gz")) {
+				count++;
+			}
+
+		}
+		// https://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes
+		assertEquals(13+13+10, count);
+		
+		FileUtil.deleteDirectory(new File(out));
+	}
+	
+	/*public void testCountSplitsForSeveralContigs2() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
+		
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		
+		context.setInput("chunksize", "10000000");
+
+		// get output directory
+		String out = context.getOutput("excludeLog");
+
+		// create step instance
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		File[] files = new File(out).listFiles();
+		Arrays.sort(files);
+
+		// baseline from a earlier job execution
+
+		int count = 0;
+		for (File file : files) {
+			if (file.getName().endsWith(".gz")) {
+				count++;
+			}
+
+		}
+		// https://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes
+		assertEquals(25+25+20, count);
+		
+		FileUtil.deleteDirectory(new File(out));
+	}*/
 
 	public void testCountLinesInChunkMetaFile() throws IOException {
 
@@ -224,7 +295,7 @@ public class QCStatisticsTest extends TestCase {
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 
 		// run and test
-		boolean result = run(context, qcStats);
+		run(context, qcStats);
 
 		LineReader reader = new LineReader(FileUtil.path(out, "1"));
 
@@ -253,10 +324,10 @@ public class QCStatisticsTest extends TestCase {
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 
 		// run and test
-		boolean result = run(context, qcStats);
+		run(context, qcStats);
 
 		for (File file : new File(out).listFiles()) {
-			if (file.getName().endsWith("chunk_4_80000001_100000000.vcf.gz")) {
+			if (file.getName().endsWith("chunk_1_80000001_100000000.vcf.gz")) {
 				VCFFileReader vcfReader = new VCFFileReader(file, false);
 				CloseableIterator<VariantContext> it = vcfReader.iterator();
 				if (it.hasNext()) {
