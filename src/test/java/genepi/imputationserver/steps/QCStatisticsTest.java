@@ -208,7 +208,7 @@ public class QCStatisticsTest extends TestCase {
 		}
 		FileUtil.deleteDirectory(new File(out));
 	}
-	public void testCountSplitsForSeveralContigs() throws IOException {
+	public void testCountAmountSplitsForSeveralContigs() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";

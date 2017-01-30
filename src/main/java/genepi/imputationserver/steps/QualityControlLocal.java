@@ -73,8 +73,7 @@ public class QualityControlLocal extends WorkflowStep {
 			successful = qcStats.start();
 
 		} catch (Exception e) {
-			context.error(e.getMessage());
-			context.endTask("QC failed!", WorkflowContext.ERROR);
+			context.endTask(e.getMessage(), WorkflowContext.ERROR);
 			return false;
 		}
 
