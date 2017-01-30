@@ -234,7 +234,7 @@ public class InputValidation extends WorkflowStep {
 					}
 
 					// check map; hapmap2 map for all files used!
-					GeneticMap map = maps.getById(reference);
+					GeneticMap map = maps.getById("hapmap2");
 					if (map == null) {
 						context.error("genetic map file not found.");
 						return false;
