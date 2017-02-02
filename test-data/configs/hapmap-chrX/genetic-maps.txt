@@ -1,0 +1,6 @@
+maps:
+
+  - id: hapmap2
+    mapEagle: ref-panels/genetic_map_hg19_withX.txt.gz
+    refEagle: ref-panels
+    refPatternEagle: ALL.chr$chr.Pseudo.Auto.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode
