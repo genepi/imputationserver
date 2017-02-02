@@ -235,6 +235,26 @@ public class ImputationMinimac3Test {
 
 	}
 
+	@Test
+	public void testchrXPipelineWithEagle() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chrX";
+		String inputFolder = "test-data/data/chrX-phased";
+		
+		File file = new File("test-data/tmp");
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+	}
+	
 	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
 		step.setup(context);
 		return step.run(context);
