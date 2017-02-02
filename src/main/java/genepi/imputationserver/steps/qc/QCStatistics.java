@@ -107,6 +107,8 @@ public class QCStatistics {
 
 			if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
 
+				VcfFileUtil.prepareChrXEagle(myvcfFile, chunks);
+
 				throw new IOException("new chrX workflow under prepartion");
 
 			} else {

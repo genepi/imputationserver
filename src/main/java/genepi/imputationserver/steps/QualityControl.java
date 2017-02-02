@@ -1,4 +1,4 @@
-package genepi.imputationserver.steps;
+/*package genepi.imputationserver.steps;
 
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.PreferenceStore;
@@ -303,3 +303,4 @@ public class QualityControl extends HadoopJobStep {
 	}
 
 }
+*/
