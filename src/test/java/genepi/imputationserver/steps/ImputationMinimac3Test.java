@@ -235,7 +235,7 @@ public class ImputationMinimac3Test {
 
 	}
 
-	@Test
+	/*@Test
 	public void testchrXPipelineWithEagle() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
@@ -254,7 +254,7 @@ public class ImputationMinimac3Test {
 		boolean result = run(context, qcStats);
 
 	}
-	
+	*/
 	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
 		step.setup(context);
 		return step.run(context);
