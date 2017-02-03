@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,10 +19,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.command.Command;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
-import genepi.io.text.LineWriter;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.writer.Options;
@@ -34,6 +31,8 @@ import htsjdk.variant.vcf.VCFFileReader;
 
 public class VcfFileUtil {
 
+	public static final String X_PAR = "X.Pseudo.Auto";
+	public static final String X_NON_PAR = "X.Non.Pseudo.Auto";
 	public static String BINARIES = "bin/";
 
 	public static void setBinaries(String binaries) {
@@ -104,6 +103,7 @@ public class VcfFileUtil {
 						throw new IOException(
 								"The provided VCF file contains more than one chromosome. Please split your input VCF file by chromosome");
 					}
+					
 
 					String ref = tiles[3];
 					String alt = tiles[4];
@@ -305,45 +305,46 @@ public class VcfFileUtil {
 		}
 
 	}
-	
-	
-	public static List<VcfFile> prepareChrXEagle(VcfFile file, String out) throws IOException {
-		
-		List<VcfFile> files = new Vector<VcfFile>();
 
-		VariantContextWriter vcfChunkWriterNonPar =  new VariantContextWriterBuilder().setOutputFile(FileUtil.path(out,file.getChromosome()+".non.par.vcf.gz"))
-				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
-		
-		
-		VariantContextWriter vcfChunkWriterPar = new VariantContextWriterBuilder().setOutputFile(FileUtil.path(out,file.getChromosome()+".par.vcf.gz"))
+	public static List<String> prepareChrXEagle(VcfFile file, String out) {
+
+		List<String> paths = new Vector<String>();
+		String nonPar = FileUtil.path(out, X_NON_PAR + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterNonPar = new VariantContextWriterBuilder().setOutputFile(nonPar)
 				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
 
-			VCFFileReader vcfReader = new VCFFileReader(new File(file.getVcfFilename()), true);
-			
-			vcfChunkWriterNonPar.writeHeader(vcfReader.getFileHeader());
-			vcfChunkWriterPar.writeHeader(vcfReader.getFileHeader());
+		String par = FileUtil.path(out, X_PAR +  ".vcf.gz");
+		VariantContextWriter vcfChunkWriterPar = new VariantContextWriterBuilder().setOutputFile(par)
+				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
 
-			CloseableIterator<VariantContext> it = vcfReader.iterator();
-			
-			while (it.hasNext()) {
+		VCFFileReader vcfReader = new VCFFileReader(new File(file.getVcfFilename()), true);
 
-				VariantContext line = it.next();
-				
+		vcfChunkWriterNonPar.writeHeader(vcfReader.getFileHeader());
+		vcfChunkWriterPar.writeHeader(vcfReader.getFileHeader());
 
-				if (line.getStart() >= 2699520 && line.getStart() <= 154931043) {
-					vcfChunkWriterNonPar.add(line);
-				} else{
-					vcfChunkWriterPar.add(line);
-				}
-				
+		CloseableIterator<VariantContext> it = vcfReader.iterator();
+
+		while (it.hasNext()) {
+
+			VariantContext line = it.next();
+
+			if (line.getStart() >= 2699520 && line.getStart() <= 154931043) {
+				vcfChunkWriterNonPar.add(line);
+			} else {
+				vcfChunkWriterPar.add(line);
 			}
 
-			vcfChunkWriterPar.close();
-			vcfChunkWriterNonPar.close();
-			vcfReader.close();
-			
-			return files;
-}
+		}
+
+		vcfChunkWriterPar.close();
+		vcfChunkWriterNonPar.close();
+
+		paths.add(nonPar);
+		paths.add(par);
+		vcfReader.close();
+
+		return paths;
+	}
 }

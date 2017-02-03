@@ -18,6 +18,8 @@ public class VcfFile {
 
 	private boolean phased = true;
 	
+	private boolean chrX = false;
+	
 	private boolean phasedAutodetect = true;
 
 	private int chunkSize;
@@ -123,6 +125,14 @@ public class VcfFile {
 	
 	public int getChunkSize() {
 		return chunkSize;
+	}
+
+	public boolean isChrX() {
+		return chrX;
+	}
+
+	public void setChrX(boolean chrX) {
+		this.chrX = chrX;
 	}
 
 }
