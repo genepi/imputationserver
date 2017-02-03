@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
@@ -106,10 +109,24 @@ public class QCStatistics {
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
 			if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
+				
+				List<String> splits = VcfFileUtil.prepareChrXEagle(myvcfFile, chunks);
+				
+				for(String split : splits){
+					
+					myvcfFile = VcfFileUtil.load(split, chunkSize, true);
+					
+					myvcfFile.setChrX(true);
+					
+					String chr = split.contains(VcfFileUtil.X_NON_PAR) ? VcfFileUtil.X_NON_PAR : VcfFileUtil.X_PAR;
+					
+					metafileWriter = new LineWriter(FileUtil.path(chunkfile, chr));
 
-				VcfFileUtil.prepareChrXEagle(myvcfFile, chunks);
+					processFile(myvcfFile);
 
-				throw new IOException("new chrX workflow under prepartion");
+					metafileWriter.close();
+					
+				}
 
 			} else {
 
@@ -133,6 +150,7 @@ public class QCStatistics {
 	}
 
 	public void processFile(VcfFile myvcfFile) throws IOException, InterruptedException {
+		
 
 		VCFFileReader vcfReader = new VCFFileReader(new File(myvcfFile.getVcfFilename()), true);
 
@@ -141,7 +159,7 @@ public class QCStatistics {
 		lastPos = 0;
 
 		for (int chunkNumber : myvcfFile.getChunks()) {
-
+			
 			amountChunks++;
 
 			overallSnpsChunk = 0;
@@ -163,6 +181,14 @@ public class QCStatistics {
 			int extendedEnd = chunkEnd + phasingWindow;
 			
 			String contig = myvcfFile.getChromosome();
+			
+			if(myvcfFile.isChrX()){
+				if(myvcfFile.getVcfFilename().contains(VcfFileUtil.X_NON_PAR)){
+					contig = VcfFileUtil.X_NON_PAR;
+			} else{
+				contig = VcfFileUtil.X_PAR;
+			}
+			}
 
 			String chunkName = FileUtil.path(chunks,
 					"chunk_" + contig + "_" + chunkStart + "_" + chunkEnd + ".vcf.gz");
@@ -525,9 +551,12 @@ public class QCStatistics {
 		}
 	}
 
-	private LegendFileReader getReader(String chromosome) throws IOException, InterruptedException {
+	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
 
-		String legendFile_ = legendFile.replaceAll("\\$chr", chromosome);
+		if(_chromosome.startsWith("X.")){
+			_chromosome = "X";
+		}
+		String legendFile_ = legendFile.replaceAll("\\$chr", _chromosome);
 		String myLegendFile = FileUtil.path(legendFile_);
 
 		if (!new File(myLegendFile).exists()) {
