@@ -235,12 +235,12 @@ public class ImputationMinimac3Test {
 
 	}
 
-	/*@Test
+	@Test
 	public void testchrXPipelineWithEagle() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-phased";
-		
+
 		File file = new File("test-data/tmp");
 		if (file.exists()) {
 			FileUtil.deleteDirectory(file);
@@ -253,8 +253,21 @@ public class ImputationMinimac3Test {
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 		boolean result = run(context, qcStats);
 
+		assertTrue(result);
+		
+		// add panel to hdfs
+		//importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importBinaries("files/minimac/bin");
+
+		// run imputation
+		//ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		//result = run(context, imputation);
+		//assertTrue(result);
+		
+		FileUtil.deleteDirectory(file);
+
 	}
-	*/
+
 	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
 		step.setup(context);
 		return step.run(context);
