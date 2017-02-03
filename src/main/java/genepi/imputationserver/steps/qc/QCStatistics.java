@@ -108,30 +108,32 @@ public class QCStatistics {
 
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
-			if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
-				
-				List<String> splits = VcfFileUtil.prepareChrXEagle(myvcfFile, chunks);
-				
-				for(String split : splits){
-					
-					myvcfFile = VcfFileUtil.load(split, chunkSize, true);
-					
-					myvcfFile.setChrX(true);
-					
-					String chr = split.contains(VcfFileUtil.X_NON_PAR) ? VcfFileUtil.X_NON_PAR : VcfFileUtil.X_PAR;
-					
-					metafileWriter = new LineWriter(FileUtil.path(chunkfile, chr));
+			String contig = myvcfFile.getChromosome();
 
-					processFile(myvcfFile);
+			if (VcfFileUtil.isChrX(contig)) {
+
+				List<String> splits = VcfFileUtil.prepareChrXEagle(myvcfFile, chunks);
+
+				for (String split : splits) {
+
+					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
+					
+					_myvcfFile.setChrX(true);
+
+					String _contig = split.contains(VcfFileUtil.X_NON_PAR) ? VcfFileUtil.X_NON_PAR : VcfFileUtil.X_PAR;
+
+					metafileWriter = new LineWriter(FileUtil.path(chunkfile, _contig));
+
+					processFile(_myvcfFile);
 
 					metafileWriter.close();
-					
+
 				}
 
 			} else {
 
 				// chunkfile manifest
-				metafileWriter = new LineWriter(FileUtil.path(chunkfile, myvcfFile.getChromosome()));
+				metafileWriter = new LineWriter(FileUtil.path(chunkfile, contig));
 
 				processFile(myvcfFile);
 
@@ -139,27 +141,34 @@ public class QCStatistics {
 
 			}
 		}
-		
+
 		mafWriter.close();
 
 		logWriter.close();
 
 		excludedChunkWriter.close();
-		
+
 		return true;
 	}
 
 	public void processFile(VcfFile myvcfFile) throws IOException, InterruptedException {
-		
 
 		VCFFileReader vcfReader = new VCFFileReader(new File(myvcfFile.getVcfFilename()), true);
 
 		ArrayList<String> samples = vcfReader.getFileHeader().getSampleNamesInOrder();
 
 		lastPos = 0;
+		
+		String _contig = myvcfFile.getChromosome();
 
+
+		if (myvcfFile.isChrX()) {
+			_contig = myvcfFile.getVcfFilename().contains(VcfFileUtil.X_NON_PAR) ? VcfFileUtil.X_NON_PAR
+					: VcfFileUtil.X_PAR;
+		}
+		
 		for (int chunkNumber : myvcfFile.getChunks()) {
-			
+
 			amountChunks++;
 
 			overallSnpsChunk = 0;
@@ -171,7 +180,7 @@ public class QCStatistics {
 			validSnpsChunk = 0;
 
 			snpsPerSampleCount = null;
-			
+
 			int chunkStart = chunkNumber * chunkSize + 1;
 
 			int chunkEnd = chunkStart + chunkSize - 1;
@@ -179,22 +188,13 @@ public class QCStatistics {
 			int extendedStart = Math.max(chunkStart - phasingWindow, 1);
 
 			int extendedEnd = chunkEnd + phasingWindow;
-			
-			String contig = myvcfFile.getChromosome();
-			
-			if(myvcfFile.isChrX()){
-				if(myvcfFile.getVcfFilename().contains(VcfFileUtil.X_NON_PAR)){
-					contig = VcfFileUtil.X_NON_PAR;
-			} else{
-				contig = VcfFileUtil.X_PAR;
-			}
-			}
 
-			String chunkName = FileUtil.path(chunks,
-					"chunk_" + contig + "_" + chunkStart + "_" + chunkEnd + ".vcf.gz");
+			String chunkName = null;
+
+			chunkName = FileUtil.path(chunks, "chunk_" + _contig + "_" + chunkStart + "_" + chunkEnd + ".vcf.gz");
 
 			VcfChunk chunk = new VcfChunk();
-			chunk.setChromosome(contig);
+			chunk.setChromosome(_contig);
 			chunk.setStart(chunkStart);
 			chunk.setEnd(chunkEnd);
 			chunk.setVcfFilename(chunkName);
@@ -202,8 +202,7 @@ public class QCStatistics {
 			chunk.setPhased(myvcfFile.isPhased());
 
 			// query with index
-			CloseableIterator<VariantContext> snps = vcfReader.query(myvcfFile.getChromosome(),
-					Math.max(extendedStart, 1), extendedEnd);
+			CloseableIterator<VariantContext> snps = vcfReader.query(myvcfFile.getChromosome(), Math.max(extendedStart, 1), extendedEnd);
 
 			VariantContextWriterBuilder builder = new VariantContextWriterBuilder().setOutputFile(chunkName)
 					.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
@@ -216,7 +215,7 @@ public class QCStatistics {
 			LegendFileReader legendReader = getReader(myvcfFile.getChromosome());
 
 			while (snps.hasNext()) {
-				
+
 				VariantContext d = snps.next();
 
 				processLine(d, vcfChunkWriter, legendReader, chunk);
@@ -242,13 +241,13 @@ public class QCStatistics {
 		String ref = snp.getReference().getBaseString();
 		int position = snp.getStart();
 
-		String chr = chunk.getChromosome();
-
+		String _contig = chunk.getChromosome();
+		
 		boolean insideChunk = position >= chunk.getStart() && position <= chunk.getEnd();
 
 		if (snp.getAlternateAlleles().size() > 1) {
 			if (insideChunk) {
-				logWriter.write(chr + ":" + snp.getStart() + ":" + ref + ":" + snp.getAlternateAlleles() + "\t"
+				logWriter.write(_contig + ":" + snp.getStart() + ":" + ref + ":" + snp.getAlternateAlleles() + "\t"
 						+ "Multiallelic Site");
 				multiallelicSites++;
 				filtered++;
@@ -258,7 +257,7 @@ public class QCStatistics {
 
 		String alt = snp.getAlternateAllele(0).getBaseString();
 
-		String uniqueName = chr + ":" + snp.getStart() + ":" + ref + ":" + alt;
+		String uniqueName = _contig + ":" + snp.getStart() + ":" + ref + ":" + alt;
 
 		// filter invalid alleles
 		if (!GenomicTools.isValid(ref) || !GenomicTools.isValid(alt)) {
@@ -517,8 +516,6 @@ public class QCStatistics {
 			if (sampleCallRate < CALL_RATE) {
 				lowSampleCallRate = true;
 				countLowSamples++;
-				// chunkLogWriter.write(chunk.toString() + " Sample " +
-				// samples.get(i) + ": call rate: " + sampleCallRate);
 			}
 
 		}
@@ -538,7 +535,8 @@ public class QCStatistics {
 
 		} else {
 
-			excludedChunkWriter.write(chunk.toString() + "\t" + overallSnpsChunk + "\t" + overlap + "\t" + countLowSamples);
+			excludedChunkWriter
+					.write(chunk.toString() + "\t" + overallSnpsChunk + "\t" + overlap + "\t" + countLowSamples);
 
 			if (overlap < OVERLAP) {
 				removedChunksOverlap++;
@@ -553,7 +551,8 @@ public class QCStatistics {
 
 	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
 
-		if(_chromosome.startsWith("X.")){
+		// one combined chrX legend file
+		if (_chromosome.startsWith("X.")) {
 			_chromosome = "X";
 		}
 		String legendFile_ = legendFile.replaceAll("\\$chr", _chromosome);
