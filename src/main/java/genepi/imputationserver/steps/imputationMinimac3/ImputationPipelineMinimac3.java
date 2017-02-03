@@ -53,19 +53,7 @@ public class ImputationPipelineMinimac3 {
 
 		System.out.println("Starting pipeline for chunk " + chunk + " [Phased: " + chunk.isPhased() + "]...");
 
-		String chrFilename = "";
-
-		if (chunk.getChromosome().startsWith("X.no.auto")) {
-
-			chrFilename = pattern.replaceAll("\\$chr", "X.Non.Pseudo.Auto");
-
-		} else if (chunk.getChromosome().equals("X.auto")) {
-
-			chrFilename = pattern.replaceAll("\\$chr", "X.Pseudo.Auto");
-
-		} else {
-			chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome());
-		}
+		String chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome());
 
 		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
 
@@ -76,16 +64,11 @@ public class ImputationPipelineMinimac3 {
 
 		setReferencePanel(refPanelFilename);
 
-		// impute only for phased chromosomes and chr X male samples
-		if (chunk.isPhased() || chunk.getChromosome().equals("X.no.auto_male")) {
-
-			if (chunk.getChromosome().equals("X.no.auto_male")) {
-				// replaceMale(output.getVcfFilename());
-			}
+		// impute only for phased chromosomes
+		if (chunk.isPhased()) {
 
 			// replace X.nonpar / X.par with X needed by minimac3
-			if (chunk.getChromosome().contains("X")) {
-				chunk.setChromosome("X");
+			if (chunk.getChromosome().startsWith("X.")) {
 				output.setChromosome("X");
 			}
 
