@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +23,12 @@ import genepi.hadoop.HdfsUtil;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypeBuilder;
+import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
@@ -103,7 +109,6 @@ public class VcfFileUtil {
 						throw new IOException(
 								"The provided VCF file contains more than one chromosome. Please split your input VCF file by chromosome");
 					}
-					
 
 					String ref = tiles[3];
 					String alt = tiles[4];
@@ -314,7 +319,7 @@ public class VcfFileUtil {
 				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
 
-		String par = FileUtil.path(out, X_PAR +  ".vcf.gz");
+		String par = FileUtil.path(out, X_PAR + ".vcf.gz");
 		VariantContextWriter vcfChunkWriterPar = new VariantContextWriterBuilder().setOutputFile(par)
 				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
@@ -331,6 +336,7 @@ public class VcfFileUtil {
 			VariantContext line = it.next();
 
 			if (line.getStart() >= 2699520 && line.getStart() <= 154931043) {
+				line = makeDiploid(vcfReader.getFileHeader().getGenotypeSamples(), line);
 				vcfChunkWriterNonPar.add(line);
 			} else {
 				vcfChunkWriterPar.add(line);
@@ -346,5 +352,29 @@ public class VcfFileUtil {
 		vcfReader.close();
 
 		return paths;
+	}
+
+	private static VariantContext makeDiploid(List<String> samples, VariantContext snp) {
+
+		final GenotypesContext genotypes = GenotypesContext.create(samples.size());
+		String ref = snp.getReference().getBaseString();
+
+		for (final String name : samples) {
+			
+			Genotype genotype = snp.getGenotype(name);
+			
+			// better method available to check for haploid genotypes?
+			if (genotype.getGenotypeString().length() == 1) {
+				// better method available?
+				boolean isRef = ref.equals(genotype.getGenotypeString(true)) ? true : false;
+				final List<Allele> genotypeAlleles = new ArrayList<Allele>();
+				Allele allele = Allele.create(genotype.getGenotypeString(), isRef);
+				genotypeAlleles.add(allele);
+				genotypeAlleles.add(allele);
+				genotype = new GenotypeBuilder(name, genotypeAlleles).phased(true).make();
+			}
+			genotypes.add(genotype);
+		}
+		return new VariantContextBuilder(snp).genotypes(genotypes).make();
 	}
 }

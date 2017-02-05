@@ -236,7 +236,7 @@ public class ImputationMinimac3Test {
 	}
 
 	@Test
-	public void testchrXPipelineWithEagle() throws IOException, ZipException {
+	public void testchrXPipelinePhased() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-phased";
@@ -259,7 +259,7 @@ public class ImputationMinimac3Test {
 		//importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		//importBinaries("files/minimac/bin");
 
-		// run imputation
+		//run imputation
 		//ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
 		//result = run(context, imputation);
 		//assertTrue(result);

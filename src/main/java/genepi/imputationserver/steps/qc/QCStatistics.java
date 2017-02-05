@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -18,6 +19,8 @@ import genepi.io.legend.LegendFileReader;
 import genepi.io.text.LineWriter;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
