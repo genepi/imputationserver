@@ -2,6 +2,6 @@ panels:
    
   - id: phase1
     pattern: $chr.1000g.Phase1.v3.With.Parameter.Estimates.m3vcf.gz
-    hdfs: ref-panels/phase1-chrX.tgz
+    hdfs: ref-panels/chrx-phase1.tar.gz
     legendPattern: hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     legend:  test-data/configs/hapmap-chrX/ref-panels/1000g_chr$chr_impute.legend.gz
