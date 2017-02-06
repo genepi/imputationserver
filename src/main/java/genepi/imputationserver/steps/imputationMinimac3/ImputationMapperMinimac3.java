@@ -131,11 +131,14 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		PreferenceStore store = new PreferenceStore(context.getConfiguration());
 		folder = store.getString("minimac.tmp");
 		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
-		FileUtil.createDirectory(folder);
+		boolean created = FileUtil.createDirectory(folder);
+		
+		if(!created){
+			throw new IOException(store.getString("minimac.tmp") + " is not writable!");
+		}
 
 		// create symbolic link --> index file is in the same folder as data
-
-		if (!chr.startsWith("X") && refEagleFilename != null) {
+		if (refEagleFilename != null) {
 			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf")),
 					Paths.get(refEagleFilename));
 			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf.csi")),
