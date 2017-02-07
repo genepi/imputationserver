@@ -115,7 +115,7 @@ public class QCStatistics {
 
 			if (VcfFileUtil.isChrX(contig)) {
 
-				List<String> splits = VcfFileUtil.prepareChrXEagle(myvcfFile, chunks);
+				List<String> splits = VcfFileUtil.prepareChrXEagle(myvcfFile, chunks, myvcfFile.isPhased());
 
 				for (String split : splits) {
 

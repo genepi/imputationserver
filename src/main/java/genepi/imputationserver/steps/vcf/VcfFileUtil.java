@@ -311,7 +311,7 @@ public class VcfFileUtil {
 
 	}
 
-	public static List<String> prepareChrXEagle(VcfFile file, String out) {
+	public static List<String> prepareChrXEagle(VcfFile file, String out, boolean isPhased) {
 
 		List<String> paths = new Vector<String>();
 		String nonPar = FileUtil.path(out, X_NON_PAR + ".vcf.gz");
@@ -335,8 +335,8 @@ public class VcfFileUtil {
 
 			VariantContext line = it.next();
 
-			if (line.getStart() >= 2699520 && line.getStart() <= 154931043) {
-				line = makeDiploid(vcfReader.getFileHeader().getGenotypeSamples(), line);
+			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
+				line = makeDiploid(vcfReader.getFileHeader().getGenotypeSamples(), line, isPhased);
 				vcfChunkWriterNonPar.add(line);
 			} else {
 				vcfChunkWriterPar.add(line);
@@ -354,7 +354,7 @@ public class VcfFileUtil {
 		return paths;
 	}
 
-	private static VariantContext makeDiploid(List<String> samples, VariantContext snp) {
+	private static VariantContext makeDiploid(List<String> samples, VariantContext snp, boolean isPhased) {
 
 		final GenotypesContext genotypes = GenotypesContext.create(samples.size());
 		String ref = snp.getReference().getBaseString();
@@ -371,7 +371,7 @@ public class VcfFileUtil {
 				Allele allele = Allele.create(genotype.getGenotypeString(), isRef);
 				genotypeAlleles.add(allele);
 				genotypeAlleles.add(allele);
-				genotype = new GenotypeBuilder(name, genotypeAlleles).phased(true).make();
+				genotype = new GenotypeBuilder(name, genotypeAlleles).phased(isPhased).make();
 			}
 			genotypes.add(genotype);
 		}

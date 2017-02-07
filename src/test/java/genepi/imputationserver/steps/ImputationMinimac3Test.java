@@ -247,7 +247,7 @@ public class ImputationMinimac3Test {
 		}
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "phase1", "ignore-phasing");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);

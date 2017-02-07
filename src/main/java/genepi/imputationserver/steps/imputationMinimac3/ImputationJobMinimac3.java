@@ -59,6 +59,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String folder;
 
+	private String phasing;
+
 	private boolean noCache = false;
 
 	private String mapShapeITHDFS;
@@ -112,7 +114,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 		// add ShapeIT Map File to cache
 
-		if (mapShapeITHDFS != null) {
+		if (phasing.equals("shapeit") && mapShapeITHDFS != null) {
 			if (HdfsUtil.exists(mapShapeITHDFS)) {
 				name = FileUtil.getFilename(mapShapeITHDFS);
 				cache.addArchive(name, mapShapeITHDFS);
@@ -122,7 +124,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		}
 
 		// add HapiUR Map File to cache
-		if (mapHapiURHDFS != null) {
+		if (phasing.equals("hapiur") && mapHapiURHDFS != null) {
 			if (HdfsUtil.exists(mapHapiURHDFS)) {
 				name = FileUtil.getFilename(mapHapiURHDFS);
 				cache.addArchive(name, mapHapiURHDFS);
@@ -132,7 +134,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		}
 
 		// add Eagle Map File to cache
-		if (mapEagleHDFS != null) {
+		if (phasing.equals("eagle") && mapEagleHDFS != null) {
 			if (HdfsUtil.exists(mapEagleHDFS)) {
 				name = FileUtil.getFilename(mapEagleHDFS);
 				cache.addFile(mapEagleHDFS);
@@ -142,19 +144,15 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		}
 
 		// add Eagle Refpanel File for this chromosome to cache
-		if (refPanelEagleHDFS != null) {
+		if (phasing.equals("eagle") && refPanelEagleHDFS != null) {
 			if (HdfsUtil.exists(refPanelEagleHDFS)) {
-				if (!chr.contains("X")) {
-					String chrFilename = refPanelEaglePattern.replaceAll("\\$chr", chr);
-					String refFilePath = HdfsUtil.path(refPanelEagleHDFS, chrFilename);
-					if (!HdfsUtil.exists(refFilePath)) {
-						throw new IOException("Eagle Reference Panel " + refFilePath + " not found.");
-					}
-
-					cache.addFile(refFilePath);
-					cache.addFile(refFilePath + ".csi");
-
+				String chrFilename = refPanelEaglePattern.replaceAll("\\$chr", chr);
+				String refFilePath = HdfsUtil.path(refPanelEagleHDFS, chrFilename);
+				if (!HdfsUtil.exists(refFilePath)) {
+					throw new IOException("Eagle Reference Panel " + refFilePath + " not found.");
 				}
+				cache.addFile(refFilePath);
+				cache.addFile(refFilePath + ".csi");
 			} else {
 				throw new IOException("Eagle Reference Panel Folder " + refPanelEagleHDFS + " not found.");
 			}
@@ -233,6 +231,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public void setPhasing(String phasing) {
 		set(PHASING, phasing);
+		this.phasing = phasing;
 	}
 
 	public void setRounds(String rounds) {
@@ -287,6 +286,10 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public void setChromosome(String chr) {
 		this.chr = chr;
 		set(CHROMOSOME, chr);
+	}
+
+	public String getPhasing() {
+		return phasing;
 	}
 
 }

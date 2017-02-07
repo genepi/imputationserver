@@ -157,21 +157,21 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setChromosome(chr);
 
 				// shapeit
-				if (map.getMapShapeIT() != null && phasing.equals("shapeit")) {
+				if (phasing.equals("shapeit") && map.getMapShapeIT() != null) {
 					context.println("Setting up shapeit map files...");
 					job.setMapShapeITHdfs(map.getMapShapeIT());
 					job.setMapShapeITPattern(map.getMapPatternShapeIT());
 				}
 
 				// hapiur
-				if (map.getMapHapiUR() != null && phasing.equals("hapiur")) {
+				if (phasing.equals("hapiur") && map.getMapHapiUR() != null) {
 					context.println("Setting up hapiur map files...");
 					job.setMapHapiURHdfs(map.getMapHapiUR());
 					job.setMapHapiURPattern(map.getMapPatternHapiUR());
 				}
 
 				// eagle
-				if (map.getMapEagle() != null && phasing.equals("eagle")) {
+				if (phasing.equals("eagle") && map.getMapEagle() != null) {
 					context.println("Setting up eagle reference and map files...");
 					job.setMapEagleHdfs(map.getMapEagle());
 					job.setRefEagleHdfs(map.getRefEagle());
