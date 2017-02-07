@@ -17,7 +17,6 @@ import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
-import junit.framework.TestCase;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -25,7 +24,8 @@ public class ImputationMinimac3Test {
 
 	public static final boolean VERBOSE = true;
 
-	public final int TOTAL_REFPANEL = 63407;
+	public final int TOTAL_REFPANEL_CHR20 = 63407;
+	public final int TOTAL_REFPANEL_CHRX_NONPAR = 1437122;
 	public final int FILTER_REFPANEL = 5;
 	public final int ONLY_IN_INPUT = 78;
 
@@ -80,7 +80,7 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -127,7 +127,7 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL - FILTER_REFPANEL, file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -178,7 +178,7 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(false, file.isPhased());
-		assertEquals(TOTAL_REFPANEL - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -229,7 +229,7 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -256,18 +256,36 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 		
 		// add panel to hdfs
-		//importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		//importBinaries("files/minimac/bin");
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		importBinaries("files/minimac/bin");
 
 		//run imputation
-		//ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		//result = run(context, imputation);
-		//assertTrue(result);
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
 		
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+		
+		
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.Non.Pseudo.Auto.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.Non.Pseudo.Auto.dose.vcf.gz", 100000000, false);
+
+		assertEquals("X", vcfFile.getChromosome());
+		assertEquals(26, vcfFile.getNoSamples());
+		assertEquals(true, vcfFile.isPhased());
+		assertEquals(TOTAL_REFPANEL_CHRX_NONPAR, vcfFile.getNoSnps());
+	
 		FileUtil.deleteDirectory(file);
 
 	}
-
 	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
 		step.setup(context);
 		return step.run(context);
