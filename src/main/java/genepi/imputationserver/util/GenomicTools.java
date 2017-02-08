@@ -2,7 +2,6 @@ package genepi.imputationserver.util;
 
 import java.io.IOException;
 
-import genepi.imputationserver.steps.qc.QualityControlMapper;
 import genepi.imputationserver.steps.qc.SnpStats;
 import genepi.io.legend.LegendEntry;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -33,28 +32,6 @@ public class GenomicTools {
 		return false;
 	}
 
-	/**
-	 * it's only a match if chiSquare is under 300. This means there is no
-	 * switch
-	 **/
-	public static boolean matchChiSquare(VariantContext snp,
-			LegendEntry refEntry) {
-
-		char studyRef = snp.getReference().getBaseString().charAt(0);
-		char studyAlt = snp.getAltAlleleWithHighestAlleleCount()
-				.getBaseString().charAt(0);
-		char legendRef = refEntry.getAlleleA();
-		char legendAlt = refEntry.getAlleleB();
-
-		if (studyRef == legendRef && studyAlt == legendAlt) {
-
-			return chiSquare(snp, refEntry, false).getChisq() <= 300;
-
-		}
-
-		return false;
-	}
-
 	public static boolean alleleSwitch(VariantContext snp, LegendEntry refEntry) {
 
 		char studyRef = snp.getReference().getBaseString().charAt(0);
@@ -66,46 +43,6 @@ public class GenomicTools {
 
 		// all simple cases
 		if (studyRef == legendAlt && studyAlt == legendRef) {
-
-			return true;
-		}
-
-		return false;
-
-	}
-
-	public static boolean alleleSwitchChiSquare(VariantContext snp,
-			LegendEntry refEntry) {
-
-		char studyRef = snp.getReference().getBaseString().charAt(0);
-		char studyAlt = snp.getAltAlleleWithHighestAlleleCount()
-				.getBaseString().charAt(0);
-
-		char legendRef = refEntry.getAlleleA();
-		char legendAlt = refEntry.getAlleleB();
-
-		String studyGenotype = new StringBuilder().append(studyRef)
-				.append(studyAlt).toString();
-
-		String referenceGenotype = new StringBuilder().append(legendRef)
-				.append(legendAlt).toString();
-
-		if ((studyGenotype.equals("AT") || studyGenotype.equals("TA"))
-				&& (referenceGenotype.equals("AT") || referenceGenotype
-						.equals("TA"))) {
-
-			return chiSquare(snp, refEntry, false).getChisq() > 300;
-
-		} else if ((studyGenotype.equals("CG") || studyGenotype.equals("GC"))
-				&& (referenceGenotype.equals("CG") || referenceGenotype
-						.equals("GC"))) {
-
-			return chiSquare(snp, refEntry, false).getChisq() > 300;
-
-		}
-
-		// all other cases
-		else if (studyRef == legendAlt && studyAlt == legendRef) {
 
 			return true;
 		}
@@ -192,37 +129,6 @@ public class GenomicTools {
 		return false;
 	}
 
-	public static boolean complicatedGenotypesChiSquare(VariantContext snp,
-			LegendEntry refEntry) {
-
-		char studyRef = snp.getReference().getBaseString().charAt(0);
-		char studyAlt = snp.getAltAlleleWithHighestAlleleCount()
-				.getBaseString().charAt(0);
-		char legendRef = refEntry.getAlleleA();
-		char legendAlt = refEntry.getAlleleB();
-
-		String studyGenotype = new StringBuilder().append(studyRef)
-				.append(studyAlt).toString();
-
-		String referenceGenotype = new StringBuilder().append(legendRef)
-				.append(legendAlt).toString();
-
-		if ((studyGenotype.equals("AT") || studyGenotype.equals("TA"))
-				&& (referenceGenotype.equals("AT") || referenceGenotype
-						.equals("TA"))) {
-
-			return chiSquare(snp, refEntry, false).getChisq() <= 300;
-
-		} else if ((studyGenotype.equals("CG") || studyGenotype.equals("GC"))
-				&& (referenceGenotype.equals("CG") || referenceGenotype
-						.equals("GC"))) {
-
-			return chiSquare(snp, refEntry, false).getChisq() <= 300;
-
-		}
-		return false;
-	}
-
 	public static boolean strandSwapAndAlleleSwitch(char studyRef,
 			char studyAlt, char legendRef, char legendAlt) {
 
@@ -271,13 +177,13 @@ public class GenomicTools {
 	}
 
 	public static ChiSquareObject chiSquare(VariantContext snp,
-			LegendEntry refSnp, boolean strandSwap) {
+			LegendEntry refSnp, boolean strandSwap, int size) {
 
 		// calculate allele frequency
 
 		double chisq = 0;
 
-		int refN = getPanelSize(QualityControlMapper.PANEL_ID);
+		int refN = size;
 		
 		double refA = refSnp.getFrequencyA();
 		double refB = refSnp.getFrequencyB();
@@ -360,7 +266,7 @@ public class GenomicTools {
 
 	}
 	
-	public static SnpStats calculateAlleleFreq(VariantContext snp, LegendEntry refSnp, boolean strandSwap)
+	public static SnpStats calculateAlleleFreq(VariantContext snp, LegendEntry refSnp, boolean strandSwap, int size)
 			throws IOException, InterruptedException {
 
 		// calculate allele frequency
@@ -368,7 +274,7 @@ public class GenomicTools {
 
 		int position = snp.getStart();
 
-		ChiSquareObject chiObj = GenomicTools.chiSquare(snp, refSnp, strandSwap);
+		ChiSquareObject chiObj = GenomicTools.chiSquare(snp, refSnp, strandSwap, size);
 
 		char majorAllele;
 		char minorAllele;

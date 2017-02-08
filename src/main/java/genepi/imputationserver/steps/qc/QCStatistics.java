@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
@@ -19,8 +16,6 @@ import genepi.io.legend.LegendFileReader;
 import genepi.io.text.LineWriter;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
-import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
@@ -35,6 +30,7 @@ public class QCStatistics {
 	int phasingWindow;
 	String input;
 	String legendFile;
+	int refSamples;
 
 	String outputMaf = "tmp/maf.txt";
 	String chunkfile = "tmp";
@@ -472,11 +468,11 @@ public class QCStatistics {
 							|| GenomicTools.alleleSwitch(snp, refSnp)) {
 
 						// swap alleles
-						statistics = GenomicTools.calculateAlleleFreq(snp, refSnp, true);
+						statistics = GenomicTools.calculateAlleleFreq(snp, refSnp, true, refSamples);
 					}
 
 					else {
-						statistics = GenomicTools.calculateAlleleFreq(snp, refSnp, false);
+						statistics = GenomicTools.calculateAlleleFreq(snp, refSnp, false, refSamples);
 					}
 
 					mafWriter.write(uniqueName + "\t" + statistics.toString());
@@ -919,6 +915,14 @@ public class QCStatistics {
 
 	public void setMultiallelicSites(int multiallelicSites) {
 		this.multiallelicSites = multiallelicSites;
+	}
+
+	public int getRefSamples() {
+		return refSamples;
+	}
+
+	public void setRefSamples(int refSamples) {
+		this.refSamples = refSamples;
 	}
 
 }

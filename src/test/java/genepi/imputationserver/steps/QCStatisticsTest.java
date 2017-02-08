@@ -342,7 +342,7 @@ public class QCStatisticsTest extends TestCase {
 		FileUtil.deleteDirectory(new File(out));
 	}
 
-	class QcStatisticsMock extends QualityControlLocal {
+	class QcStatisticsMock extends QualityControl {
 
 		private String folder;
 

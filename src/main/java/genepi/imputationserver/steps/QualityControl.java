@@ -1,68 +1,35 @@
-/*package genepi.imputationserver.steps;
+package genepi.imputationserver.steps;
 
-import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.PreferenceStore;
-import genepi.hadoop.common.ContextLog;
 import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.io.HdfsLineWriter;
-import genepi.imputationserver.steps.qc.QualityControlJob;
-import genepi.imputationserver.steps.vcf.VcfFile;
-import genepi.imputationserver.steps.vcf.VcfFileUtil;
-import genepi.imputationserver.util.HadoopJobStep;
+import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.steps.qc.QCStatistics;
+import genepi.imputationserver.util.GenomicTools;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
-
 import java.io.File;
-import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Vector;
 
-public class QualityControl extends HadoopJobStep {
-
-	private DecimalFormat formatter = new DecimalFormat("###,###.###");
+public class QualityControl extends WorkflowStep {
 
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		String folder = getFolder(HadoopJobStep.class);
+		String folder = getFolder(QualityControl.class);
 
-		// inputs
+		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
 		String population = context.get("population");
-		String files = context.get("files");
-		String chunkfile = context.get("chunkfile");
-
-		// outputs
-		String output = context.get("outputmaf");
-		String outputManifest = context.get("mafchunkfile");
-		String removedSnps = context.get("statistics");
-
-		// read config
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
-		String qcQueue ="default";
-		if(store.getString("minimac.qc.queue") != null && !store.getString("minimac.qc.queue").equals("")){
-			qcQueue = store.getString("minimac.qc.queue");
-		}
-		
-
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
-		int chunks = 0;
-		// create manifest file
-		try {
-			chunks = createChunkFile(context, files, chunkfile, chunkSize);
-		} catch (Exception e) {
-			e.printStackTrace();
-			context.error(e.toString());
-			return false;
-		}
+		String outputMaf = context.get("outputmaf");
+		String outputChunkfile = context.get("mafchunkfile");
+		String excluded = context.get("statistics");
+		String chunks = context.get("chunks");
 
-		if (chunks == -1) {
-			context.error("Error during manifest file creation.");
-			return false;
-		}
+		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
+		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
 		// load reference panels
 		RefPanelList panels = null;
@@ -87,94 +54,109 @@ public class QualityControl extends HadoopJobStep {
 			return false;
 		}
 
-		// submit qc hadoop job
-		QualityControlJob job = new QualityControlJob(context.getJobId() + "-quality-control", new ContextLog(context),
-				qcQueue);
-		job.setPanelId(panel.getId());
-		job.setLegendHdfs(panel.getLegend());
-		job.setLegendPattern(panel.getLegendPattern());
-		job.setPopulation(population);
-		job.setInput(chunkfile);
-		job.setOutput(output + "_temp");
-		job.setOutputMaf(output);
-		job.setOutputManifest(outputManifest);
-		job.setOutputRemovedSnps(removedSnps);
-		job.setQcQueue(qcQueue);
-		job.setJarByClass(QualityControl.class);
 
-		boolean successful = executeHadoopJob(job, context);
+		int referenceSamples = GenomicTools.getPanelSize(reference); 
+		QCStatistics qcStats = new QCStatistics();
+
+		qcStats.setOutputMaf(outputMaf);
+		qcStats.setChunkfile(outputChunkfile);
+		qcStats.setChunks(chunks);
+		qcStats.setExcludeLog(excluded);
+		qcStats.setInput(inputFiles);
+		qcStats.setChunkSize(chunkSize);
+		qcStats.setPhasingWindow(phasingWindow);
+		qcStats.setPopulation(population);
+		qcStats.setLegendFile(panel.getLegend());
+		qcStats.setRefSamples(referenceSamples);
+
+		context.beginTask("Calculating QC Statistics...");
+
+		boolean successful;
+		try {
+
+			successful = qcStats.start();
+
+		} catch (Exception e) {
+			context.endTask(e.getMessage(), WorkflowContext.ERROR);
+			return false;
+		}
 
 		if (successful) {
 
-			// print qc statistics
+			context.endTask("QC finished successfully", WorkflowContext.OK);
+
 			DecimalFormat df = new DecimalFormat("#.00");
+			DecimalFormat formatter = new DecimalFormat("###,###.###");
 
 			StringBuffer text = new StringBuffer();
 
 			text.append("<b>Statistics:</b> <br>");
-			text.append("Alternative allele frequency > 0.5 sites: " + formatter.format(job.getAlternativeAlleles())
+			text.append("Alternative allele frequency > 0.5 sites: " + formatter.format(qcStats.getAlternativeAlleles())
 					+ "<br>");
-			text.append(
-					"Reference Overlap: "
-							+ df.format(job.getFoundInLegend()
-									/ (double) (job.getFoundInLegend() + job.getNotFoundInLegend()) * 100)
-							+ "% " + "<br>");
+			text.append("Reference Overlap: " + qcStats.getFoundInLegend() + "/"
+					+ ((qcStats.getFoundInLegend() + qcStats.getNotFoundInLegend())) + " ("
+					+ df.format(qcStats.getFoundInLegend()
+							/ (double) (qcStats.getFoundInLegend() + qcStats.getNotFoundInLegend()) * 100)
+					+ "%" + ")<br>");
 
-			text.append("Match: " + formatter.format(job.getMatch()) + "<br>");
-			text.append("Allele switch: " + formatter.format(job.getAlleleSwitch()) + "<br>");
-			text.append("Strand flip: " + formatter.format(job.getStrandSwitch1()) + "<br>");
-			text.append("Strand flip and allele switch: " + formatter.format(job.getStrandSwitch3()) + "<br>");
-			text.append("A/T, C/G genotypes: " + formatter.format(job.getStrandSwitch2()) + "<br>");
+			text.append("Match: " + formatter.format(qcStats.getMatch()) + "<br>");
+			text.append("Allele switch: " + formatter.format(qcStats.getAlleleSwitch()) + "<br>");
+			text.append("Strand flip: " + formatter.format(qcStats.getStrandSwitch1()) + "<br>");
+			text.append("Strand flip and allele switch: " + formatter.format(qcStats.getStrandSwitch3()) + "<br>");
+			text.append("A/T, C/G genotypes: " + formatter.format(qcStats.getStrandSwitch2()) + "<br>");
 
 			text.append("<b>Filtered sites:</b> <br>");
-			text.append("Filter flag set: " + formatter.format(job.getFilterFlag()) + "<br>");
-			text.append("Invalid alleles: " + formatter.format(job.getInvalidAlleles()) + "<br>");
-			text.append("Duplicated sites: " + formatter.format(job.getDuplicates()) + "<br>");
-			text.append("NonSNP sites: " + formatter.format(job.getNoSnps()) + "<br>");
-			text.append("Monomorphic sites: " + formatter.format(job.getMonomorphic()) + "<br>");
-			text.append("Allele mismatch: " + formatter.format(job.getAlleleMismatch()) + "<br>");
-			text.append("SNPs call rate < 90%: " + formatter.format(job.getToLessSamples()));
+			text.append("Filter flag set: " + formatter.format(qcStats.getFilterFlag()) + "<br>");
+			text.append("Invalid alleles: " + formatter.format(qcStats.getInvalidAlleles()) + "<br>");
+			text.append("Multiallelic sites: " + formatter.format(qcStats.getMultiallelicSites()) + "<br>");
+			text.append("Duplicated sites: " + formatter.format(qcStats.getDuplicates()) + "<br>");
+			text.append("NonSNP sites: " + formatter.format(qcStats.getNoSnps()) + "<br>");
+			text.append("Monomorphic sites: " + formatter.format(qcStats.getMonomorphic()) + "<br>");
+			text.append("Allele mismatch: " + formatter.format(qcStats.getAlleleMismatch()) + "<br>");
+			text.append("SNPs call rate < 90%: " + formatter.format(qcStats.getLowCallRate()));
 
 			context.ok(text.toString());
 
 			text = new StringBuffer();
 
-			text.append("Excluded sites in total: " + formatter.format(job.getFiltered()) + "<br>");
-			text.append("Remaining sites in total: " + formatter.format(job.getRemainingSnps()) + "<br>");
+			text.append("Excluded sites in total: " + formatter.format(qcStats.getFiltered()) + "<br>");
+			text.append("Remaining sites in total: " + formatter.format(qcStats.getOverallSnps()) + "<br>");
 
-			if (job.getRemovedChunksSnps() > 0) {
+			if (qcStats.getRemovedChunksSnps() > 0) {
 
-				text.append("<br><b>Warning:</b> " + formatter.format(job.getRemovedChunksSnps())
+				text.append("<br><b>Warning:</b> " + formatter.format(qcStats.getRemovedChunksSnps())
 
-						+ " Chunks excluded: < 3 SNPs (see " + context.createLinkToFile("statistics")
+						+ " Chunk(s) excluded: < 3 SNPs (see " + context.createLinkToFile("statistics")
 						+ "  for details).");
 			}
 
-			if (job.getRemovedChunksCallRate() > 0) {
+			if (qcStats.getRemovedChunksCallRate() > 0) {
 
-				text.append("<br><b>Warning:</b> " + formatter.format(job.getRemovedChunksCallRate())
+				text.append("<br><b>Warning:</b> " + formatter.format(qcStats.getRemovedChunksCallRate())
 
-						+ " Chunks excluded: at least one sample has a call rate < 50% (see "
+						+ " Chunk(s) excluded: at least one sample has a call rate < 50% (see "
 						+ context.createLinkToFile("statistics") + " for details).");
 			}
 
-			if (job.getRemovedChunksOverlap() > 0) {
+			if (qcStats.getRemovedChunksOverlap() > 0) {
 
-				text.append("<br><b>Warning:</b> " + formatter.format(job.getRemovedChunksOverlap())
+				text.append("<br><b>Warning:</b> " + formatter.format(qcStats.getRemovedChunksOverlap())
 
-						+ " Chunks excluded: reference overlap < 50% (see " + context.createLinkToFile("statistics")
+						+ " Chunk(s) excluded: reference overlap < 50% (see " + context.createLinkToFile("statistics")
 						+ " for details).");
 			}
 
-			long excludedChunks = job.getRemovedChunksSnps() + job.getRemovedChunksCallRate()
-					+ job.getRemovedChunksOverlap();
+			long excludedChunks = qcStats.getRemovedChunksSnps() + qcStats.getRemovedChunksCallRate()
+					+ qcStats.getRemovedChunksOverlap();
+
+			long amountChunks = qcStats.getAmountChunks();
 
 			if (excludedChunks > 0) {
-				text.append("<br>Remaining chunk(s): " + formatter.format(chunks - excludedChunks));
+				text.append("<br>Remaining chunk(s): " + formatter.format(amountChunks - excludedChunks));
 
 			}
 
-			if (excludedChunks == chunks) {
+			if (excludedChunks == amountChunks) {
 
 				text.append("<br><b>Error:</b> No chunks passed the QC step. Imputation cannot be started!");
 				context.error(text.toString());
@@ -183,7 +165,7 @@ public class QualityControl extends HadoopJobStep {
 
 			}
 			// strand flips (normal flip + allele switch AND strand flip)
-			else if (job.getStrandSwitch1() + job.getStrandSwitch3() > 100) {
+			else if (qcStats.getStrandSwitch1() + qcStats.getStrandSwitch3() > 100) {
 				text.append(
 						"<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
 				context.error(text.toString());
@@ -203,104 +185,7 @@ public class QualityControl extends HadoopJobStep {
 			return false;
 
 		}
-	}
 
-	private int createChunkFile(WorkflowContext context, String inputFiles, String chunkfile, int chunkSize) {
-
-		String folder = getFolder(QualityControl.class);
-		VcfFileUtil.setBinaries(FileUtil.path(folder, "bin"));
-
-		String files = FileUtil.path(context.getLocalTemp(), "input");
-
-		int chunks = 0;
-
-		int pairId = 0;
-
-		String[] vcfFilenames = FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$");
-
-		for (String vcfFilename : vcfFilenames) {
-
-			try {
-
-				List<VcfFile> vcfFiles = new Vector<VcfFile>();
-
-				VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, false);
-
-				if (VcfFileUtil.isValidChromosome(myvcfFile.getChromosome())) {
-					// chr 1 - 22 and Chr X
-
-					if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
-						// chr X
-						context.beginTask("Check chromosome X...");
-						try {
-							List<VcfFile> newFiles = VcfFileUtil.prepareChrX(myvcfFile);
-
-							context.endTask(
-									"<b>Sex-Check:</b>" + "\n" + "Males: " + newFiles.get(0).getNoSamples() + "\n"
-											+ "Females: " + newFiles.get(1).getNoSamples() + "\n"
-											+ "No Sex dedected and therefore filtered: " + (myvcfFile.getNoSamples()
-													- newFiles.get(0).getNoSamples() - newFiles.get(1).getNoSamples()),
-											WorkflowContext.OK);
-
-							vcfFiles.addAll(newFiles);
-						} catch (IOException e) {
-							context.endTask("Chromosome X check failed! \n " + e, WorkflowContext.ERROR);
-							throw e;
-						}
-					} else {
-						vcfFiles.add(myvcfFile);
-					}
-				}
-
-				for (VcfFile vcfFile : vcfFiles) {
-
-					// writes chunk-file
-
-					String chromosome = vcfFile.getChromosome();
-					String type = vcfFile.getType();
-
-					String chunkfileChr = HdfsUtil.path(chunkfile, chromosome);
-					HdfsLineWriter writer = new HdfsLineWriter(chunkfileChr);
-
-					// puts converted files into hdfs
-					int i = 0;
-					String[] hdfsFiles = new String[vcfFile.getFilenames().length];
-					for (String filename : vcfFile.getFilenames()) {
-						String hdfsFile = HdfsUtil.path(context.getHdfsTemp(),
-								type + "_chr" + chromosome + "_" + pairId + "_" + i + "");
-						HdfsUtil.put(filename, hdfsFile);
-						hdfsFiles[i] = hdfsFile;
-						i++;
-					}
-
-					for (int chunk : vcfFile.getChunks()) {
-
-						int start = chunk * chunkSize + 1;
-						int end = start + chunkSize - 1;
-
-						String value = chromosome + "\t" + start + "\t" + end + "\t" + type;
-						for (String hdfsFile : hdfsFiles) {
-							value = value + "\t" + hdfsFile;
-						}
-
-						writer.write(value);
-						chunks++;
-					}
-					pairId++;
-
-					writer.close();
-
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-				return -1;
-			}
-
-		}
-
-		return chunks;
 	}
 
 }
-*/
