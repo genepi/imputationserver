@@ -76,11 +76,11 @@ public class ImputationPipelineMinimac3 {
 
 		setReferencePanel(refPanelFilename);
 
-		//impute only for phased chromosomes and chr X male samples
+		// impute only for phased chromosomes and chr X male samples
 		if (chunk.isPhased() || chunk.getChromosome().equals("X.no.auto_male")) {
 
 			if (chunk.getChromosome().equals("X.no.auto_male")) {
-				//replaceMale(output.getVcfFilename());
+				// replaceMale(output.getVcfFilename());
 			}
 
 			// replace X.nonpar / X.par with X needed by minimac3
@@ -109,7 +109,6 @@ public class ImputationPipelineMinimac3 {
 
 				// eagle
 				long time = System.currentTimeMillis();
-
 
 				if (!new File(refEagleFilename).exists()) {
 					System.out.println("Eagle: Reference '" + refEagleFilename + "' not found.");
@@ -482,12 +481,13 @@ public class ImputationPipelineMinimac3 {
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
 					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", output.getChromosome(),
-					"--noPhoneHome", "--format", "GT,DS,GP", "--unphasedOutput", "--allTypedSites");
+					"--noPhoneHome", "--format", "GT,DS,GP", "--unphasedOutput", "--allTypedSites", "--minRatio",
+					"0.00001");
 		} else {
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
 					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", output.getChromosome(),
-					"--noPhoneHome", "--format", "GT,DS,GP", "--allTypedSites");
+					"--noPhoneHome", "--format", "GT,DS,GP", "--allTypedSites", "--minRatio", "0.00001");
 		}
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
