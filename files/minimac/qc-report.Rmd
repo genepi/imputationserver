@@ -32,8 +32,8 @@ lm_eqn = function(df){
 colors  <- densCols(data$V5, data$V9, colramp=colorRampPalette(brewer.pal(9, "YlOrRd")[-(1:3)]))
 
 plot(data$V5, data$V9, col=colors, xlim=c(0,1),
-     ylim=c(0,1), pch=20, xlab="MAF Upload Samples",
-     ylab="Allele Frequency Reference Panel")
+     ylim=c(0,1), pch=20, xlab="Ref Allele Frequency (Uploaded Samples)",
+     ylab="Ref Allele Frequency (Reference Panel)")
 legend("topleft",legend=lm_eqn(data), bty ="n", pch=NA) 
 
 ```
