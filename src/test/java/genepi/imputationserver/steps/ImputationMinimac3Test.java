@@ -127,9 +127,9 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL, file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
 
-		FileUtil.deleteDirectory("test-data/tmp");
+		//FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -235,8 +235,13 @@ public class ImputationMinimac3Test {
 
 	}
 
-	/*@Test
+	@Test
 	public void testchrXPipelineWithEagle() throws IOException, ZipException {
+		
+		//maybe git large files?
+		if (!new File("test-data/configs/hapmap-chrX/ref-panels/ALL.chrX.Non.Pseudo.Auto.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.bcf").exists()) {
+			return;
+		}
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-unphased";
@@ -279,10 +284,10 @@ public class ImputationMinimac3Test {
 
 		assertEquals("X", vcfFile.getChromosome());
 
-		//sFileUtil.deleteDirectory(file);
+		//FileUtil.deleteDirectory(file);
 
 	}
-	*/
+
 	
 	@Test
 	public void testchrXPipelinePhased() throws IOException, ZipException {
@@ -331,7 +336,7 @@ public class ImputationMinimac3Test {
 		assertEquals(true, vcfFile.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHRX_NONPAR, vcfFile.getNoSnps());
 
-		FileUtil.deleteDirectory(file);
+		//FileUtil.deleteDirectory(file);
 
 	}
 
