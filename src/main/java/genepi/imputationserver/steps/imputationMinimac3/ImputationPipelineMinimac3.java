@@ -64,13 +64,13 @@ public class ImputationPipelineMinimac3 {
 
 		setReferencePanel(refPanelFilename);
 
+		// replace X.nonpar / X.par with X needed by eagle and minimac
+		if (chunk.getChromosome().startsWith("X.")) {
+			output.setChromosome("X");
+		}
+
 		// impute only for phased chromosomes
 		if (chunk.isPhased()) {
-
-			// replace X.nonpar / X.par with X needed by minimac3
-			if (chunk.getChromosome().startsWith("X.")) {
-				output.setChromosome("X");
-			}
 
 			FileUtil.copy(output.getVcfFilename(), output.getPhasedVcfFilename());
 
@@ -113,12 +113,6 @@ public class ImputationPipelineMinimac3 {
 				// convert vcf to bim/bed/fam
 				long time = System.currentTimeMillis();
 				boolean successful = vcfToBed(output);
-
-				// replace X.nonpar / X.par with X
-				if (chunk.getChromosome().contains("X")) {
-					chunk.setChromosome("X");
-					output.setChromosome("X");
-				}
 
 				time = (System.currentTimeMillis() - time) / 1000;
 
@@ -175,7 +169,7 @@ public class ImputationPipelineMinimac3 {
 					}
 
 					time = System.currentTimeMillis();
-					successful = phaseWithShapeIt(chunk, output, chunk.getChromosome().equals("X"), mapfilePath);
+					successful = phaseWithShapeIt(chunk, output, mapfilePath);
 					time = (System.currentTimeMillis() - time) / 1000;
 
 					if (successful) {
@@ -217,42 +211,6 @@ public class ImputationPipelineMinimac3 {
 		System.out.println("Command: " + vcfCooker.getExecutedCommand());
 		return (vcfCooker.execute() == 0);
 
-	}
-
-	public void writeMaleFam(VcfChunkOutput output) {
-
-		try {
-			FileUtils.copyFile(new File(output.getFamFilename()), new File(output.getFamFilename() + "_tmp"));
-			LineReader reader = new LineReader(output.getFamFilename() + "_tmp");
-			LineWriter writer = new LineWriter(output.getFamFilename());
-			while (reader.next()) {
-				String str = "";
-				String[] token = reader.get().split("\\s+");
-				// set male as gender
-				token[4] = "1";
-				for (String i : token) {
-					str += i + "\t";
-				}
-				writer.write(str);
-
-			}
-			writer.close();
-			reader.close();
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	public boolean vcfToHap2(VcfChunkOutput output) {
-		Command vcf2Hap = new Command(vcf2HapCommand);
-		vcf2Hap.setSilent(false);
-		vcf2Hap.setParams("--in-vcf", output.getVcfFilename(), "--out", output.getPrefix());
-		vcf2Hap.saveStdOut(output.getPrefix() + ".vcf2hap.out");
-		vcf2Hap.saveStdErr(output.getPrefix() + ".vcf2hap.err");
-		return (vcf2Hap.execute() == 0);
 	}
 
 	public int getNoSnps(VcfChunk input, VcfChunkOutput output) {
@@ -308,8 +266,8 @@ public class ImputationPipelineMinimac3 {
 		hapiUr.setSilent(false);
 
 		hapiUr.setParams("-g", output.getBedFilename(), "-s", bimWthMap, "-i", output.getFamFilename(), "-w", "73",
-				"-o", output.getPrefix(), "-c", input.getChromosome().equals("X") ? "23" : input.getChromosome(),
-				"--start", start + "", "--end", end + "", "--impute2");
+				"-o", output.getPrefix(), "-c", input.getChromosome(), "--start", start + "", "--end", end + "",
+				"--impute2");
 		hapiUr.saveStdOut(output.getPrefix() + ".hapiur.out");
 		hapiUr.saveStdErr(output.getPrefix() + ".hapiur.err");
 		System.out.println("Command: " + hapiUr.getExecutedCommand());
@@ -328,14 +286,10 @@ public class ImputationPipelineMinimac3 {
 			return false;
 		}
 
-		if (input.getChromosome().equals("X")) {
-			replace23WithX(output.getPhasedVcfFilename());
-		}
-
 		return true;
 	}
 
-	public boolean phaseWithShapeIt(VcfChunk input, VcfChunkOutput output, boolean chrX, String mapFilename) {
+	public boolean phaseWithShapeIt(VcfChunk input, VcfChunkOutput output, String mapFilename) {
 
 		// +/- 1 Mbases
 		int start = input.getStart() - phasingWindow;
@@ -347,15 +301,11 @@ public class ImputationPipelineMinimac3 {
 
 		Command shapeIt = new Command(shapeItCommand);
 		shapeIt.setSilent(false);
-		if (chrX) {
-			shapeIt.setParams("--input-bed", output.getBedFilename(), output.getBimFilename(), output.getFamFilename(),
-					"--input-map", mapFilename, "--output-max", output.getPrefix(), "--input-from", start + "",
-					"--input-to", end + "", "--chrX", "--effective-size", GenomicTools.getPopSize(population) + "");
-		} else {
-			shapeIt.setParams("--input-bed", output.getBedFilename(), output.getBimFilename(), output.getFamFilename(),
-					"--input-map", mapFilename, "--output-max", output.getPrefix(), "--input-from", start + "",
-					"--input-to", end + "", "--effective-size", GenomicTools.getPopSize(population) + "");
-		}
+
+		shapeIt.setParams("--input-bed", output.getBedFilename(), output.getBimFilename(), output.getFamFilename(),
+				"--input-map", mapFilename, "--output-max", output.getPrefix(), "--input-from", start + "",
+				"--input-to", end + "", "--effective-size", GenomicTools.getPopSize(population) + "");
+
 		shapeIt.saveStdOut(output.getPrefix() + ".shapeit.out");
 		shapeIt.saveStdErr(output.getPrefix() + ".shapeit.err");
 		System.out.println("Command: " + shapeIt.getExecutedCommand());
@@ -371,10 +321,6 @@ public class ImputationPipelineMinimac3 {
 		System.out.println("Command: " + shapeItConvert.getExecutedCommand());
 		if (shapeItConvert.execute() != 0) {
 			return false;
-		}
-
-		if (chrX) {
-			replace23WithX(output.getPhasedVcfFilename());
 		}
 
 		return true;
@@ -436,9 +382,8 @@ public class ImputationPipelineMinimac3 {
 		eagle.setSilent(false);
 
 		eagle.setParams("--vcfRef", reference, "--vcfTarget", output.getVcfFilename() + ".gz", "--geneticMapFile",
-				mapFilename, "--outPrefix", output.getPrefix(), "--chrom",
-				input.getChromosome().equals("X") ? "23" : input.getChromosome(), "--bpStart", start + "", "--bpEnd",
-				end + "", "--allowRefAltSwap");
+				mapFilename, "--outPrefix", output.getPrefix(), "--chrom", output.getChromosome(), "--bpStart",
+				start + "", "--bpEnd", end + "", "--allowRefAltSwap");
 		eagle.saveStdOut(output.getPrefix() + ".eagle.out");
 		eagle.saveStdErr(output.getPrefix() + ".eagle.err");
 		System.out.println("Command: " + eagle.getExecutedCommand());
@@ -515,33 +460,6 @@ public class ImputationPipelineMinimac3 {
 
 		return snps;
 
-	}
-
-	public boolean replace23WithX(String filename) {
-		try {
-			String tempFilename = filename + "_temp";
-			LineWriter writer = new LineWriter(tempFilename);
-			LineReader reader = new LineReader(filename);
-			while (reader.next()) {
-
-				String line = reader.get();
-
-				if (line.startsWith("#")) {
-					writer.write(line);
-				} else {
-					String[] tiles = line.split("\t", 2);
-					writer.write("X\t" + tiles[1]);
-				}
-
-			}
-			reader.close();
-			writer.close();
-			FileUtil.copy(tempFilename, filename);
-			FileUtil.deleteFile(tempFilename);
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
 	}
 
 	public void setHapiUrPreprocessCommand(String hapiUrPreprocessCommand) {
