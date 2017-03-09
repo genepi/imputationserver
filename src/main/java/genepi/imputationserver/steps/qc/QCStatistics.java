@@ -4,26 +4,38 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Vector;
 
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.GenomicTools;
+import genepi.imputationserver.util.QualityControlObject;
 import genepi.io.FileUtil;
 import genepi.io.legend.LegendEntry;
 import genepi.io.legend.LegendFileReader;
 import genepi.io.text.LineWriter;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.Genotype;
+import htsjdk.variant.variantcontext.GenotypeBuilder;
+import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder.OutputType;
 import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 
 public class QCStatistics {
+
+	public static final String X_PAR = "X.Pseudo.Auto";
+	public static final String X_NON_PAR = "X.Non.Pseudo.Auto";
 
 	String population;
 	int chunkSize;
@@ -81,9 +93,15 @@ public class QCStatistics {
 	int removedChunksCallRate = 0;
 	int lastPos = 0;
 
-	public boolean start() throws IOException, InterruptedException {
+	HashSet<String> hapSamples = new HashSet<String>();
+
+	public QualityControlObject start() throws IOException, InterruptedException {
+
+		QualityControlObject qcObject = new QualityControlObject();
 
 		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
+		
+		String message = ""; 
 
 		// MAF file for QC report
 		mafWriter = new LineWriter(outputMaf);
@@ -111,15 +129,17 @@ public class QCStatistics {
 
 			if (VcfFileUtil.isChrX(contig)) {
 
-				List<String> splits = VcfFileUtil.prepareChrXEagle(myvcfFile, chunks, myvcfFile.isPhased());
+				StringBuilder chrXLog = new StringBuilder();
+
+				List<String> splits = prepareChrXEagle(myvcfFile, chrXLog);
 
 				for (String split : splits) {
 
 					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
-					
-					_myvcfFile.setChrX(true);
 
-					String _contig = split.contains(VcfFileUtil.X_NON_PAR) ? VcfFileUtil.X_NON_PAR : VcfFileUtil.X_PAR;
+					myvcfFile.setChrX(true);
+
+					String _contig = split.contains(X_NON_PAR) ? X_NON_PAR : X_PAR;
 
 					metafileWriter = new LineWriter(FileUtil.path(chunkfile, _contig));
 
@@ -127,6 +147,30 @@ public class QCStatistics {
 
 					metafileWriter.close();
 
+				}
+
+				if (hapSamples.size() > 0) {
+					LineWriter writer2 = new LineWriter(FileUtil.path(excludeLog, "chrX-info.txt"));
+					writer2.write("The following samples have been changed from haploid to diploid");
+					
+					message= "Please check the chrX files. Several samples have been changed from haploid to diploid.";
+					
+					for (String sample : hapSamples) {
+						writer2.write(sample);
+					}
+
+					writer2.close();
+				}
+				
+				if (chrXLog.length() > 0) {
+					LineWriter writer = new LineWriter(FileUtil.path(excludeLog, "chrX-error.txt"));
+					writer.write(chrXLog.toString());
+					writer.close();
+
+					qcObject.setSuccess(false);
+					qcObject.setMessage(
+							"QC for Chromosome X failed. Ambiguous samples have been detected. Please check the log files");
+					return qcObject;
 				}
 
 			} else {
@@ -147,7 +191,10 @@ public class QCStatistics {
 
 		excludedChunkWriter.close();
 
-		return true;
+		qcObject.setSuccess(true);
+		qcObject.setMessage(message);
+
+		return qcObject;
 	}
 
 	public void processFile(VcfFile myvcfFile) throws IOException, InterruptedException {
@@ -157,15 +204,13 @@ public class QCStatistics {
 		ArrayList<String> samples = vcfReader.getFileHeader().getSampleNamesInOrder();
 
 		lastPos = 0;
-		
+
 		String _contig = myvcfFile.getChromosome();
 
-
 		if (myvcfFile.isChrX()) {
-			_contig = myvcfFile.getVcfFilename().contains(VcfFileUtil.X_NON_PAR) ? VcfFileUtil.X_NON_PAR
-					: VcfFileUtil.X_PAR;
+			_contig = myvcfFile.getVcfFilename().contains(X_NON_PAR) ? X_NON_PAR : X_PAR;
 		}
-		
+
 		for (int chunkNumber : myvcfFile.getChunks()) {
 
 			amountChunks++;
@@ -201,7 +246,8 @@ public class QCStatistics {
 			chunk.setPhased(myvcfFile.isPhased());
 
 			// query with index
-			CloseableIterator<VariantContext> snps = vcfReader.query(myvcfFile.getChromosome(), Math.max(extendedStart, 1), extendedEnd);
+			CloseableIterator<VariantContext> snps = vcfReader.query(myvcfFile.getChromosome(),
+					Math.max(extendedStart, 1), extendedEnd);
 
 			VariantContextWriterBuilder builder = new VariantContextWriterBuilder().setOutputFile(chunkName)
 					.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
@@ -241,7 +287,7 @@ public class QCStatistics {
 		int position = snp.getStart();
 
 		String _contig = chunk.getChromosome();
-		
+
 		boolean insideChunk = position >= chunk.getStart() && position <= chunk.getEnd();
 
 		if (snp.getAlternateAlleles().size() > 1) {
@@ -566,26 +612,6 @@ public class QCStatistics {
 		legendReader.initSearch();
 
 		return legendReader;
-
-	}
-
-	public static void main(String[] args) {
-
-		QCStatistics qcChecker = new QCStatistics();
-		qcChecker.setInput("/home/seb/Desktop/qc");
-		qcChecker.setLegendFile("/home/seb/Desktop/qc/panel/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz");
-		qcChecker.setChunkSize(20000000);
-		qcChecker.setPhasingWindow(5000000);
-		qcChecker.setPopulation("EUR");
-		try {
-			qcChecker.start();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 	}
 
@@ -923,6 +949,84 @@ public class QCStatistics {
 
 	public void setRefSamples(int refSamples) {
 		this.refSamples = refSamples;
+	}
+
+	public List<String> prepareChrXEagle(VcfFile file, StringBuilder chrX) {
+
+		List<String> paths = new Vector<String>();
+		String nonPar = FileUtil.path(chunks, X_NON_PAR + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterNonPar = new VariantContextWriterBuilder().setOutputFile(nonPar)
+				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
+
+		String par = FileUtil.path(chunks, X_PAR + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterPar = new VariantContextWriterBuilder().setOutputFile(par)
+				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
+
+		VCFFileReader vcfReader = new VCFFileReader(new File(file.getVcfFilename()), true);
+
+		VCFHeader header = vcfReader.getFileHeader();
+		vcfChunkWriterNonPar.writeHeader(header);
+		vcfChunkWriterPar.writeHeader(header);
+
+		CloseableIterator<VariantContext> it = vcfReader.iterator();
+
+		while (it.hasNext()) {
+
+			VariantContext line = it.next();
+
+			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
+				line = makeDiploid(header.getGenotypeSamples(), line, file.isPhased(), chrX);
+				vcfChunkWriterNonPar.add(line);
+			} else {
+				vcfChunkWriterPar.add(line);
+			}
+
+		}
+		vcfReader.close();
+
+		vcfChunkWriterPar.close();
+		vcfChunkWriterNonPar.close();
+
+		paths.add(nonPar);
+		paths.add(par);
+
+		return paths;
+	}
+
+	public VariantContext makeDiploid(List<String> samples, VariantContext snp, boolean isPhased, StringBuilder chrX) {
+
+		final GenotypesContext genotypes = GenotypesContext.create(samples.size());
+		String ref = snp.getReference().getBaseString();
+
+		for (final String name : samples) {
+
+			Genotype genotype = snp.getGenotype(name);
+
+			if (hapSamples.contains(name) && genotype.getGenotypeString().length() != 1) {
+				chrX.append("ChrX Error. Sample " + name + " is diploid at position " + snp.getStart() + "\n");
+			}
+
+			// better method available to check for haploid genotypes?
+			if (genotype.getGenotypeString().length() == 1) {
+
+				hapSamples.add(name);
+
+				// better method available?
+				boolean isRef = ref.equals(genotype.getGenotypeString(true)) ? true : false;
+				final List<Allele> genotypeAlleles = new ArrayList<Allele>();
+				Allele allele = Allele.create(genotype.getGenotypeString(), isRef);
+				genotypeAlleles.add(allele);
+				genotypeAlleles.add(allele);
+				genotype = new GenotypeBuilder(name, genotypeAlleles).phased(isPhased).make();
+			}
+
+			genotypes.add(genotype);
+
+		}
+
+		return new VariantContextBuilder(snp).genotypes(genotypes).make();
 	}
 
 }

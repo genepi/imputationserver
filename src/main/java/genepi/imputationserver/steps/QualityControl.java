@@ -5,6 +5,7 @@ import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.qc.QCStatistics;
 import genepi.imputationserver.util.GenomicTools;
+import genepi.imputationserver.util.QualityControlObject;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -71,19 +72,19 @@ public class QualityControl extends WorkflowStep {
 
 		context.beginTask("Calculating QC Statistics...");
 
-		boolean successful;
+		QualityControlObject answer;
 		try {
 
-			successful = qcStats.start();
+			answer = qcStats.start();
 
 		} catch (Exception e) {
 			context.endTask(e.getMessage(), WorkflowContext.ERROR);
 			return false;
 		}
 
-		if (successful) {
+		if (answer.isSuccess()) {
 
-			context.endTask("QC finished successfully", WorkflowContext.OK);
+			context.endTask("QC executed successfully", WorkflowContext.OK);
 
 			DecimalFormat df = new DecimalFormat("#.00");
 			DecimalFormat formatter = new DecimalFormat("###,###.###");
@@ -180,8 +181,9 @@ public class QualityControl extends WorkflowStep {
 			}
 
 		} else {
-
-			context.error("QC Quality Control failed!");
+			
+			context.endTask("QC failed!",WorkflowContext.ERROR);
+			context.error(answer.getMessage());
 			return false;
 
 		}

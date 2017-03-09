@@ -37,8 +37,6 @@ import htsjdk.variant.vcf.VCFFileReader;
 
 public class VcfFileUtil {
 
-	public static final String X_PAR = "X.Pseudo.Auto";
-	public static final String X_NON_PAR = "X.Non.Pseudo.Auto";
 	public static String BINARIES = "bin/";
 
 	public static void setBinaries(String binaries) {
@@ -309,72 +307,5 @@ public class VcfFileUtil {
 			out.close();
 		}
 
-	}
-
-	public static List<String> prepareChrXEagle(VcfFile file, String out, boolean isPhased) {
-
-		List<String> paths = new Vector<String>();
-		String nonPar = FileUtil.path(out, X_NON_PAR + ".vcf.gz");
-		VariantContextWriter vcfChunkWriterNonPar = new VariantContextWriterBuilder().setOutputFile(nonPar)
-				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
-
-		String par = FileUtil.path(out, X_PAR + ".vcf.gz");
-		VariantContextWriter vcfChunkWriterPar = new VariantContextWriterBuilder().setOutputFile(par)
-				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
-
-		VCFFileReader vcfReader = new VCFFileReader(new File(file.getVcfFilename()), true);
-
-		vcfChunkWriterNonPar.writeHeader(vcfReader.getFileHeader());
-		vcfChunkWriterPar.writeHeader(vcfReader.getFileHeader());
-
-		CloseableIterator<VariantContext> it = vcfReader.iterator();
-
-		while (it.hasNext()) {
-
-			VariantContext line = it.next();
-
-			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
-				line = makeDiploid(vcfReader.getFileHeader().getGenotypeSamples(), line, isPhased);
-				vcfChunkWriterNonPar.add(line);
-			} else {
-				vcfChunkWriterPar.add(line);
-			}
-
-		}
-
-		vcfChunkWriterPar.close();
-		vcfChunkWriterNonPar.close();
-
-		paths.add(nonPar);
-		paths.add(par);
-		vcfReader.close();
-
-		return paths;
-	}
-
-	private static VariantContext makeDiploid(List<String> samples, VariantContext snp, boolean isPhased) {
-
-		final GenotypesContext genotypes = GenotypesContext.create(samples.size());
-		String ref = snp.getReference().getBaseString();
-
-		for (final String name : samples) {
-			
-			Genotype genotype = snp.getGenotype(name);
-			
-			// better method available to check for haploid genotypes?
-			if (genotype.getGenotypeString().length() == 1) {
-				// better method available?
-				boolean isRef = ref.equals(genotype.getGenotypeString(true)) ? true : false;
-				final List<Allele> genotypeAlleles = new ArrayList<Allele>();
-				Allele allele = Allele.create(genotype.getGenotypeString(), isRef);
-				genotypeAlleles.add(allele);
-				genotypeAlleles.add(allele);
-				genotype = new GenotypeBuilder(name, genotypeAlleles).phased(isPhased).make();
-			}
-			genotypes.add(genotype);
-		}
-		return new VariantContextBuilder(snp).genotypes(genotypes).make();
 	}
 }

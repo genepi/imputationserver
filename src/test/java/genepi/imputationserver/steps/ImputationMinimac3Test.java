@@ -284,7 +284,7 @@ public class ImputationMinimac3Test {
 
 		assertEquals("X", vcfFile.getChromosome());
 
-		//FileUtil.deleteDirectory(file);
+		FileUtil.deleteDirectory(file);
 
 	}
 

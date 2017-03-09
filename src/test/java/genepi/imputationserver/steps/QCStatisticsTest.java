@@ -1,8 +1,11 @@
 package genepi.imputationserver.steps;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+
+import org.junit.Test;
 
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.util.WorkflowTestContext;
@@ -12,6 +15,7 @@ import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import junit.framework.TestCase;
+import net.lingala.zip4j.exception.ZipException;
 
 public class QCStatisticsTest extends TestCase {
 
@@ -341,7 +345,31 @@ public class QCStatisticsTest extends TestCase {
 
 		FileUtil.deleteDirectory(new File(out));
 	}
+	
+	@Test
+	public void testchrXSetup() throws IOException, ZipException {
+		
+		String configFolder = "test-data/configs/hapmap-chrX";
+		String inputFolder = "test-data/data/chrX-unphased";
 
+		File file = new File("test-data/tmp");
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertFalse(result);
+
+		FileUtil.deleteDirectory(file);
+
+	}
+	
 	class QcStatisticsMock extends QualityControl {
 
 		private String folder;
