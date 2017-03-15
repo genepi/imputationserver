@@ -75,7 +75,7 @@ public class QualityControl extends WorkflowStep {
 		QualityControlObject answer;
 		try {
 
-			answer = qcStats.start();
+			answer = qcStats.run();
 
 		} catch (Exception e) {
 			context.endTask(e.getMessage(), WorkflowContext.ERROR);

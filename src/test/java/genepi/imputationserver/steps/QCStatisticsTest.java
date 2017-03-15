@@ -364,7 +364,7 @@ public class QCStatisticsTest extends TestCase {
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 		boolean result = run(context, qcStats);
 
-		assertFalse(result);
+		assertTrue(result);
 
 		FileUtil.deleteDirectory(file);
 

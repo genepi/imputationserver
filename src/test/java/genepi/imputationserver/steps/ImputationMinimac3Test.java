@@ -129,7 +129,7 @@ public class ImputationMinimac3Test {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL, file.getNoSnps());
 
-		//FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 

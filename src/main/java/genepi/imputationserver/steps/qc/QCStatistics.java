@@ -95,7 +95,7 @@ public class QCStatistics {
 
 	HashSet<String> hapSamples = new HashSet<String>();
 
-	public QualityControlObject start() throws IOException, InterruptedException {
+	public QualityControlObject run() throws IOException, InterruptedException {
 
 		QualityControlObject qcObject = new QualityControlObject();
 
@@ -137,10 +137,10 @@ public class QCStatistics {
 
 					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
 
-					myvcfFile.setChrX(true);
-
+					_myvcfFile.setChrX(true);
+					
 					String _contig = split.contains(X_NON_PAR) ? X_NON_PAR : X_PAR;
-
+					
 					metafileWriter = new LineWriter(FileUtil.path(chunkfile, _contig));
 
 					processFile(_myvcfFile);
@@ -167,9 +167,9 @@ public class QCStatistics {
 					writer.write(chrXLog.toString());
 					writer.close();
 
-					qcObject.setSuccess(false);
+					qcObject.setSuccess(true);
 					qcObject.setMessage(
-							"QC for Chromosome X failed. Ambiguous samples have been detected. Please check the log files");
+							"Check Chromosome X log files. Ambiguous (happloid vs diploid) samples have been detected.");
 					return qcObject;
 				}
 
