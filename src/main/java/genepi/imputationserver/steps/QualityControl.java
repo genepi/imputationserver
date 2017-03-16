@@ -57,25 +57,25 @@ public class QualityControl extends WorkflowStep {
 
 
 		int referenceSamples = GenomicTools.getPanelSize(reference); 
-		QCStatistics qcStats = new QCStatistics();
+		QCStatistics qcStatistics = new QCStatistics();
 
-		qcStats.setOutputMaf(outputMaf);
-		qcStats.setChunkfile(outputChunkfile);
-		qcStats.setChunks(chunks);
-		qcStats.setExcludeLog(excluded);
-		qcStats.setInput(inputFiles);
-		qcStats.setChunkSize(chunkSize);
-		qcStats.setPhasingWindow(phasingWindow);
-		qcStats.setPopulation(population);
-		qcStats.setLegendFile(panel.getLegend());
-		qcStats.setRefSamples(referenceSamples);
+		qcStatistics.setOutputMaf(outputMaf);
+		qcStatistics.setChunkfile(outputChunkfile);
+		qcStatistics.setChunks(chunks);
+		qcStatistics.setExcludeLog(excluded);
+		qcStatistics.setInput(inputFiles);
+		qcStatistics.setChunkSize(chunkSize);
+		qcStatistics.setPhasingWindow(phasingWindow);
+		qcStatistics.setPopulation(population);
+		qcStatistics.setLegendFile(panel.getLegend());
+		qcStatistics.setRefSamples(referenceSamples);
 
 		context.beginTask("Calculating QC Statistics...");
 
 		QualityControlObject answer;
 		try {
 
-			answer = qcStats.run();
+			answer = qcStatistics.run();
 
 		} catch (Exception e) {
 			context.endTask(e.getMessage(), WorkflowContext.ERROR);
@@ -92,65 +92,65 @@ public class QualityControl extends WorkflowStep {
 			StringBuffer text = new StringBuffer();
 
 			text.append("<b>Statistics:</b> <br>");
-			text.append("Alternative allele frequency > 0.5 sites: " + formatter.format(qcStats.getAlternativeAlleles())
+			text.append("Alternative allele frequency > 0.5 sites: " + formatter.format(qcStatistics.getAlternativeAlleles())
 					+ "<br>");
-			text.append("Reference Overlap: " + qcStats.getFoundInLegend() + "/"
-					+ ((qcStats.getFoundInLegend() + qcStats.getNotFoundInLegend())) + " ("
-					+ df.format(qcStats.getFoundInLegend()
-							/ (double) (qcStats.getFoundInLegend() + qcStats.getNotFoundInLegend()) * 100)
+			text.append("Reference Overlap: " + qcStatistics.getFoundInLegend() + "/"
+					+ ((qcStatistics.getFoundInLegend() + qcStatistics.getNotFoundInLegend())) + " ("
+					+ df.format(qcStatistics.getFoundInLegend()
+							/ (double) (qcStatistics.getFoundInLegend() + qcStatistics.getNotFoundInLegend()) * 100)
 					+ "%" + ")<br>");
 
-			text.append("Match: " + formatter.format(qcStats.getMatch()) + "<br>");
-			text.append("Allele switch: " + formatter.format(qcStats.getAlleleSwitch()) + "<br>");
-			text.append("Strand flip: " + formatter.format(qcStats.getStrandSwitch1()) + "<br>");
-			text.append("Strand flip and allele switch: " + formatter.format(qcStats.getStrandSwitch3()) + "<br>");
-			text.append("A/T, C/G genotypes: " + formatter.format(qcStats.getStrandSwitch2()) + "<br>");
+			text.append("Match: " + formatter.format(qcStatistics.getMatch()) + "<br>");
+			text.append("Allele switch: " + formatter.format(qcStatistics.getAlleleSwitch()) + "<br>");
+			text.append("Strand flip: " + formatter.format(qcStatistics.getStrandSwitch1()) + "<br>");
+			text.append("Strand flip and allele switch: " + formatter.format(qcStatistics.getStrandSwitch3()) + "<br>");
+			text.append("A/T, C/G genotypes: " + formatter.format(qcStatistics.getStrandSwitch2()) + "<br>");
 
 			text.append("<b>Filtered sites:</b> <br>");
-			text.append("Filter flag set: " + formatter.format(qcStats.getFilterFlag()) + "<br>");
-			text.append("Invalid alleles: " + formatter.format(qcStats.getInvalidAlleles()) + "<br>");
-			text.append("Multiallelic sites: " + formatter.format(qcStats.getMultiallelicSites()) + "<br>");
-			text.append("Duplicated sites: " + formatter.format(qcStats.getDuplicates()) + "<br>");
-			text.append("NonSNP sites: " + formatter.format(qcStats.getNoSnps()) + "<br>");
-			text.append("Monomorphic sites: " + formatter.format(qcStats.getMonomorphic()) + "<br>");
-			text.append("Allele mismatch: " + formatter.format(qcStats.getAlleleMismatch()) + "<br>");
-			text.append("SNPs call rate < 90%: " + formatter.format(qcStats.getLowCallRate()));
+			text.append("Filter flag set: " + formatter.format(qcStatistics.getFilterFlag()) + "<br>");
+			text.append("Invalid alleles: " + formatter.format(qcStatistics.getInvalidAlleles()) + "<br>");
+			text.append("Multiallelic sites: " + formatter.format(qcStatistics.getMultiallelicSites()) + "<br>");
+			text.append("Duplicated sites: " + formatter.format(qcStatistics.getDuplicates()) + "<br>");
+			text.append("NonSNP sites: " + formatter.format(qcStatistics.getNoSnps()) + "<br>");
+			text.append("Monomorphic sites: " + formatter.format(qcStatistics.getMonomorphic()) + "<br>");
+			text.append("Allele mismatch: " + formatter.format(qcStatistics.getAlleleMismatch()) + "<br>");
+			text.append("SNPs call rate < 90%: " + formatter.format(qcStatistics.getLowCallRate()));
 
 			context.ok(text.toString());
 
 			text = new StringBuffer();
 
-			text.append("Excluded sites in total: " + formatter.format(qcStats.getFiltered()) + "<br>");
-			text.append("Remaining sites in total: " + formatter.format(qcStats.getOverallSnps()) + "<br>");
+			text.append("Excluded sites in total: " + formatter.format(qcStatistics.getFiltered()) + "<br>");
+			text.append("Remaining sites in total: " + formatter.format(qcStatistics.getOverallSnps()) + "<br>");
 
-			if (qcStats.getRemovedChunksSnps() > 0) {
+			if (qcStatistics.getRemovedChunksSnps() > 0) {
 
-				text.append("<br><b>Warning:</b> " + formatter.format(qcStats.getRemovedChunksSnps())
+				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksSnps())
 
 						+ " Chunk(s) excluded: < 3 SNPs (see " + context.createLinkToFile("statistics")
 						+ "  for details).");
 			}
 
-			if (qcStats.getRemovedChunksCallRate() > 0) {
+			if (qcStatistics.getRemovedChunksCallRate() > 0) {
 
-				text.append("<br><b>Warning:</b> " + formatter.format(qcStats.getRemovedChunksCallRate())
+				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksCallRate())
 
 						+ " Chunk(s) excluded: at least one sample has a call rate < 50% (see "
 						+ context.createLinkToFile("statistics") + " for details).");
 			}
 
-			if (qcStats.getRemovedChunksOverlap() > 0) {
+			if (qcStatistics.getRemovedChunksOverlap() > 0) {
 
-				text.append("<br><b>Warning:</b> " + formatter.format(qcStats.getRemovedChunksOverlap())
+				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksOverlap())
 
 						+ " Chunk(s) excluded: reference overlap < 50% (see " + context.createLinkToFile("statistics")
 						+ " for details).");
 			}
 
-			long excludedChunks = qcStats.getRemovedChunksSnps() + qcStats.getRemovedChunksCallRate()
-					+ qcStats.getRemovedChunksOverlap();
+			long excludedChunks = qcStatistics.getRemovedChunksSnps() + qcStatistics.getRemovedChunksCallRate()
+					+ qcStatistics.getRemovedChunksOverlap();
 
-			long amountChunks = qcStats.getAmountChunks();
+			long amountChunks = qcStatistics.getAmountChunks();
 
 			if (excludedChunks > 0) {
 				text.append("<br>Remaining chunk(s): " + formatter.format(amountChunks - excludedChunks));
@@ -166,7 +166,7 @@ public class QualityControl extends WorkflowStep {
 
 			}
 			// strand flips (normal flip + allele switch AND strand flip)
-			else if (qcStats.getStrandSwitch1() + qcStats.getStrandSwitch3() > 100) {
+			else if (qcStatistics.getStrandSwitch1() + qcStatistics.getStrandSwitch3() > 100) {
 				text.append(
 						"<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
 				context.error(text.toString());
@@ -179,7 +179,7 @@ public class QualityControl extends WorkflowStep {
 				return true;
 
 			}
-
+			
 		} else {
 			
 			context.endTask("QC failed!",WorkflowContext.ERROR);

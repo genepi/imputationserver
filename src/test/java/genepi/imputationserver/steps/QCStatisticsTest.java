@@ -310,7 +310,7 @@ public class QCStatisticsTest extends TestCase {
 
 		assertEquals(13, count);
 
-		FileUtil.deleteDirectory(new File(out));
+		//FileUtil.deleteDirectory(new File(out));
 	}
 
 	public void testCountSamplesInCreatedChunk() throws IOException {

@@ -37,6 +37,11 @@ public class QCStatistics {
 	public static final String X_PAR = "X.Pseudo.Auto";
 	public static final String X_NON_PAR = "X.Non.Pseudo.Auto";
 
+	String outputMaf = "tmp/maf.txt";
+	String chunkfile = "tmp";
+	String excludeLog = "tmp";
+	String chunks = "tmp";
+
 	String population;
 	int chunkSize;
 	int phasingWindow;
@@ -44,20 +49,8 @@ public class QCStatistics {
 	String legendFile;
 	int refSamples;
 
-	String outputMaf = "tmp/maf.txt";
-	String chunkfile = "tmp";
-	String excludeLog = "tmp";
-	String chunks = "tmp";
-
-	LineWriter logWriter;
-	LineWriter excludedChunkWriter;
-	LineWriter metafileWriter;
-	LineWriter mafWriter;
-
 	private double CALL_RATE = 0.5;
-
 	private int MIN_SNPS = 3;
-
 	private double OVERLAP = 0.5;
 
 	int amountChunks;
@@ -93,29 +86,29 @@ public class QCStatistics {
 	int removedChunksCallRate = 0;
 	int lastPos = 0;
 
-	HashSet<String> hapSamples = new HashSet<String>();
-
 	public QualityControlObject run() throws IOException, InterruptedException {
+		
+		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
 
 		QualityControlObject qcObject = new QualityControlObject();
-
-		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
 		
-		String message = ""; 
-
 		// MAF file for QC report
-		mafWriter = new LineWriter(outputMaf);
+		LineWriter mafWriter = new LineWriter(outputMaf);
 
 		// excluded SNPS
-		logWriter = new LineWriter(FileUtil.path(excludeLog, "snps-excluded.txt"));
-
-		logWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
+		LineWriter excludedSnpsWriter = new LineWriter(FileUtil.path(excludeLog, "snps-excluded.txt"));
+		excludedSnpsWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
 
 		// excluded chunks
-		excludedChunkWriter = new LineWriter(FileUtil.path(excludeLog, "chunks-excluded.txt"));
-
+		LineWriter excludedChunkWriter = new LineWriter(FileUtil.path(excludeLog, "chunks-excluded.txt"));
 		excludedChunkWriter.write(
 				"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
+
+		//chrX samples info
+		StringBuilder chrXLog = new StringBuilder();
+		
+		// chrX haploid samples 
+		HashSet<String> hapSamples = new HashSet<String>();
 
 		Arrays.sort(vcfFilenames);
 
@@ -125,79 +118,61 @@ public class QCStatistics {
 
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
-			String contig = myvcfFile.getChromosome();
-
-			if (VcfFileUtil.isChrX(contig)) {
-
-				StringBuilder chrXLog = new StringBuilder();
-
-				List<String> splits = prepareChrXEagle(myvcfFile, chrXLog);
+			if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
+				
+				// split to par and non.par
+				List<String> splits = prepareChrXEagle(myvcfFile, chrXLog, hapSamples);
 
 				for (String split : splits) {
-
 					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
 
 					_myvcfFile.setChrX(true);
-					
-					String _contig = split.contains(X_NON_PAR) ? X_NON_PAR : X_PAR;
-					
-					metafileWriter = new LineWriter(FileUtil.path(chunkfile, _contig));
 
-					processFile(_myvcfFile);
-
-					metafileWriter.close();
-
+					//chrX
+					processFile(_myvcfFile, mafWriter, excludedSnpsWriter, excludedChunkWriter);
 				}
-
-				if (hapSamples.size() > 0) {
-					LineWriter writer2 = new LineWriter(FileUtil.path(excludeLog, "chrX-info.txt"));
-					writer2.write("The following samples have been changed from haploid to diploid");
-					
-					message= "Please check the chrX files. Several samples have been changed from haploid to diploid.";
-					
-					for (String sample : hapSamples) {
-						writer2.write(sample);
-					}
-
-					writer2.close();
-				}
-				
-				if (chrXLog.length() > 0) {
-					LineWriter writer = new LineWriter(FileUtil.path(excludeLog, "chrX-error.txt"));
-					writer.write(chrXLog.toString());
-					writer.close();
-
-					qcObject.setSuccess(true);
-					qcObject.setMessage(
-							"Check Chromosome X log files. Ambiguous (happloid vs diploid) samples have been detected.");
-					return qcObject;
-				}
-
 			} else {
-
-				// chunkfile manifest
-				metafileWriter = new LineWriter(FileUtil.path(chunkfile, contig));
-
-				processFile(myvcfFile);
-
-				metafileWriter.close();
+				// chr1-22
+				processFile(myvcfFile, mafWriter, excludedSnpsWriter, excludedChunkWriter);
 
 			}
 		}
 
+		if (hapSamples.size() > 0) {
+			LineWriter writer2 = new LineWriter(FileUtil.path(excludeLog, "chrX-samples.txt"));
+			writer2.write("The following samples have been changed from haploid to diploid");
+
+			for (String sample : hapSamples) {
+				writer2.write(sample);
+			}
+			writer2.close();
+		}
+
+		if (chrXLog.length() > 0) {
+			LineWriter writer = new LineWriter(FileUtil.path(excludeLog, "chrX-info.txt"));
+			writer.write(chrXLog.toString());
+			writer.close();
+
+			qcObject.setSuccess(true);
+			qcObject.setMessage(
+					"Check Chromosome X log files. Ambiguous (happloid vs diploid) samples have been detected.");
+			return qcObject;
+		}
+
 		mafWriter.close();
 
-		logWriter.close();
+		excludedSnpsWriter.close();
 
 		excludedChunkWriter.close();
 
 		qcObject.setSuccess(true);
-		qcObject.setMessage(message);
+		qcObject.setMessage("OK");
 
 		return qcObject;
 	}
 
-	public void processFile(VcfFile myvcfFile) throws IOException, InterruptedException {
+	public void processFile(VcfFile myvcfFile, LineWriter mafWriter, LineWriter excludedSnpsWriter,
+			LineWriter excludedChunkWriter) throws IOException, InterruptedException {
 
 		VCFFileReader vcfReader = new VCFFileReader(new File(myvcfFile.getVcfFilename()), true);
 
@@ -210,6 +185,8 @@ public class QCStatistics {
 		if (myvcfFile.isChrX()) {
 			_contig = myvcfFile.getVcfFilename().contains(X_NON_PAR) ? X_NON_PAR : X_PAR;
 		}
+
+		LineWriter metafileWriter = new LineWriter(FileUtil.path(chunkfile, _contig));
 
 		for (int chunkNumber : myvcfFile.getChunks()) {
 
@@ -261,24 +238,27 @@ public class QCStatistics {
 
 			while (snps.hasNext()) {
 
-				VariantContext d = snps.next();
+				VariantContext snp = snps.next();
 
-				processLine(d, vcfChunkWriter, legendReader, chunk);
+				processLine(snp, vcfChunkWriter, legendReader, chunk, mafWriter, excludedSnpsWriter);
 
 			}
 
 			vcfChunkWriter.close();
 
-			chunkSummary(chunk, samples);
+			chunkSummary(chunk, samples, metafileWriter, excludedChunkWriter);
 
 		}
 
 		vcfReader.close();
 
+		metafileWriter.close();
+
 	}
 
 	private void processLine(VariantContext snp, VariantContextWriter vcfWriter, LegendFileReader legendReader,
-			VcfChunk chunk) throws IOException, InterruptedException {
+			VcfChunk chunk, LineWriter mafWriter, LineWriter excludedSnpsWriter)
+			throws IOException, InterruptedException {
 
 		int extendedStart = Math.max(chunk.getStart() - phasingWindow, 1);
 		int extendedEnd = chunk.getEnd() + phasingWindow;
@@ -292,8 +272,8 @@ public class QCStatistics {
 
 		if (snp.getAlternateAlleles().size() > 1) {
 			if (insideChunk) {
-				logWriter.write(_contig + ":" + snp.getStart() + ":" + ref + ":" + snp.getAlternateAlleles() + "\t"
-						+ "Multiallelic Site");
+				excludedSnpsWriter.write(_contig + ":" + snp.getStart() + ":" + ref + ":" + snp.getAlternateAlleles()
+						+ "\t" + "Multiallelic Site");
 				multiallelicSites++;
 				filtered++;
 			}
@@ -307,7 +287,7 @@ public class QCStatistics {
 		// filter invalid alleles
 		if (!GenomicTools.isValid(ref) || !GenomicTools.isValid(alt)) {
 			if (insideChunk) {
-				logWriter.write(uniqueName + "\t" + "Invalid Alleles");
+				excludedSnpsWriter.write(uniqueName + "\t" + "Invalid Alleles");
 				invalidAlleles++;
 				filtered++;
 			}
@@ -320,7 +300,7 @@ public class QCStatistics {
 
 			if (insideChunk) {
 				duplicates++;
-				logWriter.write(uniqueName + "\t" + "Duplicate");
+				excludedSnpsWriter.write(uniqueName + "\t" + "Duplicate");
 				filtered++;
 			}
 
@@ -347,11 +327,11 @@ public class QCStatistics {
 
 				if (snp.getFilters().contains("DUP")) {
 					duplicates++;
-					logWriter.write(uniqueName + "\t" + "Filter Duplicate");
+					excludedSnpsWriter.write(uniqueName + "\t" + "Filter Duplicate");
 					filtered++;
 				} else {
 
-					logWriter.write(uniqueName + "\t" + "Filter Other");
+					excludedSnpsWriter.write(uniqueName + "\t" + "Filter Other");
 					filterFlag++;
 					filtered++;
 				}
@@ -373,7 +353,7 @@ public class QCStatistics {
 		// filter indels
 		if (snp.isIndel() || snp.isComplexIndel()) {
 			if (insideChunk) {
-				logWriter.write(uniqueName + "\t" + "InDel");
+				excludedSnpsWriter.write(uniqueName + "\t" + "InDel");
 				noSnps++;
 				filtered++;
 			}
@@ -383,7 +363,7 @@ public class QCStatistics {
 		// monomorphic only excludes 0/0;
 		if (snp.isMonomorphicInSamples()) {
 			if (insideChunk) {
-				logWriter.write(uniqueName + "\t" + "Monomorphic");
+				excludedSnpsWriter.write(uniqueName + "\t" + "Monomorphic");
 				monomorphic++;
 				filtered++;
 			}
@@ -460,7 +440,8 @@ public class QCStatistics {
 
 					strandSwitch1++;
 					filtered++;
-					logWriter.write(uniqueName + "\t" + "Strand switch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
+					excludedSnpsWriter
+							.write(uniqueName + "\t" + "Strand switch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
 
 				}
 				return;
@@ -473,8 +454,8 @@ public class QCStatistics {
 
 					filtered++;
 					strandSwitch3++;
-					logWriter.write(uniqueName + "\t" + "Strand switch and Allele switch" + "\t" + "Ref:" + legendRef
-							+ "/" + legendAlt);
+					excludedSnpsWriter.write(uniqueName + "\t" + "Strand switch and Allele switch" + "\t" + "Ref:"
+							+ legendRef + "/" + legendAlt);
 
 				}
 
@@ -488,7 +469,7 @@ public class QCStatistics {
 				if (insideChunk) {
 					alleleMismatch++;
 					filtered++;
-					logWriter
+					excludedSnpsWriter
 							.write(uniqueName + "\t" + "Allele mismatch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
 				}
 				return;
@@ -499,7 +480,7 @@ public class QCStatistics {
 				if (insideChunk) {
 					lowCallRate++;
 					filtered++;
-					logWriter.write(uniqueName + "\t" + "Low call rate" + "\t" + "Value: "
+					excludedSnpsWriter.write(uniqueName + "\t" + "Low call rate" + "\t" + "Value: "
 							+ (1.0 - snp.getNoCallCount() / (double) snp.getNSamples()));
 				}
 				return;
@@ -550,7 +531,8 @@ public class QCStatistics {
 		}
 	}
 
-	private void chunkSummary(VcfChunk chunk, ArrayList<String> samples) throws IOException {
+	private void chunkSummary(VcfChunk chunk, ArrayList<String> samples, LineWriter metafileWriter,
+			LineWriter excludedChunkWriter) throws IOException {
 		// this checks if enough SNPs are included in each sample
 		boolean lowSampleCallRate = false;
 		int countLowSamples = 0;
@@ -596,10 +578,6 @@ public class QCStatistics {
 
 	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
 
-		// one combined chrX legend file
-		if (_chromosome.startsWith("X.")) {
-			_chromosome = "X";
-		}
 		String legendFile_ = legendFile.replaceAll("\\$chr", _chromosome);
 		String myLegendFile = FileUtil.path(legendFile_);
 
@@ -693,38 +671,6 @@ public class QCStatistics {
 
 	public void setLegendFile(String legendFile) {
 		this.legendFile = legendFile;
-	}
-
-	public LineWriter getLogWriter() {
-		return logWriter;
-	}
-
-	public void setLogWriter(LineWriter logWriter) {
-		this.logWriter = logWriter;
-	}
-
-	public LineWriter getChunkLogWriter() {
-		return excludedChunkWriter;
-	}
-
-	public void setChunkLogWriter(LineWriter chunkLogWriter) {
-		this.excludedChunkWriter = chunkLogWriter;
-	}
-
-	public LineWriter getChunkfileWriter() {
-		return metafileWriter;
-	}
-
-	public void setChunkfileWriter(LineWriter chunkfileWriter) {
-		this.metafileWriter = chunkfileWriter;
-	}
-
-	public LineWriter getMafWriter() {
-		return mafWriter;
-	}
-
-	public void setMafWriter(LineWriter mafWriter) {
-		this.mafWriter = mafWriter;
 	}
 
 	public double getCALL_RATE() {
@@ -951,7 +897,7 @@ public class QCStatistics {
 		this.refSamples = refSamples;
 	}
 
-	public List<String> prepareChrXEagle(VcfFile file, StringBuilder chrX) {
+	public List<String> prepareChrXEagle(VcfFile file, StringBuilder chrXLog, HashSet<String> hapSamples) {
 
 		List<String> paths = new Vector<String>();
 		String nonPar = FileUtil.path(chunks, X_NON_PAR + ".vcf.gz");
@@ -977,7 +923,7 @@ public class QCStatistics {
 			VariantContext line = it.next();
 
 			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
-				line = makeDiploid(header.getGenotypeSamples(), line, file.isPhased(), chrX);
+				line = makeDiploid(header.getGenotypeSamples(), line, file.isPhased(), chrXLog, hapSamples);
 				vcfChunkWriterNonPar.add(line);
 			} else {
 				vcfChunkWriterPar.add(line);
@@ -995,7 +941,8 @@ public class QCStatistics {
 		return paths;
 	}
 
-	public VariantContext makeDiploid(List<String> samples, VariantContext snp, boolean isPhased, StringBuilder chrX) {
+	public VariantContext makeDiploid(List<String> samples, VariantContext snp, boolean isPhased, StringBuilder chrXLog,
+			HashSet<String> hapSamples) {
 
 		final GenotypesContext genotypes = GenotypesContext.create(samples.size());
 		String ref = snp.getReference().getBaseString();
@@ -1005,7 +952,7 @@ public class QCStatistics {
 			Genotype genotype = snp.getGenotype(name);
 
 			if (hapSamples.contains(name) && genotype.getGenotypeString().length() != 1) {
-				chrX.append("ChrX Error. Sample " + name + " is diploid at position " + snp.getStart() + "\n");
+				chrXLog.append("ChrX Error. Sample " + name + " is diploid at position " + snp.getStart() + "\n");
 			}
 
 			// better method available to check for haploid genotypes?
