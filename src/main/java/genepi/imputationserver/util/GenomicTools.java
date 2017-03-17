@@ -51,7 +51,7 @@ public class GenomicTools {
 
 	}
 
-	public static boolean strandSwap(char studyRef, char studyAlt,
+	public static boolean strandFlip(char studyRef, char studyAlt,
 			char legendRef, char legendAlt) {
 
 		String studyGenotype = new StringBuilder().append(studyRef)
@@ -129,7 +129,7 @@ public class GenomicTools {
 		return false;
 	}
 
-	public static boolean strandSwapAndAlleleSwitch(char studyRef,
+	public static boolean strandFlipAndAlleleSwitch(char studyRef,
 			char studyAlt, char legendRef, char legendAlt) {
 
 		String studyGenotype = new StringBuilder().append(studyRef)

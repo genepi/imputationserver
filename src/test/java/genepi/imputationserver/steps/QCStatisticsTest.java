@@ -167,7 +167,7 @@ public class QCStatisticsTest extends TestCase {
 		assertTrue(context.hasInMemory("Excluded sites in total: 3,057"));
 		assertTrue(context.hasInMemory("Remaining sites in total: 117,499"));
 
-		FileUtil.deleteDirectory(new File(out));
+		//FileUtil.deleteDirectory(new File(out));
 	}
 
 	public void testCountSitesForOneChunkedContig() throws IOException {
@@ -310,7 +310,7 @@ public class QCStatisticsTest extends TestCase {
 
 		assertEquals(13, count);
 
-		//FileUtil.deleteDirectory(new File(out));
+		FileUtil.deleteDirectory(new File(out));
 	}
 
 	public void testCountSamplesInCreatedChunk() throws IOException {

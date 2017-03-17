@@ -24,10 +24,10 @@ public class QualityControl extends WorkflowStep {
 		String population = context.get("population");
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
-		String outputMaf = context.get("outputmaf");
-		String outputChunkfile = context.get("mafchunkfile");
-		String excluded = context.get("statistics");
-		String chunks = context.get("chunks");
+		String mafFile = context.get("outputmaf");
+		String chunkFileDir = context.get("mafchunkfile");
+		String statDir = context.get("statistics");
+		String chunksDir = context.get("chunks");
 
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
@@ -59,20 +59,23 @@ public class QualityControl extends WorkflowStep {
 		int referenceSamples = GenomicTools.getPanelSize(reference); 
 		QCStatistics qcStatistics = new QCStatistics();
 
-		qcStatistics.setOutputMaf(outputMaf);
-		qcStatistics.setChunkfile(outputChunkfile);
-		qcStatistics.setChunks(chunks);
-		qcStatistics.setExcludeLog(excluded);
 		qcStatistics.setInput(inputFiles);
+		
 		qcStatistics.setChunkSize(chunkSize);
 		qcStatistics.setPhasingWindow(phasingWindow);
 		qcStatistics.setPopulation(population);
 		qcStatistics.setLegendFile(panel.getLegend());
 		qcStatistics.setRefSamples(referenceSamples);
+		
+		qcStatistics.setMafFile(mafFile);
+		qcStatistics.setChunkFileDir(chunkFileDir);
+		qcStatistics.setChunksDir(chunksDir);
+		qcStatistics.setStatDir(statDir);
 
 		context.beginTask("Calculating QC Statistics...");
 
 		QualityControlObject answer;
+		
 		try {
 
 			answer = qcStatistics.run();
@@ -102,9 +105,9 @@ public class QualityControl extends WorkflowStep {
 
 			text.append("Match: " + formatter.format(qcStatistics.getMatch()) + "<br>");
 			text.append("Allele switch: " + formatter.format(qcStatistics.getAlleleSwitch()) + "<br>");
-			text.append("Strand flip: " + formatter.format(qcStatistics.getStrandSwitch1()) + "<br>");
-			text.append("Strand flip and allele switch: " + formatter.format(qcStatistics.getStrandSwitch3()) + "<br>");
-			text.append("A/T, C/G genotypes: " + formatter.format(qcStatistics.getStrandSwitch2()) + "<br>");
+			text.append("Strand flip: " + formatter.format(qcStatistics.getStrandFlipSimple()) + "<br>");
+			text.append("Strand flip and allele switch: " + formatter.format(qcStatistics.getStrandFlipAndAlleleSwitch()) + "<br>");
+			text.append("A/T, C/G genotypes: " + formatter.format(qcStatistics.getComplicatedGenotypes()) + "<br>");
 
 			text.append("<b>Filtered sites:</b> <br>");
 			text.append("Filter flag set: " + formatter.format(qcStatistics.getFilterFlag()) + "<br>");
@@ -150,14 +153,14 @@ public class QualityControl extends WorkflowStep {
 			long excludedChunks = qcStatistics.getRemovedChunksSnps() + qcStatistics.getRemovedChunksCallRate()
 					+ qcStatistics.getRemovedChunksOverlap();
 
-			long amountChunks = qcStatistics.getAmountChunks();
+			long overallChunks = qcStatistics.getOverallChunks();
 
 			if (excludedChunks > 0) {
-				text.append("<br>Remaining chunk(s): " + formatter.format(amountChunks - excludedChunks));
+				text.append("<br>Remaining chunk(s): " + formatter.format(overallChunks - excludedChunks));
 
 			}
 
-			if (excludedChunks == amountChunks) {
+			if (excludedChunks == overallChunks) {
 
 				text.append("<br><b>Error:</b> No chunks passed the QC step. Imputation cannot be started!");
 				context.error(text.toString());
@@ -165,8 +168,8 @@ public class QualityControl extends WorkflowStep {
 				return false;
 
 			}
-			// strand flips (normal flip + allele switch AND strand flip)
-			else if (qcStatistics.getStrandSwitch1() + qcStatistics.getStrandSwitch3() > 100) {
+			// strand flips (normal flip & allele switch + strand flip)
+			else if (qcStatistics.getStrandFlipSimple() + qcStatistics.getStrandFlipAndAlleleSwitch() > 100) {
 				text.append(
 						"<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
 				context.error(text.toString());

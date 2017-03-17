@@ -37,11 +37,16 @@ public class QCStatistics {
 	public static final String X_PAR = "X.Pseudo.Auto";
 	public static final String X_NON_PAR = "X.Non.Pseudo.Auto";
 
-	String outputMaf = "tmp/maf.txt";
-	String chunkfile = "tmp";
-	String excludeLog = "tmp";
-	String chunks = "tmp";
+	private static double CALL_RATE = 0.5;
+	private static int MIN_SNPS = 3;
+	private static double OVERLAP = 0.5;
 
+	String chunkFileDir = "tmp";
+	String chunksDir = "tmp";
+	String statDir = "tmp";
+	String mafFile = "tmp/maf.txt";
+
+	// input variables
 	String population;
 	int chunkSize;
 	int phasingWindow;
@@ -49,65 +54,63 @@ public class QCStatistics {
 	String legendFile;
 	int refSamples;
 
-	private double CALL_RATE = 0.5;
-	private int MIN_SNPS = 3;
-	private double OVERLAP = 0.5;
+	// overall stats
+	int overallChunks;
+	int notFoundInLegend;
+	int foundInLegend;
+	int alleleMismatch;
+	int alleleSwitch;
+	int strandFlipSimple;
+	int complicatedGenotypes;
+	int strandFlipAndAlleleSwitch;
+	int match;
+	int lowCallRate;
+	int filtered;
+	int overallSnps;
+	int monomorphic;
+	int alternativeAlleles;
+	int noSnps;
+	int duplicates;
+	int filterFlag;
+	int invalidAlleles;
+	int multiallelicSites;
 
-	int amountChunks;
-
-	int notFoundInLegend = 0;
-	int foundInLegend = 0;
-	int alleleMismatch = 0;
-	int alleleSwitch = 0;
-	int strandSwitch1 = 0;
-	int strandSwitch2 = 0;
-	int strandSwitch3 = 0;
-	int match = 0;
-
-	int lowCallRate = 0;
-	int filtered = 0;
-	int overallSnps = 0;
-	int monomorphic = 0;
-	int alternativeAlleles = 0;
-	int noSnps = 0;
-	int duplicates = 0;
-	int filterFlag = 0;
-	int invalidAlleles = 0;
-	int multiallelicSites = 0;
+	// chunk results
+	int removedChunksSnps;
+	int removedChunksOverlap;
+	int removedChunksCallRate;
 
 	// chunk specific
-	int overallSnpsChunk = 0;
-	int validSnpsChunk = 0;
-	int foundInLegendChunk = 0;
-	int notFoundInLegendChunk = 0;
-	int[] snpsPerSampleCount = null;
-	int removedChunksSnps = 0;
-	int removedChunksOverlap = 0;
-	int removedChunksCallRate = 0;
-	int lastPos = 0;
+	int overallSnpsChunk;
+	int validSnpsChunk;
+	int foundInLegendChunk;
+	int notFoundInLegendChunk;
+	int[] snpsPerSampleCount;
+
+	int lastPos;
 
 	public QualityControlObject run() throws IOException, InterruptedException {
-		
-		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
 
 		QualityControlObject qcObject = new QualityControlObject();
-		
+
+		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
+
 		// MAF file for QC report
-		LineWriter mafWriter = new LineWriter(outputMaf);
+		LineWriter mafWriter = new LineWriter(mafFile);
 
 		// excluded SNPS
-		LineWriter excludedSnpsWriter = new LineWriter(FileUtil.path(excludeLog, "snps-excluded.txt"));
+		LineWriter excludedSnpsWriter = new LineWriter(FileUtil.path(statDir, "snps-excluded.txt"));
 		excludedSnpsWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
 
 		// excluded chunks
-		LineWriter excludedChunkWriter = new LineWriter(FileUtil.path(excludeLog, "chunks-excluded.txt"));
+		LineWriter excludedChunkWriter = new LineWriter(FileUtil.path(statDir, "chunks-excluded.txt"));
 		excludedChunkWriter.write(
 				"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
 
-		//chrX samples info
-		StringBuilder chrXLog = new StringBuilder();
-		
-		// chrX haploid samples 
+		// chrX infos
+		LineWriter chrXInfoWriter = new LineWriter(FileUtil.path(statDir, "chrX-info.txt"));
+
+		// chrX haploid samples
 		HashSet<String> hapSamples = new HashSet<String>();
 
 		Arrays.sort(vcfFilenames);
@@ -119,16 +122,16 @@ public class QCStatistics {
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
 			if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
-				
+
 				// split to par and non.par
-				List<String> splits = prepareChrXEagle(myvcfFile, chrXLog, hapSamples);
+				List<String> splits = prepareChrXEagle(myvcfFile, chrXInfoWriter, hapSamples);
 
 				for (String split : splits) {
 					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
 
 					_myvcfFile.setChrX(true);
 
-					//chrX
+					// chrX
 					processFile(_myvcfFile, mafWriter, excludedSnpsWriter, excludedChunkWriter);
 				}
 			} else {
@@ -139,23 +142,16 @@ public class QCStatistics {
 		}
 
 		if (hapSamples.size() > 0) {
-			LineWriter writer2 = new LineWriter(FileUtil.path(excludeLog, "chrX-samples.txt"));
-			writer2.write("The following samples have been changed from haploid to diploid");
+			LineWriter writer = new LineWriter(FileUtil.path(statDir, "chrX-samples.txt"));
+			writer.write("The following samples have been changed from haploid to diploid");
 
 			for (String sample : hapSamples) {
-				writer2.write(sample);
+				writer.write(sample);
 			}
-			writer2.close();
-		}
-
-		if (chrXLog.length() > 0) {
-			LineWriter writer = new LineWriter(FileUtil.path(excludeLog, "chrX-info.txt"));
-			writer.write(chrXLog.toString());
 			writer.close();
 
 			qcObject.setSuccess(true);
-			qcObject.setMessage(
-					"Check Chromosome X log files. Ambiguous (happloid vs diploid) samples have been detected.");
+			qcObject.setMessage("Check chromosome X statistics for ambiguous (haploid vs diploid) samples.");
 			return qcObject;
 		}
 
@@ -164,6 +160,8 @@ public class QCStatistics {
 		excludedSnpsWriter.close();
 
 		excludedChunkWriter.close();
+
+		chrXInfoWriter.close();
 
 		qcObject.setSuccess(true);
 		qcObject.setMessage("OK");
@@ -182,25 +180,18 @@ public class QCStatistics {
 
 		String _contig = myvcfFile.getChromosome();
 
+		// set X region as filename
 		if (myvcfFile.isChrX()) {
 			_contig = myvcfFile.getVcfFilename().contains(X_NON_PAR) ? X_NON_PAR : X_PAR;
 		}
 
-		LineWriter metafileWriter = new LineWriter(FileUtil.path(chunkfile, _contig));
+		LineWriter metafileWriter = new LineWriter(FileUtil.path(chunkFileDir, _contig));
 
 		for (int chunkNumber : myvcfFile.getChunks()) {
 
-			amountChunks++;
-
-			overallSnpsChunk = 0;
-
-			foundInLegendChunk = 0;
-
-			notFoundInLegendChunk = 0;
-
-			validSnpsChunk = 0;
-
-			snpsPerSampleCount = null;
+			initChunk();
+			
+			overallChunks++;
 
 			int chunkStart = chunkNumber * chunkSize + 1;
 
@@ -212,7 +203,7 @@ public class QCStatistics {
 
 			String chunkName = null;
 
-			chunkName = FileUtil.path(chunks, "chunk_" + _contig + "_" + chunkStart + "_" + chunkEnd + ".vcf.gz");
+			chunkName = FileUtil.path(chunksDir, "chunk_" + _contig + "_" + chunkStart + "_" + chunkEnd + ".vcf.gz");
 
 			VcfChunk chunk = new VcfChunk();
 			chunk.setChromosome(_contig);
@@ -254,6 +245,14 @@ public class QCStatistics {
 
 		metafileWriter.close();
 
+	}
+
+	private void initChunk() {
+		overallSnpsChunk = 0;
+		foundInLegendChunk = 0;
+		notFoundInLegendChunk = 0;
+		validSnpsChunk = 0;
+		snpsPerSampleCount = null;
 	}
 
 	private void processLine(VariantContext snp, VariantContextWriter vcfWriter, LegendFileReader legendReader,
@@ -304,7 +303,7 @@ public class QCStatistics {
 				filtered++;
 			}
 
-			lastPos = snp.getStart();
+			this.lastPos = snp.getStart();
 			return;
 
 		}
@@ -409,7 +408,7 @@ public class QCStatistics {
 
 				if (insideChunk) {
 
-					strandSwitch2++;
+					complicatedGenotypes++;
 
 				}
 
@@ -434,27 +433,27 @@ public class QCStatistics {
 			}
 
 			/** simple strand swaps **/
-			else if (GenomicTools.strandSwap(studyRef, studyAlt, legendRef, legendAlt)) {
+			else if (GenomicTools.strandFlip(studyRef, studyAlt, legendRef, legendAlt)) {
 
 				if (insideChunk) {
 
-					strandSwitch1++;
+					strandFlipSimple++;
 					filtered++;
 					excludedSnpsWriter
-							.write(uniqueName + "\t" + "Strand switch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
+							.write(uniqueName + "\t" + "Strand flip" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
 
 				}
 				return;
 
 			}
 
-			else if (GenomicTools.strandSwapAndAlleleSwitch(studyRef, studyAlt, legendRef, legendAlt)) {
+			else if (GenomicTools.strandFlipAndAlleleSwitch(studyRef, studyAlt, legendRef, legendAlt)) {
 
 				if (insideChunk) {
 
 					filtered++;
-					strandSwitch3++;
-					excludedSnpsWriter.write(uniqueName + "\t" + "Strand switch and Allele switch" + "\t" + "Ref:"
+					strandFlipAndAlleleSwitch++;
+					excludedSnpsWriter.write(uniqueName + "\t" + "Strand flip and Allele switch" + "\t" + "Ref:"
 							+ legendRef + "/" + legendAlt);
 
 				}
@@ -491,7 +490,7 @@ public class QCStatistics {
 				if (!population.equals("mixed")) {
 					SnpStats statistics;
 
-					if (GenomicTools.strandSwapAndAlleleSwitch(studyRef, studyAlt, legendRef, legendAlt)
+					if (GenomicTools.strandFlipAndAlleleSwitch(studyRef, studyAlt, legendRef, legendAlt)
 							|| GenomicTools.alleleSwitch(snp, refSnp)) {
 
 						// swap alleles
@@ -516,7 +515,6 @@ public class QCStatistics {
 
 				// check if all samples have
 				// enough SNPs
-
 				if (insideChunk) {
 					int i = 0;
 					for (String sample : snp.getSampleNamesOrderedByName()) {
@@ -576,336 +574,16 @@ public class QCStatistics {
 		}
 	}
 
-	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
-
-		String legendFile_ = legendFile.replaceAll("\\$chr", _chromosome);
-		String myLegendFile = FileUtil.path(legendFile_);
-
-		if (!new File(myLegendFile).exists()) {
-			throw new InterruptedException("Legendfile '" + myLegendFile + "' not found.");
-		}
-
-		LegendFileReader legendReader = new LegendFileReader(myLegendFile, population);
-		legendReader.createIndex();
-		legendReader.initSearch();
-
-		return legendReader;
-
-	}
-
-	public int getOverallSnps() {
-		return overallSnps;
-	}
-
-	public void setOverallSnps(int overallSnps) {
-		this.overallSnps = overallSnps;
-	}
-
-	public String getOutputMaf() {
-		return outputMaf;
-	}
-
-	public void setOutputMaf(String outputMaf) {
-		this.outputMaf = outputMaf;
-	}
-
-	public String getChunkfile() {
-		return chunkfile;
-	}
-
-	public void setChunkfile(String chunkfile) {
-		this.chunkfile = chunkfile;
-	}
-
-	public String getExcludeLog() {
-		return excludeLog;
-	}
-
-	public void setExcludeLog(String excludeLog) {
-		this.excludeLog = excludeLog;
-	}
-
-	public String getChunks() {
-		return chunks;
-	}
-
-	public void setChunks(String chunks) {
-		this.chunks = chunks;
-	}
-
-	public String getPopulation() {
-		return population;
-	}
-
-	public void setPopulation(String population) {
-		this.population = population;
-	}
-
-	public int getChunkSize() {
-		return chunkSize;
-	}
-
-	public void setChunkSize(int chunkSize) {
-		this.chunkSize = chunkSize;
-	}
-
-	public String getInput() {
-		return input;
-	}
-
-	public void setInput(String input) {
-		this.input = input;
-	}
-
-	public int getPhasingWindow() {
-		return phasingWindow;
-	}
-
-	public void setPhasingWindow(int phasingWindow) {
-		this.phasingWindow = phasingWindow;
-	}
-
-	public String getLegendFile() {
-		return legendFile;
-	}
-
-	public void setLegendFile(String legendFile) {
-		this.legendFile = legendFile;
-	}
-
-	public double getCALL_RATE() {
-		return CALL_RATE;
-	}
-
-	public void setCALL_RATE(double cALL_RATE) {
-		CALL_RATE = cALL_RATE;
-	}
-
-	public int getNotFoundInLegend() {
-		return notFoundInLegend;
-	}
-
-	public void setNotFoundInLegend(int notFoundInLegend) {
-		this.notFoundInLegend = notFoundInLegend;
-	}
-
-	public int getFoundInLegend() {
-		return foundInLegend;
-	}
-
-	public void setFoundInLegend(int foundInLegend) {
-		this.foundInLegend = foundInLegend;
-	}
-
-	public int getAlleleMismatch() {
-		return alleleMismatch;
-	}
-
-	public void setAlleleMismatch(int alleleMismatch) {
-		this.alleleMismatch = alleleMismatch;
-	}
-
-	public int getAlleleSwitch() {
-		return alleleSwitch;
-	}
-
-	public void setAlleleSwitch(int alleleSwitch) {
-		this.alleleSwitch = alleleSwitch;
-	}
-
-	public int getStrandSwitch1() {
-		return strandSwitch1;
-	}
-
-	public void setStrandSwitch1(int strandSwitch1) {
-		this.strandSwitch1 = strandSwitch1;
-	}
-
-	public int getStrandSwitch2() {
-		return strandSwitch2;
-	}
-
-	public void setStrandSwitch2(int strandSwitch2) {
-		this.strandSwitch2 = strandSwitch2;
-	}
-
-	public int getStrandSwitch3() {
-		return strandSwitch3;
-	}
-
-	public void setStrandSwitch3(int strandSwitch3) {
-		this.strandSwitch3 = strandSwitch3;
-	}
-
-	public int getMatch() {
-		return match;
-	}
-
-	public void setMatch(int match) {
-		this.match = match;
-	}
-
-	public int getLowCallRate() {
-		return lowCallRate;
-	}
-
-	public void setLowCallRate(int lowCallRate) {
-		this.lowCallRate = lowCallRate;
-	}
-
-	public int getFiltered() {
-		return filtered;
-	}
-
-	public void setFiltered(int filtered) {
-		this.filtered = filtered;
-	}
-
-	public int getMonomorphic() {
-		return monomorphic;
-	}
-
-	public void setMonomorphic(int monomorphic) {
-		this.monomorphic = monomorphic;
-	}
-
-	public int getAlternativeAlleles() {
-		return alternativeAlleles;
-	}
-
-	public void setAlternativeAlleles(int alternativeAlleles) {
-		this.alternativeAlleles = alternativeAlleles;
-	}
-
-	public int getNoSnps() {
-		return noSnps;
-	}
-
-	public void setNoSnps(int noSnps) {
-		this.noSnps = noSnps;
-	}
-
-	public int getDuplicates() {
-		return duplicates;
-	}
-
-	public void setDuplicates(int duplicates) {
-		this.duplicates = duplicates;
-	}
-
-	public int getFilterFlag() {
-		return filterFlag;
-	}
-
-	public void setFilterFlag(int filterFlag) {
-		this.filterFlag = filterFlag;
-	}
-
-	public int getInvalidAlleles() {
-		return invalidAlleles;
-	}
-
-	public void setInvalidAlleles(int invalidAlleles) {
-		this.invalidAlleles = invalidAlleles;
-	}
-
-	public int getOverallSnpsChunk() {
-		return overallSnpsChunk;
-	}
-
-	public void setOverallSnpsChunk(int overallSnpsChunk) {
-		this.overallSnpsChunk = overallSnpsChunk;
-	}
-
-	public int getValidSnpsChunk() {
-		return validSnpsChunk;
-	}
-
-	public void setValidSnpsChunk(int validSnpsChunk) {
-		this.validSnpsChunk = validSnpsChunk;
-	}
-
-	public int getFoundInLegendChunk() {
-		return foundInLegendChunk;
-	}
-
-	public void setFoundInLegendChunk(int foundInLegendChunk) {
-		this.foundInLegendChunk = foundInLegendChunk;
-	}
-
-	public int getNotFoundInLegendChunk() {
-		return notFoundInLegendChunk;
-	}
-
-	public void setNotFoundInLegendChunk(int notFoundInLegendChunk) {
-		this.notFoundInLegendChunk = notFoundInLegendChunk;
-	}
-
-	public int[] getSnpsPerSampleCount() {
-		return snpsPerSampleCount;
-	}
-
-	public void setSnpsPerSampleCount(int[] snpsPerSampleCount) {
-		this.snpsPerSampleCount = snpsPerSampleCount;
-	}
-
-	public int getRemovedChunksSnps() {
-		return removedChunksSnps;
-	}
-
-	public void setRemovedChunksSnps(int removedChunksSnps) {
-		this.removedChunksSnps = removedChunksSnps;
-	}
-
-	public int getRemovedChunksOverlap() {
-		return removedChunksOverlap;
-	}
-
-	public void setRemovedChunksOverlap(int removedChunksOverlap) {
-		this.removedChunksOverlap = removedChunksOverlap;
-	}
-
-	public int getRemovedChunksCallRate() {
-		return removedChunksCallRate;
-	}
-
-	public void setRemovedChunksCallRate(int removedChunksCallRate) {
-		this.removedChunksCallRate = removedChunksCallRate;
-	}
-
-	public int getAmountChunks() {
-		return amountChunks;
-	}
-
-	public void setAmountChunks(int amountChunks) {
-		this.amountChunks = amountChunks;
-	}
-
-	public int getMultiallelicSites() {
-		return multiallelicSites;
-	}
-
-	public void setMultiallelicSites(int multiallelicSites) {
-		this.multiallelicSites = multiallelicSites;
-	}
-
-	public int getRefSamples() {
-		return refSamples;
-	}
-
-	public void setRefSamples(int refSamples) {
-		this.refSamples = refSamples;
-	}
-
-	public List<String> prepareChrXEagle(VcfFile file, StringBuilder chrXLog, HashSet<String> hapSamples) {
+	public List<String> prepareChrXEagle(VcfFile file, LineWriter chrXWriter, HashSet<String> hapSamples)
+			throws IOException {
 
 		List<String> paths = new Vector<String>();
-		String nonPar = FileUtil.path(chunks, X_NON_PAR + ".vcf.gz");
+		String nonPar = FileUtil.path(chunksDir, X_NON_PAR + ".vcf.gz");
 		VariantContextWriter vcfChunkWriterNonPar = new VariantContextWriterBuilder().setOutputFile(nonPar)
 				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
 
-		String par = FileUtil.path(chunks, X_PAR + ".vcf.gz");
+		String par = FileUtil.path(chunksDir, X_PAR + ".vcf.gz");
 		VariantContextWriter vcfChunkWriterPar = new VariantContextWriterBuilder().setOutputFile(par)
 				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
@@ -923,26 +601,34 @@ public class QCStatistics {
 			VariantContext line = it.next();
 
 			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
-				line = makeDiploid(header.getGenotypeSamples(), line, file.isPhased(), chrXLog, hapSamples);
+
+				line = makeDiploid(header.getGenotypeSamples(), line, file.isPhased(), chrXWriter, hapSamples);
 				vcfChunkWriterNonPar.add(line);
+
+				if (!paths.contains(nonPar)) {
+					paths.add(nonPar);
+				}
 			} else {
+
 				vcfChunkWriterPar.add(line);
+
+				if (!paths.contains(par)) {
+					paths.add(par);
+				}
 			}
 
 		}
+
 		vcfReader.close();
 
 		vcfChunkWriterPar.close();
 		vcfChunkWriterNonPar.close();
 
-		paths.add(nonPar);
-		paths.add(par);
-
 		return paths;
 	}
 
-	public VariantContext makeDiploid(List<String> samples, VariantContext snp, boolean isPhased, StringBuilder chrXLog,
-			HashSet<String> hapSamples) {
+	public VariantContext makeDiploid(List<String> samples, VariantContext snp, boolean isPhased, LineWriter chrXWriter,
+			HashSet<String> hapSamples) throws IOException {
 
 		final GenotypesContext genotypes = GenotypesContext.create(samples.size());
 		String ref = snp.getReference().getBaseString();
@@ -952,7 +638,8 @@ public class QCStatistics {
 			Genotype genotype = snp.getGenotype(name);
 
 			if (hapSamples.contains(name) && genotype.getGenotypeString().length() != 1) {
-				chrXLog.append("ChrX Error. Sample " + name + " is diploid at position " + snp.getStart() + "\n");
+				chrXWriter.write(
+						"Ambiguous sample found: " + name + " is already diploid at position " + snp.getStart() + "\n");
 			}
 
 			// better method available to check for haploid genotypes?
@@ -974,6 +661,155 @@ public class QCStatistics {
 		}
 
 		return new VariantContextBuilder(snp).genotypes(genotypes).make();
+	}
+
+	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
+
+		String legendFile_ = legendFile.replaceAll("\\$chr", _chromosome);
+		String myLegendFile = FileUtil.path(legendFile_);
+
+		if (!new File(myLegendFile).exists()) {
+			throw new InterruptedException("Legendfile '" + myLegendFile + "' not found.");
+		}
+
+		LegendFileReader legendReader = new LegendFileReader(myLegendFile, population);
+		legendReader.createIndex();
+		legendReader.initSearch();
+
+		return legendReader;
+
+	}
+
+	public void setMafFile(String mafFile) {
+		this.mafFile = mafFile;
+	}
+
+	public void setChunkFileDir(String chunkFileDir) {
+		this.chunkFileDir = chunkFileDir;
+	}
+
+	public void setStatDir(String statDir) {
+		this.statDir = statDir;
+	}
+
+	public void setChunksDir(String chunksDir) {
+		this.chunksDir = chunksDir;
+	}
+
+	public void setPopulation(String population) {
+		this.population = population;
+	}
+
+	public void setChunkSize(int chunkSize) {
+		this.chunkSize = chunkSize;
+	}
+
+	public void setInput(String input) {
+		this.input = input;
+	}
+
+	public void setPhasingWindow(int phasingWindow) {
+		this.phasingWindow = phasingWindow;
+	}
+
+	public void setLegendFile(String legendFile) {
+		this.legendFile = legendFile;
+	}
+
+	public void setRefSamples(int refSamples) {
+		this.refSamples = refSamples;
+	}
+
+	public int getOverallSnps() {
+		return overallSnps;
+	}
+
+	public int getNotFoundInLegend() {
+		return notFoundInLegend;
+	}
+
+	public int getFoundInLegend() {
+		return foundInLegend;
+	}
+
+	public int getAlleleMismatch() {
+		return alleleMismatch;
+	}
+
+	public int getAlleleSwitch() {
+		return alleleSwitch;
+	}
+
+	public int getStrandFlipSimple() {
+		return strandFlipSimple;
+	}
+
+	public int getComplicatedGenotypes() {
+		return complicatedGenotypes;
+	}
+
+	public int getStrandFlipAndAlleleSwitch() {
+		return strandFlipAndAlleleSwitch;
+	}
+
+	public int getMatch() {
+		return match;
+	}
+
+	public int getLowCallRate() {
+		return lowCallRate;
+	}
+
+	public void setLowCallRate(int lowCallRate) {
+		this.lowCallRate = lowCallRate;
+	}
+
+	public int getFiltered() {
+		return filtered;
+	}
+
+	public int getMonomorphic() {
+		return monomorphic;
+	}
+
+	public int getAlternativeAlleles() {
+		return alternativeAlleles;
+	}
+
+	public int getNoSnps() {
+		return noSnps;
+	}
+
+	public int getDuplicates() {
+		return duplicates;
+	}
+
+	public int getFilterFlag() {
+		return filterFlag;
+	}
+
+	public int getInvalidAlleles() {
+		return invalidAlleles;
+	}
+
+	public int getRemovedChunksSnps() {
+		return removedChunksSnps;
+	}
+
+	public int getRemovedChunksOverlap() {
+		return removedChunksOverlap;
+	}
+
+	public int getRemovedChunksCallRate() {
+		return removedChunksCallRate;
+	}
+
+	public int getOverallChunks() {
+		return overallChunks;
+	}
+
+	public int getMultiallelicSites() {
+		return multiallelicSites;
 	}
 
 }
