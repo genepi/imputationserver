@@ -664,12 +664,13 @@ public class QCStatistics {
 	}
 
 	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
-
 		String legendFile_ = legendFile.replaceAll("\\$chr", _chromosome);
 		String myLegendFile = FileUtil.path(legendFile_);
 
 		if (!new File(myLegendFile).exists()) {
+			
 			throw new InterruptedException("Legendfile '" + myLegendFile + "' not found.");
+			
 		}
 
 		LegendFileReader legendReader = new LegendFileReader(myLegendFile, population);

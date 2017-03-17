@@ -363,25 +363,21 @@ public class ImputationMinimac3Test {
 		context.setInput("phasing", phasing);
 		context.setInput("minimacbin", "Minimac3");
 
-		context.setOutput("outputmaf", file.getAbsolutePath() + "/outputmaf/outputmaf.txt");
-		FileUtil.createDirectory(file.getAbsolutePath() + "/outputmaf");
+		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
+		FileUtil.createDirectory(file.getAbsolutePath() + "/mafFile");
 
-		context.setOutput("mafchunkfile", file.getAbsolutePath() + "/mafchunkfile");
-		FileUtil.createDirectory(file.getAbsolutePath() + "/mafchunkfile");
+		context.setOutput("chunkFileDir", file.getAbsolutePath() + "/chunkFileDir");
+		FileUtil.createDirectory(file.getAbsolutePath() + "/chunkFileDir");
 
-		context.setOutput("excludeLog", file.getAbsolutePath() + "/excludeLog");
-		FileUtil.createDirectory(file.getAbsolutePath() + "/excludeLog");
+		context.setOutput("statisticDir", file.getAbsolutePath() + "/statisticDir");
+		FileUtil.createDirectory(file.getAbsolutePath() + "/statisticDir");
 
-		context.setOutput("statistics", file.getAbsolutePath() + "/statistics");
-		FileUtil.createDirectory(file.getAbsolutePath() + "/statistics");
-
-		context.setOutput("chunks", file.getAbsolutePath() + "/chunks");
-		FileUtil.createDirectory(file.getAbsolutePath() + "/chunks");
+		context.setOutput("chunksDir", file.getAbsolutePath() + "/chunksDir");
+		FileUtil.createDirectory(file.getAbsolutePath() + "/chunksDir");
 
 		context.setOutput("local", file.getAbsolutePath() + "/local");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/local");
 
-		context.setOutput("outputimputation", "cloudgene-hdfs");
 		context.setOutput("logfile", file.getAbsolutePath() + "/logfile");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/logfile");
 

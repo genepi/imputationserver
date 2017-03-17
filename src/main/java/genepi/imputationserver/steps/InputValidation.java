@@ -215,16 +215,9 @@ public class InputValidation extends WorkflowStep {
 						context.endTask("Reference File '" + panel.getHdfs() + "' not found.", WorkflowContext.ERROR);
 						return false;
 					}
+					 */
 
-					//TODO: qc step
-					if (!panel.existsLegend()) {
-						context.endTask("Reference File '" + panel.getLegend() + "' not found.", WorkflowContext.ERROR);
-						return false;
-					}
-
-*/
 					// load maps
-
 					MapList maps = null;
 					try {
 						maps = MapList.loadFromFile(FileUtil.path(folder, "genetic-maps.txt"));

@@ -24,10 +24,10 @@ public class QualityControl extends WorkflowStep {
 		String population = context.get("population");
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
-		String mafFile = context.get("outputmaf");
-		String chunkFileDir = context.get("mafchunkfile");
-		String statDir = context.get("statistics");
-		String chunksDir = context.get("chunks");
+		String mafFile = context.get("mafFile");
+		String chunkFileDir = context.get("chunkFileDir");
+		String statDir = context.get("statisticDir");
+		String chunksDir = context.get("chunksDir");
 
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
@@ -54,8 +54,7 @@ public class QualityControl extends WorkflowStep {
 
 			return false;
 		}
-
-
+		
 		int referenceSamples = GenomicTools.getPanelSize(reference); 
 		QCStatistics qcStatistics = new QCStatistics();
 

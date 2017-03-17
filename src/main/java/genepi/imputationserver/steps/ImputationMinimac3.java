@@ -50,7 +50,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String folder = getFolder(ImputationMinimac3.class);
 
 		// inputs
-		String input = context.get("mafchunkfile");
+		String input = context.get("chunkFileDir");
 		String reference = context.get("refpanel");
 		String phasing = context.get("phasing");
 		String rounds = context.get("rounds");
@@ -294,9 +294,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	// update message
 
 	private synchronized String updateMessage() {
-
 		String text = "";
-		String text2 = "";
 
 		int i = 1;
 
@@ -307,38 +305,28 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			if (state != null) {
 
-				if (id.equals("X.no.auto_female")) {
-					text2 = "X I";
-				} else if (id.equals("X.no.auto_male")) {
-					text2 = "X II";
-				} else if (id.equals("X.auto")) {
-					text2 = "X III";
-				} else {
-					text2 = id;
-				}
-
 				if (state == OK) {
 
-					text += "<span class=\"badge badge-success\" style=\"width: 40px\">Chr " + text2 + "</span>";
+					text += "<span class=\"badge badge-success\" style=\"width: 40px\">Chr " + id + "</span>";
 
 				}
 				if (state == RUNNING) {
 
-					text += "<span class=\"badge badge-info\" style=\"width: 40px\">Chr " + text2 + "</span>";
+					text += "<span class=\"badge badge-info\" style=\"width: 40px\">Chr " + id + "</span>";
 
 				}
 				if (state == FAILED) {
 
-					text += "<span class=\"badge badge-important\" style=\"width: 40px\">Chr " + text2 + "</span>";
+					text += "<span class=\"badge badge-important\" style=\"width: 40px\">Chr " + id + "</span>";
 
 				}
 				if (state == WAIT) {
 
-					text += "<span class=\"badge\" style=\"width: 40px\">Chr " + text2 + "</span>";
+					text += "<span class=\"badge\" style=\"width: 40px\">Chr " + id + "</span>";
 
 				}
 			} else {
-				text += "<span class=\"badge\" style=\"width: 40px\">Chr " + text2 + "</span>";
+				text += "<span class=\"badge\" style=\"width: 40px\">Chr " + id + "</span>";
 			}
 			if (i % 6 == 0) {
 				text += "<br>";

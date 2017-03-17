@@ -1,6 +1,6 @@
 name:  Michigan Imputation Server
 description: Michigan Imputation Server provides a free genotype imputation service using <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a>. You can upload phased or unphased GWAS genotypes and receive phased and imputed genomes in return. For all uploaded data sets an extensive QC is performed.
-version: v1.0.0
+version: v1.1.0
 website: http://genome.sph.umich.edu/wiki/Minimac
 category: MiniMac
 
@@ -16,29 +16,18 @@ cluster:
  
 mapred:
 
-  setup:
-    name: Input Validation
-    jar: minimac-cloud.jar
-    classname: genepi.imputationserver.steps.InputValidation
-
-  onFailure:
-    name: Send Notification on Failure
-    jar: minimac-cloud.jar
-    classname: genepi.imputationserver.steps.FailureNotification
-
-
   steps:
 
     - name: Quality Control
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.QualityControl
-      generates: $outputmaf $mafchunkfile $qcstat $statistics
+      generates: $mafFile $chunkFileDir $statisticDir
 
 #if( $population != "mixed")
 
     - name: Quality Control (Report)
       rmd: qc-report.Rmd
-      params: $outputmaf
+      params: $mafFile
       output: ${qcreport}.html
       generates: $qcreport
       
@@ -48,7 +37,7 @@ mapred:
     - name: Pre-phasing and Imputation
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.ImputationMinimac3
-      params: $mafchunkfile $refpanel $chunksize $window $phasing $queues       
+      params: $chunkFileDir $refpanel $chunksize $window $phasing $queues
       generates: $local $outputimputation $logfile $hadooplogs
 
     - name: Imputation (Report)
@@ -70,7 +59,7 @@ mapred:
        type: list
        value: hapmap2
        values:
-         hapmap2: HapMap 2
+         phase3: HapMap 2
 
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF</a> & <a href="https://github.com/genepi/23andme-tools" target="_blank">23andMe</a>)
@@ -179,6 +168,51 @@ mapred:
          
   outputs:
 
+    - id: qcreport
+      description: Quality-Control Results
+      type: local-file
+      download: true
+      temp: false
+      autoExport: true
+
+    - id: report
+      description: Imputation Report
+      type: local-file
+      download: false
+      temp: false
+
+    - id: mafFile
+      description: MAF Output
+      type: hdfs-folder
+      download: false
+      temp: true
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+       
+    - id: chunksDir
+      description: Actual chunk files
+      type: hdfs-folder
+      download: false
+      temp: true
+
+    - id: chunkFileDir
+      description: Chunkfile directory
+      type: hdfs-folder
+      download: false
+      temp: true
+      mergeOutput: false
+
+    - id: statisticDir
+      description: Directory for QC Statistics
+      type: hdfs-folder
+      download: true
+      temp: false
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+      autoExport: true
+
     - id: outputimputation
       description: Imputated Genotypes
       type: hdfs-folder
@@ -188,59 +222,12 @@ mapred:
       removeHeader: false
       mergeOutput: false
 
-    - id: qcreport
-      description: Quality-Control Results
-      type: local-file
-      download: true
-      temp: false
-      autoExport: true
-
- 
-    - id: report
-      description: Imputation Report
-      type: local-file
-      download: false
-      temp: false
-
-
-    - id: outputmaf
-      description: Output MAF
-      type: hdfs-folder
-      download: false
-      temp: true
-      mergeOutput: true
-      removeHeader: false
-      zip: false
-       
     - id: local
       description: Imputation Results
       type: local-folder
       download: true
       temp: true
-
-    - id: chunkfile
-      description: Chunk File
-      type: hdfs-folder
-      download: false
-      temp: true
-
-    - id: mafchunkfile
-      description: Chunk File Maf
-      type: hdfs-folder
-      download: false
-      temp: true
-      mergeOutput: false
-
-    - id: statistics
-      description: SNP Statistics
-      type: hdfs-folder
-      download: true
-      temp: false
-      mergeOutput: true
-      removeHeader: false
-      zip: false
-      autoExport: true
- 
+             
     - id: logfile
       description: Logs
       type: local-folder
