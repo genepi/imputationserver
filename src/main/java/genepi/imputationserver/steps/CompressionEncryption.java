@@ -117,7 +117,10 @@ public class CompressionEncryption extends WorkflowStep {
 				param.setPassword(password);
 				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
 				param.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
-
+				
+				param.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+				param.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+				
 				// create zip file
 				ArrayList<File> files = new ArrayList<File>();
 				files.add(new File(vcfOutput));
