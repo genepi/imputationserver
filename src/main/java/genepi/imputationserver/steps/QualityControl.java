@@ -54,18 +54,18 @@ public class QualityControl extends WorkflowStep {
 
 			return false;
 		}
-		
-		int referenceSamples = GenomicTools.getPanelSize(reference); 
+
+		int referenceSamples = GenomicTools.getPanelSize(reference);
 		QCStatistics qcStatistics = new QCStatistics();
 
 		qcStatistics.setInput(inputFiles);
-		
+
 		qcStatistics.setChunkSize(chunkSize);
 		qcStatistics.setPhasingWindow(phasingWindow);
 		qcStatistics.setPopulation(population);
 		qcStatistics.setLegendFile(panel.getLegend());
 		qcStatistics.setRefSamples(referenceSamples);
-		
+
 		qcStatistics.setMafFile(mafFile);
 		qcStatistics.setChunkFileDir(chunkFileDir);
 		qcStatistics.setChunksDir(chunksDir);
@@ -74,7 +74,7 @@ public class QualityControl extends WorkflowStep {
 		context.beginTask("Calculating QC Statistics...");
 
 		QualityControlObject answer;
-		
+
 		try {
 
 			answer = qcStatistics.run();
@@ -94,18 +94,18 @@ public class QualityControl extends WorkflowStep {
 			StringBuffer text = new StringBuffer();
 
 			text.append("<b>Statistics:</b> <br>");
-			text.append("Alternative allele frequency > 0.5 sites: " + formatter.format(qcStatistics.getAlternativeAlleles())
-					+ "<br>");
-			text.append("Reference Overlap: " + qcStatistics.getFoundInLegend() + "/"
-					+ ((qcStatistics.getFoundInLegend() + qcStatistics.getNotFoundInLegend())) + " ("
+			text.append("Alternative allele frequency > 0.5 sites: "
+					+ formatter.format(qcStatistics.getAlternativeAlleles()) + "<br>");
+			text.append("Reference Overlap: "
 					+ df.format(qcStatistics.getFoundInLegend()
 							/ (double) (qcStatistics.getFoundInLegend() + qcStatistics.getNotFoundInLegend()) * 100)
-					+ "%" + ")<br>");
+					+ " %" + "<br>");
 
 			text.append("Match: " + formatter.format(qcStatistics.getMatch()) + "<br>");
 			text.append("Allele switch: " + formatter.format(qcStatistics.getAlleleSwitch()) + "<br>");
 			text.append("Strand flip: " + formatter.format(qcStatistics.getStrandFlipSimple()) + "<br>");
-			text.append("Strand flip and allele switch: " + formatter.format(qcStatistics.getStrandFlipAndAlleleSwitch()) + "<br>");
+			text.append("Strand flip and allele switch: "
+					+ formatter.format(qcStatistics.getStrandFlipAndAlleleSwitch()) + "<br>");
 			text.append("A/T, C/G genotypes: " + formatter.format(qcStatistics.getComplicatedGenotypes()) + "<br>");
 
 			text.append("<b>Filtered sites:</b> <br>");
@@ -181,10 +181,10 @@ public class QualityControl extends WorkflowStep {
 				return true;
 
 			}
-			
+
 		} else {
-			
-			context.endTask("QC failed!",WorkflowContext.ERROR);
+
+			context.endTask("QC failed!", WorkflowContext.ERROR);
 			context.error(answer.getMessage());
 			return false;
 

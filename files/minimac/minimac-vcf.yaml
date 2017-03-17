@@ -179,7 +179,7 @@ mapred:
   outputs:
 
     - id: qcreport
-      description: Quality-Control Results
+      description: Quality-Control Report
       type: local-file
       download: true
       temp: false
@@ -214,7 +214,7 @@ mapred:
       mergeOutput: false
 
     - id: statisticDir
-      description: Directory for QC Statistics
+      description: QC Statistics
       type: local-folder
       download: true
       temp: false
@@ -224,7 +224,7 @@ mapred:
       autoExport: true
 
     - id: outputimputation
-      description: Imputated Genotypes
+      description: Imputed Genotypes
       type: hdfs-folder
       download: false
       temp: true
