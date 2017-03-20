@@ -23,6 +23,9 @@ import genepi.hadoop.HdfsUtil;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.tribble.FeatureCodec;
+import htsjdk.tribble.index.IndexFactory;
+import htsjdk.tribble.index.tabix.TabixIndex;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.GenotypeBuilder;
@@ -33,6 +36,7 @@ import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder.OutputType;
+import htsjdk.variant.vcf.VCFCodec;
 import htsjdk.variant.vcf.VCFFileReader;
 
 public class VcfFileUtil {
@@ -150,8 +154,13 @@ public class VcfFileUtil {
 			lineReader.close();
 
 			// create index
-			if (createIndex /* && !new File(vcfFilename + ".tbi").exists() */) {
+			if (createIndex && !new File(vcfFilename + ".tbi").exists()) {
 
+				//FeatureCodec<VariantContext, ?> codec = new VCFCodec();
+				//TabixIndex a = IndexFactory.createTabixIndex(new File(vcfFilename), codec, null);
+				//a.write(new File(vcfFilename + ".tbi"));	
+				
+			
 				File file = new File(vcfFilename);
 				File oldFile = new File(vcfFilename + ".old.vcf.gz");
 
@@ -179,6 +188,7 @@ public class VcfFileUtil {
 					throw new IOException(
 							"The provided VCF file is malformed. Error during index creation: " + e.getMessage());
 				}
+				
 
 			}
 

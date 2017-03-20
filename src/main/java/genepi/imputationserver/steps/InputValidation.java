@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.jar.Attributes;
@@ -97,12 +95,6 @@ public class InputValidation extends WorkflowStep {
 				builder.setExcludeList("MT,X,Y");
 				builder.build();
 
-				// TODO: remove all non vcf files?
-				/*
-				 * FileUtil.delete(inputs); for (String vcf :
-				 * FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$")) {
-				 * HdfsUtil.put(vcf, inputFiles); }
-				 */
 				context.incCounter("23andme-input", 1);
 			} else if (genome.length > 1) {
 				context.endTask("Please upload your 23andMe data as a single txt or zip file", WorkflowContext.ERROR);
@@ -145,9 +137,9 @@ public class InputValidation extends WorkflowStep {
 
 					if (VcfFileUtil.isChrX(vcfFile.getChromosome())) {
 
-						if (!phasing.equals("shapeit") && !vcfFile.isPhased()) {
+						if (!phasing.equals("eagle") && !vcfFile.isPhased()) {
 							context.endTask(
-									"Please select shapeit for phasing chromosome X. Eagle2 is under prepartion.",
+									"Please select eagle2 for chromosome X. ",
 									WorkflowContext.ERROR);
 							return false;
 						}
@@ -208,15 +200,6 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 					
-					/*
-
-					//TODO: minimac step 
-					if (!panel.existsReference()) {
-						context.endTask("Reference File '" + panel.getHdfs() + "' not found.", WorkflowContext.ERROR);
-						return false;
-					}
-					 */
-
 					// load maps
 					MapList maps = null;
 					try {
@@ -232,24 +215,6 @@ public class InputValidation extends WorkflowStep {
 						context.error("genetic map file not found.");
 						return false;
 					}
-/*
- * 					//TODO: minimac step 
-					if (map.getMapHapiUR() != null && !map.checkHapiUR()) {
-						context.endTask("Map HapiUR  '" + map.getMapHapiUR() + "' not found.", WorkflowContext.ERROR);
-						return false;
-					}
-
-					if (map.getMapShapeIT() != null && !map.checkShapeIT()) {
-						context.endTask("Map ShapeIT  '" + map.getMapShapeIT() + "' not found.", WorkflowContext.ERROR);
-						return false;
-					}
-
-					if (map.getMapEagle() != null && !map.checkEagle()) {
-						context.error("Eagle reference files not found.");
-						return false;
-					}
-
-*/
 
 					if ((reference.equals("hrc") && !population.equals("eur"))) {
 
