@@ -188,8 +188,9 @@ mapred:
     - id: report
       description: Imputation Report
       type: local-file
-      download: false
+      download: true
       temp: false
+      autoExport: true
 
     - id: mafFile
       description: MAF Output
