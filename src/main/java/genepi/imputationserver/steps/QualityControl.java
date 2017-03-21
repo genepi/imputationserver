@@ -129,7 +129,7 @@ public class QualityControl extends WorkflowStep {
 
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksSnps())
 
-						+ " Chunk(s) excluded: < 3 SNPs (see " + context.createLinkToFile("statistics")
+						+ " Chunk(s) excluded: < 3 SNPs (see " + context.createLinkToFile("statisticDir")
 						+ "  for details).");
 			}
 
@@ -138,14 +138,14 @@ public class QualityControl extends WorkflowStep {
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksCallRate())
 
 						+ " Chunk(s) excluded: at least one sample has a call rate < 50% (see "
-						+ context.createLinkToFile("statistics") + " for details).");
+						+ context.createLinkToFile("statisticDir") + " for details).");
 			}
 
 			if (qcStatistics.getRemovedChunksOverlap() > 0) {
 
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksOverlap())
 
-						+ " Chunk(s) excluded: reference overlap < 50% (see " + context.createLinkToFile("statistics")
+						+ " Chunk(s) excluded: reference overlap < 50% (see " + context.createLinkToFile("statisticDir")
 						+ " for details).");
 			}
 
@@ -177,6 +177,7 @@ public class QualityControl extends WorkflowStep {
 			}
 
 			else {
+				text.append(answer.getMessage());
 				context.warning(text.toString());
 				return true;
 

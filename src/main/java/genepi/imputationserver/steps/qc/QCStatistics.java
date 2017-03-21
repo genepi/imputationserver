@@ -92,6 +92,8 @@ public class QCStatistics {
 	public QualityControlObject run() throws IOException, InterruptedException {
 
 		QualityControlObject qcObject = new QualityControlObject();
+		
+		qcObject.setMessage("");
 
 		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
 
@@ -110,6 +112,8 @@ public class QCStatistics {
 		// chrX infos
 		LineWriter chrXInfoWriter = new LineWriter(FileUtil.path(statDir, "chrX-info.txt"));
 
+		chrXInfoWriter.write("chrX log messages");
+		
 		// chrX haploid samples
 		HashSet<String> hapSamples = new HashSet<String>();
 
@@ -140,6 +144,14 @@ public class QCStatistics {
 
 			}
 		}
+		
+		mafWriter.close();
+
+		excludedSnpsWriter.close();
+
+		excludedChunkWriter.close();
+
+		chrXInfoWriter.close();
 
 		if (hapSamples.size() > 0) {
 			LineWriter writer = new LineWriter(FileUtil.path(statDir, "chrX-samples.txt"));
@@ -150,21 +162,10 @@ public class QCStatistics {
 			}
 			writer.close();
 
-			qcObject.setSuccess(true);
-			qcObject.setMessage("Check chromosome X statistics for ambiguous (haploid vs diploid) samples.");
-			return qcObject;
+			qcObject.setMessage("<b>Chromosome X Info:</b> For phasing/imputation we changed samples from haploid to diploid. Please check chrX-samples.txt");
 		}
 
-		mafWriter.close();
-
-		excludedSnpsWriter.close();
-
-		excludedChunkWriter.close();
-
-		chrXInfoWriter.close();
-
 		qcObject.setSuccess(true);
-		qcObject.setMessage("OK");
 
 		return qcObject;
 	}
@@ -637,13 +638,13 @@ public class QCStatistics {
 
 			Genotype genotype = snp.getGenotype(name);
 
-			if (hapSamples.contains(name) && genotype.getGenotypeString().length() != 1) {
+			if (hapSamples.contains(name) && genotype.getPloidy() != 1) {
+				
 				chrXWriter.write(
-						"Ambiguous sample found: " + name + " is already diploid at position " + snp.getStart() + "\n");
+						"Converting haploid to diploid: " + name + " was already diploid at position " + snp.getStart() + "\n");
 			}
 
-			// better method available to check for haploid genotypes?
-			if (genotype.getGenotypeString().length() == 1) {
+			if (genotype.getPloidy() == 1) {
 
 				hapSamples.add(name);
 
@@ -654,6 +655,7 @@ public class QCStatistics {
 				genotypeAlleles.add(allele);
 				genotypeAlleles.add(allele);
 				genotype = new GenotypeBuilder(name, genotypeAlleles).phased(isPhased).make();
+				
 			}
 
 			genotypes.add(genotype);
