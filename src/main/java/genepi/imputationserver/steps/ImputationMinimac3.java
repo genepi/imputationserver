@@ -316,7 +316,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	// update message
 
 	private synchronized String updateMessage() {
+
 		String text = "";
+		String text2 = "";
 
 		int i = 1;
 
@@ -327,28 +329,36 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			if (state != null) {
 
+				if (id.equals("X.Non.Pseudo.Auto")) {
+					text2 = "X I";
+				} else if (id.equals("X.Pseudo.Auto")) {
+					text2 = "X II";
+				} else {
+					text2 = id;
+				}
+
 				if (state == OK) {
 
-					text += "<span class=\"badge badge-success\" style=\"width: 40px\">Chr " + id + "</span>";
+					text += "<span class=\"badge badge-success\" style=\"width: 40px\">Chr " + text2 + "</span>";
 
 				}
 				if (state == RUNNING) {
 
-					text += "<span class=\"badge badge-info\" style=\"width: 40px\">Chr " + id + "</span>";
+					text += "<span class=\"badge badge-info\" style=\"width: 40px\">Chr " + text2 + "</span>";
 
 				}
 				if (state == FAILED) {
 
-					text += "<span class=\"badge badge-important\" style=\"width: 40px\">Chr " + id + "</span>";
+					text += "<span class=\"badge badge-important\" style=\"width: 40px\">Chr " + text2 + "</span>";
 
 				}
 				if (state == WAIT) {
 
-					text += "<span class=\"badge\" style=\"width: 40px\">Chr " + id + "</span>";
+					text += "<span class=\"badge\" style=\"width: 40px\">Chr " + text2 + "</span>";
 
 				}
 			} else {
-				text += "<span class=\"badge\" style=\"width: 40px\">Chr " + id + "</span>";
+				text += "<span class=\"badge\" style=\"width: 40px\">Chr " + text2 + "</span>";
 			}
 			if (i % 6 == 0) {
 				text += "<br>";
@@ -367,7 +377,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		return text;
 
 	}
-
 	@Override
 	protected synchronized void onJobStart(String id, WorkflowContext context) {
 		context.println("Running job chr_" + id + "....");
