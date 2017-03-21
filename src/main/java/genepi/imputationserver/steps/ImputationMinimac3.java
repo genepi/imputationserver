@@ -101,7 +101,13 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		context.println("  Location: " + panel.getHdfs());
 		context.println("  Legend: " + panel.getLegend());
 		context.println("  Version: " + panel.getVersion());
-
+		
+		//reference panel
+		if (!panel.existsReference()) {
+			context.endTask("Reference File '" + panel.getHdfs() + "' not found.", WorkflowContext.ERROR);
+			return false;
+		}
+		
 		// load maps
 		MapList maps = null;
 		try {
@@ -117,6 +123,22 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			context.error("genetic map not found.");
 			return false;
 		}
+		
+		if (map.getMapHapiUR() != null && !map.checkHapiUR()) {
+			context.endTask("Map HapiUR  '" + map.getMapHapiUR() + "' not found.", WorkflowContext.ERROR);
+			return false;
+		}
+
+		if (map.getMapShapeIT() != null && !map.checkShapeIT()) {
+			context.endTask("Map ShapeIT  '" + map.getMapShapeIT() + "' not found.", WorkflowContext.ERROR);
+			return false;
+		}
+
+		if (map.getMapEagle() != null && !map.checkEagle()) {
+			context.error("Eagle reference files not found.");
+			return false;
+		}
+
 
 		// execute one job per chromosome
 		try {
