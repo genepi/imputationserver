@@ -4,6 +4,7 @@ import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.qc.QCStatistics;
+import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.GenomicTools;
 import genepi.imputationserver.util.QualityControlObject;
 import genepi.imputationserver.util.RefPanel;
@@ -14,11 +15,16 @@ import java.text.DecimalFormat;
 
 public class QualityControl extends WorkflowStep {
 
+	
+	protected void setupTabix(String folder){
+		VcfFileUtil.setBinary(FileUtil.path(folder, "bin", "tabix"));
+	}
+	
 	@Override
 	public boolean run(WorkflowContext context) {
 
 		String folder = getFolder(QualityControl.class);
-
+		setupTabix(folder);
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
 		String population = context.get("population");

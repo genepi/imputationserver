@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.IOException;
 
 import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.WorkflowTestContext;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFUtils;
 import junit.framework.TestCase;
 
 public class InputValidationTest extends TestCase {
@@ -353,6 +355,12 @@ public class InputValidationTest extends TestCase {
 		public String getFolder(Class clazz) {
 			// override folder with static folder instead of jar location
 			return folder;
+		}
+		
+		
+		@Override
+		protected void setupTabix(String folder) {
+			VcfFileUtil.setBinary("files/minimac/bin/tabix");
 		}
 
 	}

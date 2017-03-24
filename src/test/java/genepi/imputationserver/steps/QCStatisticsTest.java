@@ -7,6 +7,7 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
@@ -330,6 +331,11 @@ public class QCStatisticsTest extends TestCase {
 		public String getFolder(Class clazz) {
 			// override folder with static folder instead of jar location
 			return folder;
+		}
+		
+		@Override
+		protected void setupTabix(String folder) {
+			VcfFileUtil.setBinary("files/minimac/bin/tabix");
 		}
 
 	}

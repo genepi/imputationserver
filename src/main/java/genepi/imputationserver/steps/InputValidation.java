@@ -55,9 +55,14 @@ public class InputValidation extends WorkflowStep {
 		return checkVcfFiles(context);
 
 	}
+	
+	protected void setupTabix(String folder){
+		VcfFileUtil.setBinary(FileUtil.path(folder, "bin", "tabix"));
+	}
 
 	private boolean checkVcfFiles(WorkflowContext context) {
 		String folder = getFolder(InputValidation.class);
+		setupTabix(folder);
 		// String tester;
 		// inputs
 		String files = context.get("files");
@@ -67,8 +72,6 @@ public class InputValidation extends WorkflowStep {
 		int sampleLimit = Integer.valueOf(context.get("sample-limit"));
 
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
-
-		VcfFileUtil.setBinaries(FileUtil.path(folder, "bin"));
 
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
 

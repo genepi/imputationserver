@@ -20,6 +20,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.command.Command;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import htsjdk.samtools.util.CloseableIterator;
@@ -41,12 +42,16 @@ import htsjdk.variant.vcf.VCFFileReader;
 
 public class VcfFileUtil {
 
-	public static String BINARIES = "bin/";
+	public static String TABIX_PATH = "bin/";
 
-	public static void setBinaries(String binaries) {
-		BINARIES = binaries;
+	public static void setBinary(String binaries) {
+		TABIX_PATH = binaries;
 	}
-
+	
+	public static String getBinary(){
+		return TABIX_PATH;
+	}
+	
 	public static VcfFile load(String vcfFilename, int chunksize, boolean createIndex) throws IOException {
 
 		Set<Integer> chunks = new HashSet<Integer>();
@@ -156,39 +161,16 @@ public class VcfFileUtil {
 			// create index
 			if (createIndex && !new File(vcfFilename + ".tbi").exists()) {
 
-				//FeatureCodec<VariantContext, ?> codec = new VCFCodec();
-				//TabixIndex a = IndexFactory.createTabixIndex(new File(vcfFilename), codec, null);
-				//a.write(new File(vcfFilename + ".tbi"));	
-				
-			
-				File file = new File(vcfFilename);
-				File oldFile = new File(vcfFilename + ".old.vcf.gz");
+				Command tabix = new Command(TABIX_PATH);
+				tabix.setParams("-f", "-p", "vcf", vcfFilename);
+				tabix.saveStdErr("tabix.output");
+				int returnCode = tabix.execute();
 
-				try {
-
-					file.renameTo(oldFile);
-
-					final VCFFileReader compressedVcfReader = new VCFFileReader(oldFile, false);
-
-					final VariantContextWriter plainTextVcfWriter = new VariantContextWriterBuilder()
-							.setOutputFile(vcfFilename).setOption(Options.INDEX_ON_THE_FLY)
-							.setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-							.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
-					plainTextVcfWriter.writeHeader(compressedVcfReader.getFileHeader());
-					for (VariantContext vc : compressedVcfReader) {
-						if (vc != null)
-							plainTextVcfWriter.add(vc);
-					}
-					plainTextVcfWriter.close();
-					compressedVcfReader.close();
-					oldFile.delete();
-
-				} catch (Exception e) {
-					oldFile.renameTo(file);
+				if (returnCode != 0) {
 					throw new IOException(
-							"The provided VCF file is malformed. Error during index creation: " + e.getMessage());
+							"The provided VCF file is malformed. Error during index creation: "
+									+ FileUtil.readFileAsString("tabix.output"));
 				}
-				
 
 			}
 
