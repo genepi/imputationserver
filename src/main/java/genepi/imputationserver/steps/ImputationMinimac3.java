@@ -28,6 +28,10 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	private boolean running = true;
 
+	private String output;
+	
+	private boolean ok = false;
+	
 	public ImputationMinimac3() {
 		super(10);
 		jobs = new HashMap<String, HadoopJob>();
@@ -51,10 +55,10 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String rounds = context.get("rounds");
 		String window = context.get("window");
 		String population = context.get("population");
-		
+
 		String queue = "default";
 		queue = context.get("queues");
-		
+
 		boolean noCache = false;
 		String minimacBin = "minimac";
 
@@ -67,7 +71,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		}
 
 		// outputs
-		String output = context.get("outputimputation");
+		output = context.get("outputimputation");
 		String log = context.get("logfile");
 
 		if (!HdfsUtil.exists(input)) {
@@ -79,8 +83,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		RefPanelList panels = null;
 		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder,
-					"panels.txt"));
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder, "panels.txt"));
 
 		} catch (Exception e) {
 
@@ -99,8 +102,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		// load maps
 		MapList maps = null;
 		try {
-			maps = MapList.loadFromFile(FileUtil.path(folder,
-					"genetic-maps.txt"));
+			maps = MapList.loadFromFile(FileUtil.path(folder, "genetic-maps.txt"));
 		} catch (Exception e) {
 			context.error("genetic-maps.txt not found." + e);
 			return false;
@@ -124,34 +126,33 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				String[] tiles = chunkFile.split("/");
 				String chr = tiles[tiles.length - 1];
 
-				ImputationJobMinimac3 job = new ImputationJobMinimac3(
-						context.getJobName() + "-chr-" + chr, new ContextLog(
-								context), queue);
+				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobName() + "-chr-" + chr,
+						new ContextLog(context), queue);
 				job.setFolder(folder);
 				job.setRefPanelHdfs(panel.getHdfs());
 				job.setRefPanelPattern(panel.getPattern());
 				job.setChromosome(chr);
-				
-				
-				//shapeit
-				if(map.getMapShapeIT()!=null){
-				job.setMapShapeITHdfs(map.getMapShapeIT());
-				job.setMapShapeITPattern(map.getMapPatternShapeIT());
-				}
-				
-				//hapiur
-				if(map.getMapHapiUR()!=null){
-				job.setMapHapiURHdfs(map.getMapHapiUR());
-				job.setMapHapiURPattern(map.getMapPatternHapiUR());
+
+				// shapeit
+				if (map.getMapShapeIT() != null) {
+					job.setMapShapeITHdfs(map.getMapShapeIT());
+					job.setMapShapeITPattern(map.getMapPatternShapeIT());
 				}
 
-				//eagle
-				if(map.getMapEagle()!=null){
-				job.setMapEagleHdfs(map.getMapEagle());
-				job.setRefEagleHdfs(map.getRefEagle());
-				job.setRefPatternEagle(map.getRefPatternEagle());;
+				// hapiur
+				if (map.getMapHapiUR() != null) {
+					job.setMapHapiURHdfs(map.getMapHapiUR());
+					job.setMapHapiURPattern(map.getMapPatternHapiUR());
 				}
-				
+
+				// eagle
+				if (map.getMapEagle() != null) {
+					job.setMapEagleHdfs(map.getMapEagle());
+					job.setRefEagleHdfs(map.getRefEagle());
+					job.setRefPatternEagle(map.getRefPatternEagle());
+					;
+				}
+
 				job.setInput(chunkFile);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
@@ -175,8 +176,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			// one job was failed
 			if (error) {
-				context.println("Imputation on chromosome " + errorChr
-						+ " failed. Imputation was stopped.");
+				context.println("Imputation on chromosome " + errorChr + " failed. Imputation was stopped.");
 				updateProgress();
 
 				String text = updateMessage();
@@ -184,8 +184,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				printSummary();
 
-				context.error("Imputation on chromosome " + errorChr
-						+ " failed. Imputation was stopped.");
+				context.error("Imputation on chromosome " + errorChr + " failed. Imputation was stopped.");
 				return false;
 
 			}
@@ -212,9 +211,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			printSummary();
 
 			String text = updateMessage();
-			context.endTask(text, WorkflowContext.OK);
+			context.endTask(text, ok ? WorkflowContext.OK : WorkflowContext.ERROR);
 
-			return true;
+			return ok;			
 
 		} catch (Exception e) {
 
@@ -247,23 +246,19 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				if (state == OK) {
 
-					context.println("  [OK]   Chr " + id + " ("
-							+ job.getJobId() + ")");
+					context.println("  [OK]   Chr " + id + " (" + job.getJobId() + ")");
 
 				} else if (state == FAILED) {
 
-					context.println("  [FAIL] Chr " + id + " ("
-							+ job.getJobId() + ")");
+					context.println("  [FAIL] Chr " + id + " (" + job.getJobId() + ")");
 
 				} else {
-					context.println("  [" + state + "]   Chr " + id + " ("
-							+ job.getJobId() + ")");
+					context.println("  [" + state + "]   Chr " + id + " (" + job.getJobId() + ")");
 				}
 
 			} else {
 
-				context.println("  [??]   Chr " + id + " (" + job.getJobId()
-						+ ")");
+				context.println("  [??]   Chr " + id + " (" + job.getJobId() + ")");
 
 			}
 
@@ -344,31 +339,35 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	}
 
 	@Override
-	protected synchronized void onJobFinish(String id, boolean successful,
-			WorkflowContext context) {
+	protected synchronized void onJobFinish(String id, boolean successful, WorkflowContext context) {
 
 		HadoopJob job = jobs.get(id);
 
 		if (successful) {
 
 			// everything fine
-
-			context.println("Job chr_" + id + " (" + job.getJobId()
-					+ ") executed sucessful.");
+			ok = true;
+			context.println("Job chr_" + id + " (" + job.getJobId() + ") executed sucessful.");
 		} else {
 
 			// one job failed
 
-			context.println("Job chr_" + id + " (" + job.getJobId()
-					+ ") failed.");
+			context.println("Job chr_" + id + " (" + job.getJobId() + ") failed.");
 
 			// kill all running jobs
 
-			if (!error && !isCanceled()) {
+			if (!error && !isCanceled() && !id.startsWith("X.")) {
 				error = true;
 				errorChr = id;
 				context.println("Kill all running jobs...");
 				kill();
+			}
+			
+			//if chr X --> delete results
+			if (id.startsWith("X.")){
+				String outputFolder = HdfsUtil.path(output, id);
+				context.println("Delete outpufolder for " + id + ": " + outputFolder);
+				HdfsUtil.delete(outputFolder);
 			}
 		}
 
