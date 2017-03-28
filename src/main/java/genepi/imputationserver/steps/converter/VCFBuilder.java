@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.mina.core.filterchain.IoFilterLifeCycleException;
 
 public class VCFBuilder {
 
