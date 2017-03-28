@@ -38,13 +38,13 @@ public class FileUtil {
 		}
 	}
 	
-	public static void unzip(String in){
+	public static void unzip(String in, String out){
 
 		System.out.println("Unzip...");
 		
 	    try {
 	         ZipFile zipFile = new ZipFile(in);
-	         zipFile.extractAll(in.substring(0,in.lastIndexOf(File.separator)));
+	         zipFile.extractAll(out);
 	    } catch (ZipException e) {
 	        e.printStackTrace();
 	    }

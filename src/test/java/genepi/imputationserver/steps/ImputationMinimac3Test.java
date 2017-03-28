@@ -316,6 +316,29 @@ public class ImputationMinimac3Test {
 	}
 
 	@Test
+	public void testPipelineWithEagleAnd23AndMe() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/23andMe";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(true, result);
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	
+	@Test
 	public void testPipelineWithShapeIt() throws IOException, ZipException {
 
 		if (!new File("files/minimac/bin/shapeit").exists()) {

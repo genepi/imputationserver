@@ -93,11 +93,20 @@ public class InputValidation extends WorkflowStep {
 				context.updateTask("Check for valid 23andMe data", WorkflowContext.RUNNING);
 				VCFBuilder builder = new VCFBuilder(genome[0]);
 
-				builder.setReference(store.getString("ref.fasta"));
-				builder.setOutDirectory(files);
-				builder.setExcludeList("MT,X,Y");
-				builder.build();
+				String newFiles = FileUtil.path(context.getLocalTemp(), "vcfs");
+				String tempFiles = FileUtil.path(context.getLocalTemp(), "23andMe-temp");
 
+				
+				builder.setReference(store.getString("ref.fasta"));
+				builder.setOutDirectory(newFiles);
+				builder.setExcludeList("MT,X,Y");
+				builder.setTempDirectory(tempFiles);
+				builder.build();
+				
+				//update files with new location
+				files = newFiles;
+				context.setInput("inputs", newFiles);
+			
 				context.incCounter("23andme-input", 1);
 			} else if (genome.length > 1) {
 				context.endTask("Please upload your 23andMe data as a single txt or zip file", WorkflowContext.ERROR);
@@ -106,6 +115,7 @@ public class InputValidation extends WorkflowStep {
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			context.endTask("Converter task failed! \n" + e1.getMessage(), WorkflowContext.ERROR);
+			e1.printStackTrace();
 			return false;
 		}
 
