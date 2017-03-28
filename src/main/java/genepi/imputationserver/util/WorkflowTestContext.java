@@ -12,6 +12,8 @@ public class WorkflowTestContext extends WorkflowContext {
 
 	private String hdfsTemp;
 	
+	private String localTemp;
+	
 	private Map<String, String> inputs;
 
 	private Map<String, String> outputs;
@@ -163,7 +165,11 @@ public class WorkflowTestContext extends WorkflowContext {
 
 	@Override
 	public String getLocalTemp() {
-		return null;
+		return localTemp;
+	}
+	
+	public void setLocalTemp(String localTemp) {
+		this.localTemp = localTemp;
 	}
 
 	@Override

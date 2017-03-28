@@ -47,7 +47,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		String folder = getFolder(ImputationMinimac3.class);
+		final String folder = getFolder(ImputationMinimac3.class);
 
 		// inputs
 		String input = context.get("chunkFileDir");

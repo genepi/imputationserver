@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,10 +12,12 @@ import org.junit.Test;
 
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.steps.InputValidationTest.InputValidationMock;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
+import genepi.imputationserver.util.TestSFTPServer;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import net.lingala.zip4j.core.ZipFile;
@@ -83,6 +86,185 @@ public class ImputationMinimac3Test {
 		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
+	public void testPipelineWidthInvalidHttpUrl() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "https://imputationserver.sph.umich.edu/invalid-url/downloads/hapmap300.chr1.recode.vcf.gz";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeit");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
+	public void testPipelineWidthInvalidFileFormat() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "https://imputationserver.sph.umich.edu/static/images/impute.png";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeit");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
+	public void testPipelineWidthHttpUrl() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "https://imputationserver.sph.umich.edu/static/downloads/hapmap300.chr1.recode.vcf.gz";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeit");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(true, result);
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		result = run(context, qcStats);
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_1.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr1.dose.vcf.gz", 100000000, false);
+
+		assertEquals("1", file.getChromosome());
+		assertEquals(60, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
+	public void testPipelineWithSFTP() throws IOException, ZipException, InterruptedException {
+
+		TestSFTPServer server = new TestSFTPServer("test-data/data");
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "sftp://localhost:8001/" + new File("test-data/data/chr20-phased").getAbsolutePath() + ";"
+				+ TestSFTPServer.USERNAME + ";" + TestSFTPServer.PASSWORD;
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(true, result);
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		result = run(context, qcStats);
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+		server.stop();
+
+	}
+
+	@Test
+	public void testPipelineWithWrongSFTPCredentials() throws IOException, ZipException, InterruptedException {
+
+		TestSFTPServer server = new TestSFTPServer("test-data/data");
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "sftp://localhost:8001/" + new File("data/chr20-phased").getAbsolutePath() + ";"
+				+ "WRONG_USERNAME" + ";" + TestSFTPServer.PASSWORD;
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+
+		server.stop();
 
 	}
 
@@ -237,9 +419,11 @@ public class ImputationMinimac3Test {
 
 	@Test
 	public void testchrXPipelineWithEagle() throws IOException, ZipException {
-		
-		//maybe git large files?
-		if (!new File("test-data/configs/hapmap-chrX/ref-panels/ALL.chrX.Non.Pseudo.Auto.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.bcf").exists()) {
+
+		// maybe git large files?
+		if (!new File(
+				"test-data/configs/hapmap-chrX/ref-panels/ALL.chrX.Non.Pseudo.Auto.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.bcf")
+						.exists()) {
 			return;
 		}
 
@@ -288,7 +472,6 @@ public class ImputationMinimac3Test {
 
 	}
 
-	
 	@Test
 	public void testchrXPipelinePhased() throws IOException, ZipException {
 
@@ -336,7 +519,7 @@ public class ImputationMinimac3Test {
 		assertEquals(true, vcfFile.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHRX_NONPAR, vcfFile.getNoSnps());
 
-		//FileUtil.deleteDirectory(file);
+		// FileUtil.deleteDirectory(file);
 
 	}
 
@@ -361,6 +544,7 @@ public class ImputationMinimac3Test {
 		context.setInput("rounds", "0");
 		context.setInput("window", "500000");
 		context.setInput("phasing", phasing);
+		context.setInput("sample-limit", "0");
 		context.setInput("minimacbin", "Minimac3");
 
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
@@ -390,6 +574,10 @@ public class ImputationMinimac3Test {
 		FileUtil.deleteDirectory(file.getAbsolutePath() + "/hadooplogs");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/hadooplogs");
 
+		context.setLocalTemp("local-temp");
+		FileUtil.deleteDirectory("local-temp");
+		FileUtil.createDirectory("local-temp");
+		
 		return context;
 
 	}
@@ -463,6 +651,33 @@ public class ImputationMinimac3Test {
 			return folder;
 		}
 
+		@Override
+		protected void setupTabix(String folder) {
+			VcfFileUtil.setBinary("files/minimac/bin/tabix");
+		}
+		
 	}
 
+	class InputValidationMock extends InputValidation {
+
+		private String folder;
+
+		public InputValidationMock(String folder) {
+			super();
+			this.folder = folder;
+		}
+
+		@Override
+		public String getFolder(Class clazz) {
+			// override folder with static folder instead of jar location
+			return folder;
+		}
+		
+		
+		@Override
+		protected void setupTabix(String folder) {
+			VcfFileUtil.setBinary("files/minimac/bin/tabix");
+		}
+
+	}
 }

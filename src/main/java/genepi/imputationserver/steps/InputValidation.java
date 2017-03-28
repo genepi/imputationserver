@@ -342,10 +342,10 @@ public class InputValidation extends WorkflowStep {
 				for (String url2 : urlList) {
 
 					String url = url2 + ";" + username + ";" + password;
-
-					//TODO: change importer to import locally
-					String target = HdfsUtil.path(context.getHdfsTemp(), "importer", input);
-
+					String target = FileUtil.path(context.getLocalTemp(), "importer", input);
+					FileUtil.createDirectory(target);
+					context.println("Import to local workspace " + target + "...");
+					
 					try {
 
 						context.updateTask("Import " + url2 + "...", WorkflowContext.RUNNING);
