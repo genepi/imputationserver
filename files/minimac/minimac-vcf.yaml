@@ -16,22 +16,16 @@ cluster:
  
 mapred:
 
-  setup:
-    name: Input Validation
-    jar: minimac-cloud.jar
-    classname: genepi.imputationserver.steps.InputValidation
-
-  onFailure:
-    name: Send Notification on Failure
-    jar: minimac-cloud.jar
-    classname: genepi.imputationserver.steps.FailureNotification
-    
-  steps:
+  setups:
+    - name: Input Validation
+      jar: minimac-cloud.jar
+      classname: genepi.imputationserver.steps.InputValidation
 
     - name: Quality Control
       jar: minimac-cloud.jar
       classname: genepi.imputationserver.steps.QualityControl
       generates: $mafFile $chunkFileDir $statisticDir
+
 
 #if( $population != "mixed")
 
@@ -41,7 +35,14 @@ mapred:
       output: ${qcreport}.html
       generates: $qcreport
       
-#end
+#end            
+
+  onFailure:
+    name: Send Notification on Failure
+    jar: minimac-cloud.jar
+    classname: genepi.imputationserver.steps.FailureNotification
+    
+  steps:
 
 #if($mode == "imputation")
     - name: Pre-phasing and Imputation
