@@ -309,7 +309,7 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL, file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL  + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -568,7 +568,7 @@ public class ImputationMinimac3Test {
 		context.setInput("window", "500000");
 		context.setInput("phasing", phasing);
 		context.setInput("sample-limit", "0");
-		context.setInput("minimacbin", "Minimac3");
+		context.setInput("minimacbin", "Minimac4");
 
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/mafFile");
