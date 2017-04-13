@@ -218,6 +218,7 @@ public class VcfFileUtil {
 		validChromosomes.add("20");
 		validChromosomes.add("21");
 		validChromosomes.add("22");
+		validChromosomes.add("23");
 		validChromosomes.add("X");
 	}
 
