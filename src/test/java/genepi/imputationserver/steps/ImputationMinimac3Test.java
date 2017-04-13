@@ -710,7 +710,7 @@ public class ImputationMinimac3Test {
 
 	}
 
-	class QcStatisticsMock extends FastQualityControl {
+	class QcStatisticsMock extends QualityControl {
 
 		private String folder;
 
