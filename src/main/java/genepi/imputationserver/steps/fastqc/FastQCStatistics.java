@@ -629,6 +629,10 @@ public class FastQCStatistics {
 		while (it.hasNext()) {
 
 			VariantContext line = it.next();
+			
+			if(!line.getContig().equals("X")){
+				line = new VariantContextBuilder(line).chr("X").make();
+			}
 
 			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
 
@@ -695,6 +699,12 @@ public class FastQCStatistics {
 	}
 
 	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
+		
+		// always use X for legend files chrX
+		if(VcfFileUtil.isChrX(_chromosome)){
+			_chromosome = "X";
+		}
+		
 		String legendFile_ = legendFile.replaceAll("\\$chr", _chromosome);
 		String myLegendFile = FileUtil.path(legendFile_);
 

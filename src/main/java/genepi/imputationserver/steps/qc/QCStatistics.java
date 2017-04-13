@@ -232,10 +232,6 @@ public class QCStatistics {
 
 				VariantContext snp = snps.next();
 				
-				if(VcfFileUtil.isChrX(snp.getContig())){
-					snp = new VariantContextBuilder(snp).chr("X").make();
-				}
-				
 				processLine(snp, vcfChunkWriter, legendReader, chunk, mafWriter, excludedSnpsWriter);
 
 			}
@@ -604,7 +600,11 @@ public class QCStatistics {
 		while (it.hasNext()) {
 
 			VariantContext line = it.next();
-
+			
+			if(!line.getContig().equals("X")){
+			line = new VariantContextBuilder(line).chr("X").make();
+			}
+			
 			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
 
 				line = makeDiploid(header.getGenotypeSamples(), line, file.isPhased(), chrXWriter, hapSamples);
