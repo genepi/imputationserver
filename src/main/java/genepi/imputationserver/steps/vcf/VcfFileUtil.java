@@ -226,7 +226,7 @@ public class VcfFileUtil {
 	}
 
 	public static boolean isChrX(String chromosome) {
-		return chromosome.equals("X");
+		return chromosome.equals("X") || chromosome.equals("23");
 	}
 
 	public static void mergeGz(String local, String hdfs, String ext) throws FileNotFoundException, IOException {
