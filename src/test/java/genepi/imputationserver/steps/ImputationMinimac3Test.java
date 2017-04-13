@@ -542,7 +542,58 @@ public class ImputationMinimac3Test {
 		assertEquals(true, vcfFile.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHRX_NONPAR, vcfFile.getNoSnps());
 
-		// FileUtil.deleteDirectory(file);
+		FileUtil.deleteDirectory(file);
+
+	}
+	
+	@Test
+	public void testchr23PipelinePhased() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chrX";
+		String inputFolder = "test-data/data/chr23-phased";
+
+		File file = new File("test-data/tmp");
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle-phasing");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.Non.Pseudo.Auto.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.Non.Pseudo.Auto.dose.vcf.gz", 100000000, false);
+
+		assertEquals("X", vcfFile.getChromosome());
+		assertEquals(26, vcfFile.getNoSamples());
+		assertEquals(true, vcfFile.isPhased());
+		assertEquals(TOTAL_REFPANEL_CHRX_NONPAR, vcfFile.getNoSnps());
+
+		FileUtil.deleteDirectory(file);
 
 	}
 
@@ -659,7 +710,7 @@ public class ImputationMinimac3Test {
 
 	}
 
-	class QcStatisticsMock extends QualityControl {
+	class QcStatisticsMock extends FastQualityControl {
 
 		private String folder;
 
