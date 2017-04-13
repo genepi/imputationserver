@@ -132,7 +132,7 @@ public class VcfChunk {
 	public int foundInLegendChunk = 0;
 	public int notFoundInLegendChunk = 0;
 	public int[] snpsPerSampleCount = null;
-	public GzipLineWriter vcfChunkWriter;
+	public BGzipLineWriter vcfChunkWriter;
 	public 	int lastPos = 0;
 	public boolean empty=true;
 	
