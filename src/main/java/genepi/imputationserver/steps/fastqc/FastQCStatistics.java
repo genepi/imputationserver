@@ -133,7 +133,7 @@ public class FastQCStatistics {
 					_myvcfFile.setChrX(true);
 
 					// chrX
-					processFile(vcfFilename, chromosome, chunkSize, phased, mafWriter, excludedSnpsWriter,
+					processFile(_myvcfFile.getVcfFilename(), chromosome, chunkSize, phased, mafWriter, excludedSnpsWriter,
 							excludedChunkWriter);
 				}
 			} else {
