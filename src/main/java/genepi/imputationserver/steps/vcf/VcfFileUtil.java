@@ -285,4 +285,18 @@ public class VcfFileUtil {
 		}
 
 	}
+	
+	public static void createIndex(String vcfFilename) throws IOException{
+		Command tabix = new Command(TABIX_PATH);
+		tabix.setParams("-f", "-p", "vcf", vcfFilename);
+		tabix.saveStdErr("tabix.output");
+		int returnCode = tabix.execute();
+
+		if (returnCode != 0) {
+			throw new IOException(
+					"The provided VCF file is malformed. Error during index creation: "
+							+ FileUtil.readFileAsString("tabix.output"));
+		}
+		
+	}
 }

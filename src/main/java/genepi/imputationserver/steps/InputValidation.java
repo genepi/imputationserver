@@ -1,6 +1,15 @@
 package genepi.imputationserver.steps;
 
-import genepi.hadoop.HdfsUtil;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
@@ -14,19 +23,6 @@ import genepi.imputationserver.util.MapList;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Vector;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
-import com.esotericsoftware.yamlbeans.YamlException;
 
 public class InputValidation extends WorkflowStep {
 
@@ -48,6 +44,10 @@ public class InputValidation extends WorkflowStep {
 			// handle
 		}
 
+		if (!checkParameters(context)){
+			return false;
+		}
+		
 		if (!importVcfFiles(context)) {
 			return false;
 		}
@@ -55,22 +55,18 @@ public class InputValidation extends WorkflowStep {
 		return checkVcfFiles(context);
 
 	}
-	
-	protected void setupTabix(String folder){
+
+	protected void setupTabix(String folder) {
 		VcfFileUtil.setBinary(FileUtil.path(folder, "bin", "tabix"));
 	}
 
 	private boolean checkVcfFiles(WorkflowContext context) {
 		String folder = getFolder(InputValidation.class);
 		setupTabix(folder);
-		// String tester;
-		// inputs
 		String files = context.get("files");
 		String reference = context.get("refpanel");
-		String population = context.get("population");
 		String phasing = context.get("phasing");
 		int sampleLimit = Integer.valueOf(context.get("sample-limit"));
-
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
@@ -96,24 +92,22 @@ public class InputValidation extends WorkflowStep {
 				String newFiles = FileUtil.path(context.getLocalTemp(), "vcfs");
 				String tempFiles = FileUtil.path(context.getLocalTemp(), "23andMe-temp");
 
-				
 				builder.setReference(store.getString("ref.fasta"));
 				builder.setOutDirectory(newFiles);
 				builder.setExcludeList("MT,X,Y");
 				builder.setTempDirectory(tempFiles);
 				builder.build();
-				
-				//update files with new location
+
+				// update files with new location
 				files = newFiles;
 				context.setInput("inputs", newFiles);
-			
+
 				context.incCounter("23andme-input", 1);
 			} else if (genome.length > 1) {
 				context.endTask("Please upload your 23andMe data as a single txt or zip file", WorkflowContext.ERROR);
 				return false;
 			}
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			context.endTask("Converter task failed! \n" + e1.getMessage(), WorkflowContext.ERROR);
 			e1.printStackTrace();
 			return false;
@@ -126,7 +120,7 @@ public class InputValidation extends WorkflowStep {
 					WorkflowContext.ERROR);
 			return false;
 		}
-		
+
 		Arrays.sort(vcfFiles);
 
 		String infos = null;
@@ -151,9 +145,7 @@ public class InputValidation extends WorkflowStep {
 					if (VcfFileUtil.isChrX(vcfFile.getChromosome())) {
 
 						if (!phasing.equals("eagle") && !vcfFile.isPhased()) {
-							context.endTask(
-									"Please select eagle2 for chromosome X. ",
-									WorkflowContext.ERROR);
+							context.endTask("Please select eagle2 for chromosome X. ", WorkflowContext.ERROR);
 							return false;
 						}
 
@@ -182,90 +174,11 @@ public class InputValidation extends WorkflowStep {
 
 					phased = phased && vcfFile.isPhased();
 
-					// check reference panel
 					if (vcfFile.isPhasedAutodetect() && !vcfFile.isPhased()) {
 
 						context.endTask(
 								"File should be phased, but also includes unphased and/or missing genotypes! Please double-check!",
 								WorkflowContext.ERROR);
-						return false;
-					}
-
-					RefPanelList panels = null;
-					try {
-						panels = RefPanelList.loadFromFile(FileUtil.path(folder, "panels.txt"));
-
-					} catch (Exception e) {
-
-						context.endTask("panels.txt not found.", WorkflowContext.ERROR);
-						return false;
-					}
-
-					RefPanel panel = panels.getById(reference);
-					if (panel == null) {
-						StringBuilder report = new StringBuilder();
-						report.append("Reference '" + reference + "' not found.\n");
-						report.append("Available reference IDs:");
-						for (RefPanel p : panels.getPanels()) {
-							report.append("\n - " + p.getId());
-						}
-						context.error(report.toString());
-						return false;
-					}
-					
-					// load maps
-					MapList maps = null;
-					try {
-						maps = MapList.loadFromFile(FileUtil.path(folder, "genetic-maps.txt"));
-					} catch (Exception e) {
-						context.error("genetic-maps.txt not found." + e);
-						return false;
-					}
-
-					// check map; hapmap2 map for all files used!
-					GeneticMap map = maps.getById("hapmap2");
-					if (map == null) {
-						context.error("genetic map file not found.");
-						return false;
-					}
-
-					if ((reference.equals("hrc") && !population.equals("eur"))) {
-
-						context.endTask("Please select the EUR population for the HRC panel", WorkflowContext.ERROR);
-
-						return false;
-					}
-					
-					if ((reference.equals("caapa") && !population.equals("AA"))) {
-
-						context.endTask("Please select the AA population for the CAAPA panel", WorkflowContext.ERROR);
-
-						return false;
-					}
-
-					if ((reference.equals("hapmap2") && !population.equals("eur"))) {
-
-						context.endTask("Please select the EUR population for the HapMap reference panel",
-								WorkflowContext.ERROR);
-
-						return false;
-					}
-
-					if ((reference.equals("phase1") && population.equals("sas"))
-							|| (reference.equals("phase1") && population.equals("eas"))) {
-
-						context.endTask("The selected population (SAS, EAS) is not allowed for this panel",
-								WorkflowContext.ERROR);
-
-						return false;
-					}
-
-					if ((reference.equals("phase3") && population.equals("asn"))) {
-
-						context.endTask(
-								"The selected population (ASN) is not allowed for the 1000G Phase3 reference panel",
-								WorkflowContext.ERROR);
-
 						return false;
 					}
 
@@ -329,6 +242,90 @@ public class InputValidation extends WorkflowStep {
 		}
 	}
 
+	private boolean checkParameters(WorkflowContext context) {
+
+		String folder = getFolder(InputValidation.class);
+		setupTabix(folder);
+		String reference = context.get("refpanel");
+		String population = context.get("population");
+		
+		RefPanelList panels = null;
+		try {
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder, "panels.txt"));
+
+		} catch (Exception e) {
+
+			context.error("panels.txt not found.");
+			return false;
+		}
+
+		RefPanel panel = panels.getById(reference);
+		if (panel == null) {
+			StringBuilder report = new StringBuilder();
+			report.append("Reference '" + reference + "' not found.\n");
+			report.append("Available reference IDs:");
+			for (RefPanel p : panels.getPanels()) {
+				report.append("\n - " + p.getId());
+			}
+			context.error(report.toString());
+			return false;
+		}
+
+		// load maps
+		MapList maps = null;
+		try {
+			maps = MapList.loadFromFile(FileUtil.path(folder, "genetic-maps.txt"));
+		} catch (Exception e) {
+			context.error("genetic-maps.txt not found." + e);
+			return false;
+		}
+
+		// check map; hapmap2 map for all files used!
+		GeneticMap map = maps.getById("hapmap2");
+		if (map == null) {
+			context.error("genetic map file not found.");
+			return false;
+		}
+
+		if ((reference.equals("hrc") && !population.equals("eur"))) {
+
+			context.error("Please select the EUR population for the HRC panel");
+
+			return false;
+		}
+
+		if ((reference.equals("caapa") && !population.equals("AA"))) {
+
+			context.error("Please select the AA population for the CAAPA panel");
+
+			return false;
+		}
+
+		if ((reference.equals("hapmap2") && !population.equals("eur"))) {
+
+			context.error("Please select the EUR population for the HapMap reference panel");
+
+			return false;
+		}
+
+		if ((reference.equals("phase1") && population.equals("sas"))
+				|| (reference.equals("phase1") && population.equals("eas"))) {
+
+			context.error("The selected population (SAS, EAS) is not allowed for this panel");
+
+			return false;
+		}
+
+		if ((reference.equals("phase3") && population.equals("asn"))) {
+
+			context.error("The selected population (ASN) is not allowed for the 1000G Phase3 reference panel");
+
+			return false;
+		}
+
+		return true;
+	}
+
 	private boolean importVcfFiles(WorkflowContext context) {
 
 		for (String input : context.getInputs()) {
@@ -355,7 +352,7 @@ public class InputValidation extends WorkflowStep {
 					String target = FileUtil.path(context.getLocalTemp(), "importer", input);
 					FileUtil.createDirectory(target);
 					context.println("Import to local workspace " + target + "...");
-					
+
 					try {
 
 						context.updateTask("Import " + url2 + "...", WorkflowContext.RUNNING);
@@ -404,12 +401,6 @@ public class InputValidation extends WorkflowStep {
 		}
 
 		return true;
-
-	}
-
-	public static String loadChrXTesterFromFile(String filename) throws YamlException, FileNotFoundException {
-
-		return FileUtil.readFileAsString(filename);
 
 	}
 

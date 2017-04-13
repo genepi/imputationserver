@@ -11,6 +11,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import genepi.imputationserver.steps.qc.SnpStats;
+import genepi.imputationserver.steps.vcf.BGzipLineWriter;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
@@ -85,92 +86,88 @@ public class FastQCStatistics {
 	int removedChunksCallRate;
 
 	public QualityControlObject run() throws IOException, InterruptedException {
-		try {
-			QualityControlObject qcObject = new QualityControlObject();
 
-			qcObject.setMessage("");
+		QualityControlObject qcObject = new QualityControlObject();
 
-			String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
+		qcObject.setMessage("");
 
-			// MAF file for QC report
-			LineWriter mafWriter = new LineWriter(mafFile);
+		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
 
-			// excluded SNPS
-			LineWriter excludedSnpsWriter = new LineWriter(FileUtil.path(statDir, "snps-excluded.txt"));
-			excludedSnpsWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
+		// MAF file for QC report
+		LineWriter mafWriter = new LineWriter(mafFile);
 
-			// excluded chunks
-			LineWriter excludedChunkWriter = new LineWriter(FileUtil.path(statDir, "chunks-excluded.txt"));
-			excludedChunkWriter.write(
-					"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
+		// excluded SNPS
+		LineWriter excludedSnpsWriter = new LineWriter(FileUtil.path(statDir, "snps-excluded.txt"));
+		excludedSnpsWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
 
-			// chrX infos
-			LineWriter chrXInfoWriter = new LineWriter(FileUtil.path(statDir, "chrX-info.txt"));
+		// excluded chunks
+		LineWriter excludedChunkWriter = new LineWriter(FileUtil.path(statDir, "chunks-excluded.txt"));
+		excludedChunkWriter.write(
+				"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
 
-			chrXInfoWriter.write("chrX log messages");
+		// chrX infos
+		LineWriter chrXInfoWriter = new LineWriter(FileUtil.path(statDir, "chrX-info.txt"));
 
-			// chrX haploid samples
-			HashSet<String> hapSamples = new HashSet<String>();
+		chrXInfoWriter.write("chrX log messages");
 
-			Arrays.sort(vcfFilenames);
+		// chrX haploid samples
+		HashSet<String> hapSamples = new HashSet<String>();
 
-			for (String vcfFilename : vcfFilenames) {
+		Arrays.sort(vcfFilenames);
 
-				VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
+		for (String vcfFilename : vcfFilenames) {
 
-				String chromosome = myvcfFile.getChromosome();
-				boolean phased = myvcfFile.isPhased();
+			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);		
 
-				if (VcfFileUtil.isChrX(chromosome)) {
+			String chromosome = myvcfFile.getChromosome();
+			boolean phased = myvcfFile.isPhased();
+			
+			if (VcfFileUtil.isChrX(chromosome)) {
 
-					// split to par and non.par
-					List<String> splits = prepareChrXEagle(vcfFilename, phased, chrXInfoWriter, hapSamples);
+				// split to par and non.par
+				List<String> splits = prepareChrXEagle(vcfFilename, phased, chrXInfoWriter, hapSamples);
 
-					for (String split : splits) {
-						VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
+				for (String split : splits) {
+					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
 
-						_myvcfFile.setChrX(true);
+					_myvcfFile.setChrX(true);
 
-						// chrX
-						processFile(vcfFilename, chromosome, chunkSize, phased, mafWriter, excludedSnpsWriter,
-								excludedChunkWriter);
-					}
-				} else {
-					// chr1-22
+					// chrX
 					processFile(vcfFilename, chromosome, chunkSize, phased, mafWriter, excludedSnpsWriter,
 							excludedChunkWriter);
-
 				}
+			} else {
+				// chr1-22
+				processFile(vcfFilename, chromosome, chunkSize, phased, mafWriter, excludedSnpsWriter,
+						excludedChunkWriter);
+
 			}
-
-			mafWriter.close();
-
-			excludedSnpsWriter.close();
-
-			excludedChunkWriter.close();
-
-			chrXInfoWriter.close();
-
-			if (hapSamples.size() > 0) {
-				LineWriter writer = new LineWriter(FileUtil.path(statDir, "chrX-samples.txt"));
-				writer.write("The following samples have been changed from haploid to diploid");
-
-				for (String sample : hapSamples) {
-					writer.write(sample);
-				}
-				writer.close();
-
-				qcObject.setMessage(
-						"<b>Chromosome X Info:</b> For phasing/imputation we changed samples from haploid to diploid. Please check chrX-samples.txt");
-			}
-
-			qcObject.setSuccess(true);
-
-			return qcObject;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
 		}
+
+		mafWriter.close();
+
+		excludedSnpsWriter.close();
+
+		excludedChunkWriter.close();
+
+		chrXInfoWriter.close();
+
+		if (hapSamples.size() > 0) {
+			LineWriter writer = new LineWriter(FileUtil.path(statDir, "chrX-samples.txt"));
+			writer.write("The following samples have been changed from haploid to diploid");
+
+			for (String sample : hapSamples) {
+				writer.write(sample);
+			}
+			writer.close();
+
+			qcObject.setMessage(
+					"<b>Chromosome X Info:</b> For phasing/imputation we changed samples from haploid to diploid. Please check chrX-samples.txt");
+		}
+
+		qcObject.setSuccess(true);
+
+		return qcObject;
 
 	}
 
@@ -181,9 +178,6 @@ public class FastQCStatistics {
 
 		FastVCFFileReader vcfReader = new FastVCFFileReader(filename);
 		List<String> header = vcfReader.getFileHeader();
-
-		// ArrayList<String> samples =
-		// vcfReader.getFileHeader().getSampleNamesInOrder();
 
 		String _contig = chromosome;
 
@@ -225,9 +219,9 @@ public class FastQCStatistics {
 				}
 			}
 
-			//load reference snp
+			// load reference snp
 			LegendEntry refSnp = legendReader.findByPosition2(snp.getStart());
-			
+
 			for (VcfChunk openChunk : chunks.values()) {
 				if (snp.getStart() <= openChunk.getEnd() + phasingWindow) {
 					processLine(snp, refSnp, openChunk.vcfChunkWriter, openChunk, mafWriter, excludedSnpsWriter);
@@ -277,7 +271,7 @@ public class FastQCStatistics {
 		chunk.setIndexFilename(chunkName + TabixUtils.STANDARD_INDEX_EXTENSION);
 		chunk.setPhased(phased);
 
-		GzipLineWriter writer = new GzipLineWriter(chunk.getVcfFilename());
+		BGzipLineWriter writer = new BGzipLineWriter(chunk.getVcfFilename());
 		for (String headerLine : header) {
 			writer.write(headerLine);
 		}
@@ -288,7 +282,7 @@ public class FastQCStatistics {
 
 	}
 
-	private void processLine(MinimalVariantContext snp, LegendEntry refSnp, GzipLineWriter vcfWriter, VcfChunk chunk,
+	private void processLine(MinimalVariantContext snp, LegendEntry refSnp, BGzipLineWriter vcfWriter, VcfChunk chunk,
 			LineWriter mafWriter, LineWriter excludedSnpsWriter) throws IOException, InterruptedException {
 
 		int extendedStart = Math.max(chunk.getStart() - phasingWindow, 1);
@@ -585,6 +579,9 @@ public class FastQCStatistics {
 		if (overlap >= OVERLAP && chunk.foundInLegendChunk >= MIN_SNPS && !lowSampleCallRate
 				&& chunk.validSnpsChunk >= MIN_SNPS) {
 
+			//create index
+			VcfFileUtil.createIndex(chunk.getVcfFilename());
+			
 			// update chunk
 			chunk.setSnps(chunk.overallSnpsChunk);
 			chunk.setInReference(chunk.foundInLegendChunk);
@@ -604,6 +601,7 @@ public class FastQCStatistics {
 			}
 
 		}
+		
 	}
 
 	public List<String> prepareChrXEagle(String filename, boolean phased, LineWriter chrXWriter,
