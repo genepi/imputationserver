@@ -231,7 +231,11 @@ public class QCStatistics {
 			while (snps.hasNext()) {
 
 				VariantContext snp = snps.next();
-
+				
+				if(VcfFileUtil.isChrX(snp.getContig())){
+					snp = new VariantContextBuilder(snp).chr("X").make();
+				}
+				
 				processLine(snp, vcfChunkWriter, legendReader, chunk, mafWriter, excludedSnpsWriter);
 
 			}
@@ -666,6 +670,12 @@ public class QCStatistics {
 	}
 
 	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
+		
+		// always use X for legend files
+		if(VcfFileUtil.isChrX(_chromosome)){
+			_chromosome = "X";
+		}
+		
 		String legendFile_ = legendFile.replaceAll("\\$chr", _chromosome);
 		String myLegendFile = FileUtil.path(legendFile_);
 
