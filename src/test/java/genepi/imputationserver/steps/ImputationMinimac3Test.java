@@ -20,6 +20,11 @@ import genepi.imputationserver.util.TestCluster;
 import genepi.imputationserver.util.TestSFTPServer;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
+import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.variant.variantcontext.GenotypesContext;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -592,6 +597,73 @@ public class ImputationMinimac3Test {
 		assertEquals(26, vcfFile.getNoSamples());
 		assertEquals(true, vcfFile.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHRX_NONPAR, vcfFile.getNoSnps());
+
+		FileUtil.deleteDirectory(file);
+
+	}
+	
+	@Test
+	public void testchrXLeaveOneOutPipelinePhased() throws IOException, ZipException {
+
+		// SNP 26963697 from input excluded and imputed!
+		//true genotypes: 1,1|1,1|1,1|1,1,1|1,1,1|1,1|1,1,0,1|1,1|0,1,1,1,1,1,1|1,1,1|1,1|1,1|1,1|1,1|1,1|0,
+
+		String configFolder = "test-data/configs/hapmap-chrX";
+		String inputFolder = "test-data/data/chrX-phased-loo";
+
+		File file = new File("test-data/tmp");
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle-phasing");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.Non.Pseudo.Auto.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.Non.Pseudo.Auto.dose.vcf.gz", 100000000, false);
+		
+		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFile.getVcfFilename()), true);
+
+		CloseableIterator<VariantContext> it = vcfReader.iterator();
+
+		while (it.hasNext()) {
+
+			VariantContext line = it.next();
+			
+			if(line.getStart() == 26963697){
+				
+				assertEquals(2,line.getHetCount());
+				assertEquals(1,line.getHomRefCount());
+				assertEquals(23,line.getHomVarCount());
+
+			}}
+		
+		vcfReader.close();
 
 		FileUtil.deleteDirectory(file);
 
