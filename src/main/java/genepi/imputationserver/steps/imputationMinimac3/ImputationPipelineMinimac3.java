@@ -405,18 +405,23 @@ public class ImputationPipelineMinimac3 {
 		// mini-mac
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
+		
+		String format = "GT,DS,GP";
+		if(output.getChromosome().equals("X")){
+			format = "GT,DS,GP,HDS";
+		}
 
 		if (phasing.equals("shapeit") && !output.isPhased()) {
 
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
 					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", output.getChromosome(),
-					"--noPhoneHome", "--format", "GT,DS,GP", "--unphasedOutput", "--allTypedSites");
+					"--noPhoneHome", "--format", format, "--unphasedOutput", "--allTypedSites");
 		} else {
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
 					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", output.getChromosome(),
-					"--noPhoneHome", "--format", "GT,DS,GP", "--allTypedSites");
+					"--noPhoneHome", "--format", format, "--allTypedSites");
 		}
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
