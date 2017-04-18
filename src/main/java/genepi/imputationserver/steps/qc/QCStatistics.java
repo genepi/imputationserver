@@ -607,7 +607,8 @@ public class QCStatistics {
 			
 			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
 
-				line = makeDiploid(header.getGenotypeSamples(), line, file.isPhased(), chrXWriter, hapSamples);
+				//not required anymore after updated version of Minimac4 (dbb99aeb27798e3e71a400421ffc1952bb1330f8)
+				//line = makeDiploid(header.getGenotypeSamples(), line, file.isPhased(), chrXWriter, hapSamples);
 				vcfChunkWriterNonPar.add(line);
 
 				if (!paths.contains(nonPar)) {

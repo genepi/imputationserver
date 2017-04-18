@@ -656,7 +656,7 @@ public class ImputationMinimac3Test {
 			VariantContext line = it.next();
 			
 			if(line.getStart() == 26963697){
-				
+				System.out.println(line);
 				assertEquals(2,line.getHetCount());
 				assertEquals(1,line.getHomRefCount());
 				assertEquals(23,line.getHomVarCount());
