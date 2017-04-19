@@ -2,9 +2,6 @@ package genepi.imputationserver.steps.vcf;
 
 import java.text.DecimalFormat;
 
-import genepi.io.text.GzipLineWriter;
-import htsjdk.variant.variantcontext.writer.VariantContextWriter;
-
 public class VcfChunk {
 
 	private String chromosome;

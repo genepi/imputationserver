@@ -147,7 +147,8 @@ public class FastVCFFileReader extends LineReader {
 			variantContext.setNoCallCount(noCallCount);
 			variantContext.setNSamples(samplesInLineCount);
 			variantContext.setRawLine(line);
-			if (!tiles[6].equals("PASS")){
+			
+			if (!tiles[6].equals("PASS") && !tiles[6].equals(".")){
 				variantContext.setFilters(tiles[6]);
 			}else{
 				variantContext.setFilters(null);
