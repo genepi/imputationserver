@@ -18,11 +18,11 @@ mapred:
 
   setups:
     - name: Input Validation
-      jar: minimac-cloud.jar
+      jar: minimac-cloud-improved.jar
       classname: genepi.imputationserver.steps.InputValidation
 
     - name: Quality Control
-      jar: minimac-cloud.jar
+      jar: minimac-cloud-improved.jar
       classname: genepi.imputationserver.steps.QualityControl
       generates: $mafFile $chunkFileDir $statisticDir
 
@@ -39,14 +39,14 @@ mapred:
 
   onFailure:
     name: Send Notification on Failure
-    jar: minimac-cloud.jar
+    jar: minimac-cloud-improved.jar
     classname: genepi.imputationserver.steps.FailureNotification
     
   steps:
 
 #if($mode == "imputation")
     - name: Pre-phasing and Imputation
-      jar: minimac-cloud.jar
+      jar: minimac-cloud-improved.jar
       classname: genepi.imputationserver.steps.ImputationMinimac3
       params: $chunkFileDir $refpanel $chunksize $window $phasing $queues
       generates: $local $outputimputation $logfile $hadooplogs
@@ -58,7 +58,7 @@ mapred:
       generates: $report
 
     - name: Data Compression and Encryption
-      jar: minimac-cloud.jar
+      jar: minimac-cloud-improved.jar
       classname: genepi.imputationserver.steps.CompressionEncryption
       params: $local $report $encryption
 #end
