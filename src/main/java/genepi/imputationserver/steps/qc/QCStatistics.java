@@ -109,11 +109,6 @@ public class QCStatistics {
 		excludedChunkWriter.write(
 				"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
 
-		// chrX infos
-		LineWriter chrXInfoWriter = new LineWriter(FileUtil.path(statDir, "chrX-info.txt"));
-
-		chrXInfoWriter.write("chrX log messages");
-		
 		// chrX haploid samples
 		HashSet<String> hapSamples = new HashSet<String>();
 
@@ -128,7 +123,7 @@ public class QCStatistics {
 			if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
 
 				// split to par and non.par
-				List<String> splits = prepareChrXEagle(myvcfFile, chrXInfoWriter, hapSamples);
+				List<String> splits = prepareChrXEagle(myvcfFile, hapSamples);
 
 				for (String split : splits) {
 					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
@@ -150,8 +145,6 @@ public class QCStatistics {
 		excludedSnpsWriter.close();
 
 		excludedChunkWriter.close();
-
-		chrXInfoWriter.close();
 
 		if (hapSamples.size() > 0) {
 			LineWriter writer = new LineWriter(FileUtil.path(statDir, "chrX-samples.txt"));
@@ -575,7 +568,7 @@ public class QCStatistics {
 		}
 	}
 
-	public List<String> prepareChrXEagle(VcfFile file, LineWriter chrXWriter, HashSet<String> hapSamples)
+	public List<String> prepareChrXEagle(VcfFile file, HashSet<String> hapSamples)
 			throws IOException {
 
 		List<String> paths = new Vector<String>();

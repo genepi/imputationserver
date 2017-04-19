@@ -105,11 +105,6 @@ public class FastQCStatistics {
 		excludedChunkWriter.write(
 				"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
 
-		// chrX infos
-		LineWriter chrXInfoWriter = new LineWriter(FileUtil.path(statDir, "chrX-info.txt"));
-
-		chrXInfoWriter.write("chrX log messages");
-
 		// chrX haploid samples
 		HashSet<String> hapSamples = new HashSet<String>();
 
@@ -117,15 +112,15 @@ public class FastQCStatistics {
 
 		for (String vcfFilename : vcfFilenames) {
 
-			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);		
+			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
 			String chromosome = myvcfFile.getChromosome();
 			boolean phased = myvcfFile.isPhased();
-			
+
 			if (VcfFileUtil.isChrX(chromosome)) {
 
 				// split to par and non.par
-				List<String> splits = prepareChrXEagle(vcfFilename, phased, chrXInfoWriter, hapSamples);
+				List<String> splits = prepareChrXEagle(vcfFilename, phased, hapSamples);
 
 				for (String split : splits) {
 					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
@@ -133,8 +128,8 @@ public class FastQCStatistics {
 					_myvcfFile.setChrX(true);
 
 					// chrX
-					processFile(_myvcfFile.getVcfFilename(), chromosome, chunkSize, phased, mafWriter, excludedSnpsWriter,
-							excludedChunkWriter);
+					processFile(_myvcfFile.getVcfFilename(), chromosome, chunkSize, phased, mafWriter,
+							excludedSnpsWriter, excludedChunkWriter);
 				}
 			} else {
 				// chr1-22
@@ -149,8 +144,6 @@ public class FastQCStatistics {
 		excludedSnpsWriter.close();
 
 		excludedChunkWriter.close();
-
-		chrXInfoWriter.close();
 
 		if (hapSamples.size() > 0) {
 			LineWriter writer = new LineWriter(FileUtil.path(statDir, "chrX-samples.txt"));
@@ -579,9 +572,9 @@ public class FastQCStatistics {
 		if (overlap >= OVERLAP && chunk.foundInLegendChunk >= MIN_SNPS && !lowSampleCallRate
 				&& chunk.validSnpsChunk >= MIN_SNPS) {
 
-			//create index
+			// create index
 			VcfFileUtil.createIndex(chunk.getVcfFilename());
-			
+
 			// update chunk
 			chunk.setSnps(chunk.overallSnpsChunk);
 			chunk.setInReference(chunk.foundInLegendChunk);
@@ -601,11 +594,11 @@ public class FastQCStatistics {
 			}
 
 		}
-		
+
 	}
 
-	public List<String> prepareChrXEagle(String filename, boolean phased, LineWriter chrXWriter,
-			HashSet<String> hapSamples) throws IOException {
+	public List<String> prepareChrXEagle(String filename, boolean phased, HashSet<String> hapSamples)
+			throws IOException {
 
 		List<String> paths = new Vector<String>();
 		String nonPar = FileUtil.path(chunksDir, X_NON_PAR + ".vcf.gz");
@@ -629,15 +622,17 @@ public class FastQCStatistics {
 		while (it.hasNext()) {
 
 			VariantContext line = it.next();
-			
-			if(!line.getContig().equals("X")){
+
+			if (!line.getContig().equals("X")) {
 				line = new VariantContextBuilder(line).chr("X").make();
 			}
 
 			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
 
-				//not required anymore after updated version of Minimac4 (dbb99aeb27798e3e71a400421ffc1952bb1330f8)
-				//line = makeDiploid(header.getGenotypeSamples(), line, phased, chrXWriter, hapSamples);
+				// not required anymore after updated version of Minimac4
+				// (dbb99aeb27798e3e71a400421ffc1952bb1330f8)
+				// line = makeDiploid(header.getGenotypeSamples(), line, phased,
+				// chrXWriter, hapSamples);
 				vcfChunkWriterNonPar.add(line);
 
 				if (!paths.contains(nonPar)) {
@@ -700,12 +695,12 @@ public class FastQCStatistics {
 	}
 
 	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
-		
+
 		// always use X for legend files chrX
-		if(VcfFileUtil.isChrX(_chromosome)){
+		if (VcfFileUtil.isChrX(_chromosome)) {
 			_chromosome = "X";
 		}
-		
+
 		String legendFile_ = legendFile.replaceAll("\\$chr", _chromosome);
 		String myLegendFile = FileUtil.path(legendFile_);
 
