@@ -11,6 +11,7 @@ import genepi.io.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,11 +27,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-
 public class CompressionEncryption extends WorkflowStep {
 
 	public static final String DEFAULT_PASSWORD = "imputation@michigan";
-	
+
 	@Override
 	public boolean run(WorkflowContext context) {
 
@@ -38,6 +38,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 		String output = context.get("outputimputation");
 		String localOutput = context.get("local");
+		boolean aesEncryption = Boolean.valueOf(context.get("aesEncryption"));
 
 		// read config if mails should be sent
 		String folderConfig = getFolder(CompressionEncryption.class);
@@ -53,15 +54,14 @@ public class CompressionEncryption extends WorkflowStep {
 			serverUrl = store.getString("server.url");
 		}
 
+		String password = DEFAULT_PASSWORD;
 
-		String password;
-
-		if (notification.equals("yes")) {
-			// create one-time password
-			password = RandomStringUtils.randomAlphanumeric(13);
-		} else {
-			password = DEFAULT_PASSWORD;
+		if (notification.equals("yes") && aesEncryption) {
+			password = RandomStringUtils.randomAscii(13).replaceAll("\\s+","");
+		} else if (notification.equals("yes") && !aesEncryption) {
+			password = RandomStringUtils.random(13, 0, 0, true, true, null, new SecureRandom());
 		}
+		
 		try {
 
 			context.beginTask("Export data...");
@@ -115,12 +115,15 @@ public class CompressionEncryption extends WorkflowStep {
 				ZipParameters param = new ZipParameters();
 				param.setEncryptFiles(true);
 				param.setPassword(password);
-				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
-				param.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
-				
-				param.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
-				param.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
-				
+				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
+
+				if (aesEncryption) {
+					param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
+					param.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
+					param.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+					param.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+				}
+
 				// create zip file
 				ArrayList<File> files = new ArrayList<File>();
 				files.add(new File(vcfOutput));
@@ -186,7 +189,9 @@ public class CompressionEncryption extends WorkflowStep {
 			}
 
 		} else {
-			context.ok("Email notification (and therefore encryption) is disabled. All results are encrypted with password <b>" + password + "</b>");
+			context.ok(
+					"Email notification (and therefore encryption) is disabled. All results are encrypted with password <b>"
+							+ password + "</b>");
 			return true;
 		}
 

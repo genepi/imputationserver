@@ -141,6 +141,15 @@ mapred:
        value: 0
        visible: false
        
+     - id: aesEncryption
+       description: AES 256 Encryption
+       type: checkbox
+       value: no
+       values:
+         true: yes
+         false: no
+       visible: true
+              
      - id: encryption
        description: Result Encryption
        type: checkbox
@@ -154,9 +163,9 @@ mapred:
        description: <b>Minimac Binary</b>
        type: list
        visible: false
-       value: Minimac3
+       value: Minimac4
        values:
-          Minimac3: Minimac3 
+          Minimac4: Minimac4 
             
      - id: nocache
        description: <b>Disable Cache</b>
