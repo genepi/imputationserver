@@ -40,10 +40,10 @@ public class FailureNotification extends WorkflowStep {
 		if (notification.equals("yes")) {
 			if (mail != null) {
 
-				String subject = "Job " + context.getJobName() + " failed.";
+				String subject = "Job " + context.getJobId() + " failed.";
 				String message = "Dear " + name + ",\n" + "unfortunately, your job failed. "
 						+ "\n\nMore details about the error can be found on " + serverUrl + "/start.html#!jobs/"
-						+ context.getJobName();
+						+ context.getJobId();
 
 				try {
 					context.sendMail(subject, message);

@@ -154,7 +154,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				String newChunkFile = convertChunkfile(chunkFile, context.getHdfsTemp());
 
-				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobName() + "-chr-" + chr,
+				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobId() + "-chr-" + chr,
 						new ContextLog(context), queue) {
 					@Override
 					protected void readConfigFile() {

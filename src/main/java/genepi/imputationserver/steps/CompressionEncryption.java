@@ -168,10 +168,10 @@ public class CompressionEncryption extends WorkflowStep {
 
 			if (mail != null) {
 
-				String subject = "Job " + context.getJobName() + " is complete.";
+				String subject = "Job " + context.getJobId() + " is complete.";
 				String message = "Dear " + name + ",\nthe password for the imputation results is: " + password
 						+ "\n\nThe results can be downloaded from " + serverUrl + "/start.html#!jobs/"
-						+ context.getJobName() + "/results";
+						+ context.getJobId() + "/results";
 
 				try {
 					context.sendMail(subject, message);
