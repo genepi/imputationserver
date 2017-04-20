@@ -130,12 +130,14 @@ public class FastQualityControl extends WorkflowStep {
 
 			text.append("Excluded sites in total: " + formatter.format(qcStatistics.getFiltered()) + "<br>");
 			text.append("Remaining sites in total: " + formatter.format(qcStatistics.getOverallSnps()) + "<br>");
-
+			text.append("See " + context.createLinkToFile("statisticDir","snps-excluded.txt")
+			+ " for details"+ "<br>");
+			
 			if (qcStatistics.getRemovedChunksSnps() > 0) {
 
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksSnps())
 
-						+ " Chunk(s) excluded: < 3 SNPs (see " + context.createLinkToFile("statisticDir")
+						+ " Chunk(s) excluded: < 3 SNPs (see " + context.createLinkToFile("statisticDir", "chunks-excluded.txt")
 						+ "  for details).");
 			}
 
@@ -144,14 +146,14 @@ public class FastQualityControl extends WorkflowStep {
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksCallRate())
 
 						+ " Chunk(s) excluded: at least one sample has a call rate < 50% (see "
-						+ context.createLinkToFile("statisticDir") + " for details).");
+						+ context.createLinkToFile("statisticDir","chunks-excluded.txt") + " for details).");
 			}
 
 			if (qcStatistics.getRemovedChunksOverlap() > 0) {
 
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksOverlap())
 
-						+ " Chunk(s) excluded: reference overlap < 50% (see " + context.createLinkToFile("statisticDir")
+						+ " Chunk(s) excluded: reference overlap < 50% (see " + context.createLinkToFile("statisticDir","chunks-excluded.txt")
 						+ " for details).");
 			}
 
@@ -183,6 +185,8 @@ public class FastQualityControl extends WorkflowStep {
 			}
 
 			else {
+				
+				
 				text.append(answer.getMessage());
 				context.warning(text.toString());
 				return true;
