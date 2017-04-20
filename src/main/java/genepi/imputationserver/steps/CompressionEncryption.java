@@ -7,6 +7,7 @@ import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
 import genepi.imputationserver.util.FileMerger;
+import genepi.imputationserver.util.PasswordCreator;
 import genepi.io.FileUtil;
 
 import java.io.File;
@@ -56,11 +57,9 @@ public class CompressionEncryption extends WorkflowStep {
 
 		String password = DEFAULT_PASSWORD;
 
-		if (notification.equals("yes") && aesEncryption) {
-			password = RandomStringUtils.randomAscii(13).replaceAll("\\s+","");
-		} else if (notification.equals("yes") && !aesEncryption) {
-			password = RandomStringUtils.random(13, 0, 0, true, true, null, new SecureRandom());
-		}
+		if (notification.equals("yes")) {
+			password = PasswordCreator.createPassword();
+		} 
 		
 		try {
 
