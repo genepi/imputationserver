@@ -142,7 +142,7 @@ mapred:
        visible: false
        
      - id: aesEncryption
-       description: AES 256 Encryption
+       description: AES 256 File Encryption (Note: 7z required for zip extraction)
        type: checkbox
        value: no
        values:

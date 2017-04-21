@@ -39,7 +39,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 		String output = context.get("outputimputation");
 		String localOutput = context.get("local");
-		boolean aesEncryption = Boolean.valueOf(context.get("aesEncryption"));
+		String aesEncryption = context.get("aesEncryption");
 
 		// read config if mails should be sent
 		String folderConfig = getFolder(CompressionEncryption.class);
@@ -116,7 +116,7 @@ public class CompressionEncryption extends WorkflowStep {
 				param.setPassword(password);
 				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
 
-				if (aesEncryption) {
+				if (aesEncryption.equals("yes")) {
 					param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
 					param.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
 					param.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
