@@ -452,10 +452,12 @@ public class ImputationPipelineMinimac3 {
 		Command eagle = new Command(eagleCommand);
 		eagle.setSilent(false);
 
+		String phasedPrefix = ".eagle.phased";
+
 		eagle.setParams("--vcfRef", reference, "--vcfTarget", output.getVcfFilename() + ".gz", "--geneticMapFile",
-				mapFilename, "--outPrefix", output.getPrefix(), "--chrom",
-				input.getChromosome().equals("X") ? "23" : input.getChromosome(), "--bpStart", start + "", "--bpEnd",
-				end + "", "--allowRefAltSwap");
+				mapFilename, "--outPrefix", output.getPrefix() + phasedPrefix, "--chrom", output.getChromosome(),
+				"--bpStart", start + "", "--bpEnd", end + "", "--allowRefAltSwap", "--vcfOutFormat", "z",
+				"--outputUnphased");
 		eagle.saveStdOut(output.getPrefix() + ".eagle.out");
 		eagle.saveStdErr(output.getPrefix() + ".eagle.err");
 		System.out.println("Command: " + eagle.getExecutedCommand());
@@ -464,7 +466,7 @@ public class ImputationPipelineMinimac3 {
 		}
 
 		// rename
-		new File(output.getPrefix() + ".vcf.gz").renameTo(new File(output.getPhasedVcfFilename()));
+		new File(output.getPrefix() + phasedPrefix + ".vcf.gz").renameTo(new File(output.getPhasedVcfFilename()));
 
 		// haps to vcf
 		return true;
