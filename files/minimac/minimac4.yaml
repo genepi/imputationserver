@@ -23,7 +23,7 @@ mapred:
 
     - name: Quality Control
       jar: minimac-cloud-improved.jar
-      classname: genepi.imputationserver.steps.QualityControl
+      classname: genepi.imputationserver.steps.FastQualityControl
       generates: $mafFile $chunkFileDir $statisticDir
 
 
@@ -142,7 +142,7 @@ mapred:
        visible: false
        
      - id: aesEncryption
-       description: AES 256 File Encryption (Note: 7z required for zip extraction)
+       description: AES 256 encryption (7z required for zip extraction)
        type: checkbox
        value: no
        values:
