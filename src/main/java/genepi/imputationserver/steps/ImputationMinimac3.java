@@ -129,7 +129,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				String[] tiles = chunkFile.split("/");
 				String chr = tiles[tiles.length - 1];
 
-				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobName() + "-chr-" + chr,
+				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobId() + "-chr-" + chr,
 						new ContextLog(context), queue);
 				job.setFolder(folder);
 				job.setRefPanelHdfs(panel.getHdfs());
