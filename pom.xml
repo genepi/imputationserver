@@ -133,19 +133,19 @@
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-io</artifactId>
-			<version>1.0.3</version>
+			<version>1.0.4</version>
 		</dependency>
 
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-hadoop</artifactId>
-			<version>mr1-1.1.4</version>
+			<version>mr1-1.1.5</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.github.samtools</groupId>
 			<artifactId>htsjdk</artifactId>
-			<version>2.6.0</version>
+			<version>2.9.1</version>
 		</dependency>
 
 		<dependency>
