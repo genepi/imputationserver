@@ -7,6 +7,7 @@ import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
 import genepi.imputationserver.util.FileMerger;
+import genepi.imputationserver.util.PasswordCreator;
 import genepi.io.FileUtil;
 
 import java.io.File;
@@ -29,6 +30,8 @@ import org.apache.hadoop.fs.Path;
 
 public class CompressionEncryption extends WorkflowStep {
 
+	public static final String DEFAULT_PASSWORD = "imputation@michigan";
+	
 	@Override
 	public boolean run(WorkflowContext context) {
 
@@ -52,14 +55,13 @@ public class CompressionEncryption extends WorkflowStep {
 		}
 
 
-		String password;
+		String password = DEFAULT_PASSWORD;
 
 		if (notification.equals("yes")) {
-			// create one-time password
-			password = RandomStringUtils.randomAlphanumeric(13);
-		} else {
-			password = "imputation@michigan";
-		}
+			password = PasswordCreator.createPassword();
+		} 
+		
+		
 		try {
 
 			context.beginTask("Export data...");
