@@ -22,9 +22,9 @@ for (file in list.files(path=mypath, pattern="*.info.gz",full.names = TRUE)){
   t = read.table(gzfile(file), header=T,fill=TRUE)
 info = t;
 
-  t$br <- cut(t$MAF,hist(t$MAF,60,plot=F)$breaks);
+  t$br <- cut(as.numeric(as.character(t$MAF)),hist( as.numeric(as.character(t$MAF)),60,plot=F)$breaks);
   
-  mean.wt <- tapply(t$Rsq,t$br,mean);
+  mean.wt <- tapply(as.numeric(as.character(t$Rsq)),t$br,mean);
   
   m2 <- data.frame(mpg.bin=seq(0,0.499,0.01),mean.wt);
   
