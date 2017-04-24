@@ -24,6 +24,7 @@ public class VCFLineParserTest extends TestCase {
 		assertEquals("A", variantContext.getAlternateAllele());		
 		assertEquals(false, variantContext.isFiltered());
 		assertEquals(false, variantContext.isMonomorphicInSamples());
+		assertEquals(false, variantContext.isIndel());
 
 	}
 
@@ -45,6 +46,8 @@ public class VCFLineParserTest extends TestCase {
 		assertEquals("A", variantContext.getAlternateAllele());		
 		assertEquals(false, variantContext.isFiltered());
 		assertEquals(false, variantContext.isMonomorphicInSamples());
+		assertEquals(false, variantContext.isIndel());
+
 	}
 
 	public void testWithComplexFormat2() throws IOException {
@@ -65,6 +68,8 @@ public class VCFLineParserTest extends TestCase {
 		assertEquals("A", variantContext.getAlternateAllele());		
 		assertEquals(false, variantContext.isFiltered());
 		assertEquals(false, variantContext.isMonomorphicInSamples());
+		assertEquals(false, variantContext.isIndel());
+
 	}
 
 	public void testWithFilter() throws IOException {
@@ -85,6 +90,8 @@ public class VCFLineParserTest extends TestCase {
 		assertEquals("A", variantContext.getAlternateAllele());		
 		assertEquals(true, variantContext.isFiltered());
 		assertEquals(false, variantContext.isMonomorphicInSamples());
+		assertEquals(false, variantContext.isIndel());
+
 	}
 
 	public void testMonomorphic() throws IOException {
@@ -105,6 +112,8 @@ public class VCFLineParserTest extends TestCase {
 		assertEquals("A", variantContext.getAlternateAllele());		
 		assertEquals(false, variantContext.isFiltered());
 		assertEquals(true, variantContext.isMonomorphicInSamples());
+		assertEquals(false, variantContext.isIndel());
+
 	}
 	
 	public void testMonomorphic2() throws IOException {
@@ -125,6 +134,7 @@ public class VCFLineParserTest extends TestCase {
 		assertEquals("A", variantContext.getAlternateAllele());		
 		assertEquals(false, variantContext.isFiltered());
 		assertEquals(false, variantContext.isMonomorphicInSamples());
+		assertEquals(false, variantContext.isIndel());
 	}
 
 	public void testWithComplexFormat3() throws IOException {
@@ -143,6 +153,9 @@ public class VCFLineParserTest extends TestCase {
 		assertEquals(14370, variantContext.getStart());
 		assertEquals("G", variantContext.getReferenceAllele());
 		assertEquals("A", variantContext.getAlternateAllele());
+		assertEquals(false, variantContext.isFiltered());
+		assertEquals(false, variantContext.isMonomorphicInSamples());
+		assertEquals(false, variantContext.isIndel());
 	}
 
 	public void testWithMissingGTFormat() {
@@ -174,5 +187,25 @@ public class VCFLineParserTest extends TestCase {
 		}
 
 	}
+	
+
+	public void testIndel() throws IOException {
+
+		int samples = 3;
+		String line = "20	1234567	microsat1	GTCT	G,GTACT	50	PASS	NS=3;DP=9;AA=G	GT:GQ:DP	0/1:35:4	0/2:17:2	1/1:40:3";
+
+		VCFLineParser parser = new VCFLineParser(samples);
+	
+		MinimalVariantContext variantContext = parser.parseLine(line);
+
+		assertEquals(samples, variantContext.getNSamples());
+		assertEquals("20", variantContext.getContig());
+		assertEquals(1234567, variantContext.getStart());
+		assertEquals("GTCT", variantContext.getReferenceAllele());
+		assertEquals("G,GTACT", variantContext.getAlternateAllele());
+		assertEquals(true, variantContext.isIndel());
+	}
+	
+	//TODO: check / and | and no 0 and 1
 
 }
