@@ -32,8 +32,11 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	
 	private boolean ok = false;
 	
+	public static int THREADS = 25;
+
+	
 	public ImputationMinimac3() {
-		super(10);
+		super(THREADS);
 		jobs = new HashMap<String, HadoopJob>();
 	}
 

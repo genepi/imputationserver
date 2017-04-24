@@ -24,8 +24,6 @@ public abstract class ParallelHadoopJobStep extends WorkflowStep {
 
 	private BlockingQueue<Runnable> queueThreadPool;
 
-	private int THREADS = 22;
-
 	private ThreadPoolExecutor threadPool;
 
 	protected static final Log log = LogFactory.getLog(HadoopUtil.class);
@@ -52,7 +50,7 @@ public abstract class ParallelHadoopJobStep extends WorkflowStep {
 	public ParallelHadoopJobStep(int threads) {
 		queueThreadPool = new ArrayBlockingQueue<Runnable>(100);
 
-		threadPool = new ThreadPoolExecutor(THREADS, THREADS, 10,
+		threadPool = new ThreadPoolExecutor(threads, threads, 10,
 				TimeUnit.SECONDS, queueThreadPool);
 
 		jobs = new HashMap<String, HadoopJob>();
