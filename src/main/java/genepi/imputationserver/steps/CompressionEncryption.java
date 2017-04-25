@@ -116,7 +116,7 @@ public class CompressionEncryption extends WorkflowStep {
 				param.setPassword(password);
 				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
 
-				if (aesEncryption.equals("yes")) {
+				if (aesEncryption != null && aesEncryption.equals("yes")) {
 					param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
 					param.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
 					param.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
