@@ -34,8 +34,9 @@ import htsjdk.variant.vcf.VCFHeader;
 
 public class QCStatistics {
 
-	public static final String X_PAR = "X.Pseudo.Auto";
-	public static final String X_NON_PAR = "X.Non.Pseudo.Auto";
+	public static final String X_PAR1 = "X.PAR1";
+	public static final String X_PAR2 = "X.PAR2";
+	public static final String X_NON_PAR = "X.nonPAR";
 
 	private static double CALL_RATE = 0.5;
 	private static int MIN_SNPS = 3;
@@ -176,8 +177,16 @@ public class QCStatistics {
 
 		// set X region as filename
 		if (myvcfFile.isChrX()) {
-			_contig = myvcfFile.getVcfFilename().contains(X_NON_PAR) ? X_NON_PAR : X_PAR;
+			_contig = X_NON_PAR;
+			if(myvcfFile.getVcfFilename().contains(X_PAR1)){
+				_contig = X_PAR1;
+			} else if (myvcfFile.getVcfFilename().contains(X_PAR2)){
+				_contig = X_PAR2;
+			}
 		}
+		
+		
+		
 
 		LineWriter metafileWriter = new LineWriter(FileUtil.path(chunkFileDir, _contig));
 
@@ -577,8 +586,13 @@ public class QCStatistics {
 				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
 
-		String par = FileUtil.path(chunksDir, X_PAR + ".vcf.gz");
-		VariantContextWriter vcfChunkWriterPar = new VariantContextWriterBuilder().setOutputFile(par)
+		String par1 = FileUtil.path(chunksDir, X_PAR1 + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterPar1 = new VariantContextWriterBuilder().setOutputFile(par1)
+				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
+
+		String par2 = FileUtil.path(chunksDir, X_PAR2 + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterPar2 = new VariantContextWriterBuilder().setOutputFile(par2)
 				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
 
@@ -586,41 +600,55 @@ public class QCStatistics {
 
 		VCFHeader header = vcfReader.getFileHeader();
 		vcfChunkWriterNonPar.writeHeader(header);
-		vcfChunkWriterPar.writeHeader(header);
+		vcfChunkWriterPar1.writeHeader(header);
+		vcfChunkWriterPar2.writeHeader(header);
 
 		CloseableIterator<VariantContext> it = vcfReader.iterator();
 
 		while (it.hasNext()) {
 
 			VariantContext line = it.next();
-			
-			if(!line.getContig().equals("X")){
-			line = new VariantContextBuilder(line).chr("X").make();
-			}
-			
-			if (line.getStart() >= 2699521 && line.getStart() <= 154931043) {
 
-				//not required anymore after updated version of Minimac4 (dbb99aeb27798e3e71a400421ffc1952bb1330f8)
-				//line = makeDiploid(header.getGenotypeSamples(), line, file.isPhased(), chrXWriter, hapSamples);
+			if (!line.getContig().equals("X")) {
+				line = new VariantContextBuilder(line).chr("X").make();
+			}
+
+			if (line.getStart() >= 60001 && line.getStart() <= 2699520) {
+
+				vcfChunkWriterPar1.add(line);
+
+				if (!paths.contains(par1)) {
+					paths.add(par1);
+				}
+
+			}
+
+			else if (line.getStart() > 2699520 && line.getStart() <= 154931043) {
+
 				vcfChunkWriterNonPar.add(line);
 
 				if (!paths.contains(nonPar)) {
 					paths.add(nonPar);
 				}
-			} else {
 
-				vcfChunkWriterPar.add(line);
+			}
+			
+			else if (line.getStart() > 154931043 && line.getStart() <= 155270560) {
 
-				if (!paths.contains(par)) {
-					paths.add(par);
+				vcfChunkWriterPar2.add(line);
+
+				if (!paths.contains(par2)) {
+					paths.add(par2);
 				}
+
 			}
 
 		}
 
 		vcfReader.close();
 
-		vcfChunkWriterPar.close();
+		vcfChunkWriterPar1.close();
+		vcfChunkWriterPar2.close();
 		vcfChunkWriterNonPar.close();
 
 		return paths;

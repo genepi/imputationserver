@@ -450,8 +450,9 @@ public class ImputationMinimac3Test {
 
 		// maybe git large files?
 		if (!new File(
-				"test-data/configs/hapmap-chrX/ref-panels/ALL.chrX.Non.Pseudo.Auto.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.bcf")
+				"test-data/configs/hapmap-chrX/ref-panels/ALL.chrX.nonPAR.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.bcf")
 						.exists()) {
+			System.out.println("chrX bcf nonPAR file not available");
 			return;
 		}
 
@@ -534,13 +535,13 @@ public class ImputationMinimac3Test {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.Non.Pseudo.Auto.zip");
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.nonPAR.zip");
 		if (zipFile.isEncrypted()) {
 			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.Non.Pseudo.Auto.dose.vcf.gz", 100000000, false);
+		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.nonPAR.dose.vcf.gz", 100000000, false);
 
 		assertEquals("X", vcfFile.getChromosome());
 		assertEquals(26, vcfFile.getNoSamples());
@@ -656,7 +657,6 @@ public class ImputationMinimac3Test {
 			VariantContext line = it.next();
 			
 			if(line.getStart() == 26963697){
-				System.out.println(line);
 				assertEquals(2,line.getHetCount());
 				assertEquals(1,line.getHomRefCount());
 				assertEquals(23,line.getHomVarCount());
