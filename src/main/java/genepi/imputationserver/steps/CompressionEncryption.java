@@ -21,7 +21,6 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -39,6 +38,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 		String output = context.get("outputimputation");
 		String localOutput = context.get("local");
+		String aesEncryption = context.get("aesEncryption");
 
 		// read config if mails should be sent
 		String folderConfig = getFolder(CompressionEncryption.class);
@@ -116,6 +116,13 @@ public class CompressionEncryption extends WorkflowStep {
 				param.setEncryptFiles(true);
 				param.setPassword(password);
 				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
+
+				if (aesEncryption != null && aesEncryption.equals("yes")) {
+					param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
+					param.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
+					param.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+					param.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+				}
 
 				// create zip file
 				ArrayList<File> files = new ArrayList<File>();
