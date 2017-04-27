@@ -487,13 +487,13 @@ public class ImputationMinimac3Test {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.Non.Pseudo.Auto.zip");
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.nonPAR.zip");
 		if (zipFile.isEncrypted()) {
 			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.Non.Pseudo.Auto.dose.vcf.gz", 100000000, false);
+		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.nonPAR.dose.vcf.gz", 100000000, false);
 
 		assertEquals("X", vcfFile.getChromosome());
 
@@ -586,13 +586,13 @@ public class ImputationMinimac3Test {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.Non.Pseudo.Auto.zip");
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.nonPAR.zip");
 		if (zipFile.isEncrypted()) {
 			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.Non.Pseudo.Auto.dose.vcf.gz", 100000000, false);
+		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.nonPAR.dose.vcf.gz", 100000000, false);
 
 		assertEquals("X", vcfFile.getChromosome());
 		assertEquals(26, vcfFile.getNoSamples());
@@ -640,13 +640,13 @@ public class ImputationMinimac3Test {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.Non.Pseudo.Auto.zip");
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.nonPAR.zip");
 		if (zipFile.isEncrypted()) {
 			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.Non.Pseudo.Auto.dose.vcf.gz", 100000000, false);
+		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.nonPAR.dose.vcf.gz", 100000000, false);
 		
 		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFile.getVcfFilename()), true);
 
