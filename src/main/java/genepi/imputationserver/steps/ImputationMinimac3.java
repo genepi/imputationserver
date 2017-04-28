@@ -243,7 +243,12 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			HadoopJob job = jobs.get(id);
 			Integer state = getState(job);
 
-			job.downloadFailedLogs(log);
+			try {
+				job.downloadFailedLogs(log);
+			} catch (Exception e) {
+				context.println("[INFO] Error while downloading log files");
+			}
+
 
 			if (state != null) {
 
