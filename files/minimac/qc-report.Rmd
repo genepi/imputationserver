@@ -6,11 +6,11 @@ QC-Report
 args<-commandArgs(TRUE)
 input=args[1]
 
-suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(RColorBrewer))
+suppressPackageStartupMessages(library(geneplotter))
 data = read.table(input, header = FALSE, sep="\t")
 data[, 11] <- as.numeric(as.character( data[, 11] ))
 miss = data[which(data$V11 > 300),];
-
 
 
 ```
@@ -24,20 +24,19 @@ miss = data[which(data$V11 > 300),];
 
 ```{r echo=FALSE}
 
-
 lm_eqn = function(df){
     m = lm(V9 ~ V5, df);
-    eq <- substitute(italic(r)^2~"="~r2, 
-         list(r2 = format(summary(m)$r.squared, digits = 3)))
-    as.character(as.expression(eq));                 
+    eq <- paste('r2 =', format(summary(m)$r.squared, digits = 3))
+    as.character(as.expression(eq)); 
 }
+colors  <- densCols(data$V5, data$V9, colramp=colorRampPalette(brewer.pal(9, "YlOrRd")[-(1:3)]))
 
-ggplot() + geom_point(data=data, aes(x=V5, y=V9)) + scale_x_continuous(limits = c(0, 1)) + scale_y_continuous(limits = c(0, 1)) + xlab("Ref Allele Frequency (Uploaded Samples)") + ylab("Ref Allele Frequency (Reference Panel)") + geom_text(aes(x = 0.1, y = 1, label = lm_eqn(data)), parse = TRUE)
-
-#ggplot() + geom_point(data=data[which(data$V11 > 100),], aes(x=V5, y=V9,color='blue')) + geom_point(data=data[which(data$V11 <= 100),], aes(x=V5, y=V9)) + scale_x_continuous(limits = c(0, 1)) + scale_y_continuous(limits = c(0, 1)) + xlab("MAF Upload Samples") + ylab("Allele Frequency Reference Panel") + geom_text(aes(x = 0.1, y = 1, label = lm_eqn(data)), parse = TRUE)
+plot(data$V5, data$V9, col=colors, xlim=c(0,1),
+     ylim=c(0,1), pch=20, xlab="Ref Allele Frequency (Uploaded Samples)",
+     ylab="Ref Allele Frequency (Reference Panel)")
+legend("topleft",legend=lm_eqn(data), bty ="n", pch=NA) 
 
 ```
-
 
 ### Potential Frequency Mismatches
 
