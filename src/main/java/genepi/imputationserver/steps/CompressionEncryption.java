@@ -26,11 +26,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-
 public class CompressionEncryption extends WorkflowStep {
 
 	public static final String DEFAULT_PASSWORD = "imputation@michigan";
-	
+
 	@Override
 	public boolean run(WorkflowContext context) {
 
@@ -38,7 +37,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 		String output = context.get("outputimputation");
 		String localOutput = context.get("local");
-		String aesEncryption = context.get("aesEncryption");
+		String aesEncryption = context.getInput("aesEncryption");
 
 		// read config if mails should be sent
 		String folderConfig = getFolder(CompressionEncryption.class);
@@ -54,14 +53,12 @@ public class CompressionEncryption extends WorkflowStep {
 			serverUrl = store.getString("server.url");
 		}
 
-
 		String password = DEFAULT_PASSWORD;
 
 		if (notification.equals("yes")) {
 			password = PasswordCreator.createPassword();
-		} 
-		
-		
+		}
+
 		try {
 
 			context.beginTask("Export data...");
@@ -189,7 +186,9 @@ public class CompressionEncryption extends WorkflowStep {
 			}
 
 		} else {
-			context.ok("Email notification (and therefore encryption) is disabled. All results are encrypted with password <b>" + password + "</b>");
+			context.ok(
+					"Email notification (and therefore encryption) is disabled. All results are encrypted with password <b>"
+							+ password + "</b>");
 			return true;
 		}
 
