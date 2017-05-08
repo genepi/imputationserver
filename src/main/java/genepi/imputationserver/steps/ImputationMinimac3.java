@@ -339,11 +339,11 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			if (state != null) {
 
 				if (id.equals("X.PAR1")) {
-					text2 = "Chr X1";
+					text2 = "X1";
 				} else if (id.equals("X.nonPAR")) {
-					text2 = "Chr X2";
+					text2 = "X2";
 				} else if (id.equals("X.PAR2")) {
-					text2 = "Chr X3";
+					text2 = "X3";
 				} else {
 					text2 = id;
 				}
