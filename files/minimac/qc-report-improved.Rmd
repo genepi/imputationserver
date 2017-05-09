@@ -6,8 +6,8 @@ QC-Report
 args<-commandArgs(TRUE)
 input=args[1]
 
-suppressPackageStartupMessages(library(RColorBrewer))
 suppressPackageStartupMessages(library(geneplotter))
+suppressPackageStartupMessages(library(RColorBrewer))
 data = read.table(input, header = FALSE, sep="\t")
 data[, 11] <- as.numeric(as.character( data[, 11] ))
 miss = data[which(data$V11 > 300),];
@@ -21,6 +21,7 @@ miss = data[which(data$V11 > 300),];
 
 ### Uploaded Samples vs. Reference Panel
 
+The plot shows the densities of frequencies falling into each part. The first 5000 points from areas of lowest regional densities will be plotted.
 
 ```{r echo=FALSE}
 
@@ -29,29 +30,37 @@ lm_eqn = function(df){
     eq <- paste('r2 =', format(summary(m)$r.squared, digits = 3))
     as.character(as.expression(eq)); 
 }
-colors  <- densCols(data$V5, data$V9, colramp=colorRampPalette(brewer.pal(9, "YlOrRd")[-(1:3)]))
 
-plot(data$V5, data$V9, col=colors, xlim=c(0,1),
-     ylim=c(0,1), pch=20, xlab="Ref Allele Frequency (Uploaded Samples)",
-     ylab="Ref Allele Frequency (Reference Panel)")
-legend("topleft",legend=lm_eqn(data), bty ="n", pch=NA) 
+i.s <- smoothScatter(data$V5,data$V9, nrpoints=5000, xlim=c(0,1),xlab="Ref Allele Frequency (Uploaded Samples)", ylab="Ref Allele Frequency (Reference Panel)",useRaster=TRUE)
+legend("topleft",legend=lm_eqn(data), bty ="n", pch=NA)
 
 ```
 
 ### Potential Frequency Mismatches
 
-Markers where chisq is greater than 300.
+Markers where chisq is greater than 300. 
 
 ```{r echo=FALSE}
 
+ cat("Total mismatches:", length(miss[,11]))
+
+
+  count = as.integer(0); 
+  
 if (length(miss[,11]) > 0) {
 
 for (i in 1:length(miss[,11])){
 
+    if(count < 5000){
+     count =  count + 1; 
  cat("Mismatched frequencies for '", as.character(miss[i,2]),"' f[", as.character(miss[i,3]) ,",", as.character(miss[i,4]),"] = [",miss[i,5],",",miss[i,6],"] vs [", miss[i,9], ",", miss[i,10], "], chisq ",miss[i,11], "\n",sep=""); 
+	} else{
+	 cat("Report outputs first 5000 mismatches.");
+	 break;
+	}
+	
 }
 
 }
 
 ```
-
