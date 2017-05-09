@@ -12,7 +12,8 @@ public class PasswordCreator {
 		return createPassword(5, 5, 2, 2, 3);
 	}
 
-	public static String createPassword(int uppercaseLetters, int lowercaseLetters, int numbers, int symbols, int duplicates) {
+	public static String createPassword(int uppercaseLetters, int lowercaseLetters, int numbers, int symbols,
+			int duplicates) {
 
 		String pwd = null;
 
@@ -26,8 +27,11 @@ public class PasswordCreator {
 			String number = RandomStringUtils.random(numbers, 0, 0, false, true, null, new SecureRandom())
 					.replaceAll("\\s+", "");
 
-			// 33: exclude space; also includes letters
 			String symbol = RandomStringUtils.random(symbols, 33, 127, false, false, null, new SecureRandom());
+			
+			// exclude non password-friendly symbols (quotes and ^)
+			symbol = symbol.replaceAll((char) 39 + "", "").replaceAll((char) 94 + "", "").replaceAll((char) 96 + "",
+					"");
 
 			pwd = shuffleAndCheck(upper + lower + number + symbol, duplicates);
 
