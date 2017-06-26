@@ -41,11 +41,10 @@ public class QualityControl extends HadoopJobStep {
 
 		// read config
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
-		String qcQueue ="default";
-		if(store.getString("minimac.qc.queue") != null && !store.getString("minimac.qc.queue").equals("")){
+		String qcQueue = "default";
+		if (store.getString("minimac.qc.queue") != null && !store.getString("minimac.qc.queue").equals("")) {
 			qcQueue = store.getString("minimac.qc.queue");
 		}
-		
 
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
@@ -235,14 +234,38 @@ public class QualityControl extends HadoopJobStep {
 						try {
 							List<VcfFile> newFiles = VcfFileUtil.prepareChrX(myvcfFile);
 
-							context.endTask(
-									"<b>Sex-Check:</b>" + "\n" + "Males: " + newFiles.get(0).getNoSamples() + "\n"
-											+ "Females: " + newFiles.get(1).getNoSamples() + "\n"
-											+ "No Sex dedected and therefore filtered: " + (myvcfFile.getNoSamples()
-													- newFiles.get(0).getNoSamples() - newFiles.get(1).getNoSamples()),
-											WorkflowContext.OK);
+							int males = 0, females = 0;
+							StringBuilder submitMsg = new StringBuilder();
+							submitMsg.append("<b> ChrX Statistics: \n </b>");
+
+							submitMsg.append("Submitting <b>" + newFiles.size() + "</b> jobs: \n");
+
+							for (VcfFile file : newFiles) {
+								if (file.getChromosome().equals("X.no.auto_female")) {
+									females = file.getNoSamples();
+									submitMsg.append("chrX Non.Par female (<i> as Chr X I </i> ) \n");
+								}
+								if (file.getChromosome().equals("X.no.auto_male")) {
+									males = file.getNoSamples();
+									submitMsg.append("chrX Non.Par male (<i> as Chr X II </i> ) \n");
+								}
+								if (file.getChromosome().equals("X.auto")) {
+									males = file.getNoSamples();
+									submitMsg.append("chrX Par (<i> as Chr X III </i> ) \n");
+								}
+							}
+
+							if (males != 0 && females != 0) {
+								int total = Integer.valueOf(myvcfFile.getNoSamples());
+								submitMsg.append("<b>NonPar Sex Check: </b>" + "\n" + "Males: " + males + "\n"
+										+ "Females: " + females + "\n No Sex dedected and therefore filtered: "
+										+ (total - (males + females)));
+							}
+
+							context.endTask(submitMsg.toString(), WorkflowContext.OK);
 
 							vcfFiles.addAll(newFiles);
+
 						} catch (IOException e) {
 							context.endTask("Chromosome X check failed! \n " + e, WorkflowContext.ERROR);
 							throw e;
