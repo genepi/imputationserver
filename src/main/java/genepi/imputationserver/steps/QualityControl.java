@@ -240,21 +240,25 @@ public class QualityControl extends HadoopJobStep {
 
 							submitMsg.append("Submitting <b>" + newFiles.size() + "</b> jobs: \n");
 
+							boolean isNonPar = false;
+							
 							for (VcfFile file : newFiles) {
 								if (file.getChromosome().equals("X.no.auto_female")) {
 									females = file.getNoSamples();
 									submitMsg.append("chrX Non.Par female (<i> as Chr X I </i> ) \n");
+									isNonPar = true;
 								}
 								if (file.getChromosome().equals("X.no.auto_male")) {
 									males = file.getNoSamples();
 									submitMsg.append("chrX Non.Par male (<i> as Chr X II </i> ) \n");
+									isNonPar = true;
 								}
 								if (file.getChromosome().equals("X.auto")) {
 									submitMsg.append("chrX Par (<i> as Chr X III </i> ) \n");
 								}
 							}
 
-							if (males != 0 && females != 0) {
+							if(isNonPar){
 								int total = Integer.valueOf(myvcfFile.getNoSamples());
 								submitMsg.append("<b>NonPar Sex Check: </b>" + "\n" + "Males: " + males + "\n"
 										+ "Females: " + females + "\n No Sex dedected and therefore filtered: "
