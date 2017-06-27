@@ -250,7 +250,6 @@ public class QualityControl extends HadoopJobStep {
 									submitMsg.append("chrX Non.Par male (<i> as Chr X II </i> ) \n");
 								}
 								if (file.getChromosome().equals("X.auto")) {
-									males = file.getNoSamples();
 									submitMsg.append("chrX Par (<i> as Chr X III </i> ) \n");
 								}
 							}
