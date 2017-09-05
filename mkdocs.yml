@@ -1,2 +1,15 @@
 site_name: Imputationserver
 theme: readthedocs
+pages:
+- Index: index.md
+- Getting started: getting-started.md
+- Data preparation: prepare-your-data.md
+- Reference panels: reference-panels.md
+- Pipeline details: pipeline.md
+- Security & FAQ: data-sensitivity.md
+- Contact: contact.md
+
+markdown_extensions:
+    - toc:
+        permalink:
+    - admonition:
