@@ -1,5 +1,5 @@
 site_name: Imputationserver
-theme: readthedocs
+theme: material
 pages:
 - Index: index.md
 - Getting started: getting-started.md
