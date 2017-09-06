@@ -1,5 +1,5 @@
 site_name: Imputationserver
-theme: material
+theme: readthedocs
 pages:
 - Home: index.md
 - User Documentation:

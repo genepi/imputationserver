@@ -74,7 +74,7 @@ wget https://imputationserver.sph.umich.edu/static/downloads/1KP3.tar.gz -O 1KGP
 tar xvfz 1KGP3.tar.gz
 ````
 
-!!! info
+!!! note
     It's recommended to execute all commands from a HDD having at least 100 GB (Reference panel file size zipped: 14 GB).
 
 ### Build latest source locally
@@ -96,7 +96,7 @@ cd /tmp/imputation-data
 sudo docker run --privileged -it -p 8082:8082 -p 50030:50030 -p 50060:50060 -v $(pwd)/imputationserver/target/minimac-cloud-assembly:/opt/cloudgene/apps/ -v $(pwd):/opt/cloudgene/input-data seppinho/cloudgene-docker start-cloudgene.sh
 ````
 
-!!! info
+!!! note
     The `sudo docker run` command ends with a root bash within the Docker Image.
 
 ### Import 1000 genomes reference data

@@ -1,6 +1,13 @@
 # Data preparation
 
-Imputationserve accepts VCF files compressed by [bgzip](http://samtools.sourceforge.net/tabix.shtml) (vcf.gz).
+Imputationserve accepts VCF files compressed by [bgzip](http://samtools.sourceforge.net/tabix.shtml). Please make sure the following requirements have been met:
+
+- Create a seperate vcf.gz file for each chromosome.
+- Variations must be sorted by genomic position.
+- GRCh37 coordinates are required.
+
+!!! note
+    Several .vcf.gz files can be uploaded at once.
 
 ## Convert ped/map files to VCF files
 
