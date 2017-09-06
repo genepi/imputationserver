@@ -1,12 +1,16 @@
 site_name: Imputationserver
 theme: material
 pages:
-- Index: index.md
-- Getting started: getting-started.md
-- Data preparation: prepare-your-data.md
-- Reference panels: reference-panels.md
-- Pipeline details: pipeline.md
-- Security & FAQ: data-sensitivity.md
+- Home: index.md
+- User Documentation:
+  - Getting Started: getting-started.md
+  - Data Preparation: prepare-your-data.md
+  - Reference Panels: reference-panels.md
+  - Pipeline Details: pipeline.md
+  - Security & FAQ: data-sensitivity.md
+- Developer Documentation:
+  - API: api.md
+  - Docker: docker.md
 - Contact: contact.md
 
 markdown_extensions:

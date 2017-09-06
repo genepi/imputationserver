@@ -7,46 +7,13 @@ Our server offers imputation from the following reference panels:
 
 This HRC panel consists of 64,940 haplotypes of predominantly European ancestry.
 
-<table class="table table-bordered">
+| ||
+| | |
+| Number of Samples | 32,470 |
+| Sites (chr1-22) | 39,635,008 |
+| Chromosomes | 1-22 and **chromosome X**|
+| Website: | [http://www.haplotype-reference-consortium.org](http://www.haplotype-reference-consortium.org)  [HRC r1.1 Release Note](https://imputationserver.sph.umich.edu/start.html#!pages/hrc-r1.1) |
 
-<tbody>
-
-<tr>
-
-<td width="200px">Number of Samples</td>
-
-<td>32,470</td>
-
-</tr>
-
-<tr>
-
-<td>Sites (chr1-22)</td>
-
-<td>39,635,008</td>
-
-</tr>
-
-<tr>
-
-<td>Chromosomes</td>
-
-<td>1-22 and **chromosome X**</td>
-
-</tr>
-
-<tr>
-
-<td>Website:</td>
-
-<td>[http://www.haplotype-reference-consortium.org](http://www.haplotype-reference-consortium.org)  
-[HRC r1.1 Release Note](https://imputationserver.sph.umich.edu/start.html#!pages/hrc-r1.1)</td>
-
-</tr>
-
-</tbody>
-
-</table>
 
 ## HRC (Version r1 2015)
 
