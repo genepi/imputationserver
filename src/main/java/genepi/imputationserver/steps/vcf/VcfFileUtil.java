@@ -145,6 +145,11 @@ public class VcfFileUtil {
 			// create index
 			if (createIndex && !new File(vcfFilename + ".tbi").exists()) {
 
+				File command = new File(TABIX_PATH);
+				if (!command.canExecute()){
+					command.setExecutable(true, false);
+				}
+				
 				Command tabix = new Command(TABIX_PATH);
 				tabix.setParams("-f", "-p", "vcf", vcfFilename);
 				tabix.saveStdErr("tabix.output");

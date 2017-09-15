@@ -21,6 +21,8 @@ public class RefPanel {
 
 	private String legendPattern;
 
+	private String build = "hg19";
+	
 	public String getId() {
 		return id;
 	}
@@ -93,6 +95,14 @@ public class RefPanel {
 
 	public void setLegendPattern(String legendPattern) {
 		this.legendPattern = legendPattern;
+	}
+	
+	public void setBuild(String build) {
+		this.build = build;
+	}
+	
+	public String getBuild() {
+		return build;
 	}
 
 }
