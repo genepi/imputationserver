@@ -91,6 +91,10 @@ public class GeneticMap {
 
 	public boolean checkEagle() {
 
+		if (mapEagle == null){
+			return false;
+		}
+		
 		try {
 			return FileSystem.get(HdfsUtil.getConfiguration()).exists(
 					new Path(mapEagle))
@@ -104,6 +108,10 @@ public class GeneticMap {
 
 	public boolean checkHapiUR() {
 
+		if (mapHapiUR == null){
+			return false;
+		}
+		
 		try {
 			return FileSystem.get(HdfsUtil.getConfiguration()).exists(
 					new Path(mapHapiUR));
@@ -115,6 +123,10 @@ public class GeneticMap {
 
 	public boolean checkShapeIT() {
 
+		if (mapShapeIT == null){
+			return false;
+		}
+		
 		try {
 			return FileSystem.get(HdfsUtil.getConfiguration()).exists(
 					new Path(mapShapeIT));

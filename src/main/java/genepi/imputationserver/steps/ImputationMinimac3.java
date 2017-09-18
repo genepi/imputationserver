@@ -35,7 +35,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	public static int THREADS = 24;
 
-	
 	public ImputationMinimac3() {
 		super(THREADS);
 		jobs = new HashMap<String, HadoopJob>();
@@ -98,20 +97,23 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		}
 
 		RefPanel panel = panels.getById(reference);
+		if (panel == null) {
+			context.error("reference panel '" + reference + "' not found.");
+			return false;
+		}
 
 		context.println("Reference Panel: ");
 		context.println("  Name: " + reference);
 		context.println("  Location: " + panel.getHdfs());
 		context.println("  Legend: " + panel.getLegend());
 		context.println("  Version: " + panel.getVersion());
-		
-		
-		//reference panel
+
+		// reference panel
 		if (!panel.existsReference()) {
 			context.endTask("Reference File '" + panel.getHdfs() + "' not found.", WorkflowContext.ERROR);
 			return false;
 		}
-		
+
 		// load maps
 		MapList maps = null;
 		try {
@@ -121,28 +123,27 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			return false;
 		}
 
-		// check map for hapmap2
-		GeneticMap map = maps.getById("hapmap2");
+		// check gentics maps for refpanel
+		GeneticMap map = maps.getById(reference);
 		if (map == null) {
-			context.error("genetic map not found.");
+			context.error("genetic map '" + reference + "'not found.");
 			return false;
 		}
-		
-		if (phasing.equals("hapiur") && map.getMapHapiUR() != null && !map.checkHapiUR()) {
+
+		if (phasing.equals("hapiur") && !map.checkHapiUR()) {
 			context.endTask("Map HapiUR  '" + map.getMapHapiUR() + "' not found.", WorkflowContext.ERROR);
 			return false;
 		}
 
-		if (phasing.equals("shapeit") && map.getMapShapeIT() != null && !map.checkShapeIT()) {
+		if (phasing.equals("shapeit") && !map.checkShapeIT()) {
 			context.endTask("Map ShapeIT  '" + map.getMapShapeIT() + "' not found.", WorkflowContext.ERROR);
 			return false;
 		}
 
-		if (phasing.equals("eagle") && map.getMapEagle() != null && !map.checkEagle()) {
+		if (phasing.equals("eagle") && !map.checkEagle()) {
 			context.error("Eagle reference files not found.");
 			return false;
 		}
-
 
 		// execute one job per chromosome
 		try {
@@ -182,28 +183,24 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setRefPanelPattern(panel.getPattern());
 				job.setChromosome(chr);
 
-				// shapeit
-				if (phasing.equals("shapeit") && map.getMapShapeIT() != null) {
+				if (phasing.equals("shapeit")) {
+					// shapeit
 					context.println("Setting up shapeit map files...");
 					job.setMapShapeITHdfs(map.getMapShapeIT());
 					job.setMapShapeITPattern(map.getMapPatternShapeIT());
-				}
-
-				// hapiur
-				if (phasing.equals("hapiur") && map.getMapHapiUR() != null) {
+				} else if (phasing.equals("hapiur")) {
+					// hapiUR
 					context.println("Setting up hapiur map files...");
 					job.setMapHapiURHdfs(map.getMapHapiUR());
 					job.setMapHapiURPattern(map.getMapPatternHapiUR());
-				}
-
-				// eagle
-				if (phasing.equals("eagle") && map.getMapEagle() != null) {
+				} else if (phasing.equals("eagle")) {
+					// eagle
 					context.println("Setting up eagle reference and map files...");
 					job.setMapEagleHdfs(map.getMapEagle());
 					job.setRefEagleHdfs(map.getRefEagle());
 					job.setRefPatternEagle(map.getRefPatternEagle());
 				}
-				
+
 				job.setInput(newChunkFile);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
@@ -297,7 +294,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				context.println("[INFO] Error while downloading log files");
 			}
 
-
 			if (state != null) {
 
 				if (state == OK) {
@@ -388,6 +384,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		return text;
 
 	}
+
 	@Override
 	protected synchronized void onJobStart(String id, WorkflowContext context) {
 		context.println("Running job chr_" + id + "....");
