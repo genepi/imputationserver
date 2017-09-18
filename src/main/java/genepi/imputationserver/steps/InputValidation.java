@@ -19,7 +19,7 @@ import genepi.imputationserver.steps.converter.VCFBuilder;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.GeneticMap;
-import genepi.imputationserver.util.MapList;
+import genepi.imputationserver.util.GeneticMapList;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -44,10 +44,10 @@ public class InputValidation extends WorkflowStep {
 			// handle
 		}
 
-		if (!checkParameters(context)){
+		if (!checkParameters(context)) {
 			return false;
 		}
-		
+
 		if (!importVcfFiles(context)) {
 			return false;
 		}
@@ -248,14 +248,14 @@ public class InputValidation extends WorkflowStep {
 		setupTabix(folder);
 		String reference = context.get("refpanel");
 		String population = context.get("population");
-		
+
 		RefPanelList panels = null;
 		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, "panels.txt"));
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
 		} catch (Exception e) {
 
-			context.error("panels.txt not found.");
+			context.error("File " + RefPanelList.FILENAME +" not found.");
 			return false;
 		}
 
@@ -272,18 +272,18 @@ public class InputValidation extends WorkflowStep {
 		}
 
 		// load maps
-		MapList maps = null;
+		GeneticMapList maps = null;
 		try {
-			maps = MapList.loadFromFile(FileUtil.path(folder, "genetic-maps.txt"));
+			maps = GeneticMapList.loadFromFile(FileUtil.path(folder, GeneticMapList.FILENAME));
 		} catch (Exception e) {
-			context.error("genetic-maps.txt not found." + e);
+			context.error("File " + GeneticMapList.FILENAME + " not found." + e);
 			return false;
 		}
 
 		// check map; hapmap2 map for all files used!
-		GeneticMap map = maps.getById("hapmap2");
+		GeneticMap map = maps.getById(reference);
 		if (map == null) {
-			context.error("genetic map file not found.");
+			context.error("genetic map '" + reference + "' not found.");
 			return false;
 		}
 

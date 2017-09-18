@@ -1,10 +1,5 @@
 package genepi.imputationserver.util;
 
-import java.io.IOException;
-
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-
 import genepi.hadoop.HdfsUtil;
 
 public class GeneticMap {
@@ -91,48 +86,31 @@ public class GeneticMap {
 
 	public boolean checkEagle() {
 
-		if (mapEagle == null){
+		if (mapEagle == null) {
 			return false;
 		}
-		
-		try {
-			return FileSystem.get(HdfsUtil.getConfiguration()).exists(
-					new Path(mapEagle))
-					&& FileSystem.get(HdfsUtil.getConfiguration()).exists(
-							new Path(refEagle));
-		} catch (IOException e) {
-			return false;
-		}
+
+		return HdfsUtil.exists(mapEagle) && HdfsUtil.exists(refEagle);
 
 	}
 
 	public boolean checkHapiUR() {
 
-		if (mapHapiUR == null){
+		if (mapHapiUR == null) {
 			return false;
 		}
-		
-		try {
-			return FileSystem.get(HdfsUtil.getConfiguration()).exists(
-					new Path(mapHapiUR));
-		} catch (IOException e) {
-			return false;
-		}
+
+		return HdfsUtil.exists(mapHapiUR);
 
 	}
 
 	public boolean checkShapeIT() {
 
-		if (mapShapeIT == null){
+		if (mapShapeIT == null) {
 			return false;
 		}
-		
-		try {
-			return FileSystem.get(HdfsUtil.getConfiguration()).exists(
-					new Path(mapShapeIT));
-		} catch (IOException e) {
-			return false;
-		}
+
+		return HdfsUtil.exists(mapShapeIT);
 
 	}
 

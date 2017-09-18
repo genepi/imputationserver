@@ -14,7 +14,7 @@ import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.util.GeneticMap;
-import genepi.imputationserver.util.MapList;
+import genepi.imputationserver.util.GeneticMapList;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -88,11 +88,11 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		RefPanelList panels = null;
 		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, "panels.txt"));
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
 		} catch (Exception e) {
 
-			context.error("panels.txt not found.");
+			context.error("File " + RefPanelList.FILENAME + " not found.");
 			return false;
 		}
 
@@ -115,11 +115,11 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		}
 
 		// load maps
-		MapList maps = null;
+		GeneticMapList maps = null;
 		try {
-			maps = MapList.loadFromFile(FileUtil.path(folder, "genetic-maps.txt"));
+			maps = GeneticMapList.loadFromFile(FileUtil.path(folder, GeneticMapList.FILENAME));
 		} catch (Exception e) {
-			context.error("genetic-maps.txt not found." + e);
+			context.error("File " + GeneticMapList.FILENAME + " not found." + e);
 			return false;
 		}
 
