@@ -17,7 +17,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 import junit.framework.TestCase;
 import net.lingala.zip4j.exception.ZipException;
 
-public class QCStatisticsTest extends TestCase {
+public class FastQualityControlTest extends TestCase {
 
 	// baseline for all tests was execution of running pipeline on Impuation
 	// Server and compared to checkVCF
@@ -171,7 +171,7 @@ public class QCStatisticsTest extends TestCase {
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 
 		// run and test
-		run(context, qcStats);
+		assertTrue(run(context, qcStats));
 
 		File[] files = new File(out).listFiles();
 		Arrays.sort(files);
@@ -183,7 +183,6 @@ public class QCStatisticsTest extends TestCase {
 		for (File file : files) {
 			int count = 0;
 			if (file.getName().endsWith(".gz")) {
-				System.out.println("Load file " + file.getName());
 				VCFFileReader vcfReader = new VCFFileReader(file, false);
 				CloseableIterator<VariantContext> it = vcfReader.iterator();
 				while (it.hasNext()) {
@@ -277,8 +276,7 @@ public class QCStatisticsTest extends TestCase {
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 
 		// run and test
-		run(context, qcStats);
-
+		assertTrue(run(context, qcStats));
 		for (File file : new File(out).listFiles()) {
 			if (file.getName().endsWith("chunk_1_80000001_100000000.vcf.gz")) {
 				VCFFileReader vcfReader = new VCFFileReader(file, false);
@@ -319,7 +317,7 @@ public class QCStatisticsTest extends TestCase {
 
 	}
 	
-	class QcStatisticsMock extends QualityControl {
+	class QcStatisticsMock extends FastQualityControl {
 
 		private String folder;
 
