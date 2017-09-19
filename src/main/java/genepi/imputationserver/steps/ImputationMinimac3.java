@@ -110,7 +110,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		// reference panel
 		if (!panel.existsReference()) {
-			context.endTask("Reference File '" + panel.getHdfs() + "' not found.", WorkflowContext.ERROR);
+			context.error("Reference File '" + panel.getHdfs() + "' not found.");
 			return false;
 		}
 
@@ -131,12 +131,12 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		}
 
 		if (phasing.equals("hapiur") && !map.checkHapiUR()) {
-			context.endTask("Map HapiUR  '" + map.getMapHapiUR() + "' not found.", WorkflowContext.ERROR);
+			context.error("Map HapiUR  '" + map.getMapHapiUR() + "' not found.");
 			return false;
 		}
 
 		if (phasing.equals("shapeit") && !map.checkShapeIT()) {
-			context.endTask("Map ShapeIT  '" + map.getMapShapeIT() + "' not found.", WorkflowContext.ERROR);
+			context.error("Map ShapeIT  '" + map.getMapShapeIT() + "' not found.");
 			return false;
 		}
 

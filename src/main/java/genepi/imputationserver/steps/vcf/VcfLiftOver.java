@@ -6,10 +6,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Vector;
 
-import genepi.hadoop.command.Command;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
-import htsjdk.samtools.ValidationStringency;
 import htsjdk.samtools.liftover.LiftOver;
 import htsjdk.samtools.util.Interval;
 import htsjdk.samtools.util.SortingCollection;
@@ -105,8 +103,8 @@ public class VcfLiftOver {
 	}
 
 	public static void main(String[] args) throws IOException {
-		String input = "/Users/lukas/git/imputationserver-genepi/test-data/data/chr20-phased/chr20.R50.merged.1.330k.recode.small.vcf.gz";
-		String output = "/Users/lukas/git/imputationserver-genepi/test-data/data/chr20-phased/chr20.R50.merged.1.330k.recode.small.hg38.vcf.gz";
+		String input = "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.vcf.gz";
+		String output = "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.hg38.vcf.gz";
 		String chainFile = "files/minimac/hg19ToHg38.over.chain.gz";
 		VcfLiftOver.liftOver(input, output, chainFile, "");
 

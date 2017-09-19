@@ -1,6 +1,8 @@
 package genepi.imputationserver.steps;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DecimalFormat;
 
 import genepi.hadoop.PreferenceStore;
@@ -112,7 +114,9 @@ public class FastQualityControl extends WorkflowStep {
 			answer = qcStatistics.run();
 
 		} catch (Exception e) {
-			context.endTask(e.getMessage(), WorkflowContext.ERROR);
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+			context.endTask(errors.toString(), WorkflowContext.ERROR);
 			return false;
 		}
 

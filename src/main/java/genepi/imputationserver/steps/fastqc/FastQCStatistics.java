@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-import genepi.imputationserver.steps.qc.SnpStats;
 import genepi.imputationserver.steps.vcf.BGzipLineWriter;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
