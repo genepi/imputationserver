@@ -275,7 +275,7 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 						continue;
 					}
 
-					LegendEntry refSnp = getReader(snp.getChr()).findByPosition2(snp.getStart());
+					LegendEntry refSnp = getReader(snp.getChr()).findByPosition(snp.getStart());
 
 					// update Jul 8 2016: dont filter and add "allTypedSites"
 					// minimac3 option
