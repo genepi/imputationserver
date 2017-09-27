@@ -1,4 +1,4 @@
-package genepi.imputationserver.steps.qc;
+package genepi.imputationserver.steps.fastqc;
 
 public class SnpStats {
 

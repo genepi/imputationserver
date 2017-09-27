@@ -8,11 +8,13 @@ import java.util.Vector;
 import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 
-public class MapList {
+public class GeneticMapList {
 
+	public static String FILENAME = "genetic-maps.txt";
+	
 	private List<GeneticMap> maps;
 
-	public MapList() {
+	public GeneticMapList() {
 		maps = new Vector<GeneticMap>();
 	}
 
@@ -37,21 +39,21 @@ public class MapList {
 		maps.add(map);
 	}
 
-	public static MapList loadFromFile(String filename)
+	public static GeneticMapList loadFromFile(String filename)
 			throws YamlException, FileNotFoundException {
 
 		if (new File(filename).exists()) {
 
 			YamlReader reader = new YamlReader(new FileReader(filename));
-			reader.getConfig().setPropertyElementType(MapList.class,
+			reader.getConfig().setPropertyElementType(GeneticMapList.class,
 					"maps", GeneticMap.class);
 			reader.getConfig().setClassTag(
 					"genepi.minicloudmac.hadoop.util.MapList",
-					MapList.class);
-			MapList result = reader.read(MapList.class);
+					GeneticMapList.class);
+			GeneticMapList result = reader.read(GeneticMapList.class);
 			return result;
 		} else {
-			return new MapList();
+			return new GeneticMapList();
 		}
 
 	}

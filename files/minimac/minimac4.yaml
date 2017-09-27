@@ -76,6 +76,14 @@ mapred:
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF</a> & <a href="https://github.com/genepi/23andme-tools" target="_blank">23andMe</a>)
        type: local-folder
 
+     - id: build
+       description: Build
+       type: list
+       value: hg19
+       values:
+         hg19: hg19
+         Hg38: Hg38                
+
      - id: phasing
        description: Phasing
        type: list

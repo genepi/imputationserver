@@ -19,7 +19,7 @@ import genepi.imputationserver.steps.converter.VCFBuilder;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.GeneticMap;
-import genepi.imputationserver.util.MapList;
+import genepi.imputationserver.util.GeneticMapList;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -44,10 +44,10 @@ public class InputValidation extends WorkflowStep {
 			// handle
 		}
 
-		if (!checkParameters(context)){
+		if (!checkParameters(context)) {
 			return false;
 		}
-		
+
 		if (!importVcfFiles(context)) {
 			return false;
 		}
@@ -66,6 +66,8 @@ public class InputValidation extends WorkflowStep {
 		String files = context.get("files");
 		String reference = context.get("refpanel");
 		String phasing = context.get("phasing");
+		String build = context.get("build");
+
 		int sampleLimit = Integer.valueOf(context.get("sample-limit"));
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
@@ -124,6 +126,21 @@ public class InputValidation extends WorkflowStep {
 		Arrays.sort(vcfFiles);
 
 		String infos = null;
+
+		RefPanelList panels = null;
+		try {
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
+		} catch (Exception e) {
+			context.endTask("File " + RefPanelList.FILENAME + " not found.", WorkflowContext.ERROR);
+			return false;
+		}
+
+		//
+		RefPanel panel = panels.getById(reference);
+		if (panel == null) {
+			context.endTask("Reference '" + reference + "' not found.", WorkflowContext.ERROR);
+			return false;
+		}
 
 		for (String filename : vcfFiles) {
 
@@ -200,7 +217,8 @@ public class InputValidation extends WorkflowStep {
 
 					infos = "Samples: " + noSamples + "\n" + "Chromosomes:" + chromosomeString + "\n" + "SNPs: "
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
-							+ (phased ? "phased" : "unphased") + "\n" + "Reference Panel: " + reference + "\n"
+							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
+							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
 							+ "Phasing: " + phasing;
 
 				} else {
@@ -248,17 +266,19 @@ public class InputValidation extends WorkflowStep {
 		setupTabix(folder);
 		String reference = context.get("refpanel");
 		String population = context.get("population");
-		
+		String phasing = context.get("phasing");
+
 		RefPanelList panels = null;
 		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, "panels.txt"));
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
 		} catch (Exception e) {
 
-			context.error("panels.txt not found.");
+			context.error("File " + RefPanelList.FILENAME + " not found.");
 			return false;
 		}
 
+		//
 		RefPanel panel = panels.getById(reference);
 		if (panel == null) {
 			StringBuilder report = new StringBuilder();
@@ -271,22 +291,45 @@ public class InputValidation extends WorkflowStep {
 			return false;
 		}
 
-		// load maps
-		MapList maps = null;
+		// load maps from config file
+		GeneticMapList maps = null;
 		try {
-			maps = MapList.loadFromFile(FileUtil.path(folder, "genetic-maps.txt"));
+			maps = GeneticMapList.loadFromFile(FileUtil.path(folder, GeneticMapList.FILENAME));
 		} catch (Exception e) {
-			context.error("genetic-maps.txt not found." + e);
+			context.error("File " + GeneticMapList.FILENAME + " not found." + e);
 			return false;
 		}
 
-		// check map; hapmap2 map for all files used!
-		GeneticMap map = maps.getById("hapmap2");
+		// check if map exisits
+		GeneticMap map = maps.getById(reference);
 		if (map == null) {
-			context.error("genetic map file not found.");
+			StringBuilder report = new StringBuilder();
+			report.append("Genetic map '" + reference + "' not found.\n");
+			report.append("Available geneitc map IDs:");
+			for (GeneticMap m : maps.getMaps()) {
+				report.append("\n - " + m.getId());
+			}
+			context.error(report.toString());
 			return false;
 		}
 
+		// check if reference panel supports selected phasing algorithm
+		if (phasing.equals("hapiur") && map.getMapHapiUR() == null) {
+			context.error("Reference panel " + reference + " doesn't support phasing with HapiUR.");
+			return false;
+		}
+
+		if (phasing.equals("shapeit") && map.getMapShapeIT() == null) {
+			context.error("Reference panel " + reference + " doesn't support phasing with ShapeIt.");
+			return false;
+		}
+
+		if (phasing.equals("eagle") && map.getMapEagle() == null) {
+			context.error("Reference panel " + reference + " doesn't support phasing with Eagle.");
+			return false;
+		}
+
+		// check populations
 		if ((reference.equals("hrc") && !population.equals("eur"))) {
 
 			context.error("Please select the EUR population for the HRC panel");

@@ -1,23 +1,27 @@
 package genepi.imputationserver.steps;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.DecimalFormat;
+
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.fastqc.FastQCStatistics;
-import genepi.imputationserver.steps.qc.QCStatistics;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.steps.vcf.VcfLiftOver;
 import genepi.imputationserver.util.GenomicTools;
 import genepi.imputationserver.util.QualityControlObject;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
-import java.io.File;
-import java.text.DecimalFormat;
 
 public class FastQualityControl extends WorkflowStep {
 
 	protected void setupTabix(String folder) {
 		VcfFileUtil.setBinary(FileUtil.path(folder, "bin", "tabix"));
+		VcfLiftOver.setBinary(FileUtil.path(folder, "bin", "bcftools"));
 	}
 
 	@Override
@@ -34,6 +38,12 @@ public class FastQualityControl extends WorkflowStep {
 		String chunkFileDir = context.get("chunkFileDir");
 		String statDir = context.get("statisticDir");
 		String chunksDir = context.get("chunksDir");
+		String buildGwas = context.get("build");
+
+		// set default build
+		if (buildGwas == null) {
+			buildGwas = "hg19";
+		}
 
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
@@ -41,11 +51,11 @@ public class FastQualityControl extends WorkflowStep {
 		// load reference panels
 		RefPanelList panels = null;
 		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, "panels.txt"));
+			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
 		} catch (Exception e) {
 
-			context.error("panels.txt not found.");
+			context.error("File " + RefPanelList.FILENAME + " not found.");
 			return false;
 		}
 
@@ -77,6 +87,24 @@ public class FastQualityControl extends WorkflowStep {
 		qcStatistics.setChunksDir(chunksDir);
 		qcStatistics.setStatDir(statDir);
 
+		if (!buildGwas.equals(panel.getBuild())) {
+			context.warning("Uploaded data is " + buildGwas + " and reference is " + panel.getBuild() + ".");
+			String chainFile = store.getString(buildGwas + "To" + panel.getBuild());
+			if (chainFile == null) {
+				context.error("Currently we not support liftOver from " + buildGwas + " to " + panel.getBuild());
+				return false;
+			} else {
+				context.ok("We will perform liftOver for you.");
+				qcStatistics.setLiftOver(true);
+				String fullPathChainFile = FileUtil.path(folder, chainFile);
+				if (!new File(fullPathChainFile).exists()) {
+					context.error("Chain file " + fullPathChainFile + " not found.");
+					return false;
+				}
+				qcStatistics.setChainFile(fullPathChainFile);
+			}
+		}
+
 		context.beginTask("Calculating QC Statistics...");
 
 		QualityControlObject answer;
@@ -86,7 +114,9 @@ public class FastQualityControl extends WorkflowStep {
 			answer = qcStatistics.run();
 
 		} catch (Exception e) {
-			context.endTask(e.getMessage(), WorkflowContext.ERROR);
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+			context.endTask(errors.toString(), WorkflowContext.ERROR);
 			return false;
 		}
 
@@ -130,15 +160,15 @@ public class FastQualityControl extends WorkflowStep {
 
 			text.append("Excluded sites in total: " + formatter.format(qcStatistics.getFiltered()) + "<br>");
 			text.append("Remaining sites in total: " + formatter.format(qcStatistics.getOverallSnps()) + "<br>");
-			text.append("See " + context.createLinkToFile("statisticDir","snps-excluded.txt")
-			+ " for details"+ "<br>");
-			
+			text.append(
+					"See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
+
 			if (qcStatistics.getRemovedChunksSnps() > 0) {
 
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksSnps())
 
-						+ " Chunk(s) excluded: < 3 SNPs (see " + context.createLinkToFile("statisticDir", "chunks-excluded.txt")
-						+ "  for details).");
+						+ " Chunk(s) excluded: < 3 SNPs (see "
+						+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + "  for details).");
 			}
 
 			if (qcStatistics.getRemovedChunksCallRate() > 0) {
@@ -146,15 +176,15 @@ public class FastQualityControl extends WorkflowStep {
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksCallRate())
 
 						+ " Chunk(s) excluded: at least one sample has a call rate < 50% (see "
-						+ context.createLinkToFile("statisticDir","chunks-excluded.txt") + " for details).");
+						+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
 			}
 
 			if (qcStatistics.getRemovedChunksOverlap() > 0) {
 
 				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksOverlap())
 
-						+ " Chunk(s) excluded: reference overlap < 50% (see " + context.createLinkToFile("statisticDir","chunks-excluded.txt")
-						+ " for details).");
+						+ " Chunk(s) excluded: reference overlap < 50% (see "
+						+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
 			}
 
 			long excludedChunks = qcStatistics.getRemovedChunksSnps() + qcStatistics.getRemovedChunksCallRate()
@@ -185,8 +215,7 @@ public class FastQualityControl extends WorkflowStep {
 			}
 
 			else {
-				
-				
+
 				text.append(answer.getMessage());
 				context.warning(text.toString());
 				return true;

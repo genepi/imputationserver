@@ -10,17 +10,16 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-import genepi.imputationserver.steps.qc.SnpStats;
 import genepi.imputationserver.steps.vcf.BGzipLineWriter;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.steps.vcf.VcfLiftOver;
 import genepi.imputationserver.util.GenomicTools;
 import genepi.imputationserver.util.QualityControlObject;
 import genepi.io.FileUtil;
 import genepi.io.legend.LegendEntry;
 import genepi.io.legend.LegendFileReader;
-import genepi.io.text.GzipLineWriter;
 import genepi.io.text.LineWriter;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
@@ -59,6 +58,8 @@ public class FastQCStatistics {
 	String input;
 	String legendFile;
 	int refSamples;
+	private boolean liftOver;
+	private String chainFile;
 
 	// overall stats
 	int overallChunks;
@@ -111,9 +112,32 @@ public class FastQCStatistics {
 
 		Arrays.sort(vcfFilenames);
 
-		for (String vcfFilename : vcfFilenames) {
+		String[] newVcfFilenames = null;
+
+		// liftover
+		if (liftOver) {
+			newVcfFilenames = new String[vcfFilenames.length];
+			for (int i = 0; i < vcfFilenames.length; i++) {
+				String filename = vcfFilenames[i];
+				String name = FileUtil.getFilename(filename);
+				String output = FileUtil.path(chunksDir, name + ".lifted.vcf.gz");
+				Vector<String> errors = VcfLiftOver.liftOver(filename, output, chainFile, chunksDir);
+				for (String error : errors) {
+					excludedSnpsWriter.write(error);
+				}
+				newVcfFilenames[i] = output;
+			}
+		} else {
+			newVcfFilenames = vcfFilenames;
+		}
+
+		for (String vcfFilename : newVcfFilenames) {
 
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
+
+			if (liftOver) {
+
+			}
 
 			String chromosome = myvcfFile.getChromosome();
 			boolean phased = myvcfFile.isPhased();
@@ -178,9 +202,9 @@ public class FastQCStatistics {
 		// set X region in filename
 		if (VcfFileUtil.isChrX(chromosome)) {
 			_contig = X_NON_PAR;
-			if(filename.contains(X_PAR1)){
+			if (filename.contains(X_PAR1)) {
 				_contig = X_PAR1;
-			} else if (filename.contains(X_PAR2)){
+			} else if (filename.contains(X_PAR2)) {
 				_contig = X_PAR2;
 			}
 		}
@@ -603,8 +627,7 @@ public class FastQCStatistics {
 
 	}
 
-	public List<String> prepareChrX(String filename, boolean phased, HashSet<String> hapSamples)
-			throws IOException {
+	public List<String> prepareChrX(String filename, boolean phased, HashSet<String> hapSamples) throws IOException {
 
 		List<String> paths = new Vector<String>();
 		String nonPar = FileUtil.path(chunksDir, X_NON_PAR + ".vcf.gz");
@@ -658,7 +681,7 @@ public class FastQCStatistics {
 				}
 
 			}
-			
+
 			else if (line.getStart() > 154931043 && line.getStart() <= 155270560) {
 
 				vcfChunkWriterPar2.add(line);
@@ -779,6 +802,14 @@ public class FastQCStatistics {
 
 	public void setRefSamples(int refSamples) {
 		this.refSamples = refSamples;
+	}
+
+	public void setLiftOver(boolean liftOver) {
+		this.liftOver = liftOver;
+	}
+
+	public void setChainFile(String chainFile) {
+		this.chainFile = chainFile;
 	}
 
 	public int getOverallSnps() {
