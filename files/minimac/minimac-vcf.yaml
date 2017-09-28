@@ -1,6 +1,6 @@
 name:  Michigan Imputation Server
 description: Michigan Imputation Server provides a free genotype imputation service using <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a>. You can upload phased or unphased GWAS genotypes and receive phased and imputed genomes in return. For all uploaded data sets an extensive QC is performed.
-version: v1.0.0
+version: v1.0.3
 website: http://genome.sph.umich.edu/wiki/Minimac
 category: MiniMac
 
@@ -37,7 +37,7 @@ mapred:
 #if( $population != "mixed")
 
     - name: Quality Control (Report)
-      rmd: qc-report.Rmd
+      rmd2: qc-report.Rmd
       params: $outputmaf
       output: ${qcreport}.html
       generates: $qcreport
@@ -68,9 +68,14 @@ mapred:
      - id: refpanel
        description: Reference Panel (<a href="https://imputationserver.sph.umich.edu/start.html#!pages/refpanels" target="_blank">Details</a>)
        type: list
-       value: hapmap2
+       value: phase3
        values:
+         phase1: 1000G Phase 1 v3 Shapeit2 (no singletons)
+         phase3: 1000G Phase 3 v5
          hapmap2: HapMap 2
+         hrc: HRC r1 2015 (deprecated)
+         hrc.r1.1.2016: HRC r1.1 2016
+         caapa: CAAPA - African American Panel
 
      - id: files
        description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF</a> & <a href="https://github.com/genepi/23andme-tools" target="_blank">23andMe</a>)
@@ -87,7 +92,7 @@ mapred:
 
   
      - id: population
-       description: Population
+       description: Population <br> (for QC only)
        type: list
        value: eur
        values:
@@ -99,7 +104,7 @@ mapred:
          eas: EAS (Phase3 only)
          AA: AA (CAAPA)
          mixed: Mixed
-                
+
      - id: mode
        description: Mode
        type: list
@@ -107,6 +112,15 @@ mapred:
        values:
           qconly: Quality Control Only 
           imputation: Quality Control & Imputation
+
+     - id: aesEncryption
+       description: AES 256 encryption <br> <i> Imputation Server encrypts all zip files by default. Please note that AES encryption does not work with standard unzip programs. Use 7z instead.</i>
+       type: checkbox
+       value: no
+       values:
+         true: yes
+         false: no
+       visible: true
 
      - id: queues
        description: Queue
@@ -138,7 +152,7 @@ mapred:
      - id: sample-limit
        description: Limit
        type: number
-       value: 0
+       value: 20000
        visible: false
        
      - id: encryption
@@ -156,7 +170,7 @@ mapred:
        visible: false
        value: Minimac3
        values:
-          Minimac3: Minimac3 
+          Minimac3: Minimac3
             
      - id: nocache
        description: <b>Disable Cache</b>
