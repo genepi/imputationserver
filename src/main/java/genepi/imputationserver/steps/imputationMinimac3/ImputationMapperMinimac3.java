@@ -57,6 +57,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 	private String refEaglePattern = "";
 
+	private String build = "hg19";
+	
 	private String indexFilename;
 	
 	private boolean debugging;
@@ -79,6 +81,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		phasing = parameters.get(ImputationJobMinimac3.PHASING);
 		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
 		window = parameters.get(ImputationJobMinimac3.WINDOW);
+		build = parameters.get(ImputationJobMinimac3.BUILD);
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String hdfsPathShapeITMap = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_HDFS);
 		String hdfsPathHapiURMap = parameters.get(ImputationJobMinimac3.MAP_HAPIUR_HDFS);
@@ -167,6 +170,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		pipeline.setTabixCommand(tabixCommand);
 		pipeline.setHapiUrPreprocessCommand(hapiUrPreprocessCommand);
 		pipeline.setPhasingWindow(phasingWindow);
+		pipeline.setBuild(build);
 
 		// Minimac3
 		pipeline.setRounds(Integer.parseInt(rounds));

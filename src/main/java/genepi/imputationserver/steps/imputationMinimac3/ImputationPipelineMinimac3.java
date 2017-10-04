@@ -45,6 +45,7 @@ public class ImputationPipelineMinimac3 {
 
 	private String population;
 	private String phasing;
+	private String build = "hg19";
 
 	public boolean execute(VcfChunk chunk, VcfChunkOutput output) throws InterruptedException, IOException {
 
@@ -409,17 +410,24 @@ public class ImputationPipelineMinimac3 {
 			format = "GT,DS,GP,HDS";
 		}
 
+		String chr = "";
+		if (build.equals("hg38")){
+			chr = "chr" + output.getChromosome();
+		}else{
+			chr = output.getChromosome();
+		}
+		
 		if (phasing.equals("shapeit") && !output.isPhased()) {
 
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
-					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", "chr" + output.getChromosome(),
+					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", chr,
 					"--noPhoneHome", "--format", format, "--unphasedOutput", "--allTypedSites", "--constantPara",
 					"1.9e-05", "--minRatio", "0.00001");
 		} else {
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
-					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", "chr" + output.getChromosome(),
+					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", chr,
 					"--noPhoneHome", "--format", format, "--allTypedSites", "--constantPara", "1.9e-05", "--minRatio",
 					"0.00001");
 		}
@@ -555,6 +563,10 @@ public class ImputationPipelineMinimac3 {
 
 	public void setRounds(int rounds) {
 		this.rounds = rounds;
+	}
+	
+	public void setBuild(String build) {
+		this.build = build;
 	}
 
 }

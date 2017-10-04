@@ -49,7 +49,9 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String MINIMAC_BIN = "MINIMAC_BIN";
 
-	public static final String CHROMOSOME = "CHROMOSOME";
+	public static final String CHROMOSOME = "MINIMAC_CHROMOSOME";
+
+	public static final String BUILD = "MINIMAC_BUILD";
 
 	public static final String DATA_FOLDER = "minimac-data-3";
 
@@ -286,6 +288,10 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public void setChromosome(String chr) {
 		this.chr = chr;
 		set(CHROMOSOME, chr);
+	}
+
+	public void setBuild(String build) {
+		set(BUILD, build);
 	}
 
 	public String getPhasing() {

@@ -182,6 +182,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setRefPanelHdfs(panel.getHdfs());
 				job.setRefPanelPattern(panel.getPattern());
 				job.setChromosome(chr);
+				job.setBuild(panel.getBuild());
 
 				if (phasing.equals("shapeit")) {
 					// shapeit
