@@ -30,7 +30,7 @@ mapred:
 #if( $population != "mixed")
 
     - name: Quality Control (Report)
-      rmd: qc-report-improved.Rmd
+      rmd: qc-report.Rmd
       params: $mafFile
       output: ${qcreport}.html
       generates: $qcreport
