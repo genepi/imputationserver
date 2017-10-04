@@ -1,7 +1,7 @@
 package genepi.imputationserver.tools;
 
 import genepi.base.Tool;
-import genepi.io.legend.LegendFileReader;
+import genepi.imputationserver.steps.fastqc.legend.LegendFileReader;
 import genepi.io.text.GzipLineWriter;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;

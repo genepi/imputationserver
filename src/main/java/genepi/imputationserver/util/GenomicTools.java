@@ -3,8 +3,8 @@ package genepi.imputationserver.util;
 import java.io.IOException;
 
 import genepi.imputationserver.steps.fastqc.SnpStats;
+import genepi.imputationserver.steps.fastqc.legend.LegendEntry;
 import genepi.imputationserver.steps.vcf.MinimalVariantContext;
-import genepi.io.legend.LegendEntry;
 import htsjdk.variant.variantcontext.VariantContext;
 
 public class GenomicTools {

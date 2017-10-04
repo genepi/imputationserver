@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
+import genepi.imputationserver.steps.fastqc.legend.LegendEntry;
+import genepi.imputationserver.steps.fastqc.legend.LegendFileReader;
 import genepi.imputationserver.steps.vcf.BGzipLineWriter;
 import genepi.imputationserver.steps.vcf.FastVCFFileReader;
 import genepi.imputationserver.steps.vcf.MinimalVariantContext;
@@ -17,8 +19,6 @@ import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.GenomicTools;
 import genepi.io.FileUtil;
-import genepi.io.legend.LegendEntry;
-import genepi.io.legend.LegendFileReader;
 import genepi.io.text.LineWriter;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
@@ -515,7 +515,7 @@ public class StatisticsTask implements ITask {
 
 			// allele-frequency check
 			if (insideChunk) {
-				if (!population.equals("mixed")) {
+				if (!population.equals("mixed") && refSnp.hasFrequencies()) {
 					SnpStats statistics;
 
 					if (GenomicTools.strandFlipAndAlleleSwitch(studyRef, studyAlt, legendRef, legendAlt)
