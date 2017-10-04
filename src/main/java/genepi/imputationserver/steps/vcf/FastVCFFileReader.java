@@ -1,4 +1,4 @@
-package genepi.imputationserver.steps.fastqc;
+package genepi.imputationserver.steps.vcf;
 
 import java.io.File;
 import java.io.IOException;

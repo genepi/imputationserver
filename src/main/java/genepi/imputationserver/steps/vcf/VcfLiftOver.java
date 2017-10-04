@@ -22,15 +22,6 @@ import htsjdk.variant.vcf.VCFRecordCodec;
 public class VcfLiftOver {
 
 	private static final int MAX_RECORDS_IN_RAM = 500000;
-	public static String BCFTOOLS_PATH = "bin/";
-
-	public static void setBinary(String binaries) {
-		BCFTOOLS_PATH = binaries;
-	}
-
-	public static String getBinary() {
-		return BCFTOOLS_PATH;
-	}
 
 	public static Vector<String> liftOver(String input, String output, String chainFile, String tempDir)
 			throws IOException {
@@ -55,7 +46,7 @@ public class VcfLiftOver {
 				Interval target = liftOver.liftOver(source);
 				if (target != null) {
 					if (source.getContig().equals(target.getContig())) {
-						writer.write(tiles[0] + "\t" + target.getStart() + "\t" + tiles[2]);
+						writer.write("chr" + tiles[0] + "\t" + target.getStart() + "\t" + tiles[2]);
 					} else {
 						errors.add(tiles[0] + ":" + tiles[1] + "\t" + "LiftOver" + "\t"
 								+ "On different chromosome after LiftOver. SNP removed.");
@@ -75,7 +66,7 @@ public class VcfLiftOver {
 		// fake contigs
 		List<String> contigs = new Vector<String>();
 		for (int i = 1; i <= 22; i++) {
-			contigs.add(i + "");
+			contigs.add("chr" +  i + "");
 		}
 
 		// read from file and add to sorter

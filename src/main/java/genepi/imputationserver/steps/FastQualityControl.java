@@ -4,24 +4,27 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
-import genepi.imputationserver.steps.fastqc.FastQCStatistics;
+import genepi.imputationserver.steps.fastqc.ITask;
+import genepi.imputationserver.steps.fastqc.ITaskProgressListener;
+import genepi.imputationserver.steps.fastqc.LiftOverTask;
+import genepi.imputationserver.steps.fastqc.StatisticsTask;
+import genepi.imputationserver.steps.fastqc.TaskResults;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
-import genepi.imputationserver.steps.vcf.VcfLiftOver;
 import genepi.imputationserver.util.GenomicTools;
-import genepi.imputationserver.util.QualityControlObject;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
+import genepi.io.text.LineWriter;
 
 public class FastQualityControl extends WorkflowStep {
 
 	protected void setupTabix(String folder) {
 		VcfFileUtil.setBinary(FileUtil.path(folder, "bin", "tabix"));
-		VcfLiftOver.setBinary(FileUtil.path(folder, "bin", "bcftools"));
 	}
 
 	@Override
@@ -72,162 +75,201 @@ public class FastQualityControl extends WorkflowStep {
 		}
 
 		int referenceSamples = GenomicTools.getPanelSize(reference);
-		FastQCStatistics qcStatistics = new FastQCStatistics();
 
-		qcStatistics.setInput(inputFiles);
+		String[] vcfFilenames = FileUtil.getFiles(inputFiles, "*.vcf.gz$|*.vcf$");
 
-		qcStatistics.setChunkSize(chunkSize);
-		qcStatistics.setPhasingWindow(phasingWindow);
-		qcStatistics.setPopulation(population);
-		qcStatistics.setLegendFile(panel.getLegend());
-		qcStatistics.setRefSamples(referenceSamples);
+		Arrays.sort(vcfFilenames);
 
-		qcStatistics.setMafFile(mafFile);
-		qcStatistics.setChunkFileDir(chunkFileDir);
-		qcStatistics.setChunksDir(chunksDir);
-		qcStatistics.setStatDir(statDir);
+		LineWriter excludedSnpsWriter = null;
 
+		try {
+			excludedSnpsWriter = new LineWriter(FileUtil.path(statDir, "snps-excluded.txt"));
+			excludedSnpsWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
+		} catch (Exception e) {
+			context.error("Error creating file writer");
+			return false;
+		}
+
+		// check if liftover is needed
 		if (!buildGwas.equals(panel.getBuild())) {
 			context.warning("Uploaded data is " + buildGwas + " and reference is " + panel.getBuild() + ".");
 			String chainFile = store.getString(buildGwas + "To" + panel.getBuild());
 			if (chainFile == null) {
 				context.error("Currently we not support liftOver from " + buildGwas + " to " + panel.getBuild());
 				return false;
+			}
+
+			String fullPathChainFile = FileUtil.path(folder, chainFile);
+			if (!new File(fullPathChainFile).exists()) {
+				context.error("Chain file " + fullPathChainFile + " not found.");
+				return false;
+			}
+
+			LiftOverTask task = new LiftOverTask();
+			task.setVcfFilenames(vcfFilenames);
+			task.setChainFile(fullPathChainFile);
+			task.setChunksDir(chunksDir);
+			task.setExcludedSnpsWriter(excludedSnpsWriter);
+
+			TaskResults results = runTask(context, task);
+
+			if (results.isSuccess()) {
+				vcfFilenames = task.getNewVcfFilenames();
 			} else {
-				context.ok("We will perform liftOver for you.");
-				qcStatistics.setLiftOver(true);
-				String fullPathChainFile = FileUtil.path(folder, chainFile);
-				if (!new File(fullPathChainFile).exists()) {
-					context.error("Chain file " + fullPathChainFile + " not found.");
-					return false;
-				}
-				qcStatistics.setChainFile(fullPathChainFile);
+				return false;
 			}
+
 		}
 
-		context.beginTask("Calculating QC Statistics...");
+		// calculate statistics
 
-		QualityControlObject answer;
+		StatisticsTask task = new StatisticsTask();
+		task.setVcfFilenames(vcfFilenames);
+		task.setExcludedSnpsWriter(excludedSnpsWriter);
+		task.setChunkSize(chunkSize);
+		task.setPhasingWindow(phasingWindow);
+		task.setPopulation(population);
+		task.setLegendFile(panel.getLegend());
+		task.setRefSamples(referenceSamples);
+		task.setMafFile(mafFile);
+		task.setChunkFileDir(chunkFileDir);
+		task.setChunksDir(chunksDir);
+		task.setStatDir(statDir);
 
-		try {
+		TaskResults results = runTask(context, task);
 
-			answer = qcStatistics.run();
-
-		} catch (Exception e) {
-			StringWriter errors = new StringWriter();
-			e.printStackTrace(new PrintWriter(errors));
-			context.endTask(errors.toString(), WorkflowContext.ERROR);
+		if (!results.isSuccess()) {
 			return false;
+
 		}
 
-		if (answer.isSuccess()) {
+		DecimalFormat df = new DecimalFormat("#.00");
+		DecimalFormat formatter = new DecimalFormat("###,###.###");
 
-			context.endTask("QC executed successfully", WorkflowContext.OK);
+		StringBuffer text = new StringBuffer();
 
-			DecimalFormat df = new DecimalFormat("#.00");
-			DecimalFormat formatter = new DecimalFormat("###,###.###");
+		text.append("<b>Statistics:</b> <br>");
+		text.append(
+				"Alternative allele frequency > 0.5 sites: " + formatter.format(task.getAlternativeAlleles()) + "<br>");
+		text.append("Reference Overlap: "
+				+ df.format(
+						task.getFoundInLegend() / (double) (task.getFoundInLegend() + task.getNotFoundInLegend()) * 100)
+				+ " %" + "<br>");
 
-			StringBuffer text = new StringBuffer();
+		text.append("Match: " + formatter.format(task.getMatch()) + "<br>");
+		text.append("Allele switch: " + formatter.format(task.getAlleleSwitch()) + "<br>");
+		text.append("Strand flip: " + formatter.format(task.getStrandFlipSimple()) + "<br>");
+		text.append("Strand flip and allele switch: " + formatter.format(task.getStrandFlipAndAlleleSwitch()) + "<br>");
+		text.append("A/T, C/G genotypes: " + formatter.format(task.getComplicatedGenotypes()) + "<br>");
 
-			text.append("<b>Statistics:</b> <br>");
-			text.append("Alternative allele frequency > 0.5 sites: "
-					+ formatter.format(qcStatistics.getAlternativeAlleles()) + "<br>");
-			text.append("Reference Overlap: "
-					+ df.format(qcStatistics.getFoundInLegend()
-							/ (double) (qcStatistics.getFoundInLegend() + qcStatistics.getNotFoundInLegend()) * 100)
-					+ " %" + "<br>");
+		text.append("<b>Filtered sites:</b> <br>");
+		text.append("Filter flag set: " + formatter.format(task.getFilterFlag()) + "<br>");
+		text.append("Invalid alleles: " + formatter.format(task.getInvalidAlleles()) + "<br>");
+		text.append("Multiallelic sites: " + formatter.format(task.getMultiallelicSites()) + "<br>");
+		text.append("Duplicated sites: " + formatter.format(task.getDuplicates()) + "<br>");
+		text.append("NonSNP sites: " + formatter.format(task.getNoSnps()) + "<br>");
+		text.append("Monomorphic sites: " + formatter.format(task.getMonomorphic()) + "<br>");
+		text.append("Allele mismatch: " + formatter.format(task.getAlleleMismatch()) + "<br>");
+		text.append("SNPs call rate < 90%: " + formatter.format(task.getLowCallRate()));
 
-			text.append("Match: " + formatter.format(qcStatistics.getMatch()) + "<br>");
-			text.append("Allele switch: " + formatter.format(qcStatistics.getAlleleSwitch()) + "<br>");
-			text.append("Strand flip: " + formatter.format(qcStatistics.getStrandFlipSimple()) + "<br>");
-			text.append("Strand flip and allele switch: "
-					+ formatter.format(qcStatistics.getStrandFlipAndAlleleSwitch()) + "<br>");
-			text.append("A/T, C/G genotypes: " + formatter.format(qcStatistics.getComplicatedGenotypes()) + "<br>");
+		context.ok(text.toString());
 
-			text.append("<b>Filtered sites:</b> <br>");
-			text.append("Filter flag set: " + formatter.format(qcStatistics.getFilterFlag()) + "<br>");
-			text.append("Invalid alleles: " + formatter.format(qcStatistics.getInvalidAlleles()) + "<br>");
-			text.append("Multiallelic sites: " + formatter.format(qcStatistics.getMultiallelicSites()) + "<br>");
-			text.append("Duplicated sites: " + formatter.format(qcStatistics.getDuplicates()) + "<br>");
-			text.append("NonSNP sites: " + formatter.format(qcStatistics.getNoSnps()) + "<br>");
-			text.append("Monomorphic sites: " + formatter.format(qcStatistics.getMonomorphic()) + "<br>");
-			text.append("Allele mismatch: " + formatter.format(qcStatistics.getAlleleMismatch()) + "<br>");
-			text.append("SNPs call rate < 90%: " + formatter.format(qcStatistics.getLowCallRate()));
+		text = new StringBuffer();
 
-			context.ok(text.toString());
+		text.append("Excluded sites in total: " + formatter.format(task.getFiltered()) + "<br>");
+		text.append("Remaining sites in total: " + formatter.format(task.getOverallSnps()) + "<br>");
+		text.append("See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
 
-			text = new StringBuffer();
+		if (task.getRemovedChunksSnps() > 0) {
 
-			text.append("Excluded sites in total: " + formatter.format(qcStatistics.getFiltered()) + "<br>");
-			text.append("Remaining sites in total: " + formatter.format(qcStatistics.getOverallSnps()) + "<br>");
+			text.append("<br><b>Warning:</b> " + formatter.format(task.getRemovedChunksSnps())
+
+					+ " Chunk(s) excluded: < 3 SNPs (see "
+					+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + "  for details).");
+		}
+
+		if (task.getRemovedChunksCallRate() > 0) {
+
+			text.append("<br><b>Warning:</b> " + formatter.format(task.getRemovedChunksCallRate())
+
+					+ " Chunk(s) excluded: at least one sample has a call rate < 50% (see "
+					+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
+		}
+
+		if (task.getRemovedChunksOverlap() > 0) {
+
+			text.append("<br><b>Warning:</b> " + formatter.format(task.getRemovedChunksOverlap())
+
+					+ " Chunk(s) excluded: reference overlap < 50% (see "
+					+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
+		}
+
+		long excludedChunks = task.getRemovedChunksSnps() + task.getRemovedChunksCallRate()
+				+ task.getRemovedChunksOverlap();
+
+		long overallChunks = task.getOverallChunks();
+
+		if (excludedChunks > 0) {
+			text.append("<br>Remaining chunk(s): " + formatter.format(overallChunks - excludedChunks));
+
+		}
+
+		if (excludedChunks == overallChunks) {
+
+			text.append("<br><b>Error:</b> No chunks passed the QC step. Imputation cannot be started!");
+			context.error(text.toString());
+
+			return false;
+
+		}
+		// strand flips (normal flip & allele switch + strand flip)
+		else if (task.getStrandFlipSimple() + task.getStrandFlipAndAlleleSwitch() > 100) {
 			text.append(
-					"See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
+					"<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
+			context.error(text.toString());
 
-			if (qcStatistics.getRemovedChunksSnps() > 0) {
-
-				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksSnps())
-
-						+ " Chunk(s) excluded: < 3 SNPs (see "
-						+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + "  for details).");
-			}
-
-			if (qcStatistics.getRemovedChunksCallRate() > 0) {
-
-				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksCallRate())
-
-						+ " Chunk(s) excluded: at least one sample has a call rate < 50% (see "
-						+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
-			}
-
-			if (qcStatistics.getRemovedChunksOverlap() > 0) {
-
-				text.append("<br><b>Warning:</b> " + formatter.format(qcStatistics.getRemovedChunksOverlap())
-
-						+ " Chunk(s) excluded: reference overlap < 50% (see "
-						+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
-			}
-
-			long excludedChunks = qcStatistics.getRemovedChunksSnps() + qcStatistics.getRemovedChunksCallRate()
-					+ qcStatistics.getRemovedChunksOverlap();
-
-			long overallChunks = qcStatistics.getOverallChunks();
-
-			if (excludedChunks > 0) {
-				text.append("<br>Remaining chunk(s): " + formatter.format(overallChunks - excludedChunks));
-
-			}
-
-			if (excludedChunks == overallChunks) {
-
-				text.append("<br><b>Error:</b> No chunks passed the QC step. Imputation cannot be started!");
-				context.error(text.toString());
-
-				return false;
-
-			}
-			// strand flips (normal flip & allele switch + strand flip)
-			else if (qcStatistics.getStrandFlipSimple() + qcStatistics.getStrandFlipAndAlleleSwitch() > 100) {
-				text.append(
-						"<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
-				context.error(text.toString());
-
-				return false;
-			}
-
-			else {
-
-				text.append(answer.getMessage());
-				context.warning(text.toString());
-				return true;
-
-			}
-
-		} else {
-
-			context.endTask("QC failed!", WorkflowContext.ERROR);
-			context.error(answer.getMessage());
 			return false;
+		}
 
+		else {
+
+			text.append(results.getMessage());
+			context.warning(text.toString());
+			return true;
+
+		}
+
+	}
+
+	protected TaskResults runTask(WorkflowContext context, ITask task) {
+		context.beginTask("Running " + task.getName() + "...");
+		TaskResults results;
+		try {
+			results = task.run(new ITaskProgressListener() {
+
+				@Override
+				public void progress(String message) {
+					context.updateTask(message, WorkflowContext.RUNNING);
+
+				}
+			});
+
+			if (results.isSuccess()) {
+				context.endTask(task.getName(), WorkflowContext.OK);
+			} else {
+				context.endTask(task.getName() + "\n" + results.getMessage(), WorkflowContext.ERROR);
+			}
+			return results;
+		} catch (Exception e) {
+			e.printStackTrace();
+			TaskResults result = new TaskResults();
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			context.println("Task '" + task.getName() + "' failed.\nException:" + s.toString());
+			context.endTask(task.getName() + " failed.", WorkflowContext.ERROR);
+			return result;
 		}
 
 	}

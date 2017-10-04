@@ -23,8 +23,7 @@ public class FastQualityControlTest extends TestCase {
 	// Server and compared to checkVCF
 
 	public static final boolean VERBOSE = true;
-	
-	
+
 	public void testQcStatistics() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -34,7 +33,7 @@ public class FastQualityControlTest extends TestCase {
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 
 		// run and test
 		boolean result = run(context, qcStats);
@@ -60,7 +59,7 @@ public class FastQualityControlTest extends TestCase {
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 
 		// run and test
 		boolean result = run(context, qcStats);
@@ -82,7 +81,7 @@ public class FastQualityControlTest extends TestCase {
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 
 		// run and test
 		boolean result = run(context, qcStats);
@@ -105,11 +104,11 @@ public class FastQualityControlTest extends TestCase {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-		
+
 		String out = context.getOutput("statisticDir");
 
 		// create step instance
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 
 		// run and test
 		boolean result = run(context, qcStats);
@@ -145,7 +144,7 @@ public class FastQualityControlTest extends TestCase {
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 
 		// run and test
 		run(context, qcStats);
@@ -168,7 +167,7 @@ public class FastQualityControlTest extends TestCase {
 		String out = context.getOutput("chunksDir");
 
 		// create step instance
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 
 		// run and test
 		assertTrue(run(context, qcStats));
@@ -177,7 +176,7 @@ public class FastQualityControlTest extends TestCase {
 		Arrays.sort(files);
 
 		// baseline from a earlier job execution
-		int[] array = { 4588, 968, 3002, 5781, 5116, 4750, 5699, 5174, 6334, 3188,  5106, 5832, 5318 };
+		int[] array = { 4588, 968, 3002, 5781, 5116, 4750, 5699, 5174, 6334, 3188, 5106, 5832, 5318 };
 		int pos = 0;
 
 		for (File file : files) {
@@ -193,11 +192,11 @@ public class FastQualityControlTest extends TestCase {
 				vcfReader.close();
 				pos++;
 			}
-			
 
 		}
 		FileUtil.deleteDirectory(new File(out));
 	}
+
 	public void testCountAmountSplitsForSeveralContigs() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
@@ -209,7 +208,7 @@ public class FastQualityControlTest extends TestCase {
 		String out = context.getOutput("chunksDir");
 
 		// create step instance
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 
 		// run and test
 		run(context, qcStats);
@@ -227,11 +226,11 @@ public class FastQualityControlTest extends TestCase {
 
 		}
 		// https://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes
-		assertEquals(13+13+10, count);
-		
+		assertEquals(13 + 13 + 10, count);
+
 		FileUtil.deleteDirectory(new File(out));
 	}
-	
+
 	public void testCountLinesInChunkMetaFile() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -244,7 +243,7 @@ public class FastQualityControlTest extends TestCase {
 		String out = context.getOutput("chunkFileDir");
 
 		// create step instance
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 
 		// run and test
 		run(context, qcStats);
@@ -273,7 +272,7 @@ public class FastQualityControlTest extends TestCase {
 		String out = context.getOutput("chunksDir");
 
 		// create step instance
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 
 		// run and test
 		assertTrue(run(context, qcStats));
@@ -292,10 +291,10 @@ public class FastQualityControlTest extends TestCase {
 
 		FileUtil.deleteDirectory(new File(out));
 	}
-	
+
 	@Test
 	public void testchrXSetup() throws IOException, ZipException {
-		
+
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-unphased";
 
@@ -308,7 +307,7 @@ public class FastQualityControlTest extends TestCase {
 		WorkflowTestContext context = buildContext(inputFolder, "phase1");
 
 		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 		boolean result = run(context, qcStats);
 
 		assertTrue(result);
@@ -316,12 +315,12 @@ public class FastQualityControlTest extends TestCase {
 		FileUtil.deleteDirectory(file);
 
 	}
-	
-	class QcStatisticsMock extends FastQualityControl {
+
+	class FastQualityControlMock extends FastQualityControl {
 
 		private String folder;
 
-		public QcStatisticsMock(String folder) {
+		public FastQualityControlMock(String folder) {
 			super();
 			this.folder = folder;
 		}
@@ -331,7 +330,7 @@ public class FastQualityControlTest extends TestCase {
 			// override folder with static folder instead of jar location
 			return folder;
 		}
-		
+
 		@Override
 		protected void setupTabix(String folder) {
 			VcfFileUtil.setBinary("files/minimac/bin/tabix");

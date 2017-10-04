@@ -1,4 +1,4 @@
-package genepi.imputationserver.steps.fastqc;
+package genepi.imputationserver.steps.vcf;
 
 public class MinimalVariantContext {
 

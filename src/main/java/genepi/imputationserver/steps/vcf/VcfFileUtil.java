@@ -70,6 +70,7 @@ public class VcfFileUtil {
 					}
 
 					String chromosome = tiles[0];
+					chromosome = chromosome.replaceAll("chr", "");							
 					int position = Integer.parseInt(tiles[1]);
 
 					if (phased) {
@@ -209,6 +210,33 @@ public class VcfFileUtil {
 		validChromosomes.add("22");
 		validChromosomes.add("23");
 		validChromosomes.add("X");
+
+		validChromosomes.add("chr1");
+		validChromosomes.add("chr2");
+		validChromosomes.add("chr3");
+		validChromosomes.add("chr4");
+		validChromosomes.add("chr5");
+		validChromosomes.add("chr6");
+		validChromosomes.add("chr7");
+		validChromosomes.add("chr8");
+		validChromosomes.add("chr9");
+		validChromosomes.add("chr10");
+		validChromosomes.add("chr11");
+		validChromosomes.add("chr12");
+		validChromosomes.add("chr13");
+		validChromosomes.add("chr14");
+		validChromosomes.add("chr15");
+		validChromosomes.add("chr16");
+		validChromosomes.add("chr17");
+		validChromosomes.add("chr18");
+		validChromosomes.add("chr19");
+		validChromosomes.add("chr20");
+		validChromosomes.add("chr21");
+		validChromosomes.add("chr22");
+		validChromosomes.add("chr23");
+		validChromosomes.add("chrX");
+
+	
 	}
 
 	public static boolean isValidChromosome(String chromosome) {
@@ -216,7 +244,7 @@ public class VcfFileUtil {
 	}
 
 	public static boolean isChrX(String chromosome) {
-		return chromosome.equals("X") || chromosome.equals("23");
+		return chromosome.equals("X") || chromosome.equals("23") || chromosome.equals("chrX") || chromosome.equals("chr23");
 	}
 
 	public static void mergeGz(String local, String hdfs, String ext) throws FileNotFoundException, IOException {

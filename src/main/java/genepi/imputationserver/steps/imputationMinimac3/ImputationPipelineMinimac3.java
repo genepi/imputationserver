@@ -25,8 +25,6 @@ public class ImputationPipelineMinimac3 {
 	private String eagleCommand;
 	private String tabixCommand;
 	private String vcfCookerCommand;
-	private String vcf2HapCommand;
-	private String bgzipCommand;
 	private String refPanelFilename;
 	private int minimacWindow;
 	private int phasingWindow;
@@ -44,7 +42,6 @@ public class ImputationPipelineMinimac3 {
 	private String mapEagleFilename = "";
 
 	private String refEagleFilename = "";
-	private String refEaglePattern = "";
 
 	private String population;
 	private String phasing;
@@ -382,10 +379,11 @@ public class ImputationPipelineMinimac3 {
 		eagle.setSilent(false);
 
 		String phasedPrefix = ".eagle.phased";
-		
+
 		eagle.setParams("--vcfRef", reference, "--vcfTarget", output.getVcfFilename() + ".gz", "--geneticMapFile",
-				mapFilename, "--outPrefix", output.getPrefix()+ phasedPrefix, "--chrom", output.getChromosome(), "--bpStart",
-				start + "", "--bpEnd", end + "", "--allowRefAltSwap", "--vcfOutFormat", "z", "--outputUnphased");
+				mapFilename, "--outPrefix", output.getPrefix() + phasedPrefix, "--chrom", output.getChromosome(),
+				"--bpStart", start + "", "--bpEnd", end + "", "--allowRefAltSwap", "--vcfOutFormat", "z",
+				"--outputUnphased");
 		eagle.saveStdOut(output.getPrefix() + ".eagle.out");
 		eagle.saveStdErr(output.getPrefix() + ".eagle.err");
 		System.out.println("Command: " + eagle.getExecutedCommand());
@@ -394,7 +392,7 @@ public class ImputationPipelineMinimac3 {
 		}
 
 		// rename
-		new File(output.getPrefix()+ phasedPrefix + ".vcf.gz").renameTo(new File(output.getPhasedVcfFilename()));
+		new File(output.getPrefix() + phasedPrefix + ".vcf.gz").renameTo(new File(output.getPhasedVcfFilename()));
 
 		// haps to vcf
 		return true;
@@ -405,9 +403,9 @@ public class ImputationPipelineMinimac3 {
 		// mini-mac
 		Command minimac = new Command(minimacCommand);
 		minimac.setSilent(false);
-		
+
 		String format = "GT,DS,GP";
-		if(output.getChromosome().equals("X")){
+		if (output.getChromosome().equals("X")) {
 			format = "GT,DS,GP,HDS";
 		}
 
@@ -415,13 +413,15 @@ public class ImputationPipelineMinimac3 {
 
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
-					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", output.getChromosome(),
-					"--noPhoneHome", "--format", format, "--unphasedOutput", "--allTypedSites");
+					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", "chr" + output.getChromosome(),
+					"--noPhoneHome", "--format", format, "--unphasedOutput", "--allTypedSites", "--constantPara",
+					"1.9e-05", "--minRatio", "0.00001");
 		} else {
 			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
-					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", output.getChromosome(),
-					"--noPhoneHome", "--format", format, "--allTypedSites");
+					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", "chr" + output.getChromosome(),
+					"--noPhoneHome", "--format", format, "--allTypedSites", "--constantPara", "1.9e-05", "--minRatio",
+					"0.00001");
 		}
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
@@ -513,10 +513,6 @@ public class ImputationPipelineMinimac3 {
 		this.refEagleFilename = refEagleFilename;
 	}
 
-	public void setRefEaglePattern(String refEaglePattern) {
-		this.refEaglePattern = refEaglePattern;
-	}
-
 	public void setPhasing(String phasing) {
 		this.phasing = phasing;
 	}
@@ -537,10 +533,6 @@ public class ImputationPipelineMinimac3 {
 		this.vcfCookerCommand = vcfCookerCommand;
 	}
 
-	public void setVcf2HapCommand(String vcf2HapCommand) {
-		this.vcf2HapCommand = vcf2HapCommand;
-	}
-
 	public void setShapeItCommand(String shapeItCommand) {
 		this.shapeItCommand = shapeItCommand;
 	}
@@ -551,10 +543,6 @@ public class ImputationPipelineMinimac3 {
 
 	public void setEagleCommand(String eagleCommand) {
 		this.eagleCommand = eagleCommand;
-	}
-
-	public void setBgzipCommand(String bgzipCommand) {
-		this.bgzipCommand = bgzipCommand;
 	}
 
 	public void setPhasingWindow(int phasingWindow) {

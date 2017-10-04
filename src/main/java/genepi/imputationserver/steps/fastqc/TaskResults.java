@@ -1,9 +1,10 @@
-package genepi.imputationserver.util;
+package genepi.imputationserver.steps.fastqc;
 
-public class QualityControlObject {
+public class TaskResults {
 
-	boolean success;
-	String message;
+	private boolean success;
+
+	private String message;
 
 	public boolean isSuccess() {
 		return success;

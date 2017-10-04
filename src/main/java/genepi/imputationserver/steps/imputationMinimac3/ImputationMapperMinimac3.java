@@ -162,11 +162,9 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		pipeline.setMinimacCommand(minimacCommand);
 		pipeline.setHapiUrCommand(hapiUrCommand);
 		pipeline.setVcfCookerCommand(vcfCookerCommand);
-		pipeline.setVcf2HapCommand(vcf2HapCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
 		pipeline.setEagleCommand(eagleCommand);
 		pipeline.setTabixCommand(tabixCommand);
-		pipeline.setBgzipCommand(bgzipCommand);
 		pipeline.setHapiUrPreprocessCommand(hapiUrPreprocessCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 
@@ -206,7 +204,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			pipeline.setMapHapiURPattern(mapHapiURPattern);
 			pipeline.setMapEagleFilename(mapEagleFilename);
 			pipeline.setRefEagleFilename(refEagleFilename);
-			pipeline.setRefEaglePattern(refEaglePattern);
 			pipeline.setPhasing(phasing);
 			pipeline.setPopulation(population);
 

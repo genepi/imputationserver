@@ -3,7 +3,6 @@ package genepi.imputationserver.steps.fastqc;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,12 +10,12 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import genepi.imputationserver.steps.vcf.BGzipLineWriter;
+import genepi.imputationserver.steps.vcf.FastVCFFileReader;
+import genepi.imputationserver.steps.vcf.MinimalVariantContext;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
-import genepi.imputationserver.steps.vcf.VcfLiftOver;
 import genepi.imputationserver.util.GenomicTools;
-import genepi.imputationserver.util.QualityControlObject;
 import genepi.io.FileUtil;
 import genepi.io.legend.LegendEntry;
 import genepi.io.legend.LegendFileReader;
@@ -36,7 +35,7 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder.OutputTy
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
 
-public class FastQCStatistics {
+public class StatisticsTask implements ITask {
 
 	public static final String X_PAR1 = "X.PAR1";
 	public static final String X_PAR2 = "X.PAR2";
@@ -46,61 +45,60 @@ public class FastQCStatistics {
 	private static int MIN_SNPS = 3;
 	private static double OVERLAP = 0.5;
 
-	String chunkFileDir = "tmp";
-	String chunksDir = "tmp";
-	String statDir = "tmp";
-	String mafFile = "tmp/maf.txt";
+	private String chunkFileDir = "tmp";
+	private String chunksDir = "tmp";
+	private String statDir = "tmp";
+	private String mafFile = "tmp/maf.txt";
 
 	// input variables
-	String population;
-	int chunkSize;
-	int phasingWindow;
-	String input;
-	String legendFile;
-	int refSamples;
+	private String population;
+	private int chunkSize;
+	private int phasingWindow;
+	private String[] vcfFilenames;
+	private LineWriter excludedSnpsWriter;
+	private String legendFile;
+	private int refSamples;
 	private boolean liftOver;
-	private String chainFile;
 
 	// overall stats
-	int overallChunks;
-	int notFoundInLegend;
-	int foundInLegend;
-	int alleleMismatch;
-	int alleleSwitch;
-	int strandFlipSimple;
-	int complicatedGenotypes;
-	int strandFlipAndAlleleSwitch;
-	int match;
-	int lowCallRate;
-	int filtered;
-	int overallSnps;
-	int monomorphic;
-	int alternativeAlleles;
-	int noSnps;
-	int duplicates;
-	int filterFlag;
-	int invalidAlleles;
-	int multiallelicSites;
+	private int overallChunks;
+	private int notFoundInLegend;
+	private int foundInLegend;
+	private int alleleMismatch;
+	private int alleleSwitch;
+	private int strandFlipSimple;
+	private int complicatedGenotypes;
+	private int strandFlipAndAlleleSwitch;
+	private int match;
+	private int lowCallRate;
+	private int filtered;
+	private int overallSnps;
+	private int monomorphic;
+	private int alternativeAlleles;
+	private int noSnps;
+	private int duplicates;
+	private int filterFlag;
+	private int invalidAlleles;
+	private int multiallelicSites;
 
 	// chunk results
 	int removedChunksSnps;
 	int removedChunksOverlap;
 	int removedChunksCallRate;
 
-	public QualityControlObject run() throws IOException, InterruptedException {
+	@Override
+	public String getName() {
+		return "Calculating QC Statistics";
+	}
 
-		QualityControlObject qcObject = new QualityControlObject();
+	public TaskResults run(ITaskProgressListener progressListener) throws IOException, InterruptedException {
+
+		TaskResults qcObject = new TaskResults();
 
 		qcObject.setMessage("");
 
-		String[] vcfFilenames = FileUtil.getFiles(input, "*.vcf.gz$|*.vcf$");
-
 		// MAF file for QC report
 		LineWriter mafWriter = new LineWriter(mafFile);
-
-		// excluded SNPS
-		LineWriter excludedSnpsWriter = new LineWriter(FileUtil.path(statDir, "snps-excluded.txt"));
-		excludedSnpsWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
 
 		// excluded chunks
 		LineWriter excludedChunkWriter = new LineWriter(FileUtil.path(statDir, "chunks-excluded.txt"));
@@ -110,34 +108,16 @@ public class FastQCStatistics {
 		// chrX haploid samples
 		HashSet<String> hapSamples = new HashSet<String>();
 
-		Arrays.sort(vcfFilenames);
+		int i = 0;
+		for (String vcfFilename : vcfFilenames) {
 
-		String[] newVcfFilenames = null;
-
-		// liftover
-		if (liftOver) {
-			newVcfFilenames = new String[vcfFilenames.length];
-			for (int i = 0; i < vcfFilenames.length; i++) {
-				String filename = vcfFilenames[i];
-				String name = FileUtil.getFilename(filename);
-				String output = FileUtil.path(chunksDir, name + ".lifted.vcf.gz");
-				Vector<String> errors = VcfLiftOver.liftOver(filename, output, chainFile, chunksDir);
-				for (String error : errors) {
-					excludedSnpsWriter.write(error);
-				}
-				newVcfFilenames[i] = output;
+			i++;
+			if (progressListener != null) {
+				progressListener.progress(getName() + " [" + i + "/" + vcfFilenames.length + "]\n\n" + "Analyze file "
+						+ FileUtil.getFilename(vcfFilename) + "...");
 			}
-		} else {
-			newVcfFilenames = vcfFilenames;
-		}
-
-		for (String vcfFilename : newVcfFilenames) {
 
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
-
-			if (liftOver) {
-
-			}
 
 			String chromosome = myvcfFile.getChromosome();
 			boolean phased = myvcfFile.isPhased();
@@ -243,7 +223,7 @@ public class FastQCStatistics {
 			}
 
 			// load reference snp
-			LegendEntry refSnp = legendReader.findByPosition2(snp.getStart());
+			LegendEntry refSnp = legendReader.findByPosition(snp.getStart());
 
 			for (VcfChunk openChunk : chunks.values()) {
 				if (snp.getStart() <= openChunk.getEnd() + phasingWindow) {
@@ -788,10 +768,6 @@ public class FastQCStatistics {
 		this.chunkSize = chunkSize;
 	}
 
-	public void setInput(String input) {
-		this.input = input;
-	}
-
 	public void setPhasingWindow(int phasingWindow) {
 		this.phasingWindow = phasingWindow;
 	}
@@ -808,8 +784,12 @@ public class FastQCStatistics {
 		this.liftOver = liftOver;
 	}
 
-	public void setChainFile(String chainFile) {
-		this.chainFile = chainFile;
+	public void setVcfFilenames(String[] vcfFilenames) {
+		this.vcfFilenames = vcfFilenames;
+	}
+
+	public void setExcludedSnpsWriter(LineWriter excludedSnpsWriter) {
+		this.excludedSnpsWriter = excludedSnpsWriter;
 	}
 
 	public int getOverallSnps() {

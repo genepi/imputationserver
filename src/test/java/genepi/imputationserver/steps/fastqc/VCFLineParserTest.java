@@ -2,6 +2,8 @@ package genepi.imputationserver.steps.fastqc;
 
 import java.io.IOException;
 
+import genepi.imputationserver.steps.vcf.MinimalVariantContext;
+import genepi.imputationserver.steps.vcf.VCFLineParser;
 import junit.framework.TestCase;
 
 public class VCFLineParserTest extends TestCase {
