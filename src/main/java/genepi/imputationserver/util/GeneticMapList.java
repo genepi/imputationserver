@@ -10,7 +10,7 @@ import com.esotericsoftware.yamlbeans.YamlReader;
 
 public class GeneticMapList {
 
-	public static String FILENAME = "genetic-maps-m4.txt";
+	public static String FILENAME = "genetic-maps.txt";
 	
 	private List<GeneticMap> maps;
 

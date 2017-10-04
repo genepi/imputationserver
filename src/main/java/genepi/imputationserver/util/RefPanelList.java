@@ -14,7 +14,7 @@ import com.esotericsoftware.yamlbeans.YamlWriter;
 
 public class RefPanelList {
 
-	public static String FILENAME = "panels-m4.txt";
+	public static String FILENAME = "panels.txt";
 	
 	private List<RefPanel> panels;
 
