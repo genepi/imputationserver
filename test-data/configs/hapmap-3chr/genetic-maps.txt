@@ -1,7 +1,7 @@
 maps:
 
   - id: hapmap2
-    mapEagle: ref-panels/genetic_map_hg19_withX.txt.gz
+    mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.eagle
     refPatternEagle: hapmap_r22.chr$chr.CEU.hg19.recode.bcf
     mapShapeIT: ref-panels/genetic_map_b37.tar.gz
