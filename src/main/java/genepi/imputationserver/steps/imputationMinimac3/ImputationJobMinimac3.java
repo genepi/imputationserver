@@ -19,8 +19,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String REF_PANEL = "MINIMAC_REFPANEL";
 
-	public static final String REF_PANEL_PATTERN = "MINIMAC_REFPANEL_PATTERN";
-
 	public static final String REF_PANEL_HDFS = "MINIMAC_REFPANEL_HDFS";
 
 	public static final String MAP_SHAPEIT_HDFS = "MINIMAC_MAP_SHAPEIT_HDFS";
@@ -109,9 +107,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		distribute(FileUtil.path(folder, "bin"), DATA_FOLDER, cache);
 
 		// distributed refpanels
-
 		String name = FileUtil.getFilename(refPanelHdfs);
-
 		cache.addArchive(name, refPanelHdfs);
 
 		// add ShapeIT Map File to cache
@@ -212,10 +208,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public void setRefPanel(String refPanel) {
 		set(REF_PANEL, refPanel);
-	}
-
-	public void setRefPanelPattern(String refPanelPattern) {
-		set(REF_PANEL_PATTERN, refPanelPattern);
 	}
 
 	public void setRefPanelHdfs(String refPanelHdfs) {

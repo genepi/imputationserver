@@ -1,5 +1,13 @@
 package genepi.imputationserver.steps.imputationMinimac3;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
 import genepi.hadoop.CacheStore;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.ParameterStore;
@@ -10,26 +18,12 @@ import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.FileMerger.BgzipSplitOutputStream;
 import genepi.io.FileUtil;
-import genepi.io.text.LineReader;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.hadoop.fs.Hdfs;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
 
 public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, Text> {
 
 	private ImputationPipelineMinimac3 pipeline;
 
 	public String folder;
-
-	private String pattern;
 
 	private String population;
 
@@ -73,7 +67,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		// get parameters
 		ParameterStore parameters = new ParameterStore(context);
-		pattern = parameters.get(ImputationJobMinimac3.REF_PANEL_PATTERN);
 		mapShapeITPattern = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_PATTERN);
 		mapHapiURPattern = parameters.get(ImputationJobMinimac3.MAP_HAPIUR_PATTERN);
 		output = parameters.get(ImputationJobMinimac3.OUTPUT);
@@ -86,7 +79,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		String hdfsPathShapeITMap = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_HDFS);
 		String hdfsPathHapiURMap = parameters.get(ImputationJobMinimac3.MAP_HAPIUR_HDFS);
 		String hdfsPathMapEagle = parameters.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
-		String referencePanel = FileUtil.getFilename(hdfsPath);
 
 		String mapShapeIT = "";
 		String mapHapiUR = "";
@@ -106,7 +98,9 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
+		String referencePanel = FileUtil.getFilename(hdfsPath);
 		refFilename = cache.getArchive(referencePanel);
+		refFilename = FileUtil.path(refFilename, referencePanel);
 
 		mapShapeITFilename = cache.getArchive(mapShapeIT);
 		mapHapiURFilename = cache.getArchive(mapHapiUR);
@@ -124,11 +118,9 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		String hapiUrCommand = cache.getFile("hapi-ur");
 		String hapiUrPreprocessCommand = cache.getFile("insert-map.pl");
 		String vcfCookerCommand = cache.getFile("vcfCooker");
-		String vcf2HapCommand = cache.getFile("vcf2hap");
 		String shapeItCommand = cache.getFile("shapeit");
 		String eagleCommand = cache.getFile("eagle");
 		String tabixCommand = cache.getFile("tabix");
-		String bgzipCommand = cache.getFile("bgzip");
 
 		// create temp directory
 		PreferenceStore store = new PreferenceStore(context.getConfiguration());
@@ -201,7 +193,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
 
 			pipeline.setRefFilename(refFilename);
-			pipeline.setPattern(pattern);
 			pipeline.setMapShapeITPattern(mapShapeITPattern);
 			pipeline.setMapShapeITFilename(mapShapeITFilename);
 			pipeline.setMapHapiURFilename(mapHapiURFilename);

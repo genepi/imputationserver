@@ -14,8 +14,6 @@ import htsjdk.samtools.util.BlockCompressedOutputStream;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
-
 public class ImputationPipelineMinimac3 {
 
 	private String minimacCommand;
@@ -25,13 +23,11 @@ public class ImputationPipelineMinimac3 {
 	private String eagleCommand;
 	private String tabixCommand;
 	private String vcfCookerCommand;
-	private String refPanelFilename;
 	private int minimacWindow;
 	private int phasingWindow;
 	private int rounds;
 
 	private String refFilename;
-	private String pattern;
 
 	private String mapShapeITPattern;
 	private String mapShapeITFilename;
@@ -51,16 +47,10 @@ public class ImputationPipelineMinimac3 {
 
 		System.out.println("Starting pipeline for chunk " + chunk + " [Phased: " + chunk.isPhased() + "]...");
 
-		String chrFilename = pattern.replaceAll("\\$chr", chunk.getChromosome());
-
-		String refPanelFilename = FileUtil.path(refFilename, chrFilename);
-
-		if (!new File(refPanelFilename).exists()) {
-			System.out.println("ReferencePanel '" + refPanelFilename + "' not found.");
+		if (!new File(refFilename).exists()) {
+			System.out.println("ReferencePanel '" + refFilename + "' not found.");
 			return false;
 		}
-
-		setReferencePanel(refPanelFilename);
 
 		// replace X.nonpar / X.par with X needed by eagle and minimac
 		if (chunk.getChromosome().startsWith("X.")) {
@@ -136,7 +126,7 @@ public class ImputationPipelineMinimac3 {
 					// hapiur
 					time = System.currentTimeMillis();
 
-					chrFilename = mapHapiURPattern.replaceAll("\\$chr", chunk.getChromosome());
+					String chrFilename = mapHapiURPattern.replaceAll("\\$chr", chunk.getChromosome());
 					String mapfilePath = FileUtil.path(mapHapiURFilename, chrFilename);
 
 					if (!new File(mapfilePath).exists()) {
@@ -158,7 +148,7 @@ public class ImputationPipelineMinimac3 {
 
 					// shapeit
 
-					chrFilename = mapShapeITPattern.replaceAll("\\$chr", chunk.getChromosome());
+					String chrFilename = mapShapeITPattern.replaceAll("\\$chr", chunk.getChromosome());
 					String mapfilePath = FileUtil.path(mapShapeITFilename, chrFilename);
 
 					if (!new File(mapfilePath).exists()) {
@@ -411,25 +401,24 @@ public class ImputationPipelineMinimac3 {
 		}
 
 		String chr = "";
-		if (build.equals("hg38")){
+		if (build.equals("hg38")) {
 			chr = "chr" + output.getChromosome();
-		}else{
+		} else {
 			chr = output.getChromosome();
 		}
-		
+
 		if (phasing.equals("shapeit") && !output.isPhased()) {
 
-			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
+			minimac.setParams("--refHaps", refFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
 					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
-					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", chr,
-					"--noPhoneHome", "--format", format, "--unphasedOutput", "--allTypedSites", "--constantPara",
-					"1.9e-05", "--minRatio", "0.00001");
-		} else {
-			minimac.setParams("--refHaps", refPanelFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
-					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
-					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", chr,
-					"--noPhoneHome", "--format", format, "--allTypedSites", "--constantPara", "1.9e-05", "--minRatio",
+					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", chr, "--noPhoneHome", "--format",
+					format, "--unphasedOutput", "--allTypedSites", "--constantPara", "1.9e-05", "--minRatio",
 					"0.00001");
+		} else {
+			minimac.setParams("--refHaps", refFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
+					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
+					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", chr, "--noPhoneHome", "--format",
+					format, "--allTypedSites", "--constantPara", "1.9e-05", "--minRatio", "0.00001");
 		}
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
@@ -485,16 +474,8 @@ public class ImputationPipelineMinimac3 {
 		this.tabixCommand = tabixCommand;
 	}
 
-	public void setRefPanelFilename(String refPanelFilename) {
-		this.refPanelFilename = refPanelFilename;
-	}
-
 	public void setRefFilename(String refFilename) {
 		this.refFilename = refFilename;
-	}
-
-	public void setPattern(String pattern) {
-		this.pattern = pattern;
 	}
 
 	public void setMapShapeITPattern(String mapShapeITPattern) {
@@ -557,14 +538,10 @@ public class ImputationPipelineMinimac3 {
 		this.phasingWindow = phasingWindow;
 	}
 
-	public void setReferencePanel(String refPanelFilename) {
-		this.refPanelFilename = refPanelFilename;
-	}
-
 	public void setRounds(int rounds) {
 		this.rounds = rounds;
 	}
-	
+
 	public void setBuild(String build) {
 		this.build = build;
 	}

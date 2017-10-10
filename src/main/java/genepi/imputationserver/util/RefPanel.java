@@ -13,13 +13,9 @@ public class RefPanel {
 
 	private String id;
 
-	private String pattern;
-
 	private String hdfs;
 
 	private String legend;
-
-	private String legendPattern;
 
 	private String build = "hg19";
 	
@@ -73,14 +69,6 @@ public class RefPanel {
 		this.hdfs = hdfs;
 	}
 
-	public String getPattern() {
-		return pattern;
-	}
-
-	public void setPattern(String pattern) {
-		this.pattern = pattern;
-	}
-
 	public String getLegend() {
 		return legend;
 	}
@@ -89,14 +77,6 @@ public class RefPanel {
 		this.legend = legend;
 	}
 
-	public String getLegendPattern() {
-		return legendPattern;
-	}
-
-	public void setLegendPattern(String legendPattern) {
-		this.legendPattern = legendPattern;
-	}
-	
 	public void setBuild(String build) {
 		this.build = build;
 	}

@@ -109,10 +109,10 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		context.println("  Version: " + panel.getVersion());
 
 		// reference panel
-		if (!panel.existsReference()) {
+		/*if (!panel.existsReference()) {
 			context.error("Reference File '" + panel.getHdfs() + "' not found.");
 			return false;
-		}
+		}*/
 
 		// load maps
 		GeneticMapList maps = null;
@@ -179,8 +179,13 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 					}
 				};
 				job.setFolder(folder);
-				job.setRefPanelHdfs(panel.getHdfs());
-				job.setRefPanelPattern(panel.getPattern());
+
+				String hdfsFilenameChromosome = panel.getHdfs().replaceAll("\\$chr", chr);
+				if (!HdfsUtil.exists(hdfsFilenameChromosome)) {
+					throw new IOException("Minimac Reference Panel " + hdfsFilenameChromosome + " not found.");
+				}
+
+				job.setRefPanelHdfs(hdfsFilenameChromosome);
 				job.setChromosome(chr);
 				job.setBuild(panel.getBuild());
 
