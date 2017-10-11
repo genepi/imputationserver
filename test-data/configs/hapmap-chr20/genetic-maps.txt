@@ -6,5 +6,4 @@ maps:
     mapHapiUR: ref-panels/genetic_map_hapiur_b37.tar.gz
     mapPatternHapiUR: genetic_map_chr$chr_combined_hapiur_b37.txt
     mapEagle: ref-panels/genetic_map_hg19_withX.txt.gz
-    refEagle: ref-panels
-    refPatternEagle: hapmap_r22.chr$chr.CEU.hg19.recode.bcf
+    refEagle: ref-panels/hapmap_r22.chr$chr.CEU.hg19.recode.bcf

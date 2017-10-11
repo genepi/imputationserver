@@ -108,12 +108,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		context.println("  Legend: " + panel.getLegend());
 		context.println("  Version: " + panel.getVersion());
 
-		// reference panel
-		/*if (!panel.existsReference()) {
-			context.error("Reference File '" + panel.getHdfs() + "' not found.");
-			return false;
-		}*/
-
 		// load maps
 		GeneticMapList maps = null;
 		try {
@@ -181,13 +175,15 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setFolder(folder);
 
 				String hdfsFilenameChromosome = panel.getHdfs().replaceAll("\\$chr", chr);
-				if (!HdfsUtil.exists(hdfsFilenameChromosome)) {
-					throw new IOException("Minimac Reference Panel " + hdfsFilenameChromosome + " not found.");
-				}
-
 				job.setRefPanelHdfs(hdfsFilenameChromosome);
-				job.setChromosome(chr);
+				
 				job.setBuild(panel.getBuild());
+				if (panel.getMapMinimac() != null) {
+					context.println("Setting up minimac map file...");
+					job.setMapMinimac(panel.getMapMinimac());
+				} else {
+					context.println("Reference panel has no minimac map file.");
+				}
 
 				if (phasing.equals("shapeit")) {
 					// shapeit
@@ -203,8 +199,8 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 					// eagle
 					context.println("Setting up eagle reference and map files...");
 					job.setMapEagleHdfs(map.getMapEagle());
-					job.setRefEagleHdfs(map.getRefEagle());
-					job.setRefPatternEagle(map.getRefPatternEagle());
+					String refEadleFilenameChromosome = map.getRefEagle().replaceAll("\\$chr", chr);
+					job.setRefEagleHdfs(refEadleFilenameChromosome);
 				}
 
 				job.setInput(newChunkFile);

@@ -76,21 +76,13 @@ public class GeneticMap {
 		return refEagle;
 	}
 
-	public String getRefPatternEagle() {
-		return refPatternEagle;
-	}
-
-	public void setRefPatternEagle(String refPatternEagle) {
-		this.refPatternEagle = refPatternEagle;
-	}
-
 	public boolean checkEagle() {
 
 		if (mapEagle == null) {
 			return false;
 		}
 
-		return HdfsUtil.exists(mapEagle) && HdfsUtil.exists(refEagle);
+		return HdfsUtil.exists(mapEagle);
 
 	}
 

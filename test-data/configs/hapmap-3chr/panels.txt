@@ -2,4 +2,4 @@ panels:
    
   - id: hapmap2
     hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
-    legend:  test-data/configs/hapmap-3chr/ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
+    legend: test-data/configs/hapmap-3chr/ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz

@@ -37,6 +37,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 	private String refFilename = "";
 
+	private String mapMinimacFilename;
+
 	private String mapShapeITPattern;
 
 	private String mapHapiURPattern;
@@ -49,12 +51,10 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 	private String refEagleFilename = null;
 
-	private String refEaglePattern = "";
-
 	private String build = "hg19";
-	
-	private String indexFilename;
-	
+
+	private String refEagleIndexFilename;
+
 	private boolean debugging;
 
 	private Log log;
@@ -62,7 +62,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 	protected void setup(Context context) throws IOException, InterruptedException {
 
 		HdfsUtil.setDefaultConfiguration(context.getConfiguration());
-		
+
 		log = new Log(context);
 
 		// get parameters
@@ -76,42 +76,44 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		window = parameters.get(ImputationJobMinimac3.WINDOW);
 		build = parameters.get(ImputationJobMinimac3.BUILD);
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
+		String hdfsPathMinimacMap = parameters.get(ImputationJobMinimac3.MAP_MINIMAC);
 		String hdfsPathShapeITMap = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_HDFS);
 		String hdfsPathHapiURMap = parameters.get(ImputationJobMinimac3.MAP_HAPIUR_HDFS);
 		String hdfsPathMapEagle = parameters.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
-
-		String mapShapeIT = "";
-		String mapHapiUR = "";
-		String mapEagle = "";
-
-		if (hdfsPathShapeITMap != null) {
-			mapShapeIT = FileUtil.getFilename(hdfsPathShapeITMap);
-		}
-		if (hdfsPathHapiURMap != null) {
-			mapHapiUR = FileUtil.getFilename(hdfsPathHapiURMap);
-		}
-		if (hdfsPathMapEagle != null) {
-			mapEagle = FileUtil.getFilename(hdfsPathMapEagle);
-		}
+		String hdfsRefEagle = parameters.get(ImputationJobMinimac3.REF_PANEL_EAGLE_HDFS);
 
 		String minimacBin = parameters.get(ImputationJobMinimac3.MINIMAC_BIN);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
 		String referencePanel = FileUtil.getFilename(hdfsPath);
-		refFilename = cache.getArchive(referencePanel);
-		refFilename = FileUtil.path(refFilename, referencePanel);
+		refFilename = cache.getFile(referencePanel);
 
-		mapShapeITFilename = cache.getArchive(mapShapeIT);
-		mapHapiURFilename = cache.getArchive(mapHapiUR);
-		mapEagleFilename = cache.getFile(mapEagle);
+		if (hdfsPathMinimacMap != null) {
+			System.out.println("Minimac map file hdfs: " + hdfsPathMinimacMap);
+			String mapMinimac = FileUtil.getFilename(hdfsPathMinimacMap);
+			System.out.println("Name: " + mapMinimac);
+			mapMinimacFilename = cache.getFile(mapMinimac);
+			System.out.println("Minimac map file local: " + mapMinimacFilename);
 
-		refEaglePattern = parameters.get(ImputationJobMinimac3.REF_PANEL_EAGLE_PATTERN);
-		String chr = parameters.get(ImputationJobMinimac3.CHROMOSOME);
-		if (refEaglePattern != null){
-		String chrFilename = refEaglePattern.replaceAll("\\$chr", chr);
-		refEagleFilename = cache.getFile(FileUtil.getFilename(chrFilename));
-		indexFilename = cache.getFile(FileUtil.getFilename(chrFilename + ".csi"));
+		}else{
+			System.out.println("No minimac map file set.");
+		}
+		if (hdfsPathShapeITMap != null) {
+			String mapShapeIT = FileUtil.getFilename(hdfsPathShapeITMap);
+			mapShapeITFilename = cache.getArchive(mapShapeIT);
+		}
+		if (hdfsPathHapiURMap != null) {
+			String mapHapiUR = FileUtil.getFilename(hdfsPathHapiURMap);
+			mapHapiURFilename = cache.getArchive(mapHapiUR);
+		}
+		if (hdfsPathMapEagle != null) {
+			String mapEagle = FileUtil.getFilename(hdfsPathMapEagle);
+			mapEagleFilename = cache.getFile(mapEagle);
+		}
+		if (hdfsRefEagle != null) {
+			refEagleFilename = cache.getFile(FileUtil.getFilename(hdfsRefEagle));
+			refEagleIndexFilename = cache.getFile(FileUtil.getFilename(hdfsRefEagle + ".csi"));
 		}
 
 		String minimacCommand = cache.getFile(minimacBin);
@@ -127,19 +129,17 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		folder = store.getString("minimac.tmp");
 		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
 		boolean created = FileUtil.createDirectory(folder);
-		
-		if(!created){
+
+		if (!created) {
 			throw new IOException(store.getString("minimac.tmp") + " is not writable!");
 		}
 
 		// create symbolic link --> index file is in the same folder as data
 		if (refEagleFilename != null) {
-			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf")),
-					Paths.get(refEagleFilename));
-			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref_" + chr + ".bcf.csi")),
-					Paths.get(indexFilename));
+			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref.bcf")), Paths.get(refEagleFilename));
+			Files.createSymbolicLink(Paths.get(FileUtil.path(folder, "ref.bcf.csi")), Paths.get(refEagleIndexFilename));
 			// update reference path to symbolic link
-			refEagleFilename = FileUtil.path(folder, "ref_" + chr + ".bcf");
+			refEagleFilename = FileUtil.path(folder, "ref.bcf");
 		}
 
 		// read debugging flag
@@ -193,6 +193,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			HdfsUtil.get(chunk.getVcfFilename(), outputChunk.getVcfFilename());
 
 			pipeline.setRefFilename(refFilename);
+			pipeline.setMapMinimac(mapMinimacFilename);
 			pipeline.setMapShapeITPattern(mapShapeITPattern);
 			pipeline.setMapShapeITFilename(mapShapeITFilename);
 			pipeline.setMapHapiURFilename(mapHapiURFilename);

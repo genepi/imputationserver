@@ -13,6 +13,8 @@ import htsjdk.samtools.util.BlockCompressedOutputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Vector;
 
 public class ImputationPipelineMinimac3 {
 
@@ -29,6 +31,8 @@ public class ImputationPipelineMinimac3 {
 
 	private String refFilename;
 
+	private String mapMinimac;
+
 	private String mapShapeITPattern;
 	private String mapShapeITFilename;
 
@@ -36,7 +40,6 @@ public class ImputationPipelineMinimac3 {
 	private String mapHapiURPattern;
 
 	private String mapEagleFilename = "";
-
 	private String refEagleFilename = "";
 
 	private String population;
@@ -407,19 +410,40 @@ public class ImputationPipelineMinimac3 {
 			chr = output.getChromosome();
 		}
 
+		List<String> params = new Vector<String>();
+		params.add("--refHaps");
+		params.add(refFilename);
+		params.add("--haps");
+		params.add(output.getPhasedVcfFilename());
+		params.add("--rounds");
+		params.add(rounds + "");
+		params.add("--start");
+		params.add(output.getStart() + "");
+		params.add("--end");
+		params.add(output.getEnd() + "");
+		params.add("--window");
+		params.add(minimacWindow + "");
+		params.add("--prefix");
+		params.add(output.getPrefix());
+		params.add("--chr");
+		params.add(chr);
+		params.add("--noPhoneHome");
+		params.add("--format");
+		params.add(format);
 		if (phasing.equals("shapeit") && !output.isPhased()) {
-
-			minimac.setParams("--refHaps", refFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
-					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
-					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", chr, "--noPhoneHome", "--format",
-					format, "--unphasedOutput", "--allTypedSites", "--constantPara", "1.9e-05", "--minRatio",
-					"0.00001");
-		} else {
-			minimac.setParams("--refHaps", refFilename, "--haps", output.getPhasedVcfFilename(), "--rounds",
-					rounds + "", "--start", output.getStart() + "", "--end", output.getEnd() + "", "--window",
-					minimacWindow + "", "--prefix", output.getPrefix(), "--chr", chr, "--noPhoneHome", "--format",
-					format, "--allTypedSites", "--constantPara", "1.9e-05", "--minRatio", "0.00001");
+			params.add("--unphasedOutput");
 		}
+		params.add("--allTypedSites");
+		params.add("--constantPara");
+		params.add("1.9e-05");
+		params.add("--minRatio");
+		params.add("0.00001");
+		if (mapMinimac != null) {
+			params.add("--map");
+			params.add(mapMinimac);
+		}
+
+		minimac.setParams(params);
 
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
@@ -476,6 +500,10 @@ public class ImputationPipelineMinimac3 {
 
 	public void setRefFilename(String refFilename) {
 		this.refFilename = refFilename;
+	}
+
+	public void setMapMinimac(String mapMinimac) {
+		this.mapMinimac = mapMinimac;
 	}
 
 	public void setMapShapeITPattern(String mapShapeITPattern) {

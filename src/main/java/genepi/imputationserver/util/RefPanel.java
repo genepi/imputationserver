@@ -17,8 +17,10 @@ public class RefPanel {
 
 	private String legend;
 
+	private String mapMinimac;
+
 	private String build = "hg19";
-	
+
 	public String getId() {
 		return id;
 	}
@@ -35,32 +37,10 @@ public class RefPanel {
 
 		FileStatus status;
 		try {
-			status = FileSystem.get(HdfsUtil.getConfiguration()).getFileStatus(
-					new Path(hdfs));
-			return new Date(status.getModificationTime()).toString() + " ("
-					+ status.getLen() + " Bytes)";
+			status = FileSystem.get(HdfsUtil.getConfiguration()).getFileStatus(new Path(hdfs));
+			return new Date(status.getModificationTime()).toString() + " (" + status.getLen() + " Bytes)";
 		} catch (IOException e) {
 			return "??";
-		}
-
-	}
-
-	public boolean existsReference() {
-
-		try {
-			return FileSystem.get(HdfsUtil.getConfiguration()).exists(new Path(hdfs));
-		} catch (IOException e) {
-			return false;
-		}
-
-	}
-	
-	public boolean existsLegend() {
-
-		try {
-			return FileSystem.get(HdfsUtil.getConfiguration()).exists(new Path(hdfs));
-		} catch (IOException e) {
-			return false;
 		}
 
 	}
@@ -80,9 +60,17 @@ public class RefPanel {
 	public void setBuild(String build) {
 		this.build = build;
 	}
-	
+
 	public String getBuild() {
 		return build;
+	}
+
+	public void setMapMinimac(String mapMinimac) {
+		this.mapMinimac = mapMinimac;
+	}
+
+	public String getMapMinimac() {
+		return mapMinimac;
 	}
 
 }

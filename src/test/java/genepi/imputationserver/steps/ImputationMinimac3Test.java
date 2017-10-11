@@ -65,6 +65,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -162,6 +163,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -217,6 +219,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -291,6 +294,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -314,7 +318,7 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL  + ONLY_IN_INPUT, file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -342,7 +346,6 @@ public class ImputationMinimac3Test {
 
 	}
 
-	
 	@Test
 	public void testPipelineWithShapeIt() throws IOException, ZipException {
 
@@ -365,6 +368,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -416,6 +420,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -475,6 +480,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -523,6 +529,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -551,7 +558,7 @@ public class ImputationMinimac3Test {
 		FileUtil.deleteDirectory(file);
 
 	}
-	
+
 	@Test
 	public void testchr23PipelinePhased() throws IOException, ZipException {
 
@@ -574,6 +581,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -602,12 +610,13 @@ public class ImputationMinimac3Test {
 		FileUtil.deleteDirectory(file);
 
 	}
-	
+
 	@Test
 	public void testchrXLeaveOneOutPipelinePhased() throws IOException, ZipException {
 
 		// SNP 26963697 from input excluded and imputed!
-		//true genotypes: 1,1|1,1|1,1|1,1,1|1,1,1|1,1|1,1,0,1|1,1|0,1,1,1,1,1,1|1,1,1|1,1|1,1|1,1|1,1|1,1|0,
+		// true genotypes:
+		// 1,1|1,1|1,1|1,1,1|1,1,1|1,1|1,1,0,1|1,1|0,1,1,1,1,1,1|1,1,1|1,1|1,1|1,1|1,1|1,1|0,
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-phased-loo";
@@ -628,6 +637,7 @@ public class ImputationMinimac3Test {
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/minimac/bin");
 
 		// run imputation
@@ -647,7 +657,7 @@ public class ImputationMinimac3Test {
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.nonPAR.dose.vcf.gz", 100000000, false);
-		
+
 		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFile.getVcfFilename()), true);
 
 		CloseableIterator<VariantContext> it = vcfReader.iterator();
@@ -655,14 +665,15 @@ public class ImputationMinimac3Test {
 		while (it.hasNext()) {
 
 			VariantContext line = it.next();
-			
-			if(line.getStart() == 26963697){
-				assertEquals(2,line.getHetCount());
-				assertEquals(1,line.getHomRefCount());
-				assertEquals(23,line.getHomVarCount());
 
-			}}
-		
+			if (line.getStart() == 26963697) {
+				assertEquals(2, line.getHetCount());
+				assertEquals(1, line.getHomRefCount());
+				assertEquals(23, line.getHomVarCount());
+
+			}
+		}
+
 		vcfReader.close();
 
 		FileUtil.deleteDirectory(file);
@@ -723,9 +734,16 @@ public class ImputationMinimac3Test {
 		context.setLocalTemp("local-temp");
 		FileUtil.deleteDirectory("local-temp");
 		FileUtil.createDirectory("local-temp");
-		
+
 		return context;
 
+	}
+
+	private void importMinimacMap2(String file) {
+		System.out.println("Import Minimac Map");
+		String target = HdfsUtil.path("meta", FileUtil.getFilename(file));
+		System.out.println("  Import " + file + " to " + target);
+		HdfsUtil.put(file, target);
 	}
 
 	private void importRefPanel(String folder) {
@@ -801,7 +819,7 @@ public class ImputationMinimac3Test {
 		protected void setupTabix(String folder) {
 			VcfFileUtil.setBinary("files/minimac/bin/tabix");
 		}
-		
+
 	}
 
 	class InputValidationMock extends InputValidation {
@@ -818,8 +836,7 @@ public class ImputationMinimac3Test {
 			// override folder with static folder instead of jar location
 			return folder;
 		}
-		
-		
+
 		@Override
 		protected void setupTabix(String folder) {
 			VcfFileUtil.setBinary("files/minimac/bin/tabix");

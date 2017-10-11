@@ -31,9 +31,9 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String REF_PANEL_EAGLE_HDFS = "MINIMAC_REFPANEL_EAGLE_HDFS";
 
-	public static final String REF_PANEL_EAGLE_PATTERN = "MINIMAC_REFPANEL_EAGLE_PATTERN";
-
 	public static final String MAP_EAGLE_HDFS = "MINIMAC_MAP_EAGLE_HDFS";
+
+	public static final String MAP_MINIMAC = "MINIMAC_MAP";
 
 	public static final String POPULATION = "MINIMAC_USES_POP";
 
@@ -46,8 +46,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public static final String WINDOW = "MINIMAC_WINDOW";
 
 	public static final String MINIMAC_BIN = "MINIMAC_BIN";
-
-	public static final String CHROMOSOME = "MINIMAC_CHROMOSOME";
 
 	public static final String BUILD = "MINIMAC_BUILD";
 
@@ -63,6 +61,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private boolean noCache = false;
 
+	private String mapMinimac;
+
 	private String mapShapeITHDFS;
 
 	private String mapHapiURHDFS;
@@ -70,10 +70,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	private String mapEagleHDFS;
 
 	private String refPanelEagleHDFS;
-
-	private String refPanelEaglePattern;
-
-	private String chr;
 
 	public ImputationJobMinimac3(String name, Log log, String queue) {
 		super(name, log);
@@ -107,14 +103,26 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		distribute(FileUtil.path(folder, "bin"), DATA_FOLDER, cache);
 
 		// distributed refpanels
-		String name = FileUtil.getFilename(refPanelHdfs);
-		cache.addArchive(name, refPanelHdfs);
+		if (HdfsUtil.exists(refPanelHdfs)) {
+			cache.addFile(refPanelHdfs);
+		} else {
+			throw new IOException("Minimac reference panel " + refPanelHdfs + " not found.");
+		}
+
+		// add minimac map file to cache
+		if (mapMinimac != null) {
+			if (HdfsUtil.exists(mapMinimac)) {
+				cache.addFile(mapMinimac);
+			} else {
+				throw new IOException("Minimac map file " + mapMinimac + " not found.");
+			}
+		}
 
 		// add ShapeIT Map File to cache
 
 		if (phasing.equals("shapeit") && mapShapeITHDFS != null) {
 			if (HdfsUtil.exists(mapShapeITHDFS)) {
-				name = FileUtil.getFilename(mapShapeITHDFS);
+				String name = FileUtil.getFilename(mapShapeITHDFS);
 				cache.addArchive(name, mapShapeITHDFS);
 			} else {
 				throw new IOException("Map " + mapShapeITHDFS + " not found.");
@@ -124,7 +132,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		// add HapiUR Map File to cache
 		if (phasing.equals("hapiur") && mapHapiURHDFS != null) {
 			if (HdfsUtil.exists(mapHapiURHDFS)) {
-				name = FileUtil.getFilename(mapHapiURHDFS);
+				String name = FileUtil.getFilename(mapHapiURHDFS);
 				cache.addArchive(name, mapHapiURHDFS);
 			} else {
 				throw new IOException("Map " + mapHapiURHDFS + " not found.");
@@ -134,7 +142,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		// add Eagle Map File to cache
 		if (phasing.equals("eagle") && mapEagleHDFS != null) {
 			if (HdfsUtil.exists(mapEagleHDFS)) {
-				name = FileUtil.getFilename(mapEagleHDFS);
 				cache.addFile(mapEagleHDFS);
 			} else {
 				throw new IOException("Map " + mapEagleHDFS + " not found.");
@@ -143,17 +150,11 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 		// add Eagle Refpanel File for this chromosome to cache
 		if (phasing.equals("eagle") && refPanelEagleHDFS != null) {
-			if (HdfsUtil.exists(refPanelEagleHDFS)) {
-				String chrFilename = refPanelEaglePattern.replaceAll("\\$chr", chr);
-				String refFilePath = HdfsUtil.path(refPanelEagleHDFS, chrFilename);
-				if (!HdfsUtil.exists(refFilePath)) {
-					throw new IOException("Eagle Reference Panel " + refFilePath + " not found.");
-				}
-				cache.addFile(refFilePath);
-				cache.addFile(refFilePath + ".csi");
-			} else {
-				throw new IOException("Eagle Reference Panel Folder " + refPanelEagleHDFS + " not found.");
+			if (!HdfsUtil.exists(refPanelEagleHDFS)) {
+				throw new IOException("Eagle Reference Panel " + refPanelEagleHDFS + " not found.");
 			}
+			cache.addFile(refPanelEagleHDFS);
+			cache.addFile(refPanelEagleHDFS + ".csi");
 		}
 
 	}
@@ -267,19 +268,14 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		set(MAP_EAGLE_HDFS, mapHdfs);
 	}
 
+	public void setMapMinimac(String mapMinimac) {
+		this.mapMinimac = mapMinimac;
+		set(MAP_MINIMAC, mapMinimac);
+	}
+
 	public void setRefEagleHdfs(String refPanelHdfs) {
 		this.refPanelEagleHDFS = refPanelHdfs;
 		set(REF_PANEL_EAGLE_HDFS, refPanelHdfs);
-	}
-
-	public void setRefPatternEagle(String refPanelPattern) {
-		this.refPanelEaglePattern = refPanelPattern;
-		set(REF_PANEL_EAGLE_PATTERN, refPanelPattern);
-	}
-
-	public void setChromosome(String chr) {
-		this.chr = chr;
-		set(CHROMOSOME, chr);
 	}
 
 	public void setBuild(String build) {
