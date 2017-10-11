@@ -13,8 +13,6 @@ import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.steps.vcf.VcfChunk;
-import genepi.imputationserver.util.GeneticMap;
-import genepi.imputationserver.util.GeneticMapList;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -108,33 +106,17 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		context.println("  Legend: " + panel.getLegend());
 		context.println("  Version: " + panel.getVersion());
 
-		// load maps
-		GeneticMapList maps = null;
-		try {
-			maps = GeneticMapList.loadFromFile(FileUtil.path(folder, GeneticMapList.FILENAME));
-		} catch (Exception e) {
-			context.error("File " + GeneticMapList.FILENAME + " not found." + e);
+		if (phasing.equals("hapiur") && !panel.checkHapiUR()) {
+			context.error("Map HapiUR  '" + panel.getMapHapiUR() + "' not found.");
 			return false;
 		}
 
-		// check gentics maps for refpanel
-		GeneticMap map = maps.getById(reference);
-		if (map == null) {
-			context.error("genetic map '" + reference + "'not found.");
+		if (phasing.equals("shapeit") && !panel.checkShapeIT()) {
+			context.error("Map ShapeIT  '" + panel.getMapShapeIT() + "' not found.");
 			return false;
 		}
 
-		if (phasing.equals("hapiur") && !map.checkHapiUR()) {
-			context.error("Map HapiUR  '" + map.getMapHapiUR() + "' not found.");
-			return false;
-		}
-
-		if (phasing.equals("shapeit") && !map.checkShapeIT()) {
-			context.error("Map ShapeIT  '" + map.getMapShapeIT() + "' not found.");
-			return false;
-		}
-
-		if (phasing.equals("eagle") && !map.checkEagle()) {
+		if (phasing.equals("eagle") && !panel.checkEagle()) {
 			context.error("Eagle reference files not found.");
 			return false;
 		}
@@ -176,7 +158,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				String hdfsFilenameChromosome = panel.getHdfs().replaceAll("\\$chr", chr);
 				job.setRefPanelHdfs(hdfsFilenameChromosome);
-				
+
 				job.setBuild(panel.getBuild());
 				if (panel.getMapMinimac() != null) {
 					context.println("Setting up minimac map file...");
@@ -188,18 +170,18 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				if (phasing.equals("shapeit")) {
 					// shapeit
 					context.println("Setting up shapeit map files...");
-					job.setMapShapeITHdfs(map.getMapShapeIT());
-					job.setMapShapeITPattern(map.getMapPatternShapeIT());
+					job.setMapShapeITHdfs(panel.getMapShapeIT());
+					job.setMapShapeITPattern(panel.getMapPatternShapeIT());
 				} else if (phasing.equals("hapiur")) {
 					// hapiUR
 					context.println("Setting up hapiur map files...");
-					job.setMapHapiURHdfs(map.getMapHapiUR());
-					job.setMapHapiURPattern(map.getMapPatternHapiUR());
+					job.setMapHapiURHdfs(panel.getMapHapiUR());
+					job.setMapHapiURPattern(panel.getMapPatternHapiUR());
 				} else if (phasing.equals("eagle")) {
 					// eagle
 					context.println("Setting up eagle reference and map files...");
-					job.setMapEagleHdfs(map.getMapEagle());
-					String refEadleFilenameChromosome = map.getRefEagle().replaceAll("\\$chr", chr);
+					job.setMapEagleHdfs(panel.getMapEagle());
+					String refEadleFilenameChromosome = panel.getRefEagle().replaceAll("\\$chr", chr);
 					job.setRefEagleHdfs(refEadleFilenameChromosome);
 				}
 

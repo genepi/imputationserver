@@ -18,8 +18,6 @@ import genepi.hadoop.importer.ImporterFactory;
 import genepi.imputationserver.steps.converter.VCFBuilder;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
-import genepi.imputationserver.util.GeneticMap;
-import genepi.imputationserver.util.GeneticMapList;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -291,40 +289,18 @@ public class InputValidation extends WorkflowStep {
 			return false;
 		}
 
-		// load maps from config file
-		GeneticMapList maps = null;
-		try {
-			maps = GeneticMapList.loadFromFile(FileUtil.path(folder, GeneticMapList.FILENAME));
-		} catch (Exception e) {
-			context.error("File " + GeneticMapList.FILENAME + " not found." + e);
-			return false;
-		}
-
-		// check if map exisits
-		GeneticMap map = maps.getById(reference);
-		if (map == null) {
-			StringBuilder report = new StringBuilder();
-			report.append("Genetic map '" + reference + "' not found.\n");
-			report.append("Available geneitc map IDs:");
-			for (GeneticMap m : maps.getMaps()) {
-				report.append("\n - " + m.getId());
-			}
-			context.error(report.toString());
-			return false;
-		}
-
 		// check if reference panel supports selected phasing algorithm
-		if (phasing.equals("hapiur") && map.getMapHapiUR() == null) {
+		if (phasing.equals("hapiur") && panel.getMapHapiUR() == null) {
 			context.error("Reference panel " + reference + " doesn't support phasing with HapiUR.");
 			return false;
 		}
 
-		if (phasing.equals("shapeit") && map.getMapShapeIT() == null) {
+		if (phasing.equals("shapeit") && panel.getMapShapeIT() == null) {
 			context.error("Reference panel " + reference + " doesn't support phasing with ShapeIt.");
 			return false;
 		}
 
-		if (phasing.equals("eagle") && map.getMapEagle() == null) {
+		if (phasing.equals("eagle") && panel.getMapEagle() == null) {
 			context.error("Reference panel " + reference + " doesn't support phasing with Eagle.");
 			return false;
 		}

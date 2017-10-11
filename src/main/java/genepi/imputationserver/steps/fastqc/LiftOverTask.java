@@ -36,7 +36,10 @@ public class LiftOverTask implements ITask {
 			}
 			String name = FileUtil.getFilename(filename);
 			String output = FileUtil.path(chunksDir, name + ".lifted.vcf.gz");
-			Vector<String> errors = VcfLiftOver.liftOver(filename, output, chainFile, chunksDir);
+			String temp = FileUtil.path(chunksDir, "vcf.sorte");
+			FileUtil.createDirectory(temp);
+			Vector<String> errors = VcfLiftOver.liftOver(filename, output, chainFile, temp);
+			FileUtil.deleteDirectory(temp);
 			for (String error : errors) {
 				excludedSnpsWriter.write(error);
 			}

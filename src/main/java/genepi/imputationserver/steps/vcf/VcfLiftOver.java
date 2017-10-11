@@ -8,6 +8,8 @@ import java.util.Vector;
 
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.liftover.LiftOver;
 import htsjdk.samtools.util.Interval;
 import htsjdk.samtools.util.SortingCollection;
@@ -21,7 +23,7 @@ import htsjdk.variant.vcf.VCFRecordCodec;
 
 public class VcfLiftOver {
 
-	private static final int MAX_RECORDS_IN_RAM = 500000;
+	private static final int MAX_RECORDS_IN_RAM = 1000;
 
 	public static Vector<String> liftOver(String input, String output, String chainFile, String tempDir)
 			throws IOException {
@@ -76,28 +78,42 @@ public class VcfLiftOver {
 		for (final VariantContext variantContext : readerVcf) {
 			sorter.add(variantContext);
 		}
-
+		sorter.doneAdding();
+		
+		SAMSequenceDictionary d= readerVcf.getFileHeader().getSequenceDictionary();
+		if (d != null){
+		for (String contig: contigs){
+		d.addSequence(new SAMSequenceRecord(contig));
+		}
+		}
+		
 		// write from sorter to file
 		final EnumSet<Options> options = EnumSet.of(Options.INDEX_ON_THE_FLY);
 		final VariantContextWriter out = new VariantContextWriterBuilder()
-				.setReferenceDictionary(readerVcf.getFileHeader().getSequenceDictionary()).setOptions(options)
+				.setReferenceDictionary(d).setOptions(options).modifyOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER, true)
 				.setOutputFile(output).build();
 		out.writeHeader(readerVcf.getFileHeader());
+		readerVcf.close();
+
 		for (final VariantContext variantContext : sorter) {
 			out.add(variantContext);
 		}
 		out.close();
-		readerVcf.close();
+		sorter.cleanup();
 		FileUtil.deleteFile(outputUnsorted);
 
 		return errors;
 	}
 
 	public static void main(String[] args) throws IOException {
-		String input = "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.vcf.gz";
-		String output = "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.hg38.vcf.gz";
+		//String input = "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.vcf.gz";
+		//String output = "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.hg38.vcf.gz";
+
+		String input = "/home/lukas/git/imputationserver-public2/test-data/data/big/chr1-wrayner-filtered-reheader.vcf.gz";
+		String output = "lf.hg38.vcf.gz";
+
 		String chainFile = "files/minimac/hg19ToHg38.over.chain.gz";
-		VcfLiftOver.liftOver(input, output, chainFile, "");
+		VcfLiftOver.liftOver(input, output, chainFile, "./temp");
 
 		VcfFileUtil.load(output, 1000000, false);
 	}

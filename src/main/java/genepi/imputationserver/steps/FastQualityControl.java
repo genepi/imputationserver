@@ -270,6 +270,16 @@ public class FastQualityControl extends WorkflowStep {
 			context.println("Task '" + task.getName() + "' failed.\nException:" + s.toString());
 			context.endTask(task.getName() + " failed.", WorkflowContext.ERROR);
 			return result;
+		} catch (Error e) {
+			e.printStackTrace();
+			TaskResults result = new TaskResults();
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			context.println("Task '" + task.getName() + "' failed.\nException:" + s.toString());
+			context.endTask(task.getName() + " failed.", WorkflowContext.ERROR);
+			return result;
 		}
 
 	}

@@ -21,6 +21,18 @@ public class RefPanel {
 
 	private String build = "hg19";
 
+	private String mapPatternShapeIT;
+
+	private String mapPatternHapiUR;
+
+	private String mapShapeIT;
+
+	private String mapHapiUR;
+
+	private String mapEagle;
+
+	private String refEagle;
+
 	public String getId() {
 		return id;
 	}
@@ -71,6 +83,84 @@ public class RefPanel {
 
 	public String getMapMinimac() {
 		return mapMinimac;
+	}
+
+	public String getMapPatternShapeIT() {
+		return mapPatternShapeIT;
+	}
+
+	public void setMapPatternShapeIT(String mapPatternShapeIT) {
+		this.mapPatternShapeIT = mapPatternShapeIT;
+	}
+
+	public String getMapPatternHapiUR() {
+		return mapPatternHapiUR;
+	}
+
+	public void setMapPatternHapiUR(String mapPatternHapiUR) {
+		this.mapPatternHapiUR = mapPatternHapiUR;
+	}
+
+	public String getMapShapeIT() {
+		return mapShapeIT;
+	}
+
+	public void setMapShapeIT(String mapShapeIT) {
+		this.mapShapeIT = mapShapeIT;
+	}
+
+	public String getMapHapiUR() {
+		return mapHapiUR;
+	}
+
+	public void setMapHapiUR(String mapHapiUR) {
+		this.mapHapiUR = mapHapiUR;
+	}
+
+	public void setMapEagle(String mapEagle) {
+		this.mapEagle = mapEagle;
+	}
+
+	public String getMapEagle() {
+		return mapEagle;
+	}
+
+	public void setRefEagle(String refEagle) {
+		this.refEagle = refEagle;
+	}
+
+	public String getRefEagle() {
+		return refEagle;
+	}
+
+	public boolean checkEagle() {
+
+		if (mapEagle == null) {
+			return false;
+		}
+
+		return HdfsUtil.exists(mapEagle);
+
+	}
+
+	public boolean checkHapiUR() {
+
+		if (mapHapiUR == null) {
+			return false;
+		}
+
+		return HdfsUtil.exists(mapHapiUR);
+
+	}
+
+	public boolean checkShapeIT() {
+
+		if (mapShapeIT == null) {
+			return false;
+		}
+
+		return HdfsUtil.exists(mapShapeIT);
+
 	}
 
 }

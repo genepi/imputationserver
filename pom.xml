@@ -76,6 +76,9 @@
 									<include>commons-cli:commons-cli:*:*</include>
 									<include>commons-lang:commons-lang:*:*</include>
 									<include>com.esotericsoftware.yamlbeans:yamlbeans:*:*</include>
+									<include>org.xerial.snappy:snappy-java:*:*</include>
+									<include>org.xerial:xerial-core:*:*</include>
+									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
 								</includes>
 							</artifactSet>
 
