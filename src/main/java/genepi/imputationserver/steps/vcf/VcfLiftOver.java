@@ -68,7 +68,7 @@ public class VcfLiftOver {
 		// fake contigs
 		List<String> contigs = new Vector<String>();
 		for (int i = 1; i <= 22; i++) {
-			contigs.add("chr" +  i + "");
+			contigs.add("chr" + i + "");
 		}
 
 		// read from file and add to sorter
@@ -79,19 +79,18 @@ public class VcfLiftOver {
 			sorter.add(variantContext);
 		}
 		sorter.doneAdding();
-		
-		SAMSequenceDictionary d= readerVcf.getFileHeader().getSequenceDictionary();
-		if (d != null){
-		for (String contig: contigs){
-		d.addSequence(new SAMSequenceRecord(contig));
+
+		SAMSequenceDictionary d = readerVcf.getFileHeader().getSequenceDictionary();
+		if (d != null) {
+			for (String contig : contigs) {
+				d.addSequence(new SAMSequenceRecord(contig));
+			}
 		}
-		}
-		
+
 		// write from sorter to file
 		final EnumSet<Options> options = EnumSet.of(Options.INDEX_ON_THE_FLY);
-		final VariantContextWriter out = new VariantContextWriterBuilder()
-				.setReferenceDictionary(d).setOptions(options).modifyOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER, true)
-				.setOutputFile(output).build();
+		final VariantContextWriter out = new VariantContextWriterBuilder().setReferenceDictionary(d).setOptions(options)
+				.modifyOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER, true).setOutputFile(output).build();
 		out.writeHeader(readerVcf.getFileHeader());
 		readerVcf.close();
 
@@ -106,16 +105,34 @@ public class VcfLiftOver {
 	}
 
 	public static void main(String[] args) throws IOException {
-		//String input = "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.vcf.gz";
-		//String output = "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.hg38.vcf.gz";
+		// String input =
+		// "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.vcf.gz";
+		// String output =
+		// "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.hg38.vcf.gz";
 
 		String input = "/home/lukas/git/imputationserver-public2/test-data/data/big/chr1-wrayner-filtered-reheader.vcf.gz";
 		String output = "lf.hg38.vcf.gz";
 
 		String chainFile = "files/minimac/hg19ToHg38.over.chain.gz";
-		VcfLiftOver.liftOver(input, output, chainFile, "./temp");
+		long start = System.currentTimeMillis();
+		List<String> errors = VcfLiftOver.liftOver(input, output, chainFile, "./temp");
+		long end = System.currentTimeMillis();
+		VcfFile fileInput = VcfFileUtil.load(input, 1000000, false);
+		VcfFile fileOutput = VcfFileUtil.load(output, 1000000, false);
 
-		VcfFileUtil.load(output, 1000000, false);
+		if (fileInput.getNoSamples() == fileOutput.getNoSamples()) {
+			System.out.println("Samples are okey");
+		} else {
+			System.out.println("Different Samples: " + fileInput.getNoSamples() + " vs. " + fileOutput.getNoSamples());
+		}
+		if (fileInput.getNoSnps() == fileOutput.getNoSnps() + errors.size()) {
+			System.out.println("Snps are okey");
+		} else {
+			System.out.println("Different snps: " + fileInput.getNoSnps() + " vs. " + fileOutput.getNoSnps()
+					+ " (not lifted: " + errors.size() + ")");
+		}
+
+		System.out.println("LiftOver time: " + (end - start) / 1000 + " sec");
 	}
 
 }
