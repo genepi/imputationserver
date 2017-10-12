@@ -132,7 +132,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				String[] tiles = chunkFile.split("/");
 				String chr = tiles[tiles.length - 1];
 
-				String newChunkFile = convertChunkfile(chunkFile, context.getHdfsTemp());
+				ChunkFileConverterResult result = convertChunkfile(chunkFile, context.getHdfsTemp());
 
 				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobId() + "-chr-" + chr,
 						new ContextLog(context), queue) {
@@ -156,7 +156,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				};
 				job.setFolder(folder);
 
-				String hdfsFilenameChromosome = panel.getHdfs().replaceAll("\\$chr", chr);
+				String hdfsFilenameChromosome = resolvePattern(panel.getHdfs(), chr);
 				job.setRefPanelHdfs(hdfsFilenameChromosome);
 
 				job.setBuild(panel.getBuild());
@@ -167,29 +167,35 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 					context.println("Reference panel has no minimac map file.");
 				}
 
-				if (phasing.equals("shapeit")) {
-					// shapeit
-					context.println("Setting up shapeit map files...");
-					job.setMapShapeITHdfs(panel.getMapShapeIT());
-					job.setMapShapeITPattern(panel.getMapPatternShapeIT());
-				} else if (phasing.equals("hapiur")) {
-					// hapiUR
-					context.println("Setting up hapiur map files...");
-					job.setMapHapiURHdfs(panel.getMapHapiUR());
-					job.setMapHapiURPattern(panel.getMapPatternHapiUR());
-				} else if (phasing.equals("eagle")) {
-					// eagle
-					context.println("Setting up eagle reference and map files...");
-					job.setMapEagleHdfs(panel.getMapEagle());
-					String refEadleFilenameChromosome = panel.getRefEagle().replaceAll("\\$chr", chr);
-					job.setRefEagleHdfs(refEadleFilenameChromosome);
+				if (result.needsPhasing) {
+					context.println("Input data is unphased.");
+					if (phasing.equals("shapeit")) {
+						// shapeit
+						context.println("  Setting up shapeit map files...");
+						job.setMapShapeITHdfs(panel.getMapShapeIT());
+						job.setMapShapeITPattern(panel.getMapPatternShapeIT());
+					} else if (phasing.equals("hapiur")) {
+						// hapiUR
+						context.println("  Setting up hapiur map files...");
+						job.setMapHapiURHdfs(panel.getMapHapiUR());
+						job.setMapHapiURPattern(panel.getMapPatternHapiUR());
+					} else if (phasing.equals("eagle")) {
+						// eagle
+						context.println("  Setting up eagle reference and map files...");
+						job.setMapEagleHdfs(panel.getMapEagle());
+						String refEadleFilenameChromosome = resolvePattern(panel.getRefEagle(), chr);
+						job.setRefEagleHdfs(refEadleFilenameChromosome);
+					}
+					job.setPhasing(phasing);
+
+				} else {
+					context.println("Input data is phased.");
 				}
 
-				job.setInput(newChunkFile);
+				job.setInput(result.filename);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
-				job.setPhasing(phasing);
 				job.setPopulation(population);
 				job.setRounds(rounds);
 				job.setWindow(window);
@@ -413,7 +419,13 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	}
 
-	private String convertChunkfile(String chunkFile, String output) throws IOException {
+	class ChunkFileConverterResult {
+		public String filename;
+
+		public boolean needsPhasing;
+	}
+
+	private ChunkFileConverterResult convertChunkfile(String chunkFile, String output) throws IOException {
 
 		String name = FileUtil.getFilename(chunkFile);
 		String newChunkFile = HdfsUtil.path(output, name);
@@ -421,8 +433,12 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		LineReader reader = new LineReader(chunkFile);
 		HdfsLineWriter writer = new HdfsLineWriter(newChunkFile);
 
+		boolean phased = true;
+
 		while (reader.next()) {
 			VcfChunk chunk = new VcfChunk(reader.get());
+
+			phased = phased && chunk.isPhased();
 
 			// put vcf file
 			String sourceVcf = chunk.getVcfFilename();
@@ -441,7 +457,15 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		reader.close();
 		writer.close();
 
-		return newChunkFile;
+		ChunkFileConverterResult result = new ChunkFileConverterResult();
+		result.filename = newChunkFile;
+		result.needsPhasing = !phased;
+		return result;
+
+	}
+
+	private String resolvePattern(String pattern, String chr) {
+		return pattern.replaceAll("\\$chr", chr);
 	}
 
 }

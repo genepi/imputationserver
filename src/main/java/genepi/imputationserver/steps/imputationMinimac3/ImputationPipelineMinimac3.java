@@ -430,7 +430,7 @@ public class ImputationPipelineMinimac3 {
 		params.add("--noPhoneHome");
 		params.add("--format");
 		params.add(format);
-		if (phasing.equals("shapeit") && !output.isPhased()) {
+		if (phasing != null && phasing.equals("shapeit") && !output.isPhased()) {
 			params.add("--unphasedOutput");
 		}
 		params.add("--allTypedSites");

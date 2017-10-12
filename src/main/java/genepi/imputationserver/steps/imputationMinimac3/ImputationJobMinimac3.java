@@ -104,57 +104,70 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 		// distributed refpanels
 		if (HdfsUtil.exists(refPanelHdfs)) {
+			log.info("Add Minimac reference panel  " + refPanelHdfs + " to distributed cache...");
 			cache.addFile(refPanelHdfs);
 		} else {
+			log.error("Minimac reference panel " + refPanelHdfs + " not found.");
 			throw new IOException("Minimac reference panel " + refPanelHdfs + " not found.");
 		}
 
 		// add minimac map file to cache
 		if (mapMinimac != null) {
 			if (HdfsUtil.exists(mapMinimac)) {
+				log.info("Add Minimac map file " + mapMinimac + " to distributed cache...");
 				cache.addFile(mapMinimac);
 			} else {
+				log.error("Minimac map file " + mapMinimac + " not found.");
 				throw new IOException("Minimac map file " + mapMinimac + " not found.");
 			}
 		}
 
-		// add ShapeIT Map File to cache
-
-		if (phasing.equals("shapeit") && mapShapeITHDFS != null) {
-			if (HdfsUtil.exists(mapShapeITHDFS)) {
-				String name = FileUtil.getFilename(mapShapeITHDFS);
-				cache.addArchive(name, mapShapeITHDFS);
-			} else {
-				throw new IOException("Map " + mapShapeITHDFS + " not found.");
+		// check if phasing
+		if (phasing != null) {
+			// add ShapeIT Map File to cache
+			if (phasing.equals("shapeit") && mapShapeITHDFS != null) {
+				if (HdfsUtil.exists(mapShapeITHDFS)) {
+					String name = FileUtil.getFilename(mapShapeITHDFS);
+					log.info("Add ShapeIT map  " + mapShapeITHDFS + " to distributed cache...");
+					cache.addArchive(name, mapShapeITHDFS);
+				} else {
+					throw new IOException("ShapeIT map " + mapShapeITHDFS + " not found.");
+				}
 			}
-		}
 
-		// add HapiUR Map File to cache
-		if (phasing.equals("hapiur") && mapHapiURHDFS != null) {
-			if (HdfsUtil.exists(mapHapiURHDFS)) {
-				String name = FileUtil.getFilename(mapHapiURHDFS);
-				cache.addArchive(name, mapHapiURHDFS);
-			} else {
-				throw new IOException("Map " + mapHapiURHDFS + " not found.");
+			// add HapiUR Map File to cache
+			if (phasing.equals("hapiur") && mapHapiURHDFS != null) {
+				if (HdfsUtil.exists(mapHapiURHDFS)) {
+					String name = FileUtil.getFilename(mapHapiURHDFS);
+					log.info("Add HapiUR map  " + mapHapiURHDFS + " to distributed cache...");
+					cache.addArchive(name, mapHapiURHDFS);
+				} else {
+					throw new IOException("HapiUR Map " + mapHapiURHDFS + " not found.");
+				}
 			}
-		}
 
-		// add Eagle Map File to cache
-		if (phasing.equals("eagle") && mapEagleHDFS != null) {
-			if (HdfsUtil.exists(mapEagleHDFS)) {
-				cache.addFile(mapEagleHDFS);
-			} else {
-				throw new IOException("Map " + mapEagleHDFS + " not found.");
+			// add Eagle Map File to cache
+			if (phasing.equals("eagle") && mapEagleHDFS != null) {
+				if (HdfsUtil.exists(mapEagleHDFS)) {
+					log.info("Add Eagle map  " + mapEagleHDFS + " to distributed cache...");
+					cache.addFile(mapEagleHDFS);
+				} else {
+					throw new IOException("Map " + mapEagleHDFS + " not found.");
+				}
 			}
-		}
 
-		// add Eagle Refpanel File for this chromosome to cache
-		if (phasing.equals("eagle") && refPanelEagleHDFS != null) {
-			if (!HdfsUtil.exists(refPanelEagleHDFS)) {
-				throw new IOException("Eagle Reference Panel " + refPanelEagleHDFS + " not found.");
+			// add Eagle Refpanel File for this chromosome to cache
+			if (phasing.equals("eagle") && refPanelEagleHDFS != null) {
+				if (!HdfsUtil.exists(refPanelEagleHDFS)) {
+					throw new IOException("Eagle Reference Panel " + refPanelEagleHDFS + " not found.");
+				}
+				log.info("Add Eagle reference  " + refPanelEagleHDFS + " do distributed cache...");
+				cache.addFile(refPanelEagleHDFS);
+				log.info("Add Eagle reference  index " + refPanelEagleHDFS + ".csi to distributed cache...");
+				cache.addFile(refPanelEagleHDFS + ".csi");
 			}
-			cache.addFile(refPanelEagleHDFS);
-			cache.addFile(refPanelEagleHDFS + ".csi");
+		} else {
+			log.info("No map files added to distributed cache. Input data is phased.");
 		}
 
 	}
@@ -280,10 +293,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public void setBuild(String build) {
 		set(BUILD, build);
-	}
-
-	public String getPhasing() {
-		return phasing;
 	}
 
 }
