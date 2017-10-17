@@ -28,7 +28,7 @@ public class VcfFileUtil {
 
 	public static String TABIX_PATH = "bin/";
 
-	public static void setBinary(String binaries) {
+	public static void setTabixBinary(String binaries) {
 		TABIX_PATH = binaries;
 	}
 	
@@ -319,6 +319,18 @@ public class VcfFileUtil {
 
 	}
 	
+	public static void createIndex(String vcfFilename, boolean force) throws IOException{
+		if (force){
+			if (new File(vcfFilename + ".tbi").exists()){
+				new File(vcfFilename + ".tbi").delete();
+			}
+		}
+		if (!new File(vcfFilename + ".tbi").exists()) {
+			createIndex(vcfFilename);
+		}
+	}
+
+
 	public static void createIndex(String vcfFilename) throws IOException{
 		Command tabix = new Command(TABIX_PATH);
 		tabix.setParams("-f", "-p", "vcf", vcfFilename);

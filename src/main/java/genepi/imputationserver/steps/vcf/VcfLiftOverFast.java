@@ -26,7 +26,7 @@ public class VcfLiftOverFast {
 		Vector<String> errors = new Vector<String>();
 
 		SortingCollection<VcfLine> sorter = VcfLineSortingCollection.newInstance(MAX_RECORDS_IN_RAM, tempDir);
-		
+
 		BGzipLineWriter writer = new BGzipLineWriter(output);
 		while (reader.next()) {
 			String line = reader.get();
@@ -63,8 +63,9 @@ public class VcfLiftOverFast {
 		writer.close();
 		sorter.cleanup();
 
-		// todo: create tabix index!
-		
+		// create tabix index
+		VcfFileUtil.createIndex(output, true);
+
 		return errors;
 	}
 
@@ -74,7 +75,7 @@ public class VcfLiftOverFast {
 		// String output =
 		// "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.hg38.vcf.gz";
 
-		
+		VcfFileUtil.setTabixBinary("files/minimac/bin/tabix");
 		
 		String input = "/home/lukas/git/imputationserver-public2/test-data/data/big/chr1-wrayner-filtered-reheader.vcf.gz";
 		String output = "lf.hg38.vcf.gz";
@@ -85,18 +86,19 @@ public class VcfLiftOverFast {
 		long end = System.currentTimeMillis();
 		VcfFile fileInput = VcfFileUtil.load(input, 1000000, false);
 		VcfFile fileOutput = VcfFileUtil.load(output, 1000000, false);
-		
-		if (fileInput.getNoSamples() == fileOutput.getNoSamples()){
+
+		if (fileInput.getNoSamples() == fileOutput.getNoSamples()) {
 			System.out.println("Samples are okey");
-		}else{
+		} else {
 			System.out.println("Different Samples: " + fileInput.getNoSamples() + " vs. " + fileOutput.getNoSamples());
 		}
-		if (fileInput.getNoSnps() == fileOutput.getNoSnps() + errors.size()){
+		if (fileInput.getNoSnps() == fileOutput.getNoSnps() + errors.size()) {
 			System.out.println("Snps are okey");
-		}else{
-			System.out.println("Different snps: " + fileInput.getNoSnps() + " vs. " + fileOutput.getNoSnps() + " (not lifted: " + errors.size() + ")");
+		} else {
+			System.out.println("Different snps: " + fileInput.getNoSnps() + " vs. " + fileOutput.getNoSnps()
+					+ " (not lifted: " + errors.size() + ")");
 		}
-		
+
 		System.out.println("LiftOver time: " + (end - start) / 1000 + " sec");
 
 	}

@@ -24,7 +24,7 @@ import genepi.io.text.LineWriter;
 public class FastQualityControl extends WorkflowStep {
 
 	protected void setupTabix(String folder) {
-		VcfFileUtil.setBinary(FileUtil.path(folder, "bin", "tabix"));
+		VcfFileUtil.setTabixBinary(FileUtil.path(folder, "bin", "tabix"));
 	}
 
 	@Override

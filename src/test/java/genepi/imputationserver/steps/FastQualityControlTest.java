@@ -333,7 +333,7 @@ public class FastQualityControlTest extends TestCase {
 
 		@Override
 		protected void setupTabix(String folder) {
-			VcfFileUtil.setBinary("files/minimac/bin/tabix");
+			VcfFileUtil.setTabixBinary("files/minimac/bin/tabix");
 		}
 
 	}

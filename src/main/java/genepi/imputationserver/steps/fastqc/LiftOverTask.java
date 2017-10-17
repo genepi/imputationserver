@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Vector;
 
 import genepi.imputationserver.steps.vcf.VcfLiftOver;
+import genepi.imputationserver.steps.vcf.VcfLiftOverFast;
 import genepi.io.FileUtil;
 import genepi.io.text.LineWriter;
 
@@ -38,7 +39,7 @@ public class LiftOverTask implements ITask {
 			String output = FileUtil.path(chunksDir, name + ".lifted.vcf.gz");
 			String temp = FileUtil.path(chunksDir, "vcf.sorte");
 			FileUtil.createDirectory(temp);
-			Vector<String> errors = VcfLiftOver.liftOver(filename, output, chainFile, temp);
+			Vector<String> errors = VcfLiftOverFast.liftOver(filename, output, chainFile, temp);
 			FileUtil.deleteDirectory(temp);
 			for (String error : errors) {
 				excludedSnpsWriter.write(error);

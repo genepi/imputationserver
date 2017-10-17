@@ -817,7 +817,7 @@ public class ImputationMinimac3Test {
 
 		@Override
 		protected void setupTabix(String folder) {
-			VcfFileUtil.setBinary("files/minimac/bin/tabix");
+			VcfFileUtil.setTabixBinary("files/minimac/bin/tabix");
 		}
 
 	}
@@ -839,7 +839,7 @@ public class ImputationMinimac3Test {
 
 		@Override
 		protected void setupTabix(String folder) {
-			VcfFileUtil.setBinary("files/minimac/bin/tabix");
+			VcfFileUtil.setTabixBinary("files/minimac/bin/tabix");
 		}
 
 	}
