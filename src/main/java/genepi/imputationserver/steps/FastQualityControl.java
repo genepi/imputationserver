@@ -241,7 +241,7 @@ public class FastQualityControl extends WorkflowStep {
 
 	}
 
-	protected TaskResults runTask(WorkflowContext context, ITask task) {
+	protected TaskResults runTask(final WorkflowContext context, ITask task) {
 		context.beginTask("Running " + task.getName() + "...");
 		TaskResults results;
 		try {
