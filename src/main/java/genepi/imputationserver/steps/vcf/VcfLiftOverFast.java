@@ -40,7 +40,7 @@ public class VcfLiftOverFast {
 				Interval target = liftOver.liftOver(source);
 				if (target != null) {
 					if (source.getContig().equals(target.getContig())) {
-						vcfLine.setContig("chr" + target.getContig());
+						vcfLine.setContig(target.getContig());
 						vcfLine.setPosition(target.getStart());
 						sorter.add(vcfLine);
 					} else {

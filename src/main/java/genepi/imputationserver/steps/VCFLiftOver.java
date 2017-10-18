@@ -8,6 +8,7 @@ import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.fastqc.TaskResults;
 import genepi.imputationserver.steps.vcf.VcfLiftOver;
+import genepi.imputationserver.steps.vcf.VcfLiftOverFast;
 import genepi.io.FileUtil;
 
 public class VCFLiftOver extends WorkflowStep {
@@ -33,7 +34,7 @@ public class VCFLiftOver extends WorkflowStep {
 				String output = FileUtil.path(outputFolder, name);
 				context.updateTask("Analyze file " + name + "...", WorkflowContext.RUNNING);
 
-				VcfLiftOver.liftOver(input, output, FileUtil.path(workingDirectory, chain), context.getLocalTemp());
+				VcfLiftOverFast.liftOver(input, output, FileUtil.path(workingDirectory, chain), context.getLocalTemp());
 			}
 			context.endTask(vcfFilenames.length + " VCF file(s) analyzed.", WorkflowContext.OK);
 
