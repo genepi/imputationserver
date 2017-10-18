@@ -35,7 +35,13 @@ public class VcfLiftOverFast {
 			} else {
 
 				VcfLine vcfLine = new VcfLine(line);
-				Interval source = new Interval("chr" + vcfLine.getContig(), vcfLine.getPosition(),
+				String contig = "";
+				if (vcfLine.getContig().startsWith("chr")){
+					contig = vcfLine.getContig();
+				}else{
+					contig = "chr" + vcfLine.getContig();					
+				}
+				Interval source = new Interval(contig, vcfLine.getPosition(),
 						vcfLine.getPosition() + 1, false, vcfLine.getContig() + ":" + vcfLine.getPosition());
 				Interval target = liftOver.liftOver(source);
 				if (target != null) {
