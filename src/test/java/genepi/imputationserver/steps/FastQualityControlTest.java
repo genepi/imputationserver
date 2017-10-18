@@ -293,6 +293,32 @@ public class FastQualityControlTest extends TestCase {
 	}
 
 	@Test
+	public void testMonomorphicSnps() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder1 = "test-data/data/chr20-phased-1sample";
+		String inputFolder50 = "test-data/data/chr20-phased";
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder1, "hapmap2");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Monomorphic sites: 0"));
+
+		context = buildContext(inputFolder50, "hapmap2");
+		result = run(context, qcStats);
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Monomorphic sites: 11"));
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
 	public void testchrXSetup() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
@@ -311,6 +337,16 @@ public class FastQualityControlTest extends TestCase {
 		boolean result = run(context, qcStats);
 
 		assertTrue(result);
+
+		String out = context.getOutput("chunksDir");
+		int count = 0;
+		for (File file2 : new File(out).listFiles()) {
+			if (file2.getName().endsWith("vcf.gz")) {
+				count++;
+			}
+		}
+
+		assertEquals(13, count);
 
 		FileUtil.deleteDirectory(file);
 
