@@ -120,12 +120,11 @@ public class StatisticsTask implements ITask {
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
 			String chromosome = myvcfFile.getChromosome();
-			boolean phased = myvcfFile.isPhased();
 
 			if (VcfFileUtil.isChrX(chromosome)) {
 
 				// split to par and non.par
-				List<String> splits = prepareChrX(vcfFilename, phased, hapSamples);
+				List<String> splits = prepareChrX(chromosome, myvcfFile.isPhased(), hapSamples);
 
 				for (String split : splits) {
 					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
@@ -133,12 +132,12 @@ public class StatisticsTask implements ITask {
 					_myvcfFile.setChrX(true);
 
 					// chrX
-					processFile(_myvcfFile.getVcfFilename(), chromosome, chunkSize, phased, mafWriter,
+					processFile(_myvcfFile, mafWriter,
 							excludedSnpsWriter, excludedChunkWriter);
 				}
 			} else {
 				// chr1-22
-				processFile(vcfFilename, chromosome, chunkSize, phased, mafWriter, excludedSnpsWriter,
+				processFile(myvcfFile, mafWriter, excludedSnpsWriter,
 						excludedChunkWriter);
 
 			}
@@ -169,31 +168,34 @@ public class StatisticsTask implements ITask {
 
 	}
 
-	public void processFile(String filename, String chromosome, int chunkSize, boolean phased, LineWriter mafWriter,
+	public void processFile(VcfFile myvcfFile, LineWriter mafWriter,
 			LineWriter excludedSnpsWriter, LineWriter excludedChunkWriter) throws IOException, InterruptedException {
 
 		Map<Integer, VcfChunk> chunks = new ConcurrentHashMap<Integer, VcfChunk>();
 
+		String filename = myvcfFile.getVcfFilename();
+		
 		FastVCFFileReader vcfReader = new FastVCFFileReader(filename);
 		List<String> header = vcfReader.getFileHeader();
 
-		String _contig = chromosome;
+		String contig = myvcfFile.getChromosome();
 
 		// set X region in filename
-		if (VcfFileUtil.isChrX(chromosome)) {
-			_contig = X_NON_PAR;
+		if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
+			contig = X_NON_PAR;
 			if (filename.contains(X_PAR1)) {
-				_contig = X_PAR1;
+				contig = X_PAR1;
 			} else if (filename.contains(X_PAR2)) {
-				_contig = X_PAR2;
+				contig = X_PAR2;
 			}
 		}
 
-		LineWriter metafileWriter = new LineWriter(FileUtil.path(chunkFileDir, _contig));
-		LegendFileReader legendReader = getReader(chromosome);
+		LineWriter metafileWriter = new LineWriter(FileUtil.path(chunkFileDir, contig));
+		LegendFileReader legendReader = getReader(myvcfFile.getChromosome());
 
+		int samples = myvcfFile.getNoSamples();
+		
 		while (vcfReader.next()) {
-
 			MinimalVariantContext snp = vcfReader.getVariantContext();
 			int chunkNumber = snp.getStart() / chunkSize;
 			if (snp.getStart() % chunkSize == 0) {
@@ -204,7 +206,7 @@ public class StatisticsTask implements ITask {
 			if (chunks.get(chunkNumber) == null) {
 				int chunkStart = chunkNumber * chunkSize + 1;
 				int chunkEnd = chunkStart + chunkSize - 1;
-				VcfChunk chunk = initChunk(_contig, chunkStart, chunkEnd, phased, header);
+				VcfChunk chunk = initChunk(contig, chunkStart, chunkEnd, myvcfFile.isPhased(), header);
 				chunks.put(chunkNumber, chunk);
 			}
 
@@ -216,7 +218,7 @@ public class StatisticsTask implements ITask {
 			if (extendedStart >= 1 && snp.getStart() >= extendedStart) {
 				if (chunks.get(nextChunkNumber) == null) {
 					int nextChunkEnd = nextChunkStart + chunkSize - 1;
-					VcfChunk nextChunk = initChunk(_contig, nextChunkStart, nextChunkEnd, phased,
+					VcfChunk nextChunk = initChunk(contig, nextChunkStart, nextChunkEnd, myvcfFile.isPhased(),
 							vcfReader.getFileHeader());
 					chunks.put(nextChunkNumber, nextChunk);
 				}
@@ -227,7 +229,7 @@ public class StatisticsTask implements ITask {
 
 			for (VcfChunk openChunk : chunks.values()) {
 				if (snp.getStart() <= openChunk.getEnd() + phasingWindow) {
-					processLine(snp, refSnp, openChunk.vcfChunkWriter, openChunk, mafWriter, excludedSnpsWriter);
+					processLine(snp, refSnp, samples, openChunk.vcfChunkWriter, openChunk, mafWriter, excludedSnpsWriter);
 				} else {
 					// close open chunks
 					openChunk.vcfChunkWriter.close();
@@ -285,7 +287,7 @@ public class StatisticsTask implements ITask {
 
 	}
 
-	private void processLine(MinimalVariantContext snp, LegendEntry refSnp, BGzipLineWriter vcfWriter, VcfChunk chunk,
+	private void processLine(MinimalVariantContext snp, LegendEntry refSnp, int samples, BGzipLineWriter vcfWriter, VcfChunk chunk,
 			LineWriter mafWriter, LineWriter excludedSnpsWriter) throws IOException, InterruptedException {
 
 		int extendedStart = Math.max(chunk.getStart() - phasingWindow, 1);
@@ -390,7 +392,7 @@ public class StatisticsTask implements ITask {
 		}
 
 		// monomorphic only excludes 0/0;
-		if (snp.isMonomorphicInSamples()) {
+		if (samples > 1 && snp.isMonomorphicInSamples()) {
 			if (insideChunk) {
 				excludedSnpsWriter.write(uniqueName + "\t" + "Monomorphic");
 				monomorphic++;
