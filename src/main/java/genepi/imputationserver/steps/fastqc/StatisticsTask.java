@@ -124,7 +124,7 @@ public class StatisticsTask implements ITask {
 			if (VcfFileUtil.isChrX(chromosome)) {
 
 				// split to par and non.par
-				List<String> splits = prepareChrX(chromosome, myvcfFile.isPhased(), hapSamples);
+				List<String> splits = prepareChrX(myvcfFile.getVcfFilename(), myvcfFile.isPhased(), hapSamples);
 
 				for (String split : splits) {
 					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);

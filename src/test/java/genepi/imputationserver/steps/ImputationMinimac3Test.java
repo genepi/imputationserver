@@ -91,7 +91,7 @@ public class ImputationMinimac3Test {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
 
-		FileUtil.deleteDirectory("test-data/tmp");
+		//FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -503,7 +503,7 @@ public class ImputationMinimac3Test {
 
 		assertEquals("X", vcfFile.getChromosome());
 
-		FileUtil.deleteDirectory(file);
+	//	FileUtil.deleteDirectory(file);
 
 	}
 
@@ -607,7 +607,7 @@ public class ImputationMinimac3Test {
 		assertEquals(true, vcfFile.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHRX_NONPAR, vcfFile.getNoSnps());
 
-		FileUtil.deleteDirectory(file);
+		//FileUtil.deleteDirectory(file);
 
 	}
 
