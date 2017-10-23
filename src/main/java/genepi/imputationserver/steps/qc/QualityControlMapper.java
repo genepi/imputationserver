@@ -397,7 +397,7 @@ public class QualityControlMapper extends Mapper<LongWritable, Text, Text, Text>
 
 						// allele-frequency check
 						if (insideChunk) {
-							if (!population.equals("mixed")) {
+							if (!population.equals("mixed") && !snp.getChr().contains("X")) {
 								SnpStats statistics;
 
 								if (GenomicTools.strandSwapAndAlleleSwitch(studyRef, studyAlt, legendRef, legendAlt)
