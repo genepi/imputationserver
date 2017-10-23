@@ -102,7 +102,8 @@ public class CompressionEncryption extends WorkflowStep {
 				}
 
 				vcfFile.close();
-
+				
+				/*
 				Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
 				tabix.setSilent(false);
 				tabix.setParams("-f", vcfOutput);
@@ -110,6 +111,7 @@ public class CompressionEncryption extends WorkflowStep {
 					context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
 					return false;
 				}
+				*/
 
 				ZipParameters param = new ZipParameters();
 				param.setEncryptFiles(true);
@@ -126,7 +128,7 @@ public class CompressionEncryption extends WorkflowStep {
 				// create zip file
 				ArrayList<File> files = new ArrayList<File>();
 				files.add(new File(vcfOutput));
-				files.add(new File(vcfOutput + ".tbi"));
+				//files.add(new File(vcfOutput + ".tbi"));
 				files.add(new File(doseOutput));
 
 				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput, "chr_" + name + ".zip")));
