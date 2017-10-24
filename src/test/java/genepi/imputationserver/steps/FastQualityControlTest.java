@@ -346,9 +346,9 @@ public class FastQualityControlTest extends TestCase {
 			}
 		}
 
-		assertEquals(13, count);
+		assertEquals(12, count);
 
-		FileUtil.deleteDirectory(file);
+		//FileUtil.deleteDirectory(file);
 
 	}
 
