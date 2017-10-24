@@ -658,7 +658,7 @@ public class ImputationMinimac3Test {
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.nonPAR.dose.vcf.gz", 100000000, false);
 
-		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFile.getVcfFilename()), true);
+		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFile.getVcfFilename()), false);
 
 		CloseableIterator<VariantContext> it = vcfReader.iterator();
 
