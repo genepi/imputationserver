@@ -35,7 +35,7 @@ public class CompressionEncryption extends WorkflowStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		String workingDirectory = getFolder(InputValidation.class);
+		String workingDirectory = getFolder(CompressionEncryption.class);
 
 		String output = context.get("outputimputation");
 		String localOutput = context.get("local");
