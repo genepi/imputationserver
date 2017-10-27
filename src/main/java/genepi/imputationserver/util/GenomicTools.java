@@ -338,8 +338,6 @@ public class GenomicTools {
 		return new ChiSquareObject(chisq, p, q);
 	}
 
-	
-
 	public static int getPanelSize(String panelId) {
 		switch (panelId) {
 		case "phase1":
@@ -354,6 +352,8 @@ public class GenomicTools {
 			return 1301;
 		case "caapa":
 			return 883;
+		case "TOPMedfreeze65k":
+			return 62784;
 		default:
 			return 2535;
 		}
