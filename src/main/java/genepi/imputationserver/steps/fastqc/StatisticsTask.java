@@ -37,7 +37,8 @@ import htsjdk.variant.vcf.VCFHeader;
 
 public class StatisticsTask implements ITask {
 
-	public static final String X_PAR = "X.PAR";
+	public static final String X_PAR1 = "X.PAR1";
+	public static final String X_PAR2 = "X.PAR2";
 	public static final String X_NON_PAR = "X.nonPAR";
 
 	private static double CALL_RATE = 0.5;
@@ -174,7 +175,6 @@ public class StatisticsTask implements ITask {
 
 		String filename = myvcfFile.getVcfFilename();
 		
-				
 		FastVCFFileReader vcfReader = new FastVCFFileReader(filename);
 		List<String> header = vcfReader.getFileHeader();
 
@@ -182,12 +182,12 @@ public class StatisticsTask implements ITask {
 
 		// set X region in filename
 		if (VcfFileUtil.isChrX(myvcfFile.getChromosome())) {
-			
 			contig = X_NON_PAR;
-			if (filename.contains(X_PAR)) {
-				contig = X_PAR;
+			if (filename.contains(X_PAR1)) {
+				contig = X_PAR1;
+			} else if (filename.contains(X_PAR2)) {
+				contig = X_PAR2;
 			}
-			
 		}
 
 		LineWriter metafileWriter = new LineWriter(FileUtil.path(chunkFileDir, contig));
@@ -196,10 +196,8 @@ public class StatisticsTask implements ITask {
 		int samples = myvcfFile.getNoSamples();
 		
 		while (vcfReader.next()) {
-			
 			MinimalVariantContext snp = vcfReader.getVariantContext();
 			int chunkNumber = snp.getStart() / chunkSize;
-			
 			if (snp.getStart() % chunkSize == 0) {
 				chunkNumber = chunkNumber - 1;
 			}
@@ -619,8 +617,13 @@ public class StatisticsTask implements ITask {
 				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
 
-		String par = FileUtil.path(chunksDir, X_PAR + ".vcf.gz");
-		VariantContextWriter vcfChunkWriterPar = new VariantContextWriterBuilder().setOutputFile(par)
+		String par1 = FileUtil.path(chunksDir, X_PAR1 + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterPar1 = new VariantContextWriterBuilder().setOutputFile(par1)
+				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
+				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
+
+		String par2 = FileUtil.path(chunksDir, X_PAR2 + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterPar2 = new VariantContextWriterBuilder().setOutputFile(par2)
 				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
 				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
 
@@ -628,7 +631,8 @@ public class StatisticsTask implements ITask {
 
 		VCFHeader header = vcfReader.getFileHeader();
 		vcfChunkWriterNonPar.writeHeader(header);
-		vcfChunkWriterPar.writeHeader(header);
+		vcfChunkWriterPar1.writeHeader(header);
+		vcfChunkWriterPar2.writeHeader(header);
 
 		CloseableIterator<VariantContext> it = vcfReader.iterator();
 
@@ -636,17 +640,16 @@ public class StatisticsTask implements ITask {
 
 			VariantContext line = it.next();
 
-			//if chr tag is 23
 			if (!line.getContig().equals("X")) {
 				line = new VariantContextBuilder(line).chr("X").make();
 			}
 
-			if ((line.getStart() >= 60001 && line.getStart() <= 2699520) || (line.getStart() > 154931043 && line.getStart() <= 155270560)) {
+			if (line.getStart() >= 60001 && line.getStart() <= 2699520) {
 
-				vcfChunkWriterPar.add(line);
+				vcfChunkWriterPar1.add(line);
 
-				if (!paths.contains(par)) {
-					paths.add(par);
+				if (!paths.contains(par1)) {
+					paths.add(par1);
 				}
 
 			}
@@ -661,11 +664,22 @@ public class StatisticsTask implements ITask {
 
 			}
 
+			else if (line.getStart() > 154931043 && line.getStart() <= 155270560) {
+
+				vcfChunkWriterPar2.add(line);
+
+				if (!paths.contains(par2)) {
+					paths.add(par2);
+				}
+
+			}
+
 		}
 
 		vcfReader.close();
 
-		vcfChunkWriterPar.close();
+		vcfChunkWriterPar1.close();
+		vcfChunkWriterPar2.close();
 		vcfChunkWriterNonPar.close();
 
 		return paths;
