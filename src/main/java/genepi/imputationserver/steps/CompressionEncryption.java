@@ -103,6 +103,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				vcfFile.close();
 
+				//tabix only for one file
 				if (name.contains("22")) {
 					Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
 					tabix.setSilent(false);
