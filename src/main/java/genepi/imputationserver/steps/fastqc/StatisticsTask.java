@@ -154,7 +154,7 @@ public class StatisticsTask implements ITask {
 		excludedChunkWriter.close();
 
 		qcObject.setMessage(
-				"<b>Chromosome X Info:</b> Ambigous samples (haploid and diploid positions in nonPAR region) are written to chrX-infos.txt.");
+				"<b>Chromosome X Info:</b> Ambigous samples (haploid and diploid positions in nonPAR region) are written to chrX-info.txt");
 
 		chrXInfoWriter.close();
 

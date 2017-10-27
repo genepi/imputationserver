@@ -95,7 +95,7 @@ public class FastQualityControl extends WorkflowStep {
 			context.warning("Uploaded data is " + buildGwas + " and reference is " + panel.getBuild() + ".");
 			String chainFile = store.getString(buildGwas + "To" + panel.getBuild());
 			if (chainFile == null) {
-				context.error("Currently we not support liftOver from " + buildGwas + " to " + panel.getBuild());
+				context.error("Currently we do not support liftOver from " + buildGwas + " to " + panel.getBuild());
 				return false;
 			}
 
