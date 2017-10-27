@@ -163,7 +163,7 @@ public class InputValidation extends WorkflowStep {
 							context.endTask("Please select eagle2 for chromosome X. ", WorkflowContext.ERROR);
 							return false;
 						}
-
+						
 					}
 
 					validVcfFiles.add(vcfFile);
@@ -306,7 +306,7 @@ public class InputValidation extends WorkflowStep {
 		}
 
 		// check populations
-		if ((reference.equals("hrc") && !population.equals("eur"))) {
+		if ((reference.contains("hrc") && !population.equals("eur"))) {
 
 			context.error("Please select the EUR population for the HRC panel");
 
