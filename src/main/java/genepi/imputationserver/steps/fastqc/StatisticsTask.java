@@ -80,6 +80,7 @@ public class StatisticsTask implements ITask {
 	private int filterFlag;
 	private int invalidAlleles;
 	private int multiallelicSites;
+	private String buildGWAS;
 
 	// chunk results
 	int removedChunksSnps;
@@ -105,6 +106,10 @@ public class StatisticsTask implements ITask {
 		excludedChunkWriter.write(
 				"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
 
+		LineWriter chrXInfoWriter = new LineWriter(FileUtil.path(statDir, "chrX-info.txt"));
+
+		chrXInfoWriter.write("SAMPLE\tPOS");
+
 		// chrX haploid samples
 		HashSet<String> hapSamples = new HashSet<String>();
 
@@ -124,7 +129,8 @@ public class StatisticsTask implements ITask {
 			if (VcfFileUtil.isChrX(chromosome)) {
 
 				// split to par and non.par
-				List<String> splits = prepareChrX(myvcfFile.getVcfFilename(), myvcfFile.isPhased(), hapSamples);
+				List<String> splits = prepareChrX(myvcfFile.getVcfFilename(), myvcfFile.isPhased(), chrXInfoWriter,
+						hapSamples);
 
 				for (String split : splits) {
 					VcfFile _myvcfFile = VcfFileUtil.load(split, chunkSize, true);
@@ -132,13 +138,11 @@ public class StatisticsTask implements ITask {
 					_myvcfFile.setChrX(true);
 
 					// chrX
-					processFile(_myvcfFile, mafWriter,
-							excludedSnpsWriter, excludedChunkWriter);
+					processFile(_myvcfFile, mafWriter, excludedSnpsWriter, excludedChunkWriter);
 				}
 			} else {
 				// chr1-22
-				processFile(myvcfFile, mafWriter, excludedSnpsWriter,
-						excludedChunkWriter);
+				processFile(myvcfFile, mafWriter, excludedSnpsWriter, excludedChunkWriter);
 
 			}
 		}
@@ -149,18 +153,10 @@ public class StatisticsTask implements ITask {
 
 		excludedChunkWriter.close();
 
-		if (hapSamples.size() > 0) {
-			LineWriter writer = new LineWriter(FileUtil.path(statDir, "chrX-samples.txt"));
-			writer.write("The following samples have been changed from haploid to diploid");
+		qcObject.setMessage(
+				"<b>Chromosome X Info:</b> Ambigous samples (haploid and diploid positions in nonPAR region) are written to chrX-infos.txt.");
 
-			for (String sample : hapSamples) {
-				writer.write(sample);
-			}
-			writer.close();
-
-			qcObject.setMessage(
-					"<b>Chromosome X Info:</b> For phasing/imputation we changed samples from haploid to diploid. Please check chrX-samples.txt");
-		}
+		chrXInfoWriter.close();
 
 		qcObject.setSuccess(true);
 
@@ -168,13 +164,13 @@ public class StatisticsTask implements ITask {
 
 	}
 
-	public void processFile(VcfFile myvcfFile, LineWriter mafWriter,
-			LineWriter excludedSnpsWriter, LineWriter excludedChunkWriter) throws IOException, InterruptedException {
+	public void processFile(VcfFile myvcfFile, LineWriter mafWriter, LineWriter excludedSnpsWriter,
+			LineWriter excludedChunkWriter) throws IOException, InterruptedException {
 
 		Map<Integer, VcfChunk> chunks = new ConcurrentHashMap<Integer, VcfChunk>();
 
 		String filename = myvcfFile.getVcfFilename();
-		
+
 		FastVCFFileReader vcfReader = new FastVCFFileReader(filename);
 		List<String> header = vcfReader.getFileHeader();
 
@@ -194,7 +190,7 @@ public class StatisticsTask implements ITask {
 		LegendFileReader legendReader = getReader(myvcfFile.getChromosome());
 
 		int samples = myvcfFile.getNoSamples();
-		
+
 		while (vcfReader.next()) {
 			MinimalVariantContext snp = vcfReader.getVariantContext();
 			int chunkNumber = snp.getStart() / chunkSize;
@@ -229,7 +225,8 @@ public class StatisticsTask implements ITask {
 
 			for (VcfChunk openChunk : chunks.values()) {
 				if (snp.getStart() <= openChunk.getEnd() + phasingWindow) {
-					processLine(snp, refSnp, samples, openChunk.vcfChunkWriter, openChunk, mafWriter, excludedSnpsWriter);
+					processLine(snp, refSnp, samples, openChunk.vcfChunkWriter, openChunk, mafWriter,
+							excludedSnpsWriter);
 				} else {
 					// close open chunks
 					openChunk.vcfChunkWriter.close();
@@ -287,8 +284,9 @@ public class StatisticsTask implements ITask {
 
 	}
 
-	private void processLine(MinimalVariantContext snp, LegendEntry refSnp, int samples, BGzipLineWriter vcfWriter, VcfChunk chunk,
-			LineWriter mafWriter, LineWriter excludedSnpsWriter) throws IOException, InterruptedException {
+	private void processLine(MinimalVariantContext snp, LegendEntry refSnp, int samples, BGzipLineWriter vcfWriter,
+			VcfChunk chunk, LineWriter mafWriter, LineWriter excludedSnpsWriter)
+			throws IOException, InterruptedException {
 
 		int extendedStart = Math.max(chunk.getStart() - phasingWindow, 1);
 		int extendedEnd = chunk.getEnd() + phasingWindow;
@@ -609,7 +607,8 @@ public class StatisticsTask implements ITask {
 
 	}
 
-	public List<String> prepareChrX(String filename, boolean phased, HashSet<String> hapSamples) throws IOException {
+	public List<String> prepareChrX(String filename, boolean phased, LineWriter chrXInfoWriter,
+			HashSet<String> hapSamples) throws IOException {
 
 		List<String> paths = new Vector<String>();
 		String nonPar = FileUtil.path(chunksDir, X_NON_PAR + ".vcf.gz");
@@ -640,8 +639,12 @@ public class StatisticsTask implements ITask {
 
 			VariantContext line = it.next();
 
-			if (!line.getContig().equals("X")) {
+			if (buildGWAS.equals("hg19") && !line.getContig().equals("X")) {
 				line = new VariantContextBuilder(line).chr("X").make();
+			}
+
+			else if (buildGWAS.equals("hg38") && !line.getContig().equals("chrX")) {
+				line = new VariantContextBuilder(line).chr("chrX").make();
 			}
 
 			if (line.getStart() >= 60001 && line.getStart() <= 2699520) {
@@ -655,6 +658,8 @@ public class StatisticsTask implements ITask {
 			}
 
 			else if (line.getStart() > 2699520 && line.getStart() <= 154931043) {
+
+				checkPloidy(header.getGenotypeSamples(), line, phased, chrXInfoWriter, hapSamples);
 
 				vcfChunkWriterNonPar.add(line);
 
@@ -720,6 +725,25 @@ public class StatisticsTask implements ITask {
 		}
 
 		return new VariantContextBuilder(snp).genotypes(genotypes).make();
+	}
+
+	public void checkPloidy(List<String> samples, VariantContext snp, boolean isPhased, LineWriter chrXInfoWriter,
+			HashSet<String> hapSamples) throws IOException {
+
+		for (final String name : samples) {
+
+			Genotype genotype = snp.getGenotype(name);
+
+			if (hapSamples.contains(name) && genotype.getPloidy() != 1) {
+				chrXInfoWriter.write(name + "\t" + snp.getStart());
+
+			}
+
+			if (genotype.getPloidy() == 1) {
+				hapSamples.add(name);
+			}
+
+		}
 	}
 
 	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
@@ -884,6 +908,14 @@ public class StatisticsTask implements ITask {
 
 	public int getMultiallelicSites() {
 		return multiallelicSites;
+	}
+
+	public String getBuildGWAS() {
+		return buildGWAS;
+	}
+
+	public void setBuildGWAS(String buildGWAS) {
+		this.buildGWAS = buildGWAS;
 	}
 
 }
