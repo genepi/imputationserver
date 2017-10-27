@@ -36,17 +36,21 @@ public class VcfLiftOverFast {
 
 				VcfLine vcfLine = new VcfLine(line);
 				String contig = "";
-				if (vcfLine.getContig().startsWith("chr")){
+				String newContig = "";
+				if (vcfLine.getContig().startsWith("chr")) {
 					contig = vcfLine.getContig();
-				}else{
-					contig = "chr" + vcfLine.getContig();					
+					newContig = vcfLine.getContig().replaceAll("chr", "");
+
+				} else {
+					contig = "chr" + vcfLine.getContig();
+					newContig = "chr" + vcfLine.getContig();
 				}
-				Interval source = new Interval(contig, vcfLine.getPosition(),
-						vcfLine.getPosition() + 1, false, vcfLine.getContig() + ":" + vcfLine.getPosition());
+				Interval source = new Interval(contig, vcfLine.getPosition(), vcfLine.getPosition() + 1, false,
+						vcfLine.getContig() + ":" + vcfLine.getPosition());
 				Interval target = liftOver.liftOver(source);
 				if (target != null) {
 					if (source.getContig().equals(target.getContig())) {
-						vcfLine.setContig(target.getContig());
+						vcfLine.setContig(newContig);
 						vcfLine.setPosition(target.getStart());
 						sorter.add(vcfLine);
 					} else {
@@ -82,7 +86,7 @@ public class VcfLiftOverFast {
 		// "/home/lukas/cloud/Genepi/Testdata/imputationserver/chr20.R50.merged.1.330k.recode.hg38.vcf.gz";
 
 		VcfFileUtil.setTabixBinary("files/minimac/bin/tabix");
-		
+
 		String input = "/home/lukas/git/imputationserver-public2/test-data/data/big/chr1-wrayner-filtered-reheader.vcf.gz";
 		String output = "lf.hg38.vcf.gz";
 

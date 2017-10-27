@@ -140,7 +140,7 @@ public class ImputationMinimac3Test {
 	}
 
 	@Test
-	public void testPipelineWidthHttpUrl() throws IOException, ZipException {
+	public void testPipelineWithHttpUrl() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "https://imputationserver.sph.umich.edu/static/downloads/hapmap300.chr1.recode.vcf.gz";
@@ -451,7 +451,7 @@ public class ImputationMinimac3Test {
 	}
 
 	@Test
-	public void testchrXPipelineWithEagle() throws IOException, ZipException {
+	public void testChrXPipelineWithEagle() throws IOException, ZipException {
 
 		// maybe git large files?
 		if (!new File(
@@ -508,7 +508,7 @@ public class ImputationMinimac3Test {
 	}
 
 	@Test
-	public void testchrXPipelinePhased() throws IOException, ZipException {
+	public void testChrXPipelinePhased() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-phased";
@@ -560,7 +560,7 @@ public class ImputationMinimac3Test {
 	}
 
 	@Test
-	public void testchr23PipelinePhased() throws IOException, ZipException {
+	public void testChr23PipelinePhased() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chr23-phased";
@@ -612,7 +612,7 @@ public class ImputationMinimac3Test {
 	}
 
 	@Test
-	public void testchrXLeaveOneOutPipelinePhased() throws IOException, ZipException {
+	public void testChrXLeaveOneOutPipelinePhased() throws IOException, ZipException {
 
 		// SNP 26963697 from input excluded and imputed!
 		// true genotypes:
@@ -680,6 +680,207 @@ public class ImputationMinimac3Test {
 
 	}
 
+	@Test
+	public void testPipelineWithPhasedHg19ToHg38() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20-hg38";
+		String inputFolder = "test-data/data/chr20-phased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		//TODO: update with new values for HG38!
+		//assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+	
+	
+	@Test
+	public void testPipelineWithEagleHg19ToHg38() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20-hg38";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		//TODO: update with new values for HG38!
+		//assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+	
+	@Test
+	public void testPipelineWithPhasedHg38ToHg19() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-phased-hg38";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		context.setInput("build", "hg38");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		//TODO: update with new values for HG38!
+		//assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+	
+	
+	@Test
+	public void testPipelineWithEagleHg38ToHg19() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased-hg38";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		context.setInput("build", "hg38");
+		
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		//TODO: update with new values for HG38!
+		//assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT, file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	
 	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
 		step.setup(context);
 		return step.run(context);
