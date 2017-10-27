@@ -319,7 +319,7 @@ public class FastQualityControlTest extends TestCase {
 	}
 
 	@Test
-	public void testchrXSplits() throws IOException, ZipException {
+	public void testChrXSplits() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-unphased";

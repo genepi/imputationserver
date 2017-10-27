@@ -374,10 +374,25 @@ public class ImputationPipelineMinimac3 {
 
 		String phasedPrefix = ".eagle.phased";
 
-		eagle.setParams("--vcfRef", reference, "--vcfTarget", output.getVcfFilename() + ".gz", "--geneticMapFile",
-				mapFilename, "--outPrefix", output.getPrefix() + phasedPrefix, "--chrom", output.getChromosome(),
-				"--bpStart", start + "", "--bpEnd", end + "", "--allowRefAltSwap", "--vcfOutFormat", "z",
-				"--outputUnphased");
+		List<String> params = new Vector<String>();
+		params.add("--vcfRef");
+		params.add(reference);
+		params.add("--vcfTarget");
+		params.add(output.getVcfFilename() + ".gz");
+		params.add("--geneticMapFile");
+		params.add(mapFilename);
+		params.add("--outPrefix");
+		params.add(output.getPrefix() + phasedPrefix);
+		params.add("--bpStart");
+		params.add(start + "");
+		params.add("--bpEnd");
+		params.add(end + "");
+		params.add("--allowRefAltSwap");
+		params.add("--vcfOutFormat");
+		params.add("z");
+		params.add("--outputUnphased");
+
+		eagle.setParams(params);
 		eagle.saveStdOut(output.getPrefix() + ".eagle.out");
 		eagle.saveStdErr(output.getPrefix() + ".eagle.err");
 		System.out.println("Command: " + eagle.getExecutedCommand());

@@ -1,7 +1,7 @@
 package genepi.imputationserver.tools;
 
 import genepi.base.Tool;
-import genepi.imputationserver.steps.vcf.VcfLiftOver;
+import genepi.imputationserver.steps.vcf.VcfLiftOverFast;
 
 public class VcfLiftOverTool extends Tool {
 
@@ -30,7 +30,7 @@ public class VcfLiftOverTool extends Tool {
 		String chain = getValue("chain").toString();
 
 		try {
-			VcfLiftOver.liftOver(input, output, chain, "");
+			VcfLiftOverFast.liftOver(input, output, chain, "./");
 
 			return 0;
 		} catch (Exception e) {
