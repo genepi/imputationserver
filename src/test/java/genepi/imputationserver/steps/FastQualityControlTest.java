@@ -319,7 +319,7 @@ public class FastQualityControlTest extends TestCase {
 	}
 
 	@Test
-	public void testchrXSetup() throws IOException, ZipException {
+	public void testchrXSplits() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-unphased";
@@ -348,7 +348,7 @@ public class FastQualityControlTest extends TestCase {
 
 		assertEquals(13, count);
 
-		//FileUtil.deleteDirectory(file);
+		FileUtil.deleteDirectory(file);
 
 	}
 
