@@ -352,6 +352,57 @@ public class FastQualityControlTest extends TestCase {
 
 	}
 
+	
+	@Test
+	public void testChrXMixedGenotypes() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chrX";
+		String inputFolder = "test-data/data/chrX-unphased-mixed";
+
+		File file = new File("test-data/tmp");
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+
+		// run qc to create chunkfile
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertFalse(result);
+		assertTrue(context.hasInMemory("Chromosome X nonPAR region includes too many mixed genotypes"));
+
+		FileUtil.deleteDirectory(file);
+
+	}
+	
+	@Test
+	public void testChrXPloidyError() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chrX";
+		String inputFolder = "test-data/data/chrX-unphased-ploidy";
+
+		File file = new File("test-data/tmp");
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+
+		// run qc to create chunkfile
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertFalse(result);
+		assertTrue(context.hasInMemory("ChrX nonPAR region includes ambiguous samples"));
+
+		FileUtil.deleteDirectory(file);
+
+	}
+	
 	class FastQualityControlMock extends FastQualityControl {
 
 		private String folder;

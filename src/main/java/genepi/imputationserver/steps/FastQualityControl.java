@@ -180,6 +180,8 @@ public class FastQualityControl extends WorkflowStep {
 		text.append("Excluded sites in total: " + formatter.format(task.getFiltered()) + "<br>");
 		text.append("Remaining sites in total: " + formatter.format(task.getOverallSnps()) + "<br>");
 		text.append("See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
+		text.append("Typed only sites: " + formatter.format(task.getNotFoundInLegend()) + " See " + context.createLinkToFile("statisticDir", "typed-only.txt") + "<br>");
+		
 
 		if (task.getRemovedChunksSnps() > 0) {
 
@@ -227,6 +229,22 @@ public class FastQualityControl extends WorkflowStep {
 		else if (task.getStrandFlipSimple() + task.getStrandFlipAndAlleleSwitch() > 100) {
 			text.append(
 					"<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
+			context.error(text.toString());
+
+			return false;
+		}
+
+		else if (task.isChrXMissingRate()) {
+			text.append("<br><b>Error:</b> Chromosome X nonPAR region includes too many mixed genotypes.");
+			context.error(text.toString());
+
+			return false;
+		}
+
+		else if (task.isChrXPloidyError()) {
+			text.append(
+					"<br><b>Error:</b> ChrX nonPAR region includes ambiguous samples (haploid and diploid positions). See "
+							+ context.createLinkToFile("statisticDir", "chrX-info.txt"));
 			context.error(text.toString());
 
 			return false;
