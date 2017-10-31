@@ -5,7 +5,7 @@ sudo: required
 jdk:
   - oraclejdk8
 
-script: mvn -q clean install 
+script: mvn -q install 
 
 before_install:
   - cat /etc/hosts # optionally check the content *before*
