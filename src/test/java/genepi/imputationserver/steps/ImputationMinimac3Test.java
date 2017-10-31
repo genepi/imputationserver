@@ -20,6 +20,7 @@ import genepi.imputationserver.util.TestCluster;
 import genepi.imputationserver.util.TestSFTPServer;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
+import genepi.io.text.LineReader;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -324,6 +325,46 @@ public class ImputationMinimac3Test {
 
 	}
 
+	@Test
+	public void testWriteTypedSitesOnly() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		//importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		LineReader reader = new LineReader("test-data/tmp/statisticDir/typed-only.txt");
+		int count = 0;
+		
+		while(reader.next()){
+		count++;	
+		}
+		reader.close();
+		
+		assertEquals(count, ONLY_IN_INPUT+1);
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+	
 	@Test
 	public void testPipelineWithEagleAnd23AndMe() throws IOException, ZipException {
 
