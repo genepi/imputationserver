@@ -5,8 +5,6 @@ sudo: required
 jdk:
   - oraclejdk8
 
-script: mvn -q install -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN
-
 before_install:
   - cat /etc/hosts # optionally check the content *before*
   - sudo hostname "$(hostname | cut -c1-63)"
