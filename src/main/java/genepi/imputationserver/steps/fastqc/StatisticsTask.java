@@ -415,7 +415,7 @@ public class StatisticsTask implements ITask {
 				notFoundInLegend++;
 				chunk.notFoundInLegendChunk++;
 				vcfWriter.write(snp.getRawLine());
-				typedOnlyWriter.write(snp.getStart()+"");
+				typedOnlyWriter.write(_contig+":"+snp.getStart());
 			}
 
 		} else {

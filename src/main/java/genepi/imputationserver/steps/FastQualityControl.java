@@ -180,9 +180,10 @@ public class FastQualityControl extends WorkflowStep {
 		text.append("Excluded sites in total: " + formatter.format(task.getFiltered()) + "<br>");
 		text.append("Remaining sites in total: " + formatter.format(task.getOverallSnps()) + "<br>");
 		text.append("See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
-		
-		if(task.getNotFoundInLegend()>0){
-		text.append("Typed only sites: " + formatter.format(task.getNotFoundInLegend()) + " See " + context.createLinkToFile("statisticDir", "typed-only.txt") + "<br>");
+
+		if (task.getNotFoundInLegend() > 0) {
+			text.append("Typed only sites: " + formatter.format(task.getNotFoundInLegend()) + " See "
+					+ context.createLinkToFile("statisticDir", "typed-only.txt") + "<br>");
 		}
 
 		if (task.getRemovedChunksSnps() > 0) {
