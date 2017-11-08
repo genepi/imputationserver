@@ -36,7 +36,7 @@ import org.apache.commons.io.FileUtils;
 
 public class VCFBuilder {
 
-	private static String GRCh37_PATH = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta";
+	private static String GRCh37_PATH = "https://imputationserver.sph.umich.edu/static/downloads/human_g1k_v37.fasta";
 	private String genome;
 	private String reference;
 	private String excludeList;
