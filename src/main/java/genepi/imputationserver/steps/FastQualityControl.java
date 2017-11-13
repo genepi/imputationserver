@@ -135,7 +135,6 @@ public class FastQualityControl extends WorkflowStep {
 		task.setChunkFileDir(chunkFileDir);
 		task.setChunksDir(chunksDir);
 		task.setStatDir(statDir);
-		task.setBuildGWAS(panel.getBuild());
 
 		TaskResults results = runTask(context, task);
 

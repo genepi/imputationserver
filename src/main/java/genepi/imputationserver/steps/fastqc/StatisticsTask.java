@@ -82,7 +82,7 @@ public class StatisticsTask implements ITask {
 	private int filterFlag;
 	private int invalidAlleles;
 	private int multiallelicSites;
-	private String buildGWAS;
+
 	private boolean chrXMissingRate = false;
 	private boolean chrXPloidyError = false;
 
@@ -651,11 +651,11 @@ public class StatisticsTask implements ITask {
 
 			VariantContext line = it.next();
 
-			if (buildGWAS.equals("hg19") && !line.getContig().equals("X")) {
+			if (line.getContig().equals("23")) {
 				line = new VariantContextBuilder(line).chr("X").make();
 			}
 
-			else if (buildGWAS.equals("hg38") && !line.getContig().equals("chrX")) {
+			else if (line.getContig().equals("chr23")) {
 				line = new VariantContextBuilder(line).chr("chrX").make();
 			}
 
@@ -956,14 +956,6 @@ public class StatisticsTask implements ITask {
 
 	public int getMultiallelicSites() {
 		return multiallelicSites;
-	}
-
-	public String getBuildGWAS() {
-		return buildGWAS;
-	}
-
-	public void setBuildGWAS(String buildGWAS) {
-		this.buildGWAS = buildGWAS;
 	}
 
 	public boolean isChrXMissingRate() {
