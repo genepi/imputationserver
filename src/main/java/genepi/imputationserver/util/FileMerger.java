@@ -32,9 +32,10 @@ public class FileMerger {
 				outData.write(line.getBytes());
 				outData.write("\n".getBytes());
 			} else {
-				
+				if(!line.startsWith("##minimac4_Command")){
 				outHeader.write(line.getBytes());
 				outHeader.write("\n".getBytes());
+				}
 			}
 		}
 		outData.close();
