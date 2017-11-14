@@ -3,6 +3,8 @@ package genepi.imputationserver.util;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
@@ -21,8 +23,8 @@ import htsjdk.samtools.util.BlockCompressedOutputStream;
 
 public class FileMerger {
 
-	public static void splitIntoHeaderAndData(String input,
-			OutputStream outHeader, OutputStream outData) throws IOException {
+	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData)
+			throws IOException {
 		LineReader reader = new LineReader(input);
 		while (reader.next()) {
 			String line = reader.get();
@@ -30,6 +32,7 @@ public class FileMerger {
 				outData.write(line.getBytes());
 				outData.write("\n".getBytes());
 			} else {
+				
 				outHeader.write(line.getBytes());
 				outHeader.write("\n".getBytes());
 			}
@@ -39,8 +42,7 @@ public class FileMerger {
 		reader.close();
 	}
 
-	public static class BgzipSplitOutputStream extends
-			BlockCompressedOutputStream {
+	public static class BgzipSplitOutputStream extends BlockCompressedOutputStream {
 
 		public BgzipSplitOutputStream(OutputStream os) {
 			super(os, null);
@@ -53,8 +55,7 @@ public class FileMerger {
 
 	}
 
-	public static int splitIntoHeaderAndData(String input, String outputPrefix)
-			throws IOException {
+	public static int splitIntoHeaderAndData(String input, String outputPrefix) throws IOException {
 		boolean firstHeader = true;
 		int snps = 0;
 
@@ -62,8 +63,7 @@ public class FileMerger {
 		GzipCompressorOutputStream outHeader = new GzipCompressorOutputStream(
 				new FileOutputStream(outputPrefix + ".header.vcf.gz"));
 		GzipCompressorOutputStream outData = new GzipCompressorOutputStream(
-				new FileOutputStream(outputPrefix + "_" + chunk
-						+ ".data.vcf.gz"));
+				new FileOutputStream(outputPrefix + "_" + chunk + ".data.vcf.gz"));
 
 		LineReader reader = new LineReader(input);
 		while (reader.next()) {
@@ -77,8 +77,7 @@ public class FileMerger {
 					outData.close();
 					chunk++;
 					outData = new GzipCompressorOutputStream(
-							new FileOutputStream(outputPrefix + "_" + chunk
-									+ ".data.vcf.gz"));
+							new FileOutputStream(outputPrefix + "_" + chunk + ".data.vcf.gz"));
 
 				}
 
@@ -97,8 +96,7 @@ public class FileMerger {
 		return chunk;
 	}
 
-	public static int splitIntoHeaderAndDataBgZip(String input,
-			String outputPrefix) throws IOException {
+	public static int splitIntoHeaderAndDataBgZip(String input, String outputPrefix) throws IOException {
 		boolean firstHeader = true;
 		int snps = 0;
 
@@ -106,8 +104,7 @@ public class FileMerger {
 		BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 				new FileOutputStream(outputPrefix + ".header.vcf.gz"));
 		BgzipSplitOutputStream outData = new BgzipSplitOutputStream(
-				new FileOutputStream(outputPrefix + "_" + chunk
-						+ ".data.vcf.gz"));
+				new FileOutputStream(outputPrefix + "_" + chunk + ".data.vcf.gz"));
 
 		LineReader reader = new LineReader(input);
 		while (reader.next()) {
@@ -120,8 +117,8 @@ public class FileMerger {
 				if (snps % 10000 == 0) {
 					outData.close();
 					chunk++;
-					outData = new BgzipSplitOutputStream(new FileOutputStream(
-							outputPrefix + "_" + chunk + ".data.vcf.gz"));
+					outData = new BgzipSplitOutputStream(
+							new FileOutputStream(outputPrefix + "_" + chunk + ".data.vcf.gz"));
 
 				}
 
@@ -140,82 +137,54 @@ public class FileMerger {
 		return chunk;
 	}
 
-	public static void mergeAndGz(String local, String hdfs,
-			boolean removeHeader, String ext) throws IOException {
+	public static void mergeAndGzInfo(ArrayList<String> hdfs, String local) throws IOException {
 
 		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(local));
 
 		Configuration conf = HdfsUtil.getConfiguration();
 
 		FileSystem fileSystem = FileSystem.get(conf);
-		Path pathFolder = new Path(hdfs);
-		FileStatus[] files = fileSystem.listStatus(pathFolder);
 
-		List<String> filenames = new Vector<String>();
-
-		if (files != null) {
-
-			// filters by extension and sorts by filename
-			for (FileStatus file : files) {
-				if (!file.isDir()
-						&& !file.getPath().getName().startsWith("_")
-						&& (ext == null || file.getPath().getName()
-								.endsWith(ext))) {
-					filenames.add(file.getPath().toString());
-				}
-			}
-			Collections.sort(filenames);
+		for (String folder : hdfs) {
+			
+			Path pathFolder = new Path(folder);
+			
+			FileStatus[] files = fileSystem.listStatus(pathFolder);
 
 			boolean firstFile = true;
 
-			for (String filename : filenames) {
-				Path path = new Path(filename);
+			for (FileStatus file : files) {
 
-				FSDataInputStream in = fileSystem.open(path);
+				FSDataInputStream in = fileSystem.open(file.getPath());
 
 				LineReader reader = new LineReader(in);
 
 				boolean header = true;
+				
 				while (reader.next()) {
 
 					String line = reader.get();
 
-					if (removeHeader) {
-
-						if (header) {
-							if (firstFile) {
-								out.write(line.toString().getBytes());
-								firstFile = false;
-							}
-							header = false;
+					if (header) {
+						if (firstFile) {
+							firstFile = false;
 						} else {
 							out.write('\n');
-							out.write(line.toString().getBytes());
 						}
-
+						header = false;
 					} else {
+						out.write('\n');
 
-						if (header) {
-							if (firstFile) {
-								firstFile = false;
-							} else {
-								out.write('\n');
-							}
-							header = false;
-						} else {
-							out.write('\n');
-
-						}
-						out.write(line.toString().getBytes());
 					}
+					out.write(line.toString().getBytes());
 				}
 				in.close();
 
 			}
-			
-			out.close();
+
 		}
 
+		out.close();
 	}
 
 }
