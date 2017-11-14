@@ -1,6 +1,6 @@
 # Data preparation
 
-Imputationserve accepts VCF files compressed by [bgzip](http://samtools.sourceforge.net/tabix.shtml). Please make sure the following requirements have been met:
+Michigan Imputation Server accepts VCF files compressed by [bgzip](http://samtools.sourceforge.net/tabix.shtml). Please make sure the following requirements are met:
 
 - Create a seperate vcf.gz file for each chromosome.
 - Variations must be sorted by genomic position.
@@ -31,6 +31,6 @@ Use [checkVCF](https://github.com/zhanxw/checkVCF) to ensure that the VCF files 
 checkVCF.py -r human_g1k_v37.fasta -o out mystudy_chr1.vcf.gz
 ````
 
-## QC for HRC imputation
+## QC for HRC or 1K imputation
 
 Will Rayner provides a great toolbox to prepare data for HRC imputation: [HRC preparation checking Tool](http://www.well.ox.ac.uk/~wrayner/tools/).

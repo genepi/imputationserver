@@ -31,23 +31,21 @@ Our pipeline performs the following steps:
     *   For chr1-22, a chunk is excluded if one sample has a call rate < 50 %. Only complete chunks are excluded, not samples (see "On Chunk level" above)
 3.  Execute for each chunk one of the following phasing algorithms (we use an overlap of 5 Mb). For example, chr20:1-20000000 and reference population EUR:
 
-    **ShapeIt**
+    **Eagle2**
+      <pre>./eagle --vcfRef HRC.r1-1.GRCh37.chr20.shapeit3.mac5.aa.genotypes.bcf --vcfTarget chunk_20_0000000001_0020000000.vcf.gz  --./geneticMapFile genetic_map_chr20_combined_b37.txt --outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 --chrom 20
+      </pre>
 
+    **ShapeIt**
     <pre>./vcfCooker --in-vcf chunk_20_0000000001_0020000000.vcf --write-bed --out chunk_20_0000000001_0020000000
     ./shapeit --input-bed chunk_20_0000000001_0020000000.bed chunk_20_0000000001_0020000000.bim chunk_20_0000000001_0020000000.fam --input-map genetic_map_b37.tar.gz/genetic_map_chr20_combined_b37.txt --output-max chunk_20_0000000001_0020000000.phased --input-from 1 --input-to 25000000 --effective-size 11418
     </pre>
 
     **HapiUR**
-
     <pre>./vcfCooker --in-vcf chunk_20_0000000001_0020000000.vcf --write-bed --out chunk_20_0000000001_0020000000
     ./insert-map.pl chunk_20_0000000001_0020000000.bim genetic_map_chr20_combined_hapiur_b37.txt
     ./hapi-ur -g chunk_20_0000000001_0020000000.bed -s chunk_20_0000000001_0020000000.map.bim -i chunk_20_0000000001_0020000000.fam -w 73 -o chunk_20_0000000001_0020000000 -c 20 --start 1 --end 25000000 --impute2
     </pre>
 
-    **Eagle**
-
-    <pre>./eagle --vcfRef HRC.r1-1.GRCh37.chr20.shapeit3.mac5.aa.genotypes.bcf --vcfTarget chunk_20_0000000001_0020000000.vcf.gz  --./geneticMapFile genetic_map_chr20_combined_b37.txt --outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 --chrom 20
-    </pre>
 
 4.  Execute for each chunk minimac in order to impute the phased data (we use a window of 500 kb)
 
@@ -56,3 +54,39 @@ Our pipeline performs the following steps:
 
 5.  Merge all chunks of one chromosome into one single vcf
 6.  Create tabix index and encrypt data with one-time password
+
+## Chromosome X
+
+Michigan Imputation Server 1.1.0 (currently in beta) uses minimac4 and Eagle2 to impute chromosome X.
+For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are automatically merged by Michigan Imputation Server to provide users a complete chromosome X file.
+
+<table>
+<tbody>
+
+<tr>
+
+<td width="200px">ChrX PAR1 Region</td>
+
+<td>chr X1 (60001 - 2699520)</td>
+
+</tr>
+
+<tr>
+
+<td>ChrX nonPAR Region</td>
+
+<td>chr X2 (2699521 - 154931043)</td>
+
+</tr>
+
+<tr>
+
+<td>ChrX PAR2 Region</td>
+
+<td>chr X3 (154931044 - 155270560)</td>
+
+</tr>
+
+</tbody>
+
+</table>

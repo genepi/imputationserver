@@ -9,7 +9,7 @@ Since data is transfered to our server located in Michigan, a wide array of secu
 - We only store the number of samples and markers analyzed, we don't ever "look" at your data in anyway.
 - All results are encrypted with a strong one-time password - thus, only you can read them.
 - After imputation is finished, the data uploader has 7 days to use an encrypted connection to get results back.
-- The complete source code will be available on a public repository.
+- The complete source code is available in a [public Github repository](https://github.com/genepi/imputationserver/tree/qc-refactoring).
 
 
 ## Who has access?
