@@ -796,7 +796,7 @@ public class StatisticsTask implements ITask {
 
 	private LegendFileReader getReader(String _chromosome) throws IOException, InterruptedException {
 
-		// always use X for legend files chrX
+		// one file for all chrX legends
 		if (VcfFileUtil.isChrX(_chromosome)) {
 			_chromosome = "X";
 		}

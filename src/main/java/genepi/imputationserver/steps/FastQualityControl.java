@@ -181,7 +181,7 @@ public class FastQualityControl extends WorkflowStep {
 		text.append("See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
 
 		if (task.getNotFoundInLegend() > 0) {
-			text.append("Typed only sites: " + formatter.format(task.getNotFoundInLegend()));
+			text.append("Typed only sites: " + formatter.format(task.getNotFoundInLegend()) +  "<br>");
 			text.append("See " + context.createLinkToFile("statisticDir", "typed-only.txt") + " for details" + "<br>");
 		}
 
@@ -237,7 +237,7 @@ public class FastQualityControl extends WorkflowStep {
 		}
 
 		else if (task.isChrXMissingRate()) {
-			text.append("<br><b>Error:</b> Chromosome X nonPAR region includes too many mixed genotypes.");
+			text.append("<br><b>Error:</b> Chromosome X nonPAR region includes > 10 % mixed genotypes. Imputation cannot be started!");
 			context.error(text.toString());
 
 			return false;
@@ -245,7 +245,7 @@ public class FastQualityControl extends WorkflowStep {
 
 		else if (task.isChrXPloidyError()) {
 			text.append(
-					"<br><b>Error:</b> ChrX nonPAR region includes ambiguous samples (haploid and diploid positions). See "
+					"<br><b>Error:</b> ChrX nonPAR region includes ambiguous samples (haploid and diploid positions). Imputation cannot be started! See "
 							+ context.createLinkToFile("statisticDir", "chrX-info.txt"));
 			context.error(text.toString());
 
