@@ -372,7 +372,7 @@ public class FastQualityControlTest extends TestCase {
 		boolean result = run(context, qcStats);
 
 		assertFalse(result);
-		assertTrue(context.hasInMemory("Chromosome X nonPAR region includes too many mixed genotypes"));
+		assertTrue(context.hasInMemory("Chromosome X nonPAR region includes > 10 % mixed genotypes."));
 
 		FileUtil.deleteDirectory(file);
 
