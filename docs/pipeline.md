@@ -61,12 +61,12 @@ Michigan Imputation Server 1.1.0 uses minimac4 and Eagle2 to impute chromosome X
 For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are then automatically merged by Michigan Imputation Server and are returned as one complete chromosome X file.
 
 | ||
-| Name | Region |
+| | |
 | ChrX PAR1 Region | chr X1 (60001 - 2699520 |
 | ChrX nonPAR Region | chr X2 (2699521 - 154931043) |
 | ChrX PAR2 Region | chr X3 (154931044 - 155270560) |
 
-Additionally to the standard QC, the following per-sample checks are executed:
+Additionally to the standard QC, the following per-sample checks are executed for chrX:
 
 1. Ploidy Check: Verifies if all variants in the nonPAR region are either haploid or diploid.
 2. Mixed Genotypes Check: Verifies if the amount of mixed genotypes (e.g. 1/.) are < 10 %.
