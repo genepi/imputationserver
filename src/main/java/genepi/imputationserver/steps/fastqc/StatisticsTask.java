@@ -61,6 +61,7 @@ public class StatisticsTask implements ITask {
 	private String legendFile;
 	private int refSamples;
 	private boolean liftOver;
+	private String build;
 
 	// overall stats
 	private int overallChunks;
@@ -113,7 +114,7 @@ public class StatisticsTask implements ITask {
 		LineWriter chrXInfoWriter = new LineWriter(FileUtil.path(statDir, "chrX-info.txt"));
 
 		chrXInfoWriter.write("SAMPLE\tPOS");
-		
+
 		LineWriter typedOnlyWriter = new LineWriter(FileUtil.path(statDir, "typed-only.txt"));
 
 		typedOnlyWriter.write("POS");
@@ -162,7 +163,7 @@ public class StatisticsTask implements ITask {
 		excludedChunkWriter.close();
 
 		chrXInfoWriter.close();
-		
+
 		typedOnlyWriter.close();
 
 		qcObject.setSuccess(true);
@@ -415,7 +416,7 @@ public class StatisticsTask implements ITask {
 				notFoundInLegend++;
 				chunk.notFoundInLegendChunk++;
 				vcfWriter.write(snp.getRawLine());
-				typedOnlyWriter.write(_contig+":"+snp.getStart());
+				typedOnlyWriter.write(_contig + ":" + snp.getStart());
 			}
 
 		} else {
@@ -522,7 +523,7 @@ public class StatisticsTask implements ITask {
 			}
 
 			if (insideChunk) {
-				
+
 				// allele-frequency check
 				if (!population.equals("mixed") && refSnp.hasFrequencies()) {
 					SnpStats statistics;
@@ -647,6 +648,14 @@ public class StatisticsTask implements ITask {
 		int mixedGenotypes[] = null;
 		int count = 0;
 
+		int nonParStart = 2699520;
+		int nonParEnd = 154931044;
+
+		if (build.equals("hg38")) {
+			nonParStart = 2781479;
+			nonParEnd = 155701383;
+		}
+		
 		while (it.hasNext()) {
 
 			VariantContext line = it.next();
@@ -659,7 +668,7 @@ public class StatisticsTask implements ITask {
 				line = new VariantContextBuilder(line).chr("chrX").make();
 			}
 
-			if (line.getStart() >= 60001 && line.getStart() <= 2699520) {
+			if (line.getStart() < nonParStart) {
 
 				vcfChunkWriterPar1.add(line);
 
@@ -669,7 +678,7 @@ public class StatisticsTask implements ITask {
 
 			}
 
-			else if (line.getStart() > 2699520 && line.getStart() <= 154931043) {
+			else if (line.getStart() >= nonParStart && line.getStart() <= nonParEnd) {
 
 				count++;
 
@@ -685,7 +694,7 @@ public class StatisticsTask implements ITask {
 
 			}
 
-			else if (line.getStart() > 154931043 && line.getStart() <= 155270560) {
+			else {
 
 				vcfChunkWriterPar2.add(line);
 
@@ -972,6 +981,14 @@ public class StatisticsTask implements ITask {
 
 	public void setChrXPloidyError(boolean chrXPloidyError) {
 		this.chrXPloidyError = chrXPloidyError;
+	}
+
+	public String getBuild() {
+		return build;
+	}
+
+	public void setBuild(String build) {
+		this.build = build;
 	}
 
 }
