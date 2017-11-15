@@ -116,10 +116,17 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			return false;
 		}
 
-		if (phasing.equals("eagle") && !panel.checkEagle()) {
-			context.error("Eagle reference files not found.");
+		if (phasing.equals("eagle") && !panel.checkEagleMap()) {
+			context.error("Eagle map file not found.");
 			return false;
 		}
+		
+		//TODO check bcf files after resolvePattern()
+		/*if (phasing.equals("eagle") && !panel.checkEagleBcf()) {
+			System.out.println(panel.getRefEagle()());
+			context.error("Eagle reference files not found.");
+			return false;
+		}*/
 
 		// execute one job per chromosome
 		try {
@@ -183,8 +190,8 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 						// eagle
 						context.println("  Setting up eagle reference and map files...");
 						job.setMapEagleHdfs(panel.getMapEagle());
-						String refEadleFilenameChromosome = resolvePattern(panel.getRefEagle(), chr);
-						job.setRefEagleHdfs(refEadleFilenameChromosome);
+						String refEagleFilenameChromosome = resolvePattern(panel.getRefEagle(), chr);
+						job.setRefEagleHdfs(refEagleFilenameChromosome);
 					}
 					job.setPhasing(phasing);
 

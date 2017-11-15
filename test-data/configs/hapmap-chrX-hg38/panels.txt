@@ -4,5 +4,5 @@ panels:
     hdfs: ref-panels/$chr.1000g.Phase1.v3.With.Parameter.Estimates.hg38.m3vcf.gz
     legend: test-data/configs/hapmap-chrX-hg38/ref-panels/1000g_chrX_impute.hg38.legend.gz
     mapEagle: ref-panels/genetic_map_hg38_withX.txt.gz
-    refEagle: ref-panels/hapmap_r22.chr$chr.CEU.hg38.bcf
+    refEagle: ref-panels/ALL.$chr.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.hg38.bcf
     build: hg38
