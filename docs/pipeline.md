@@ -57,36 +57,16 @@ Our pipeline performs the following steps:
 
 ## Chromosome X
 
-Michigan Imputation Server 1.1.0 (currently in beta) uses minimac4 and Eagle2 to impute chromosome X.
-For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are automatically merged by Michigan Imputation Server to provide users a complete chromosome X file.
+Michigan Imputation Server 1.1.0 uses minimac4 and Eagle2 to impute chromosome X.
+For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are then automatically merged by Michigan Imputation Server and are returned as one complete chromosome X file.
 
-<table>
-<tbody>
+| ||
+| Name | Region |
+| ChrX PAR1 Region | chr X1 (60001 - 2699520 |
+| ChrX nonPAR Region | chr X2 (2699521 - 154931043) |
+| ChrX PAR2 Region | chr X3 (154931044 - 155270560) |
 
-<tr>
+Additionally to the standard QC, the following per-sample checks are executed:
 
-<td width="200px">ChrX PAR1 Region</td>
-
-<td>chr X1 (60001 - 2699520)</td>
-
-</tr>
-
-<tr>
-
-<td>ChrX nonPAR Region</td>
-
-<td>chr X2 (2699521 - 154931043)</td>
-
-</tr>
-
-<tr>
-
-<td>ChrX PAR2 Region</td>
-
-<td>chr X3 (154931044 - 155270560)</td>
-
-</tr>
-
-</tbody>
-
-</table>
+1. Ploidy Check: Verifies if all variants in the nonPAR region are either haploid or diploid.
+2. Mixed Genotypes Check: Verifies if the amount of mixed genotypes (e.g. 1/.) are < 10 %.
