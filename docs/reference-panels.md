@@ -19,46 +19,14 @@ This HRC panel consists of 64,940 haplotypes of predominantly European ancestry.
 
 This HRC panel consists of 64,976 haplotypes of predominantly European ancestry.
 
-<table class="table table-bordered">
+| ||
+| | |
+| Number of Samples | 32,488 |
+| Sites (chr1-22) | 39,741,659 |
+| Chromosomes | 1-22 and **chromosome X**|
+| Website: | [http://www.haplotype-reference-consortium.org](http://www.haplotype-reference-consortium.org)  
+[HRC r1 Release Note](https://imputationserver.sph.umich.edu/start.html#!pages/hrc) |
 
-<tbody>
-
-<tr>
-
-<td width="200px">Number of Samples</td>
-
-<td>32,488</td>
-
-</tr>
-
-<tr>
-
-<td>Sites</td>
-
-<td>39,741,659</td>
-
-</tr>
-
-<tr>
-
-<td>Chromosomes</td>
-
-<td>1-22</td>
-
-</tr>
-
-<tr>
-
-<td>Website:</td>
-
-<td>[http://www.haplotype-reference-consortium.org](http://www.haplotype-reference-consortium.org)  
-[HRC r1 Release Note](https://imputationserver.sph.umich.edu/start.html#!pages/hrc)</td>
-
-</tr>
-
-</tbody>
-
-</table>
 
 ## 1000 Genomes Phase 3 (Version 5)
 
