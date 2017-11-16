@@ -12,5 +12,8 @@
 ## Extending expiration date or reset download counter
 - Please [contact us](/contact).
 
+## Speed up downloads
+- Please give [aria2](https://aria2.github.io/) a try.
+
 ## Local Imputation Server Setup
 - We currently only support [Docker](/docker) image for 1KP3.
