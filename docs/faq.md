@@ -10,7 +10,7 @@
 - Please put single/double quotes around the password when extracting it from the command line.
 
 ## Extending expiration date or reset download counter
-- Please [contact us](/docs/contact).
+- Please [contact us](/contact).
 
 ## Local Imputation Server Setup
-- We currently only support [Docker](/docs/docker) image for 1KP3.
+- We currently only support [Docker](/docker) image for 1KP3.
