@@ -31,9 +31,9 @@ public class ImputationMinimac3Test {
 	public static final boolean VERBOSE = true;
 
 	public final int TOTAL_REFPANEL_CHR20_B37 = 63402;
-	public final int TOTAL_REFPANEL_CHR20_HG38 = 63384;
+	public final int TOTAL_REFPANEL_CHR20_B38 = 63384;
 	public final int TOTAL_REFPANEL_CHRX_B37 = 1479509;
-	public final int TOTAL_REFPANEL_CHRX_HG38 = 1077575;
+	public final int TOTAL_REFPANEL_CHRX_B38 = 1077575;
 	public final int ONLY_IN_INPUT = 78;
 
 	@BeforeClass
@@ -489,7 +489,7 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(false, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20_B37 - ONLY_IN_INPUT, file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -652,7 +652,7 @@ public class ImputationMinimac3Test {
 		assertEquals(true, vcfFile.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHRX_B37, vcfFile.getNoSnps());
 
-		// FileUtil.deleteDirectory(file);
+		FileUtil.deleteDirectory(file);
 
 	}
 
@@ -819,7 +819,7 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20_HG38 + ONLY_IN_INPUT, file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20_B38 + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -866,7 +866,7 @@ public class ImputationMinimac3Test {
 		assertEquals("X", vcfFile.getChromosome());
 		assertEquals(26, vcfFile.getNoSamples());
 		assertEquals(true, vcfFile.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHRX_HG38, vcfFile.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHRX_B38, vcfFile.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -914,9 +914,63 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		// TODO: update with new values for HG38!
-		// assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT,
-		// file.getNoSnps());
+
+		assertEquals(TOTAL_REFPANEL_CHR20_B38 + ONLY_IN_INPUT, file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
+	public void testChrXPipelineWithEagleHg38() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chrX-hg38";
+		String inputFolder = "test-data/data/chrX-unphased";
+
+		// maybe git large files?
+		if (!new File(
+				"test-data/configs/hapmap-chrX-hg38/ref-panels/ALL.X.nonPAR.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.hg38.bcf")
+						.exists()) {
+			System.out.println("chrX bcf nonPAR file not available");
+			return;
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
+
+		assertEquals("X", vcfFile.getChromosome());
+		assertEquals(26, vcfFile.getNoSamples());
+		assertEquals(true, vcfFile.isPhased());
+		assertEquals(TOTAL_REFPANEL_CHRX_B38, vcfFile.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -965,9 +1019,7 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		// TODO: update with new values for HG38!
-		// assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT,
-		// file.getNoSnps());
+		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -1016,9 +1068,8 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		// TODO: update with new values for HG38!
-		// assertEquals(TOTAL_REFPANEL_CHR20 - FILTER_REFPANEL + ONLY_IN_INPUT,
-		// file.getNoSnps());
+
+		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 

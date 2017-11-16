@@ -31,7 +31,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	private boolean running = true;
 
-	public static int THREADS = 24;
+	public static int THREADS = 25;
 
 	public ImputationMinimac3() {
 		super(THREADS);
@@ -120,14 +120,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			context.error("Eagle map file not found.");
 			return false;
 		}
-		
-		//TODO check bcf files after resolvePattern()
-		/*if (phasing.equals("eagle") && !panel.checkEagleBcf()) {
-			System.out.println(panel.getRefEagle()());
-			context.error("Eagle reference files not found.");
-			return false;
-		}*/
-
+	
 		// execute one job per chromosome
 		try {
 			String[] chunkFiles = FileUtil.getFiles(input, "*.*");
