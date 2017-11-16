@@ -63,12 +63,14 @@ Our pipeline performs the following steps:
 For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are then automatically merged by Michigan Imputation Server and are returned as one complete chromosome X file. Only Eagle is supported.
 
 ### b37 coordinates
+| ||
 | | |
 | ChrX PAR1 Region | chr X1 (< 2699520) |
 | ChrX nonPAR Region | chr X2 (2699520 - 154931044) |
 | ChrX PAR2 Region | chr X3 (> 154931044) |
 
 ### b38 coordinates
+| ||
 | | |
 | ChrX PAR1 Region | chr X1 (< 2781479) |
 | ChrX nonPAR Region | chr X2 (2781479 - 155701383) |
