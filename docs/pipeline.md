@@ -29,10 +29,13 @@ Our pipeline performs the following steps:
 
     *   For chrX, check if sex can be determined. Exclude sample otherwise.
     *   For chr1-22, a chunk is excluded if one sample has a call rate < 50 %. Only complete chunks are excluded, not samples (see "On Chunk level" above)
-3.  Execute for each chunk one of the following phasing algorithms (we use an overlap of 5 Mb). For example, chr20:1-20000000 and reference population EUR:
+
+3. Perform a liftOver step, if input is b37 (HG19) and the Topmed panel (b38) is selected.
+
+4.  Execute for each chunk one of the following phasing algorithms (we use an overlap of 5 Mb). For example, chr20:1-20000000 and reference population EUR:
 
     **Eagle2**
-      <pre>./eagle --vcfRef HRC.r1-1.GRCh37.chr20.shapeit3.mac5.aa.genotypes.bcf --vcfTarget chunk_20_0000000001_0020000000.vcf.gz  --./geneticMapFile genetic_map_chr20_combined_b37.txt --outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 --chrom 20
+      <pre>./eagle --vcfRef HRC.r1-1.GRCh37.chr20.shapeit3.mac5.aa.genotypes.bcf --vcfTarget chunk_20_0000000001_0020000000.vcf.gz  --./geneticMapFile genetic_map_chr20_combined_b37.txt --outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 -allowRefAltSwap --vcfOutFormat z --outputUnphased
       </pre>
 
     **ShapeIt**
@@ -47,24 +50,29 @@ Our pipeline performs the following steps:
     </pre>
 
 
-4.  Execute for each chunk minimac in order to impute the phased data (we use a window of 500 kb)
+5.  Execute for each chunk minimac in order to impute the phased data (we use a window of 500 kb)
 
-    <pre>./Minimac3 --refHaps HRC.r1-1.GRCh37.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz --haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000 --window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome --format GT,DS,GP --allTypedSites
+    <pre>./Minimac4 --refHaps HRC.r1-1.GRCh37.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz --haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000 --window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome --format GT,DS,GP --allTypedSites --constantPara 1.9e-05 --minRatio 0.00001 --map B37_MAP_FILE.map
     </pre>
 
-5.  Merge all chunks of one chromosome into one single vcf
-6.  Create tabix index and encrypt data with one-time password
+6.  Merge all chunks of one chromosome into one single vcf
+7.  Encrypt data with one-time password
 
 ## Chromosome X
 
-Michigan Imputation Server 1.1.0 uses minimac4 and Eagle2 to impute chromosome X.
-For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are then automatically merged by Michigan Imputation Server and are returned as one complete chromosome X file.
+For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are then automatically merged by Michigan Imputation Server and are returned as one complete chromosome X file. Only Eagle is supported.
 
-| ||
+### b37 coordinates
 | | |
-| ChrX PAR1 Region | chr X1 (60001 - 2699520 |
-| ChrX nonPAR Region | chr X2 (2699521 - 154931043) |
-| ChrX PAR2 Region | chr X3 (154931044 - 155270560) |
+| ChrX PAR1 Region | chr X1 (< 2699520) |
+| ChrX nonPAR Region | chr X2 (2699520 - 154931044) |
+| ChrX PAR2 Region | chr X3 (> 154931044) |
+
+### b38 coordinates
+| | |
+| ChrX PAR1 Region | chr X1 (< 2781479) |
+| ChrX nonPAR Region | chr X2 (2781479 - 155701383) |
+| ChrX PAR2 Region | chr X3  (> 155701383)|
 
 Additionally to the standard QC, the following per-sample checks are executed for chrX:
 
