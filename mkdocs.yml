@@ -6,7 +6,7 @@ pages:
   - Getting Started: getting-started.md
   - Data Preparation: prepare-your-data.md
   - Reference Panels: reference-panels.md
-  - Pipeline Details: pipeline.md
+  - Pipeline Overview: pipeline.md
   - Security: data-sensitivity.md
   - FAQ: faq.md
 - Developer Documentation:
