@@ -41,8 +41,8 @@ public class FailureNotification extends WorkflowStep {
 
 				// send all errors after input validation to slack
 				try {
-					context.sendNotification("Job " + context.getJobId() + " failed in " + step + "\n\n More Details: "
-							+ serverUrl + "/start.html#!jobs/" + context.getJobId());
+					context.sendNotification("Job *" + context.getJobId() + "* failed in *" + step
+							+ "* :thinking_face:\n" + serverUrl + "/start.html#!jobs/" + context.getJobId());
 				} catch (Exception e) {
 					context.println("Sending notification message failed: " + e.getMessage());
 				}
