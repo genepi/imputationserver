@@ -2,7 +2,7 @@ panels:
    
   - id: hapmap2
     hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
-    legend: test-data/configs/hapmap-3chr/ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
+    legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
     mapShapeIT: ref-panels/genetic_map_b37.tar.gz
