@@ -211,12 +211,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 				return;
 			}
 
-			// fix window bug in minimac
-			int snpInfo = pipeline.fixInfoFile(chunk, outputChunk);
-			log.info("  " + chunk.toString() + " Snps in info chunk: " + snpInfo);
-
 			// store info file
-			HdfsUtil.put(outputChunk.getInfoFixedFilename(), HdfsUtil.path(output, chunk + ".info"));
+			HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
 
 			long start = System.currentTimeMillis();
 

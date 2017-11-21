@@ -469,42 +469,6 @@ public class ImputationPipelineMinimac3 {
 
 	}
 
-	public int fixInfoFile(VcfChunk input, VcfChunkOutput output) throws IOException, InterruptedException {
-
-		// fix window bug in minimac
-
-		LineReader readerInfo = new LineReader(output.getInfoFilename());
-		LineWriter writerInfo = new LineWriter(output.getInfoFixedFilename());
-
-		readerInfo.next();
-		String header = readerInfo.get();
-		writerInfo.write(header);
-
-		int startIndex = Integer.MAX_VALUE;
-		int endIndex = 0;
-
-		int index = 0;
-		int snps = 0;
-		while (readerInfo.next()) {
-			String line = readerInfo.get();
-			String[] tiles = line.split("\t", 2);
-			int position = Integer.parseInt(tiles[0].split(":")[1]);
-			if (position >= input.getStart() && position <= input.getEnd()) {
-				startIndex = Math.min(startIndex, index);
-				endIndex = Math.max(endIndex, index);
-				writerInfo.write(line);
-				snps++;
-			}
-			index++;
-		}
-
-		readerInfo.close();
-		writerInfo.close();
-
-		return snps;
-
-	}
-
 	public void setHapiUrPreprocessCommand(String hapiUrPreprocessCommand) {
 		this.hapiUrPreprocessCommand = hapiUrPreprocessCommand;
 	}

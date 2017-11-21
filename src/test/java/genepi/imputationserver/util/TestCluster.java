@@ -42,7 +42,7 @@ public class TestCluster {
 
 		File testCluster = new File(WORKING_DIRECTORY);
 		if (testCluster.exists()) {
-			//FileUtil.deleteDirectory(testCluster);
+			FileUtil.deleteDirectory(testCluster);
 		}
 		testCluster.mkdirs();
 		
@@ -78,7 +78,7 @@ public class TestCluster {
 		cluster.shutdown(true);
 		File testCluster = new File(WORKING_DIRECTORY);
 		if (testCluster.exists()) {
-			//FileUtil.deleteDirectory(testCluster);
+			FileUtil.deleteDirectory(testCluster);
 		}
 	}
 

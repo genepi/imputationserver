@@ -133,13 +133,23 @@ public class RefPanel {
 		return refEagle;
 	}
 
-	public boolean checkEagle() {
+	public boolean checkEagleMap() {
 
 		if (mapEagle == null) {
 			return false;
 		}
 
 		return HdfsUtil.exists(mapEagle);
+
+	}
+	
+	public boolean checkEagleBcf() {
+
+		if (refEagle == null) {
+			return false;
+		}
+
+		return HdfsUtil.exists(refEagle);
 
 	}
 
