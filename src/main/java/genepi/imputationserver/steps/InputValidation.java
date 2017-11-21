@@ -265,6 +265,7 @@ public class InputValidation extends WorkflowStep {
 		String reference = context.get("refpanel");
 		String population = context.get("population");
 		String phasing = context.get("phasing");
+		String mode = context.get("mode");
 
 		RefPanelList panels = null;
 		try {
@@ -289,20 +290,25 @@ public class InputValidation extends WorkflowStep {
 			return false;
 		}
 
-		// check if reference panel supports selected phasing algorithm
-		if (phasing.equals("hapiur") && panel.getMapHapiUR() == null) {
-			context.error("Reference panel " + reference + " doesn't support phasing with HapiUR.");
-			return false;
-		}
-
-		if (phasing.equals("shapeit") && panel.getMapShapeIT() == null) {
-			context.error("Reference panel " + reference + " doesn't support phasing with ShapeIt.");
-			return false;
-		}
-
-		if (phasing.equals("eagle") && panel.getMapEagle() == null) {
-			context.error("Reference panel " + reference + " doesn't support phasing with Eagle.");
-			return false;
+		//check if mode is imputation 	
+		if (mode == null || mode.equals("imputation")){
+		
+			// check if reference panel supports selected phasing algorithm
+			if (phasing.equals("hapiur") && panel.getMapHapiUR() == null) {
+				context.error("Reference panel " + reference + " doesn't support phasing with HapiUR.");
+				return false;
+			}
+	
+			if (phasing.equals("shapeit") && panel.getMapShapeIT() == null) {
+				context.error("Reference panel " + reference + " doesn't support phasing with ShapeIt.");
+				return false;
+			}
+	
+			if (phasing.equals("eagle") && panel.getMapEagle() == null) {
+				context.error("Reference panel " + reference + " doesn't support phasing with Eagle.");
+				return false;
+			}
+		
 		}
 
 		// check populations
