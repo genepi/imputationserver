@@ -129,7 +129,13 @@ public class FastQualityControl extends WorkflowStep {
 		task.setChunkSize(chunkSize);
 		task.setPhasingWindow(phasingWindow);
 		task.setPopulation(population);
-		task.setLegendFile(panel.getLegend());
+		// support relative path
+		String legend = panel.getLegend();
+		if (!legend.startsWith("/")) {
+			legend = FileUtil.path(folder, legend);
+		}
+
+		task.setLegendFile(legend);
 		task.setRefSamples(referenceSamples);
 		task.setMafFile(mafFile);
 		task.setChunkFileDir(chunkFileDir);
