@@ -11,9 +11,9 @@ public class WorkflowTestContext extends WorkflowContext {
 	private String jobId = "test-job-" + System.currentTimeMillis();
 
 	private String hdfsTemp;
-	
+
 	private String localTemp;
-	
+
 	private Map<String, String> inputs;
 
 	private Map<String, String> outputs;
@@ -23,6 +23,8 @@ public class WorkflowTestContext extends WorkflowContext {
 	private Map<String, Boolean> submitCounters = new HashMap<String, Boolean>();
 
 	private Map<String, Object> data = new HashMap<String, Object>();
+
+	private Map<String, String> config;
 
 	private StringBuffer memory = new StringBuffer();
 
@@ -85,6 +87,12 @@ public class WorkflowTestContext extends WorkflowContext {
 
 	@Override
 	public boolean sendMail(String to, String subject, String body) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean sendNotification(String body) throws Exception {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -157,7 +165,7 @@ public class WorkflowTestContext extends WorkflowContext {
 	public void setHdfsTemp(String hdfsTemp) {
 		this.hdfsTemp = hdfsTemp;
 	}
-	
+
 	@Override
 	public String getHdfsTemp() {
 		return hdfsTemp;
@@ -167,7 +175,7 @@ public class WorkflowTestContext extends WorkflowContext {
 	public String getLocalTemp() {
 		return localTemp;
 	}
-	
+
 	public void setLocalTemp(String localTemp) {
 		this.localTemp = localTemp;
 	}
@@ -227,6 +235,20 @@ public class WorkflowTestContext extends WorkflowContext {
 
 	public boolean isVerbose() {
 		return verbose;
+	}
+
+	@Override
+	public void setConfig(Map<String, String> config) {
+		this.config = config;
+	}
+
+	@Override
+	public String getConfig(String param) {
+		if (config != null) {
+			return config.get(param);
+		} else {
+			return null;
+		}
 	}
 
 }
