@@ -430,8 +430,6 @@ public class ImputationPipelineMinimac3 {
 		params.add(refFilename);
 		params.add("--haps");
 		params.add(output.getPhasedVcfFilename());
-		params.add("--rounds");
-		params.add(rounds + "");
 		params.add("--start");
 		params.add(output.getStart() + "");
 		params.add("--end");
@@ -449,8 +447,9 @@ public class ImputationPipelineMinimac3 {
 			params.add("--unphasedOutput");
 		}
 		params.add("--allTypedSites");
-		params.add("--constantPara");
-		params.add("1.9e-05");
+		params.add("--meta");
+		//params.add("--constantPara");
+		//params.add("1.9e-05");
 		params.add("--minRatio");
 		params.add("0.00001");
 		if (mapMinimac != null) {
