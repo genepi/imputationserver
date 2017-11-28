@@ -1,13 +1,13 @@
 # Data preparation
 
-Michigan Imputation Server accepts VCF files compressed by [bgzip](http://samtools.sourceforge.net/tabix.shtml). Please make sure the following requirements are met:
+Michigan Imputation Server accepts VCF files compressed with [bgzip](http://samtools.sourceforge.net/tabix.shtml). Please make sure the following requirements are met:
 
-- Create a seperate vcf.gz file for each chromosome.
+- Create a separate vcf.gz file for each chromosome.
 - Variations must be sorted by genomic position.
 - GRCh37 or GRCh38 coordinates are required.
 
 !!! note
-    Several .vcf.gz files can be uploaded at once.
+    Several \*.vcf.gz files can be uploaded at once.
 
 
 
@@ -27,7 +27,7 @@ wget ftp://ngs.sanger.ac.uk/production/hrc/HRC.r1-1/HRC.r1-1.GRCh37.wgs.mac5.sit
 ### Convert ped/map to bed
 
 ````sh
-/home/seb/tools/plink/plink --file <input-file> --make-bed --out <output-file>
+plink --file <input-file> --make-bed --out <output-file>
 ````
 
 ### Create a frequency file
@@ -49,22 +49,25 @@ sh Run-plink.sh
 vcfCooker --in-bfile <bim file> --ref <reference.fasta>  --out <output-vcf> --write-vcf
 bgzip <output-vcf>
 ````
+## Additional Tools
 
-## Convert ped/map files to VCF files
+### Convert ped/map files to VCF files
 
-To convert your ped/map file into a VCF file, please use either [plink2](https://www.cog-genomics.org/plink2/), [VCFtools](http://vcftools.sourceforge.net/man_latest.html) or [VcfCooker](http://genome.sph.umich.edu/wiki/VcfCooker).  
+Several tools are available:
+ [plink2](https://www.cog-genomics.org/plink2/),
+ [BCFtools](https://samtools.github.io/bcftools) or [VcfCooker](http://genome.sph.umich.edu/wiki/VcfCooker).  
 
 ````sh
 plink --ped study_chr1.ped --map study_chr1.map --recode vcf --out study_chr1
 ````
 
-Create a sorted vcf.gz file using [VCFtools](http://vcftools.sourceforge.net) and [](http://sourceforge.net/projects/samtools/files/tabix/)[tabix (including bgzip)](http://sourceforge.net/projects/samtools/files/tabix/):
+Create a sorted vcf.gz file using [BCFtools](https://samtools.github.io/bcftools):
 
 ````sh
-vcf-sort mystudy_chr1.vcf | bgzip -c > mystudy_chr1.vcf.gz
+bcftools sort study_chr1.vcf -Oz -o study_chr1.vcf.gz
 ````
 
-## CheckVCF
+### CheckVCF
 
 Use [checkVCF](https://github.com/zhanxw/checkVCF) to ensure that the VCF files are valid. checkVCF proposes "Action Items" (e.g. upload to sftp server), which can be ignored. Only the validity should be checked with this command.
 

@@ -75,7 +75,7 @@ chunk_20_0000000001_0020000000.fam --input-map genetic_map_b37.tar.gz/genetic_ma
 ## Imputation
 
 ###
-* Execute for each chunk minimac in order to impute the phased data (we use a window of 500 kb)
+* Execute for each chunk minimac in order to impute the phased data (we use a window of 500 kb):
 
 ````sh
 ./Minimac4 --refHaps HRC.r1-1.GRCh37.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz
@@ -84,7 +84,7 @@ chunk_20_0000000001_0020000000.fam --input-map genetic_map_b37.tar.gz/genetic_ma
 --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001
 ````
 
-If a map file available (currently TOPMed only), the following cmd is executed:
+If a map file is available (currently TOPMed only), the following cmd is executed:
 
 ````sh
 ./Minimac4 --refHaps HRC.r1-1.GRCh38.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz
@@ -93,7 +93,7 @@ If a map file available (currently TOPMed only), the following cmd is executed:
 --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 --referenceEstimates --map B38_MAP_FILE.map
 ````
 
-* Merge all chunks of one chromosome into one single vcf
+* Merge all chunks of one chromosome into one single vcf.gz
 * Encrypt data with one-time password
 
 ## Chromosome X Pipeline
@@ -101,7 +101,7 @@ If a map file available (currently TOPMed only), the following cmd is executed:
 Additionally to the standard QC, the following per-sample checks are executed for chrX:
 
 * Ploidy Check: Verifies if all variants in the nonPAR region are either haploid or diploid.
-* Mixed Genotypes Check: Verifies if the amount of mixed genotypes (e.g. 1/.) are < 10 %.
+* Mixed Genotypes Check: Verifies if the amount of mixed genotypes (e.g. 1/.) is < 10 %.
 
 For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are then automatically merged by Michigan Imputation Server and are returned as one complete chromosome X file. Only Eagle is supported.
 
