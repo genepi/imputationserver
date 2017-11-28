@@ -73,13 +73,24 @@ chunk_20_0000000001_0020000000.fam --input-map genetic_map_b37.tar.gz/genetic_ma
 ````
 
 ## Imputation
+
+###
 * Execute for each chunk minimac in order to impute the phased data (we use a window of 500 kb)
 
 ````sh
 ./Minimac4 --refHaps HRC.r1-1.GRCh37.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz
 --haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000
 --window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome
---format GT,DS,GP --allTypedSites --constantPara 1.9e-05 --minRatio 0.00001 --map B37_MAP_FILE.map
+--format GT,DS,GP --allTypedSites --meta --minRatio 0.00001
+````
+
+If a map file available (currently TOPMed only), the following cmd is executed:
+
+````sh
+./Minimac4 --refHaps HRC.r1-1.GRCh38.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz
+--haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000
+--window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome
+--format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 --referenceEstimates --map B38_MAP_FILE.map
 ````
 
 * Merge all chunks of one chromosome into one single vcf
