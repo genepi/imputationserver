@@ -238,6 +238,12 @@ public class InputValidation extends WorkflowStep {
 
 			context.endTask(validVcfFiles.size() + " valid VCF file(s) found.\n\n" + infos, WorkflowContext.OK);
 
+			if (!phased && (phasing == null || phasing.isEmpty() || phasing.equals("no_phasing"))) {
+				context.error("Your input data is unphased. Please select an algorithm for phasing.");
+				return false;
+			}
+
+			
 			// init counters
 			context.incCounter("samples", noSamples);
 			context.incCounter("genotypes", noSamples * noSnps);

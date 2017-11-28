@@ -266,6 +266,88 @@ public class InputValidationTest extends TestCase {
 	}
 	
 	
+	public void testPhasedVcfWithEmptyPhasing() throws IOException {
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-phased";
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is ok
+		assertEquals(true, result);
+
+		// check analyze task and results
+
+		assertTrue(context.hasInMemory("Datatype: phased"));
+
+	}
+	
+	public void testPhasedVcfWithNoAlgorithmSelected() throws IOException {
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-phased";
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "no_phasing");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is ok
+		assertEquals(true, result);
+
+		// check analyze task and results
+
+		assertTrue(context.hasInMemory("Datatype: phased"));
+
+	}
+	
+	public void testUnphasedVcfWithEmptyPhasing() throws IOException {
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+
+		// check analyze task and results
+
+		assertTrue(context.hasInMemory("Datatype: unphased"));
+	}
+	
+	public void testUnphasedVcfWithNoAlgorithmSelected() throws IOException {
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "no_phasing");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+
+		// check analyze task and results
+
+		assertTrue(context.hasInMemory("Datatype: unphased"));
+	}
+	
 	public void testTabixIndexCreationChr20() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";

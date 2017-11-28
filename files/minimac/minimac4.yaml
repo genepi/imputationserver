@@ -81,8 +81,8 @@ mapred:
        type: list
        value: hg19
        values:
-         hg19: hg19
-         Hg38: Hg38                
+         hg19: GRCh37/hg19
+         Hg38: GRCh38/hg38           
 
      - id: phasing
        description: Phasing
@@ -90,8 +90,7 @@ mapred:
        value: eagle
        values:
          eagle: Eagle v2.3 (phased output)
-         hapiur: HapiUR (phased output)
-         shapeit: ShapeIT v2.r790 (unphased)
+         no_phasing: No phasing
 
   
      - id: population
