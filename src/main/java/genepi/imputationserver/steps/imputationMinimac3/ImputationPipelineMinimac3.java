@@ -414,9 +414,9 @@ public class ImputationPipelineMinimac3 {
 		minimac.setSilent(false);
 
 		String format = "GT,DS,GP";
-		//if (output.getChromosome().equals("X")) {
-		//	format = "GT,DS,GP,HDS";
-		//}
+		// if (output.getChromosome().equals("X")) {
+		// format = "GT,DS,GP,HDS";
+		// }
 
 		String chr = "";
 		if (build.equals("hg38")) {
@@ -448,11 +448,13 @@ public class ImputationPipelineMinimac3 {
 		}
 		params.add("--allTypedSites");
 		params.add("--meta");
-		//params.add("--constantPara");
-		//params.add("1.9e-05");
+		// params.add("--constantPara");
+		// params.add("1.9e-05");
 		params.add("--minRatio");
 		params.add("0.00001");
+
 		if (mapMinimac != null) {
+			params.add("--referenceEstimates");
 			params.add("--map");
 			params.add(mapMinimac);
 		}
