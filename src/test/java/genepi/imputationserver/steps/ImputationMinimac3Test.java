@@ -117,7 +117,7 @@ public class ImputationMinimac3Test {
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
 		result = run(context, imputation);
-		assertFalse(result);
+		assertTrue(result);
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
