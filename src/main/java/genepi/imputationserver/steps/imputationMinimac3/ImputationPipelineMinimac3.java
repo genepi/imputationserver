@@ -414,9 +414,9 @@ public class ImputationPipelineMinimac3 {
 		minimac.setSilent(false);
 
 		String format = "GT,DS,GP";
-		if (output.getChromosome().equals("X")) {
-			format = "GT,DS,GP,HDS";
-		}
+		//if (output.getChromosome().equals("X")) {
+		//	format = "GT,DS,GP,HDS";
+		//}
 
 		String chr = "";
 		if (build.equals("hg38")) {
