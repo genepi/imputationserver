@@ -79,6 +79,15 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		log.info("setting queue to " + queue);
 		getConfiguration().set("mapred.job.queue.name", queue);
 		getConfiguration().set("mapred.reduce.tasks", "22");
+		
+		//set values times 5 due to timeout of setup
+		set("mapreduce.jobtracker.expire.trackers.interval", "3000000");
+		set("mapreduce.tasktracker.healthchecker.script.timeout", "3000000");
+		
+		
+		set("", false);
+		
+		
 	}
 
 	@Override
