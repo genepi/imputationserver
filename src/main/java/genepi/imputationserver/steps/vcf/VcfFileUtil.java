@@ -40,6 +40,7 @@ public class VcfFileUtil {
 
 		Set<Integer> chunks = new HashSet<Integer>();
 		Set<String> chromosomes = new HashSet<String>();
+		Set<String> rawChromosomes = new HashSet<String>();
 		int noSnps = 0;
 		int noSamples = 0;
 
@@ -56,7 +57,6 @@ public class VcfFileUtil {
 			boolean phased = true;
 			boolean phasedAutodetect = true;
 			boolean firstLine = true;
-
 			while (lineReader.next()) {
 
 				String line = lineReader.get();
@@ -70,7 +70,8 @@ public class VcfFileUtil {
 					}
 
 					String chromosome = tiles[0];
-					chromosome = chromosome.replaceAll("chr", "");							
+					rawChromosomes.add(chromosome);
+					chromosome = chromosome.replaceAll("chr", "");
 					int position = Integer.parseInt(tiles[1]);
 
 					if (phased) {
@@ -171,6 +172,15 @@ public class VcfFileUtil {
 			pair.setNoSamples(noSamples);
 			pair.setChunks(chunks);
 			pair.setChromosomes(chromosomes);
+			
+			boolean hasChrPrefix = false;
+			for (String chromosome: rawChromosomes){
+				if (chromosome.startsWith("chr")){
+					hasChrPrefix = true;
+				}
+			}
+			pair.setRawChromosomes(rawChromosomes);
+			pair.setChrPrefix(hasChrPrefix);
 			pair.setPhased(phased);
 			pair.setPhasedAutodetect(phasedAutodetect);
 			pair.setChunkSize(chunksize);

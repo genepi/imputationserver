@@ -213,6 +213,20 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
+					if (build == null){
+						build = "hg19";
+					}
+					
+					if(build.equals("hg19") && vcfFile.hasChrPrefix()){
+						context.endTask("Your upload data contains chromosome '" + vcfFile.getRawChromosome() + "'. This is not a valid hg19 encoding. Please ensure that your input data is build hg19 and chromosome is encoded as '"+ vcfFile.getChromosome() +"'."  , WorkflowContext.ERROR);
+						return false;
+					}
+					
+					if (build.equals("hg38") && !vcfFile.hasChrPrefix()){
+						context.endTask("Your upload data contains chromosome '" + vcfFile.getRawChromosome() + "'. This is not a valid hg38 encoding. Please ensure that your input data is build hg38 and chromosome is encoded as 'chr"+ vcfFile.getChromosome() +"'." , WorkflowContext.ERROR);
+						return false;
+					}
+					
 					infos = "Samples: " + noSamples + "\n" + "Chromosomes:" + chromosomeString + "\n" + "SNPs: "
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)

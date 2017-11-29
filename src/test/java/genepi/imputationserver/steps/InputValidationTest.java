@@ -63,6 +63,64 @@ public class InputValidationTest extends TestCase {
 		assertTrue(context.hasInMemory("[ERROR] At least 50 samples must be included"));
 
 	}
+	
+	
+	public void testHg19DataWithBuild38() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/three";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		context.setInput("build", "hg38");
+		
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+
+		// check analyze task
+		assertTrue(context.hasInMemory("[RUN] Analyze file minimac_test2.50.vcf.gz"));
+
+		// check error message
+		assertTrue(context.hasInMemory("[ERROR]"));
+		assertTrue(context.hasInMemory("This is not a valid hg38 encoding."));
+
+	}
+	
+	public void testHg38DataWithBuild19() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased-hg38";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		context.setInput("build", "hg19");
+		
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+
+		// check analyze task
+		assertTrue(context.hasInMemory("[RUN] Analyze file chr20.R50.merged.1.330k.recode.unphased.small.hg38.vcf.gz"));
+
+		// check error message
+		// check error message
+		assertTrue(context.hasInMemory("[ERROR]"));
+		assertTrue(context.hasInMemory("This is not a valid hg19 encoding."));
+
+
+	}
+	
 
 	public void testWrongFiles() throws IOException {
 
