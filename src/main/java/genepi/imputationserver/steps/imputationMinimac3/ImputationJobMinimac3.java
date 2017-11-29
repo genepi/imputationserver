@@ -84,10 +84,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		set("mapreduce.jobtracker.expire.trackers.interval", "3000000");
 		set("mapreduce.tasktracker.healthchecker.script.timeout", "3000000");
 		
-		
-		set("", false);
-		
-		
 	}
 
 	@Override
