@@ -1,0 +1,9 @@
+panels:
+   
+  - id: phase1
+    hdfs: ref-panels/$chr.1000g.Phase1.v3.With.Parameter.Estimates.m3vcf.gz
+    legend: ref-panels/1000g_chr$chr_impute.legend.gz
+    mapEagle: ref-panels/genetic_map_hg19_withX.txt.gz
+    refEagle: ref-panels/ALL.chr$chr.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.bcf
+    mapShapeIT: ref-panels/genetic_map_b37.tar.gz
+    mapPatternShapeIT: genetic_map_chr$chr_combined_b37.txt    

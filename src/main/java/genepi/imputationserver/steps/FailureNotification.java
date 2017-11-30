@@ -24,13 +24,11 @@ public class FailureNotification extends WorkflowStep {
 		if (store.getString("minimac.sendmail") != null && !store.getString("minimac.sendmail").equals("")) {
 			notification = store.getString("minimac.sendmail");
 		}
-		
+
 		String serverUrl = "https://imputationserver.sph.umich.edu";
 		if (store.getString("server.url") != null && !store.getString("server.url").isEmpty()) {
 			serverUrl = store.getString("server.url");
 		}
-		
-		String errMail = store.getString("minimac.sendmail.error");
 
 		if (step == null) {
 			context.println("No error message sent. Object is empty");
@@ -38,6 +36,18 @@ public class FailureNotification extends WorkflowStep {
 		}
 
 		if (notification.equals("yes")) {
+
+			if (!step.equals(InputValidation.class.getName())) {
+
+				// send all errors after input validation to slack
+				try {
+					context.sendNotification("Job *" + context.getJobId() + "* failed in *" + step
+							+ "* :thinking_face:\n" + serverUrl + "/start.html#!jobs/" + context.getJobId());
+				} catch (Exception e) {
+					context.println("Sending notification message failed: " + e.getMessage());
+				}
+			}
+
 			if (mail != null) {
 
 				String subject = "Job " + context.getJobId() + " failed.";
@@ -47,17 +57,6 @@ public class FailureNotification extends WorkflowStep {
 
 				try {
 					context.sendMail(subject, message);
-
-					if (!step.equals(InputValidation.class.getName())) {
-
-						// send all errors after input validation to us
-
-						if (errMail != null) {
-							for (String mailAdress : errMail.split(",")) {
-								context.sendMail(mailAdress, subject + " [" + step + "]", message);
-							}
-						}
-					}
 
 					context.ok("We have sent an email to <b>" + mail + "</b> with the error message.");
 					context.println("We have sent an email to <b>" + mail + "</b> with the error message.");
@@ -76,8 +75,10 @@ public class FailureNotification extends WorkflowStep {
 				return false;
 			}
 
-		} else {
-			context.error("No action required. Email notification has been disabled in job.config");
+		} else
+
+		{
+			context.warning("No action required. Email notification has been disabled in job.config");
 			context.println("No action required. Email notification has been disabled in job.config");
 			return false;
 		}

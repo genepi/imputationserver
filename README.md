@@ -1,4 +1,6 @@
 # Michigan Imputation Server
+[![Build Status](https://travis-ci.org/genepi/imputationserver.svg?branch=qc-refactoring)](https://travis-ci.org/genepi/imputationserver)
+[![Coverage Status](https://coveralls.io/repos/github/genepi/imputationserver/badge.svg?branch=qc-refactoring)](https://coveralls.io/github/genepi/imputationserver?branch=qc-refactoring)
 
 [ ![Codeship Status for genepi/imputationserver](https://app.codeship.com/projects/9561ba10-beeb-0134-1fd6-0204b74559cb/status?branch=qc-refactoring)](https://app.codeship.com/projects/196409)
 

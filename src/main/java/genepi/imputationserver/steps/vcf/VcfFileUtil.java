@@ -1,43 +1,46 @@
 package genepi.imputationserver.steps.vcf;
 
-import genepi.hadoop.command.Command;
-import genepi.io.FileUtil;
-import genepi.io.text.LineReader;
-import genepi.io.text.LineWriter;
-import htsjdk.variant.vcf.VCFFileReader;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.command.Command;
+import genepi.io.FileUtil;
+import genepi.io.text.LineReader;
+import htsjdk.variant.vcf.VCFFileReader;
+
 public class VcfFileUtil {
 
-	public static String BINARIES = "bin/";
+	public static String TABIX_PATH = "bin/";
 
-	public static void setBinaries(String binaries) {
-		BINARIES = binaries;
+	public static void setTabixBinary(String binaries) {
+		TABIX_PATH = binaries;
 	}
-
+	
+	public static String getBinary(){
+		return TABIX_PATH;
+	}
+	
 	public static VcfFile load(String vcfFilename, int chunksize, boolean createIndex) throws IOException {
 
 		Set<Integer> chunks = new HashSet<Integer>();
 		Set<String> chromosomes = new HashSet<String>();
+		Set<String> rawChromosomes = new HashSet<String>();
 		int noSnps = 0;
 		int noSamples = 0;
 
@@ -54,7 +57,6 @@ public class VcfFileUtil {
 			boolean phased = true;
 			boolean phasedAutodetect = true;
 			boolean firstLine = true;
-
 			while (lineReader.next()) {
 
 				String line = lineReader.get();
@@ -68,6 +70,8 @@ public class VcfFileUtil {
 					}
 
 					String chromosome = tiles[0];
+					rawChromosomes.add(chromosome);
+					chromosome = chromosome.replaceAll("chr", "");
 					int position = Integer.parseInt(tiles[1]);
 
 					if (phased) {
@@ -139,21 +143,24 @@ public class VcfFileUtil {
 
 			}
 			lineReader.close();
-			reader.close();
-
-			String tabixPath = FileUtil.path(BINARIES, "tabix");
 
 			// create index
-			if (new File(tabixPath).exists() && createIndex) {
+			if (createIndex && !new File(vcfFilename + ".tbi").exists()) {
 
-				Command tabix = new Command(tabixPath);
+				File command = new File(TABIX_PATH);
+				if (!command.canExecute()){
+					command.setExecutable(true, false);
+				}
+				
+				Command tabix = new Command(TABIX_PATH);
 				tabix.setParams("-f", "-p", "vcf", vcfFilename);
 				tabix.saveStdErr("tabix.output");
 				int returnCode = tabix.execute();
 
 				if (returnCode != 0) {
-					throw new IOException("The provided VCF file is malformed. Error during index creation: "
-							+ FileUtil.readFileAsString("tabix.output"));
+					throw new IOException(
+							"The provided VCF file is malformed. Error during index creation: "
+									+ FileUtil.readFileAsString("tabix.output"));
 				}
 
 			}
@@ -165,6 +172,15 @@ public class VcfFileUtil {
 			pair.setNoSamples(noSamples);
 			pair.setChunks(chunks);
 			pair.setChromosomes(chromosomes);
+			
+			boolean hasChrPrefix = false;
+			for (String chromosome: rawChromosomes){
+				if (chromosome.startsWith("chr")){
+					hasChrPrefix = true;
+				}
+			}
+			pair.setRawChromosomes(rawChromosomes);
+			pair.setChrPrefix(hasChrPrefix);
 			pair.setPhased(phased);
 			pair.setPhasedAutodetect(phasedAutodetect);
 			pair.setChunkSize(chunksize);
@@ -202,7 +218,35 @@ public class VcfFileUtil {
 		validChromosomes.add("20");
 		validChromosomes.add("21");
 		validChromosomes.add("22");
+		validChromosomes.add("23");
 		validChromosomes.add("X");
+
+		validChromosomes.add("chr1");
+		validChromosomes.add("chr2");
+		validChromosomes.add("chr3");
+		validChromosomes.add("chr4");
+		validChromosomes.add("chr5");
+		validChromosomes.add("chr6");
+		validChromosomes.add("chr7");
+		validChromosomes.add("chr8");
+		validChromosomes.add("chr9");
+		validChromosomes.add("chr10");
+		validChromosomes.add("chr11");
+		validChromosomes.add("chr12");
+		validChromosomes.add("chr13");
+		validChromosomes.add("chr14");
+		validChromosomes.add("chr15");
+		validChromosomes.add("chr16");
+		validChromosomes.add("chr17");
+		validChromosomes.add("chr18");
+		validChromosomes.add("chr19");
+		validChromosomes.add("chr20");
+		validChromosomes.add("chr21");
+		validChromosomes.add("chr22");
+		validChromosomes.add("chr23");
+		validChromosomes.add("chrX");
+
+	
 	}
 
 	public static boolean isValidChromosome(String chromosome) {
@@ -210,7 +254,7 @@ public class VcfFileUtil {
 	}
 
 	public static boolean isChrX(String chromosome) {
-		return chromosome.equals("X");
+		return chromosome.equals("X") || chromosome.equals("23") || chromosome.equals("chrX") || chromosome.equals("chr23");
 	}
 
 	public static void mergeGz(String local, String hdfs, String ext) throws FileNotFoundException, IOException {
@@ -220,7 +264,7 @@ public class VcfFileUtil {
 
 	public static void merge(OutputStream out, String hdfs, String ext) throws IOException {
 
-		Configuration conf = new Configuration();
+		Configuration conf = HdfsUtil.getConfiguration();
 
 		FileSystem fileSystem = FileSystem.get(conf);
 		Path pathFolder = new Path(hdfs);
@@ -284,265 +328,30 @@ public class VcfFileUtil {
 		}
 
 	}
-
-	public static List<VcfFile> prepareChrX(VcfFile file) throws IOException {
-		List<VcfFile> files = new Vector<VcfFile>();
-
-		List<String> b1 = new Vector<String>();
-		List<String> b2 = new Vector<String>();
-
-		String VCFKEEPSAMPLES = FileUtil.path(BINARIES, "vcfkeepsamples");
-		String PLINK = FileUtil.path(BINARIES, "plink");
-		String TABIX = FileUtil.path(BINARIES, "tabix");
-		String BGZIP = FileUtil.path(BINARIES, "bgzip");
-
-		if (!new File(VCFKEEPSAMPLES).exists()) {
-			throw new IOException("vcfkeepsamples: file " + VCFKEEPSAMPLES + " not found.");
-		}
-
-		if (!new File(PLINK).exists()) {
-			throw new IOException("plink: file " + PLINK + " not found.");
-		}
-
-		if (!new File(TABIX).exists()) {
-			throw new IOException("tabix: file " + TABIX + " not found.");
-		}
-
-		if (!new File(BGZIP).exists()) {
-			throw new IOException("bgzip: file " + BGZIP + " not found.");
-		}
-
-		/** Split file into no.auto (or nonpar) and auto (or par) region */
-		List<String> paths = VcfFileUtil.splitFileByRegion(file.getVcfFilename());
-
-		/** non.par, no SEX split */
-		// only if non.par region is available
-		if (paths.contains(file.getVcfFilename() + ".no.auto.vcf")) {
-
-			// bgzip
-			Command bgzip3 = new Command(BGZIP);
-			bgzip3.setSilent(true);
-			bgzip3.setParams(file.getVcfFilename() + ".no.auto.vcf");
-
-			if (bgzip3.execute() != 0) {
-				throw new IOException("Something went wrong with the bgzip no.auto command");
-			}
-
-			// tabix
-			Command tabix2 = new Command(TABIX);
-			tabix2.setSilent(true);
-			tabix2.setParams("-f", file.getVcfFilename() + ".no.auto.vcf.gz");
-
-			if (tabix2.execute() != 0) {
-				throw new IOException("Something went wrong with the tabix no.auto command");
-			}
-
-			Command sexCheck = new Command(PLINK);
-			sexCheck.setSilent(false);
-			sexCheck.setParams("--vcf", file.getVcfFilename() + ".no.auto.vcf.gz", "--check-sex", "--const-fid",
-					"--out", file.getVcfFilename());
-
-			if (sexCheck.execute() != 0) {
-				throw new IOException("Something went wrong with the plink command");
-			}
-
-			LineReader lr = new LineReader(file.getVcfFilename() + ".sexcheck");
-			while (lr.next()) {
-				String[] a = lr.get().split("\\s+");
-
-				if (a[4].equals("1")) {
-					b1.add(a[2]);
-				} else if (a[4].equals("2")) {
-					b2.add(a[2]);
-				}
-
-			}
-
-			/** Write for nonpar region a seperate file for male and female */
-			Command keepSamples = new Command(VCFKEEPSAMPLES);
-			keepSamples.setSilent(true);
-
-			//check if males have been detected
-			if (b1.size() > 0) {
-
-				String[] params = new String[b1.size() + 1];
-				params[0] = file.getVcfFilename() + ".no.auto.vcf.gz";
-				for (int i = 0; i < b1.size(); i++) {
-					params[i + 1] = b1.get(i);
-				}
-				keepSamples.setParams(params);
-				keepSamples.saveStdOut(file.getVcfFilename() + "-m.vcf");
-
-				if (keepSamples.execute() != 0) {
-					throw new IOException("Something went wrong with the keepSamples male command");
-				}
-
-				checkDoubleHaplotypes(file.getVcfFilename() + "-m.vcf");
-
-				// bgzip
-				Command bgzip = new Command(BGZIP);
-				bgzip.setSilent(true);
-				bgzip.setParams(file.getVcfFilename() + "-m.vcf");
-
-				if (bgzip.execute() != 0) {
-					throw new IOException("Something went wrong with the bgzip male command");
-				}
-
-				/** males-nopar */
-				VcfFile males = load(file.getVcfFilename() + "-m.vcf.gz", file.getChunkSize(), true);
-				Set<String> chromosomesMale = new HashSet<String>();
-				chromosomesMale.add("X.no.auto_male");
-				males.setChromosomes(chromosomesMale);
-				files.add(males);
-
-			}
-
-			//check if females have been detected
-			if (b2.size() > 0) {
-				String[] params = new String[b2.size() + 1];
-				params[0] = file.getVcfFilename() + ".no.auto.vcf.gz";
-				for (int i = 0; i < b2.size(); i++) {
-					params[i + 1] = b2.get(i);
-				}
-				keepSamples.setSilent(true);
-
-				keepSamples.setParams(params);
-				keepSamples.saveStdOut(file.getVcfFilename() + "-f.vcf");
-
-				if (keepSamples.execute() != 0) {
-					throw new IOException("Something went wrong with the kepsample female command");
-				}
-
-				// bgzip
-				Command bgzip2 = new Command(BGZIP);
-				bgzip2.setSilent(true);
-				bgzip2.setParams(file.getVcfFilename() + "-f.vcf");
-
-				if (bgzip2.execute() != 0) {
-					throw new IOException("Something went wrong with the bgzip female command");
-				}
-
-				/** females-nopar */
-				VcfFile females = load(file.getVcfFilename() + "-f.vcf.gz", file.getChunkSize(), true);
-
-				Set<String> chromosomesFemale = new HashSet<String>();
-				chromosomesFemale.add("X.no.auto_female");
-				females.setChromosomes(chromosomesFemale);
-				files.add(females);
-
+	
+	public static void createIndex(String vcfFilename, boolean force) throws IOException{
+		if (force){
+			if (new File(vcfFilename + ".tbi").exists()){
+				new File(vcfFilename + ".tbi").delete();
 			}
 		}
-
-		/** par, no SEX split */
-		// only if par region is available
-		if (paths.contains(file.getVcfFilename() + ".auto.vcf")) {
-			// bgzip
-			Command bgzip3 = new Command(BGZIP);
-			bgzip3.setSilent(true);
-			bgzip3.setParams(file.getVcfFilename() + ".auto.vcf");
-
-			if (bgzip3.execute() != 0) {
-				throw new IOException("Something went wrong with the bgzip auto command");
-			}
-
-			VcfFile par = load(file.getVcfFilename() + ".auto.vcf.gz", file.getChunkSize(), true);
-			Set<String> chromosomesXPar = new HashSet<String>();
-			chromosomesXPar.add("X.auto");
-			par.setChromosomes(chromosomesXPar);
-			files.add(par);
-		}
-
-		return files;
-	}
-
-	private static void checkDoubleHaplotypes(String filename) throws IOException {
-		LineReader reader = new LineReader(filename);
-		HashMap<Integer, String> probandsbyId = new HashMap<Integer, String>();
-		StringBuilder doubleHaplotypes = new StringBuilder();
-		boolean doubleHT = false;
-		while (reader.next()) {
-			int i = 0;
-			String line = reader.get();
-			String[] splits = line.split("\t");
-
-			// ading probands
-			for (String column : splits) {
-				if (line.startsWith("#CHROM")) {
-					probandsbyId.put(i, column);
-				}
-
-				if (column.contains("1/0") || column.contains("0/1")) {
-					doubleHaplotypes.append("Found haplotype " + column + " at pos " + splits[1] + " for male proband "
-							+ probandsbyId.get(i) + "\n");
-					doubleHT = true;
-				}
-
-				i++;
-			}
-		}
-		if (doubleHT) {
-			throw new IOException(doubleHaplotypes.toString());
+		if (!new File(vcfFilename + ".tbi").exists()) {
+			createIndex(vcfFilename);
 		}
 	}
 
-	public static List<String> splitFileByRegion(String inputFilename) throws IOException {
 
-		List<String> paths = new Vector<String>();
+	public static void createIndex(String vcfFilename) throws IOException{
+		Command tabix = new Command(TABIX_PATH);
+		tabix.setParams("-f", "-p", "vcf", vcfFilename);
+		tabix.saveStdErr("tabix.output");
+		int returnCode = tabix.execute();
 
-		String nonPar = inputFilename + ".no.auto.vcf";
-		String par = inputFilename + ".auto.vcf";
-
-		LineWriter nonParWriter = new LineWriter(nonPar);
-
-		LineWriter parWriter = new LineWriter(par);
-
-		LineReader reader = new LineReader(inputFilename);
-
-		while (reader.next()) {
-
-			String line = reader.get();
-
-			if (line.startsWith("#")) {
-				// header
-				nonParWriter.write(line);
-				parWriter.write(line);
-			} else {
-				String tiles[] = line.split("\t", 3);
-
-				if (tiles.length < 3) {
-					throw new IOException("The provided VCF file is not tab-delimited");
-				}
-
-				String chromosome = tiles[0];
-
-				if (!chromosome.equals("X")) {
-					throw new IOException("The provided VCF file is not for chromosome X");
-				}
-
-				int position = Integer.parseInt(tiles[1]);
-				if (2699520 <= position && position <= 154931043) {
-					nonParWriter.write(line);
-
-					if (!paths.contains(nonPar)) {
-						paths.add(nonPar);
-					}
-
-				} else {
-					parWriter.write(line);
-
-					if (!paths.contains(par)) {
-						paths.add(par);
-					}
-				}
-			}
-
+		if (returnCode != 0) {
+			throw new IOException(
+					"The provided VCF file is malformed. Error during index creation: "
+							+ FileUtil.readFileAsString("tabix.output"));
 		}
-		reader.close();
-		nonParWriter.close();
-		parWriter.close();
-
-		return paths;
-
+		
 	}
-
 }

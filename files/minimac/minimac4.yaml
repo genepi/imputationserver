@@ -1,0 +1,271 @@
+name:  Michigan Imputation Server
+description: Michigan Imputation Server provides a free genotype imputation service using <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a>. You can upload phased or unphased GWAS genotypes and receive phased and imputed genomes in return. For all uploaded data sets an extensive QC is performed.
+version: v1.1.0
+website: http://genome.sph.umich.edu/wiki/Minimac
+category:
+
+cluster:
+
+  image: us-east-1/ami-7341831a
+  type: m1.large
+  ports: 80,50030,50070
+  user: ec2-user
+  creationOnly: false
+  installMapred: true
+  service: hadoop
+ 
+mapred:
+
+  setups:
+    - name: Input Validation
+      jar: minimac-cloud-improved.jar
+      classname: genepi.imputationserver.steps.InputValidation
+
+    - name: Quality Control
+      jar: minimac-cloud-improved.jar
+      classname: genepi.imputationserver.steps.FastQualityControl
+      generates: $mafFile $chunkFileDir $statisticDir
+
+
+#if( $population != "mixed")
+
+    - name: Quality Control (Report)
+      rmd: qc-report.Rmd
+      params: $mafFile
+      output: ${qcreport}.html
+      generates: $qcreport
+      
+#end            
+
+  onFailure:
+    name: Send Notification on Failure
+    jar: minimac-cloud-improved.jar
+    classname: genepi.imputationserver.steps.FailureNotification
+    
+  steps:
+
+#if($mode == "imputation")
+    - name: Pre-phasing and Imputation
+      jar: minimac-cloud-improved.jar
+      classname: genepi.imputationserver.steps.ImputationMinimac3
+      params: $chunkFileDir $refpanel $chunksize $window $phasing $queues
+      generates: $local $outputimputation $logfile $hadooplogs
+
+    - name: Imputation (Report)
+      rmd: report.Rmd
+      params: $local/results
+      output: $report
+      generates: $report
+
+    - name: Data Compression and Encryption
+      jar: minimac-cloud-improved.jar
+      classname: genepi.imputationserver.steps.CompressionEncryption
+      params: $local $report $encryption
+#end
+
+  inputs:
+
+     - id: refpanel
+       description: Reference Panel (<a href="https://imputationserver.sph.umich.edu/start.html#!pages/refpanels" target="_blank">Details</a>)
+       type: list
+       value: hapmap2
+       values:
+         hapmap2: Hapmap2
+
+     - id: files
+       description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF</a> & <a href="https://github.com/genepi/23andme-tools" target="_blank">23andMe</a>)
+       type: local-folder
+
+     - id: build
+       description: Build
+       type: list
+       value: hg19
+       values:
+         hg19: GRCh37/hg19
+         Hg38: GRCh38/hg38           
+
+     - id: phasing
+       description: Phasing
+       type: list
+       value: eagle
+       values:
+         eagle: Eagle v2.3 (phased output)
+         no_phasing: No phasing
+
+  
+     - id: population
+       description: Population
+       type: list
+       value: eur
+       values:
+         eur: EUR
+         afr: AFR
+         asn: ASN (Phase1 only)
+         amr: AMR
+         sas: SAS (Phase3 only)
+         eas: EAS (Phase3 only)
+         AA: AA (CAAPA)
+         mixed: Mixed
+                
+     - id: mode
+       description: Mode
+       type: list
+       value: imputation
+       values:
+          qconly: Quality Control Only 
+          imputation: Quality Control & Imputation
+
+     - id: queues
+       description: Queue
+       type: list
+       visible: false
+       value: default
+       values:
+          default: Default Queue
+          ltq: Longtime Queue
+                   
+     - id: rounds
+       description: Rounds
+       type: number
+       value: 0
+       visible: false
+       
+     - id: window
+       description: Window size
+       type: number
+       value: 500000
+       visible: false
+
+     - id: chunksize
+       description: Chunk size
+       type: number
+       value: 20000000
+       visible: false
+   
+     - id: sample-limit
+       description: Limit
+       type: number
+       value: 0
+       visible: false
+       
+     - id: aesEncryption
+       description: AES 256 encryption (7z required for zip extraction)
+       type: checkbox
+       value: no
+       values:
+         true: yes
+         false: no
+       visible: true
+              
+     - id: encryption
+       description: Result Encryption
+       type: checkbox
+       value: yes
+       values:
+         true: yes
+         false: no
+       visible: false
+       
+     - id: minimacbin
+       description: <b>Minimac Binary</b>
+       type: list
+       visible: false
+       value: Minimac4
+       values:
+          Minimac4: Minimac4 
+            
+     - id: nocache
+       description: <b>Disable Cache</b>
+       type: checkbox
+       value: no
+       values:
+         true: yes
+         false: no
+       visible: false  
+
+     - id: check1
+       description: I will not attempt to re-identify or contact research participants.
+       type: agbcheckbox
+
+
+     - id: check2
+       description: I will report any inadvertent data release, security breach or other data management incident of which I become aware.
+       type: agbcheckbox
+
+         
+  outputs:
+
+    - id: qcreport
+      description: Quality-Control Report
+      type: local-file
+      download: true
+      temp: false
+      autoExport: true
+
+    - id: report
+      description: Imputation Report
+      type: local-file
+      download: true
+      temp: false
+      autoExport: true
+
+    - id: mafFile
+      description: MAF Output
+      type: local-file
+      download: false
+      temp: true
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+       
+    - id: chunksDir
+      description: Actual chunk files
+      type: local-folder
+      download: false
+      temp: true
+
+    - id: chunkFileDir
+      description: Chunkfile directory
+      type: local-folder
+      download: false
+      temp: true
+      mergeOutput: false
+
+    - id: statisticDir
+      description: QC Statistics
+      type: local-folder
+      download: true
+      temp: false
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+      autoExport: true
+
+    - id: outputimputation
+      description: Imputed Genotypes
+      type: hdfs-folder
+      download: false
+      temp: true
+      zip: false
+      removeHeader: false
+      mergeOutput: false
+
+    - id: local
+      description: Imputation Results
+      type: local-folder
+      download: true
+      temp: true
+             
+    - id: logfile
+      description: Logs
+      type: local-folder
+      download: true
+      temp: false
+           
+    - id: hadooplogs
+      description: Hadoop Task Logs
+      type: local-folder
+      download: true
+      temp: false
+      autoExport: true
+      adminOnly: true

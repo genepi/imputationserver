@@ -1,7 +1,10 @@
 package genepi.imputationserver.util;
 
-import genepi.imputationserver.steps.qc.QualityControlMapper;
-import genepi.io.legend.LegendEntry;
+import java.io.IOException;
+
+import genepi.imputationserver.steps.fastqc.SnpStats;
+import genepi.imputationserver.steps.fastqc.legend.LegendEntry;
+import genepi.imputationserver.steps.vcf.MinimalVariantContext;
 import htsjdk.variant.variantcontext.VariantContext;
 
 public class GenomicTools {
@@ -29,23 +32,17 @@ public class GenomicTools {
 
 		return false;
 	}
+	
+	public static boolean match(MinimalVariantContext snp, LegendEntry refEntry) {
 
-	/**
-	 * it's only a match if chiSquare is under 300. This means there is no
-	 * switch
-	 **/
-	public static boolean matchChiSquare(VariantContext snp,
-			LegendEntry refEntry) {
-
-		char studyRef = snp.getReference().getBaseString().charAt(0);
-		char studyAlt = snp.getAltAlleleWithHighestAlleleCount()
-				.getBaseString().charAt(0);
+		char studyRef = snp.getReferenceAllele().charAt(0);
+		char studyAlt = snp.getAlternateAllele().charAt(0);
 		char legendRef = refEntry.getAlleleA();
 		char legendAlt = refEntry.getAlleleB();
 
 		if (studyRef == legendRef && studyAlt == legendAlt) {
 
-			return chiSquare(snp, refEntry, false).getChisq() <= 300;
+			return true;
 
 		}
 
@@ -70,39 +67,17 @@ public class GenomicTools {
 		return false;
 
 	}
+	
+	public static boolean alleleSwitch(MinimalVariantContext snp, LegendEntry refEntry) {
 
-	public static boolean alleleSwitchChiSquare(VariantContext snp,
-			LegendEntry refEntry) {
-
-		char studyRef = snp.getReference().getBaseString().charAt(0);
-		char studyAlt = snp.getAltAlleleWithHighestAlleleCount()
-				.getBaseString().charAt(0);
+		char studyRef = snp.getReferenceAllele().charAt(0);
+		char studyAlt = snp.getAlternateAllele().charAt(0);
 
 		char legendRef = refEntry.getAlleleA();
 		char legendAlt = refEntry.getAlleleB();
 
-		String studyGenotype = new StringBuilder().append(studyRef)
-				.append(studyAlt).toString();
-
-		String referenceGenotype = new StringBuilder().append(legendRef)
-				.append(legendAlt).toString();
-
-		if ((studyGenotype.equals("AT") || studyGenotype.equals("TA"))
-				&& (referenceGenotype.equals("AT") || referenceGenotype
-						.equals("TA"))) {
-
-			return chiSquare(snp, refEntry, false).getChisq() > 300;
-
-		} else if ((studyGenotype.equals("CG") || studyGenotype.equals("GC"))
-				&& (referenceGenotype.equals("CG") || referenceGenotype
-						.equals("GC"))) {
-
-			return chiSquare(snp, refEntry, false).getChisq() > 300;
-
-		}
-
-		// all other cases
-		else if (studyRef == legendAlt && studyAlt == legendRef) {
+		// all simple cases
+		if (studyRef == legendAlt && studyAlt == legendRef) {
 
 			return true;
 		}
@@ -111,7 +86,7 @@ public class GenomicTools {
 
 	}
 
-	public static boolean strandSwap(char studyRef, char studyAlt,
+	public static boolean strandFlip(char studyRef, char studyAlt,
 			char legendRef, char legendAlt) {
 
 		String studyGenotype = new StringBuilder().append(studyRef)
@@ -188,13 +163,12 @@ public class GenomicTools {
 		}
 		return false;
 	}
-
-	public static boolean complicatedGenotypesChiSquare(VariantContext snp,
+	
+	public static boolean complicatedGenotypes(MinimalVariantContext snp,
 			LegendEntry refEntry) {
 
-		char studyRef = snp.getReference().getBaseString().charAt(0);
-		char studyAlt = snp.getAltAlleleWithHighestAlleleCount()
-				.getBaseString().charAt(0);
+		char studyRef = snp.getReferenceAllele().charAt(0);
+		char studyAlt = snp.getAlternateAllele().charAt(0);
 		char legendRef = refEntry.getAlleleA();
 		char legendAlt = refEntry.getAlleleB();
 
@@ -208,19 +182,19 @@ public class GenomicTools {
 				&& (referenceGenotype.equals("AT") || referenceGenotype
 						.equals("TA"))) {
 
-			return chiSquare(snp, refEntry, false).getChisq() <= 300;
+			return true;
 
 		} else if ((studyGenotype.equals("CG") || studyGenotype.equals("GC"))
 				&& (referenceGenotype.equals("CG") || referenceGenotype
 						.equals("GC"))) {
 
-			return chiSquare(snp, refEntry, false).getChisq() <= 300;
+			return true;
 
 		}
 		return false;
 	}
 
-	public static boolean strandSwapAndAlleleSwitch(char studyRef,
+	public static boolean strandFlipAndAlleleSwitch(char studyRef,
 			char studyAlt, char legendRef, char legendAlt) {
 
 		String studyGenotype = new StringBuilder().append(studyRef)
@@ -268,13 +242,62 @@ public class GenomicTools {
 	}
 
 	public static ChiSquareObject chiSquare(VariantContext snp,
-			LegendEntry refSnp, boolean strandSwap) {
+			LegendEntry refSnp, boolean strandSwap, int size) {
 
 		// calculate allele frequency
 
 		double chisq = 0;
 
-		int refN = getPanelSize(QualityControlMapper.PANEL_ID);
+		int refN = size;
+		
+		double refA = refSnp.getFrequencyA();
+		double refB = refSnp.getFrequencyB();
+
+		int majorAlleleCount;
+		int minorAlleleCount;
+
+		if (!strandSwap) {
+			majorAlleleCount = snp.getHomRefCount();
+			minorAlleleCount = snp.getHomVarCount();
+
+		} else {
+			majorAlleleCount = snp.getHomVarCount();
+			minorAlleleCount = snp.getHomRefCount();
+		}
+
+		int countRef = snp.getHetCount() + majorAlleleCount * 2;
+		int countAlt = snp.getHetCount() + minorAlleleCount * 2;
+
+		double p = countRef / (double) (countRef + countAlt);
+		double q = countAlt / (double) (countRef + countAlt);
+		double studyN = (snp.getNSamples() - snp.getNoCallCount()) * 2;
+
+		double totalQ = q * studyN + refB * refN;
+		double expectedQ = totalQ / (studyN + refN) * studyN;
+		double deltaQ = q * studyN - expectedQ;
+
+		chisq += (Math.pow(deltaQ, 2) / expectedQ)
+				+ (Math.pow(deltaQ, 2) / (totalQ - expectedQ));
+
+		double totalP = p * studyN + refA * refN;
+		double expectedP = totalP / (studyN + refN) * studyN;
+		double deltaP = p * studyN - expectedP;
+
+		chisq += (Math.pow(deltaP, 2) / expectedP)
+				+ (Math.pow(deltaP, 2) / (totalP - expectedP));
+
+		return new ChiSquareObject(chisq, p, q);
+	}
+	
+	
+	public static ChiSquareObject chiSquare(MinimalVariantContext snp,
+			LegendEntry refSnp, boolean strandSwap, int size) {
+
+		// calculate allele frequency
+
+		double chisq = 0;
+
+		int refN = size;
 		
 		double refA = refSnp.getFrequencyA();
 		double refB = refSnp.getFrequencyB();
@@ -329,6 +352,8 @@ public class GenomicTools {
 			return 1301;
 		case "caapa":
 			return 883;
+		case "TOPMedfreeze65k":
+			return 62784;
 		default:
 			return 2535;
 		}
@@ -355,6 +380,84 @@ public class GenomicTools {
 
 		return studyRef != referenceRef || studyAlt != referenceAlt;
 
+	}
+	
+	public static SnpStats calculateAlleleFreq(VariantContext snp, LegendEntry refSnp, boolean strandSwap, int size)
+			throws IOException, InterruptedException {
+
+		// calculate allele frequency
+		SnpStats output = new SnpStats();
+
+		int position = snp.getStart();
+
+		ChiSquareObject chiObj = GenomicTools.chiSquare(snp, refSnp, strandSwap, size);
+
+		char majorAllele;
+		char minorAllele;
+
+		if (!strandSwap) {
+			majorAllele = snp.getReference().getBaseString().charAt(0);
+			minorAllele = snp.getAltAlleleWithHighestAlleleCount().getBaseString().charAt(0);
+
+		} else {
+			majorAllele = snp.getAltAlleleWithHighestAlleleCount().getBaseString().charAt(0);
+			minorAllele = snp.getReference().getBaseString().charAt(0);
+		}
+
+		output.setType("SNP");
+		output.setPosition(position);
+		output.setChromosome(snp.getContig());
+		output.setRefFrequencyA(refSnp.getFrequencyA());
+		output.setRefFrequencyB(refSnp.getFrequencyB());
+		output.setFrequencyA((float) chiObj.getP());
+		output.setFrequencyB((float) chiObj.getQ());
+		output.setChisq(chiObj.getChisq());
+		output.setAlleleA(majorAllele);
+		output.setAlleleB(minorAllele);
+		output.setRefAlleleA(refSnp.getAlleleA());
+		output.setRefAlleleB(refSnp.getAlleleB());
+		output.setOverlapWithReference(true);
+
+		return output;
+	}
+	
+	public static SnpStats calculateAlleleFreq(MinimalVariantContext snp, LegendEntry refSnp, boolean strandSwap, int size)
+			throws IOException, InterruptedException {
+
+		// calculate allele frequency
+		SnpStats output = new SnpStats();
+
+		int position = snp.getStart();
+
+		ChiSquareObject chiObj = GenomicTools.chiSquare(snp, refSnp, strandSwap, size);
+
+		char majorAllele;
+		char minorAllele;
+
+		if (!strandSwap) {
+			majorAllele = snp.getReferenceAllele().charAt(0);
+			minorAllele = snp.getAlternateAllele().charAt(0);
+
+		} else {
+			majorAllele = snp.getAlternateAllele().charAt(0);
+			minorAllele = snp.getReferenceAllele().charAt(0);
+		}
+
+		output.setType("SNP");
+		output.setPosition(position);
+		output.setChromosome(snp.getContig());
+		output.setRefFrequencyA(refSnp.getFrequencyA());
+		output.setRefFrequencyB(refSnp.getFrequencyB());
+		output.setFrequencyA((float) chiObj.getP());
+		output.setFrequencyB((float) chiObj.getQ());
+		output.setChisq(chiObj.getChisq());
+		output.setAlleleA(majorAllele);
+		output.setAlleleB(minorAllele);
+		output.setRefAlleleA(refSnp.getAlleleA());
+		output.setRefAlleleB(refSnp.getAlleleB());
+		output.setOverlapWithReference(true);
+
+		return output;
 	}
 
 }

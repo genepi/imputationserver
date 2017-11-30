@@ -5,16 +5,12 @@ QC-Report
 
 args<-commandArgs(TRUE)
 input=args[1]
+
 suppressPackageStartupMessages(library(geneplotter))
 suppressPackageStartupMessages(library(RColorBrewer))
-
-size = file.info(input)$size;
-
-if(size > 0){
 data = read.table(input, header = FALSE, sep="\t")
 data[, 11] <- as.numeric(as.character( data[, 11] ))
 miss = data[which(data$V11 > 300),];
-}
 
 
 ```
@@ -25,11 +21,10 @@ miss = data[which(data$V11 > 300),];
 
 ### Uploaded Samples vs. Reference Panel
 
-The plot shows the densities of frequencies falling into each part (excluding chromosome X). The first 5000 points from areas of lowest regional densities will be plotted.
+The plot shows the densities of frequencies falling into each part. The first 5000 points from areas of lowest regional densities will be plotted.
 
 ```{r echo=FALSE}
 
-if(size > 0){
 lm_eqn = function(df){
     m = lm(V9 ~ V5, df);
     eq <- paste('r2 =', format(summary(m)$r.squared, digits = 3))
@@ -38,7 +33,7 @@ lm_eqn = function(df){
 
 i.s <- smoothScatter(data$V5,data$V9, nrpoints=5000, xlim=c(0,1),xlab="Ref Allele Frequency (Uploaded Samples)", ylab="Ref Allele Frequency (Reference Panel)",useRaster=TRUE)
 legend("topleft",legend=lm_eqn(data), bty ="n", pch=NA)
-}
+
 ```
 
 ### Potential Frequency Mismatches
@@ -46,8 +41,9 @@ legend("topleft",legend=lm_eqn(data), bty ="n", pch=NA)
 Markers where chisq is greater than 300. 
 
 ```{r echo=FALSE}
-if(size > 0){
+
  cat("Total mismatches:", length(miss[,11]))
+
 
   count = as.integer(0); 
   
@@ -66,6 +62,6 @@ for (i in 1:length(miss[,11])){
 }
 
 }
-}
 
 ```
+

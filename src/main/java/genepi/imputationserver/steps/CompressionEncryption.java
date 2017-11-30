@@ -6,15 +6,22 @@ import genepi.hadoop.command.Command;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
+import genepi.imputationserver.util.ExportObject;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.PasswordCreator;
 import genepi.io.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import net.lingala.zip4j.core.ZipFile;
@@ -33,11 +40,11 @@ public class CompressionEncryption extends WorkflowStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		String workingDirectory = getFolder(InputValidation.class);
+		String workingDirectory = getFolder(CompressionEncryption.class);
 
 		String output = context.get("outputimputation");
 		String localOutput = context.get("local");
-		String aesEncryption = context.getInput("aesEncryption");
+		String aesEncryption = context.get("aesEncryption");
 
 		// read config if mails should be sent
 		String folderConfig = getFolder(CompressionEncryption.class);
@@ -63,50 +70,95 @@ public class CompressionEncryption extends WorkflowStep {
 
 			context.beginTask("Export data...");
 
+			// get sorted directories
 			List<String> folders = HdfsUtil.getDirectories(output);
 
-			// export all chromosomes
+			Map<String, ExportObject> chromosomes = new HashMap<String, ExportObject>();
 
 			for (String folder : folders) {
 
 				String name = FileUtil.getFilename(folder);
+
+				context.println("Find files " + name);
+
+				List<String> data = findFiles(folder, ".data.dose.vcf.gz");
+				List<String> header = findFiles(folder, ".header.dose.vcf.gz");
+				List<String> info = findFiles(folder, ".info");
+
+				// combine all X. to one folder
+				if (name.startsWith("X.")) {
+					name = "X";
+				}
+
+				ExportObject export = chromosomes.get(name);
+
+				if (export == null) {
+					export = new ExportObject();
+				}
+
+				ArrayList<String> currentDataList = export.getDataFiles();
+				currentDataList.addAll(data);
+				export.setDataFiles(currentDataList);
+
+				ArrayList<String> currentHeaderList = export.getHeaderFiles();
+				currentHeaderList.addAll(header);
+				export.setHeaderFiles(currentHeaderList);
+
+				ArrayList<String> currentInfoList = export.getInfoFiles();
+				currentInfoList.addAll(info);
+				export.setInfoFiles(currentInfoList);
+
+				chromosomes.put(name, export);
+
+			}
+
+			for (String name : chromosomes.keySet()) {
+
+				ExportObject entry = chromosomes.get(name);
+				
 				context.println("Export and merge chromosome " + name);
+
+				// resort for chrX only
+				if (name.equals("X")) {
+					Collections.sort(entry.getDataFiles(), new ChrXComparator());
+					Collections.sort(entry.getInfoFiles(), new ChrXComparator());
+				}
 
 				// create temp fir
 				String temp = FileUtil.path(localOutput, "temp");
 				FileUtil.createDirectory(temp);
 
 				// output files
-				String doseOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
-				String vcfOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
+				String dosageOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
 
-				// merge all info files
-				FileMerger.mergeAndGz(doseOutput, folder, true, ".info");
+				String infoOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
 
-				List<String> dataFiles = findFiles(folder, ".data.dose.vcf.gz");
-				List<String> headerFiles = findFiles(folder, ".header.dose.vcf.gz");
+				FileMerger.mergeAndGzInfo(entry.getInfoFiles(), infoOutput);
 
-				MergedVcfFile vcfFile = new MergedVcfFile(vcfOutput);
+				MergedVcfFile vcfFile = new MergedVcfFile(dosageOutput);
 
 				// add one header
 				// TODO: check number of samples per chunk....
-				String header = headerFiles.get(0);
+				String header = entry.getHeaderFiles().get(0);
 				vcfFile.addFile(HdfsUtil.open(header));
 
 				// add data files
-				for (String file : dataFiles) {
+				for (String file : entry.getDataFiles()) {
 					context.println("Read file " + file);
 					vcfFile.addFile(HdfsUtil.open(file));
 				}
 
 				vcfFile.close();
 
-				Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
-				tabix.setSilent(false);
-				tabix.setParams("-f", vcfOutput);
-				if (tabix.execute() != 0) {
-					context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
-					return false;
+				// verify if valid vcf.gz
+				if (name.contains("22")) {
+					Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
+					tabix.setSilent(false);
+					tabix.setParams("-f", dosageOutput);
+					if (tabix.execute() != 0) {
+						context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
+						return false;
+					}
 				}
 
 				ZipParameters param = new ZipParameters();
@@ -123,9 +175,9 @@ public class CompressionEncryption extends WorkflowStep {
 
 				// create zip file
 				ArrayList<File> files = new ArrayList<File>();
-				files.add(new File(vcfOutput));
-				files.add(new File(vcfOutput + ".tbi"));
-				files.add(new File(doseOutput));
+				files.add(new File(dosageOutput));
+				// files.add(new File(vcfOutput + ".tbi"));
+				files.add(new File(infoOutput));
 
 				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput, "chr_" + name + ".zip")));
 				file.createZipFile(files, param);
@@ -196,7 +248,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 	private List<String> findFiles(String folder, String pattern) throws IOException {
 
-		Configuration conf = new Configuration();
+		Configuration conf = HdfsUtil.getConfiguration();
 
 		FileSystem fileSystem = FileSystem.get(conf);
 		Path pathFolder = new Path(folder);
@@ -211,6 +263,23 @@ public class CompressionEncryption extends WorkflowStep {
 		}
 		Collections.sort(dataFiles);
 		return dataFiles;
+	}
+
+	class ChrXComparator implements Comparator<String> {
+
+		List<String> definedOrder = Arrays.asList("X.PAR1", "X.nonPAR", "X.PAR2");
+
+		@Override
+		public int compare(String o1, String o2) {
+			
+			String region = o1.substring(o1.lastIndexOf("/") + 1).split("_")[1];
+			
+			String region2 = o2.substring(o2.lastIndexOf("/") + 1).split("_")[1];
+			
+			return Integer.valueOf(definedOrder.indexOf(region))
+					.compareTo(Integer.valueOf(definedOrder.indexOf(region2)));
+		}
+
 	}
 
 }

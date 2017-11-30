@@ -21,7 +21,7 @@ public class VcfChunk {
 	private int snps = 0;
 
 	private int inReference = 0;;
-
+	
 	public VcfChunk() {
 
 	}
@@ -122,5 +122,16 @@ public class VcfChunk {
 				+ nf.format(end);
 
 	}
+	
+	// chunk specific
+	public int overallSnpsChunk = 0;
+	public int validSnpsChunk = 0;
+	public int foundInLegendChunk = 0;
+	public int notFoundInLegendChunk = 0;
+	public int[] snpsPerSampleCount = null;
+	public BGzipLineWriter vcfChunkWriter;
+	public 	int lastPos = 0;
+	public boolean empty=true;
+	
 
 }

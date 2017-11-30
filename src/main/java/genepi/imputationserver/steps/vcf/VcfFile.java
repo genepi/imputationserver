@@ -8,6 +8,8 @@ public class VcfFile {
 
 	private Set<String> chromosomes;
 
+	private Set<String> rawChromosomes;
+	
 	private String vcfFilename;
 
 	private String indexFilename;
@@ -18,9 +20,13 @@ public class VcfFile {
 
 	private boolean phased = true;
 	
+	private boolean chrX = false;
+	
 	private boolean phasedAutodetect = true;
 
 	private int chunkSize;
+	
+	private boolean chrPrefix;
 	
 	public VcfFile() {
 
@@ -42,6 +48,10 @@ public class VcfFile {
 		return chromosomes.iterator().next();
 	}
 
+	public String getRawChromosome() {
+		return rawChromosomes.iterator().next();
+	}
+	
 	public String getVcfFilename() {
 		return vcfFilename;
 	}
@@ -76,6 +86,18 @@ public class VcfFile {
 
 	public void setChromosomes(Set<String> chromosomes) {
 		this.chromosomes = chromosomes;
+	}
+	
+	public void setRawChromosomes(Set<String> rawChromosomes) {
+		this.rawChromosomes = rawChromosomes;
+	}
+	
+	public void setChrPrefix(boolean chrPrefix){
+		this.chrPrefix = chrPrefix;
+	}
+	
+	public boolean hasChrPrefix(){
+		return this.chrPrefix;
 	}
 
 	public void setPhased(boolean phased) {
@@ -123,6 +145,14 @@ public class VcfFile {
 	
 	public int getChunkSize() {
 		return chunkSize;
+	}
+
+	public boolean isChrX() {
+		return chrX;
+	}
+
+	public void setChrX(boolean chrX) {
+		this.chrX = chrX;
 	}
 
 }
