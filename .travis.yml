@@ -1,21 +1,17 @@
 language: java
-
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 before_install:
-  - cat /etc/hosts # optionally check the content *before*
-  - sudo hostname "$(hostname | cut -c1-63)"
-  - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo tee /etc/hosts
-  - cat /etc/hosts # optionally check the content *after*
-
+- cat /etc/hosts
+- sudo hostname "$(hostname | cut -c1-63)"
+- sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo
+  tee /etc/hosts
+- cat /etc/hosts
 script: mvn clean test jacoco:report
-
 after_success:
-  - mvn coveralls:report
-  
+- mvn coveralls:report
 notifications:
   slack:
     on_success: always
     on_failure: always
-    secure: sR5fTpmdTmXPjEPLjUMc0IIVNr8MjaOXevBMWzeJqvlQBV67E0wpbUS7a+Fq+4a3DkZTBdQ1rABCTrlFHPQcY9e4pqXaA+vWi/3ifnbRLlFP1M5aGeOjFR9o1ajl3V0H/FPgeQYa0l7rauZn/0+p8uFZY2ijf5E+LZuNVPoDpMZF8B6W8b0PH4p8WaEBnklOtwNW1VPal7e1hIfFpmRhfUfuTP+eTq8b3+enhyZTs68rRlhOH3fFDELyAqN9uivWdAcIngXfvyPyofVwsZqqF3dVgeQAz0FxaQpIaBbQIXEjeBl2qbBk5ITNpFRjeyc6GqkYdTdwr40sD9a42e168ewbCnMPRHRc99EGS2q/Kf/lxflb3UeSoYHQYDE0DhAdoNPqQ82PtYl1KBlF/KZRjk9eW7ABBNyyHOlfQWPPVtzX/oAnszWv0t7wCFtBZwZgjOgLwe4MuHbM8RRCl8j2Vwo5gH11YzUBp5PCYy5W2Lqj/ReiNEpqUdJ01DG1PnUCMbVGm+CjZMZ6+9VM2lY41xZcegWknl4CQxksCGvYGhVFQKytpoEkAv1cPaxASPUMBEp7+wuVLYwrItG1ickBP00ZVW1HGrupziSYsjjXr0eYinf7zqi8A4vqP6zVZ/5VYk3cjiIpUoAo+42nf9L0iqpadpldsNmr2alh1FpHBZI=
+    secure: jVbWz4bHJ4iwtCZdAcQHw4GRCjV4I+Ihs5bMHEZCiqzCO6KIxBCndn5lXFNbBLVp8kd2zhZzzIpfZNueIjkKVu5CZSrDpZ/vYnhsr1m37GN7qZ5QoNfh+1THuir23wUJZMADjnLpTx+Ntj68A2tD/B3IWWKWbJ+F+dxrmThwjngePBMofceNjc4Em2/ONwztLmFp82pWR/zdubDMZoVJ8m2sg8aXLp7r5WfAjEgzVlTJpXRy9HzwlFRTqVyZ8NORhcFZXrkyGyxo1DtNv0iySLk9S5E5pXe8ujPOekZMxi+hyIq9YSjzXzL9UmgkakVzjPR8hc9aR1OnIhe6XcDhC91jUNHRgo2JqJcjsYoEERpC3d7xZOSFCPAF1KV7g7qJahrIRnLBMioEvkFqrMjqLE1Mp1e4eFQUfcupaw6f+QIUIZw1yDQiDH2xyECU+NXMr02bOdmZ/I3mdPgjX3AdbcQtMYHjboi4AfemiLCG1pOWT/nTDq+/aKP6XPua9sIMde7PCSKAH1OD4syKPfcJKTwBUFQXWlA5rVX9hUdMKfFyy8Zdmd1UNs2lozJEgg+Iz7+aMCDr6CFKD+V367eNkjvDjca5Ro2SsTW0h8vXCAj36mcw6/E/ZN9kZeXjNDcSX3qvh9FvU+RUdutjJOcgvtCr6J2NDd0iQVAzrPspkXQ=
