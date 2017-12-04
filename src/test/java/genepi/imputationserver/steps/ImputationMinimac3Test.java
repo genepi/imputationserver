@@ -1247,6 +1247,9 @@ public class ImputationMinimac3Test {
 			FileUtil.deleteDirectory(file);
 		}
 		file.mkdirs();
+		
+		HdfsUtil.delete("cloudgene-hdfs");
+		
 		context.setVerbose(VERBOSE);
 		context.setInput("files", folder);
 		context.setInput("population", "eur");
