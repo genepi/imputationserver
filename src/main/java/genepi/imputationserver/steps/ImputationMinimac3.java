@@ -31,6 +31,10 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	private boolean running = true;
 
+	private String output;
+
+	private boolean ok = false;
+
 	public static int THREADS = 25;
 
 	public ImputationMinimac3() {
@@ -74,7 +78,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		}
 
 		// outputs
-		String output = context.get("outputimputation");
+		output = context.get("outputimputation");
 		String log = context.get("logfile");
 
 		if (!(new File(input)).exists()) {
@@ -120,7 +124,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			context.error("Eagle map file not found.");
 			return false;
 		}
-	
+
 		// execute one job per chromosome
 		try {
 			String[] chunkFiles = FileUtil.getFiles(input, "*.*");
@@ -243,15 +247,15 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			}
 
-			// everthing fine
+			// everything fine
 
 			updateProgress();
 			printSummary();
 
 			String text = updateMessage();
-			context.endTask(text, WorkflowContext.OK);
+			context.endTask(text, ok ? WorkflowContext.OK : WorkflowContext.ERROR);
 
-			return true;
+			return ok;
 
 		} catch (Exception e) {
 
@@ -388,7 +392,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		if (successful) {
 
 			// everything fine
-
+			ok = true;
 			context.println("Job chr_" + id + " (" + job.getJobId() + ") executed sucessful.");
 		} else {
 
@@ -398,12 +402,20 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 			// kill all running jobs
 
-			if (!error && !isCanceled()) {
+			if (!error && !isCanceled() && !id.startsWith("X.")) {
 				error = true;
 				errorChr = id;
 				context.println("Kill all running jobs...");
 				kill();
 			}
+
+			// if chr X --> delete results
+			if (id.startsWith("X.")) {
+				String outputFolder = HdfsUtil.path(output, id);
+				context.println("Delete outpufolder for " + id + ": " + outputFolder);
+				HdfsUtil.delete(outputFolder);
+			}
+
 		}
 
 	}
