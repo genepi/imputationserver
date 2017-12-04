@@ -1,20 +1,17 @@
 language: java
-
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 before_install:
-  - cat /etc/hosts # optionally check the content *before*
-  - sudo hostname "$(hostname | cut -c1-63)"
-  - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo tee /etc/hosts
-  - cat /etc/hosts # optionally check the content *after*
-
+- cat /etc/hosts
+- sudo hostname "$(hostname | cut -c1-63)"
+- sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo
+  tee /etc/hosts
+- cat /etc/hosts
 script: mvn clean test jacoco:report
-
 after_success:
-  - mvn coveralls:report
-  
+- mvn coveralls:report
 notifications:
   slack:
-    secure: ETFtT5NYt8LnWYAXwt2waD7DSb3u3oDar7WEN7QrKqLOkOfSpWopyM6C7ZnBTbJ9LzOEMhf2aTO3xIWK1hZmAmyUhdtnaaqH/2dhgyijQvIp1ukFEwfvNkAMNhSLayx+qe/goJEMoDxMoV0AHKiRv4J9jjy2ZxRilpjjFSE4OEE=
-
+    on_success: always
+    on_failure: always
+    secure: jVbWz4bHJ4iwtCZdAcQHw4GRCjV4I+Ihs5bMHEZCiqzCO6KIxBCndn5lXFNbBLVp8kd2zhZzzIpfZNueIjkKVu5CZSrDpZ/vYnhsr1m37GN7qZ5QoNfh+1THuir23wUJZMADjnLpTx+Ntj68A2tD/B3IWWKWbJ+F+dxrmThwjngePBMofceNjc4Em2/ONwztLmFp82pWR/zdubDMZoVJ8m2sg8aXLp7r5WfAjEgzVlTJpXRy9HzwlFRTqVyZ8NORhcFZXrkyGyxo1DtNv0iySLk9S5E5pXe8ujPOekZMxi+hyIq9YSjzXzL9UmgkakVzjPR8hc9aR1OnIhe6XcDhC91jUNHRgo2JqJcjsYoEERpC3d7xZOSFCPAF1KV7g7qJahrIRnLBMioEvkFqrMjqLE1Mp1e4eFQUfcupaw6f+QIUIZw1yDQiDH2xyECU+NXMr02bOdmZ/I3mdPgjX3AdbcQtMYHjboi4AfemiLCG1pOWT/nTDq+/aKP6XPua9sIMde7PCSKAH1OD4syKPfcJKTwBUFQXWlA5rVX9hUdMKfFyy8Zdmd1UNs2lozJEgg+Iz7+aMCDr6CFKD+V367eNkjvDjca5Ro2SsTW0h8vXCAj36mcw6/E/ZN9kZeXjNDcSX3qvh9FvU+RUdutjJOcgvtCr6J2NDd0iQVAzrPspkXQ=
