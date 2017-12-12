@@ -391,6 +391,7 @@ public class ImputationPipelineMinimac3 {
 		params.add("--vcfOutFormat");
 		params.add("z");
 		params.add("--outputUnphased");
+		params.add("--keepMissingPloidyX");
 
 		eagle.setParams(params);
 		eagle.saveStdOut(output.getPrefix() + ".eagle.out");
