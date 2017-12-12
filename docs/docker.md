@@ -31,7 +31,7 @@ To test the overall setup, please execute the following commands to setup the Mi
 
 ````sh
 docker pull seppinho/cloudgene-docker
-sudo docker run --privileged -it -p 8082:8082 seppinho/cloudgene-docker --repository https://github.com/genepi/imputationserver.git
+sudo docker run --privileged -it -p 8082:8082 seppinho/cloudgene-docker start-cloudgene.sh --repository https://github.com/genepi/imputationserver.git
 ````
 
 ### Connect
