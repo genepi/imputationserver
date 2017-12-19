@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
@@ -82,9 +83,11 @@ public class FastQualityControl extends WorkflowStep {
 
 		LineWriter excludedSnpsWriter = null;
 
+		String excludedSnpsFile = FileUtil.path(statDir, "snps-excluded.txt");
+
 		try {
-			excludedSnpsWriter = new LineWriter(FileUtil.path(statDir, "snps-excluded.txt"));
-			excludedSnpsWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info");
+			excludedSnpsWriter = new LineWriter(excludedSnpsFile);
+			excludedSnpsWriter.write("#Position" + "\t" + "FilterType" + "\t" + " Info", false);
 		} catch (Exception e) {
 			context.error("Error creating file writer");
 			return false;
@@ -150,6 +153,20 @@ public class FastQualityControl extends WorkflowStep {
 
 		}
 
+		try {
+			
+			excludedSnpsWriter.close();
+			
+			if (!excludedSnpsWriter.hasData()) {
+				FileUtil.deleteFile(excludedSnpsFile);
+			}
+
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		DecimalFormat df = new DecimalFormat("#.00");
 		DecimalFormat formatter = new DecimalFormat("###,###.###");
 
@@ -185,10 +202,13 @@ public class FastQualityControl extends WorkflowStep {
 
 		text.append("Excluded sites in total: " + formatter.format(task.getFiltered()) + "<br>");
 		text.append("Remaining sites in total: " + formatter.format(task.getOverallSnps()) + "<br>");
+		
+		if(task.getFiltered()>0){
 		text.append("See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
-
+		}
+		
 		if (task.getNotFoundInLegend() > 0) {
-			text.append("Typed only sites: " + formatter.format(task.getNotFoundInLegend()) +  "<br>");
+			text.append("Typed only sites: " + formatter.format(task.getNotFoundInLegend()) + "<br>");
 			text.append("See " + context.createLinkToFile("statisticDir", "typed-only.txt") + " for details" + "<br>");
 		}
 
@@ -244,7 +264,8 @@ public class FastQualityControl extends WorkflowStep {
 		}
 
 		else if (task.isChrXMissingRate()) {
-			text.append("<br><b>Error:</b> Chromosome X nonPAR region includes > 10 % mixed genotypes. Imputation cannot be started!");
+			text.append(
+					"<br><b>Error:</b> Chromosome X nonPAR region includes > 10 % mixed genotypes. Imputation cannot be started!");
 			context.error(text.toString());
 
 			return false;

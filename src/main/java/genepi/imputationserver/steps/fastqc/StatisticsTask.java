@@ -19,7 +19,6 @@ import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.GenomicTools;
 import genepi.io.FileUtil;
-import genepi.io.plink.Snp;
 import genepi.io.text.LineWriter;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
@@ -107,17 +106,19 @@ public class StatisticsTask implements ITask {
 		LineWriter mafWriter = new LineWriter(mafFile);
 
 		// excluded chunks
-		LineWriter excludedChunkWriter = new LineWriter(FileUtil.path(statDir, "chunks-excluded.txt"));
+		String excludedChunkFile = FileUtil.path(statDir, "chunks-excluded.txt");
+		LineWriter excludedChunkWriter = new LineWriter(excludedChunkFile);
 		excludedChunkWriter.write(
-				"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)");
+				"#Chunk" + "\t" + "SNPs (#)" + "\t" + "Reference Overlap (%)" + "\t" + "Low Sample Call Rates (#)",
+				false);
 
-		LineWriter chrXInfoWriter = new LineWriter(FileUtil.path(statDir, "chrX-info.txt"));
+		String chrXInfoFile = FileUtil.path(statDir, "chrX-info.txt");
+		LineWriter chrXInfoWriter = new LineWriter(chrXInfoFile);
+		chrXInfoWriter.write("#Sample\tPosition",false);
 
-		chrXInfoWriter.write("SAMPLE\tPOS");
-
-		LineWriter typedOnlyWriter = new LineWriter(FileUtil.path(statDir, "typed-only.txt"));
-
-		typedOnlyWriter.write("POS");
+		String typedOnleFile = FileUtil.path(statDir, "typed-only.txt");
+		LineWriter typedOnlyWriter = new LineWriter(typedOnleFile);
+		typedOnlyWriter.write("#Position", false);
 
 		// chrX haploid samples
 		HashSet<String> hapSamples = new HashSet<String>();
@@ -157,14 +158,24 @@ public class StatisticsTask implements ITask {
 		}
 
 		mafWriter.close();
-
-		excludedSnpsWriter.close();
-
+		
 		excludedChunkWriter.close();
 
 		chrXInfoWriter.close();
 
 		typedOnlyWriter.close();
+
+		if (!excludedChunkWriter.hasData()) {
+			FileUtil.deleteFile(excludedChunkFile);
+		}
+
+		if (!chrXInfoWriter.hasData()) {
+			FileUtil.deleteFile(chrXInfoFile);
+		}
+
+		if (!typedOnlyWriter.hasData()) {
+			FileUtil.deleteFile(typedOnleFile);
+		}
 
 		qcObject.setSuccess(true);
 
@@ -194,7 +205,8 @@ public class StatisticsTask implements ITask {
 			}
 		}
 
-		LineWriter metafileWriter = new LineWriter(FileUtil.path(chunkFileDir, contig));
+		String metafile = FileUtil.path(chunkFileDir, contig);
+		LineWriter metafileWriter = new LineWriter(metafile);
 		LegendFileReader legendReader = getReader(myvcfFile.getChromosome());
 
 		int samples = myvcfFile.getNoSamples();
@@ -258,6 +270,10 @@ public class StatisticsTask implements ITask {
 				new File(openChunk.getIndexFilename()).delete();
 				overallChunks--;
 			}
+		}
+
+		if (!metafileWriter.hasData()) {
+			FileUtil.deleteFile(metafile);
 		}
 
 		metafileWriter.close();
@@ -655,7 +671,7 @@ public class StatisticsTask implements ITask {
 			nonParStart = 2781479;
 			nonParEnd = 155701383;
 		}
-		
+
 		while (it.hasNext()) {
 
 			VariantContext line = it.next();
@@ -791,7 +807,7 @@ public class StatisticsTask implements ITask {
 			Genotype genotype = snp.getGenotype(name);
 
 			if (hapSamples.contains(name) && genotype.getPloidy() != 1) {
-				chrXInfoWriter.write(name + "\t" + snp.getStart());
+				chrXInfoWriter.write(name + "\t" + snp.getContig()+":"+snp.getStart());
 				this.chrXPloidyError = true;
 
 			}
@@ -874,7 +890,7 @@ public class StatisticsTask implements ITask {
 	public void setExcludedSnpsWriter(LineWriter excludedSnpsWriter) {
 		this.excludedSnpsWriter = excludedSnpsWriter;
 	}
-
+	
 	public int getOverallSnps() {
 		return overallSnps;
 	}
