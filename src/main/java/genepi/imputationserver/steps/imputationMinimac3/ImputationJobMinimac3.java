@@ -49,6 +49,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String BUILD = "MINIMAC_BUILD";
 
+	public static final String R2_FILTER = "R2_FILTER";
+
 	public static final String DATA_FOLDER = "minimac-data-3";
 
 	private String refPanelHdfs;
@@ -79,11 +81,11 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		log.info("setting queue to " + queue);
 		getConfiguration().set("mapred.job.queue.name", queue);
 		getConfiguration().set("mapred.reduce.tasks", "22");
-		
-		//set values times 5 due to timeout of setup
+
+		// set values times 5 due to timeout of setup
 		set("mapred.tasktracker.expiry.interval", "3000000");
 		set("mapred.healthChecker.script.timeout", "3000000");
-		
+
 	}
 
 	@Override
@@ -298,6 +300,10 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public void setBuild(String build) {
 		set(BUILD, build);
+	}
+	
+	public void setR2Filter(String r2Filter){
+		set(R2_FILTER, r2Filter);
 	}
 
 }

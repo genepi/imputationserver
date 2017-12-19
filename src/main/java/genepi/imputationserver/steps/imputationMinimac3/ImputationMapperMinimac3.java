@@ -53,6 +53,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 	private String build = "hg19";
 
+	private double r2Filter = 0;
+
 	private String refEagleIndexFilename;
 
 	private boolean debugging;
@@ -75,6 +77,12 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
 		window = parameters.get(ImputationJobMinimac3.WINDOW);
 		build = parameters.get(ImputationJobMinimac3.BUILD);
+		String r2FilterString = parameters.get(ImputationJobMinimac3.R2_FILTER);
+		if (r2FilterString == null) {
+			r2Filter = 0;
+		} else {
+			r2Filter = Double.parseDouble(r2FilterString);
+		}
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String hdfsPathMinimacMap = parameters.get(ImputationJobMinimac3.MAP_MINIMAC);
 		String hdfsPathShapeITMap = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_HDFS);
@@ -96,7 +104,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			mapMinimacFilename = cache.getFile(mapMinimac);
 			System.out.println("Minimac map file local: " + mapMinimacFilename);
 
-		}else{
+		} else {
 			System.out.println("No minimac map file set.");
 		}
 		if (hdfsPathShapeITMap != null) {
@@ -223,7 +231,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 					HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
 
-			FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData);
+			FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData, r2Filter);
 			long end = System.currentTimeMillis();
 
 			System.out.println("Time filter and put: " + (end - start) + " ms");

@@ -84,6 +84,18 @@ mapred:
          hg19: GRCh37/hg19
          Hg38: GRCh38/hg38           
 
+     - id: r2Filter
+       description: rsq Filter
+       type: list
+       value: 0.001
+       values:
+         0: off
+         0.001: 0.001
+         0.1: 0.1
+         0.2: 0.2
+         0.3: 0.3
+
+
      - id: phasing
        description: Phasing
        type: list

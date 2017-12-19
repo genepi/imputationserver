@@ -34,7 +34,8 @@ public class ImputationMinimac3Test {
 	public final int TOTAL_REFPANEL_CHRX_B37 = 1479509;
 	public final int TOTAL_REFPANEL_CHRX_B38 = 1077575;
 	public final int ONLY_IN_INPUT = 78;
-
+	//public final int SNPS_WITH_R2_BELOW_05 = 6344;
+	
 	@BeforeClass
 	public static void setUp() throws Exception {
 		TestCluster.getInstance().start();
@@ -396,10 +397,61 @@ public class ImputationMinimac3Test {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
-		FileUtil.deleteDirectory("test-data/tmp");
+		//FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
+	@Test
+	public void testPipelineWithEagleAdnR2Filter() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		context.setInput("r2Filter", "0.5");
+		
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/minimac/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		
+		//TODO: update SNPS_WITH_R2_BELOW_05
+		assertTrue(TOTAL_REFPANEL_CHR20_B37 - ONLY_IN_INPUT > file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+	
 	
 	@Test
 	public void testPipelineWithEmptyPhasing() throws IOException, ZipException {

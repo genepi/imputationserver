@@ -61,6 +61,11 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String window = context.get("window");
 		String population = context.get("population");
 
+		String r2Filter = context.get("r2Filter");
+		if (r2Filter == null) {
+			r2Filter = "0";
+		}
+
 		String queue = "default";
 		if (context.get("queues") != null) {
 			queue = context.get("queues");
@@ -163,6 +168,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				String hdfsFilenameChromosome = resolvePattern(panel.getHdfs(), chr);
 				job.setRefPanelHdfs(hdfsFilenameChromosome);
 
+				job.setR2Filter(r2Filter);
 				job.setBuild(panel.getBuild());
 				if (panel.getMapMinimac() != null) {
 					context.println("Setting up minimac map file...");
