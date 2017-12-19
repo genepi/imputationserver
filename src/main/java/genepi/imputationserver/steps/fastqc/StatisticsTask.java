@@ -158,6 +158,12 @@ public class StatisticsTask implements ITask {
 		}
 
 		mafWriter.close();
+		
+		excludedChunkWriter.close();
+
+		chrXInfoWriter.close();
+
+		typedOnlyWriter.close();
 
 		if (!excludedChunkWriter.hasData()) {
 			FileUtil.deleteFile(excludedChunkFile);
@@ -170,12 +176,6 @@ public class StatisticsTask implements ITask {
 		if (!typedOnlyWriter.hasData()) {
 			FileUtil.deleteFile(typedOnleFile);
 		}
-
-		excludedChunkWriter.close();
-
-		chrXInfoWriter.close();
-
-		typedOnlyWriter.close();
 
 		qcObject.setSuccess(true);
 

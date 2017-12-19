@@ -154,12 +154,14 @@ public class FastQualityControl extends WorkflowStep {
 		}
 
 		try {
-
+			
+			excludedSnpsWriter.close();
+			
 			if (!excludedSnpsWriter.hasData()) {
 				FileUtil.deleteFile(excludedSnpsFile);
 			}
 
-			excludedSnpsWriter.close();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -200,8 +202,11 @@ public class FastQualityControl extends WorkflowStep {
 
 		text.append("Excluded sites in total: " + formatter.format(task.getFiltered()) + "<br>");
 		text.append("Remaining sites in total: " + formatter.format(task.getOverallSnps()) + "<br>");
+		
+		if(task.getFiltered()>0){
 		text.append("See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
-
+		}
+		
 		if (task.getNotFoundInLegend() > 0) {
 			text.append("Typed only sites: " + formatter.format(task.getNotFoundInLegend()) + "<br>");
 			text.append("See " + context.createLinkToFile("statisticDir", "typed-only.txt") + " for details" + "<br>");
