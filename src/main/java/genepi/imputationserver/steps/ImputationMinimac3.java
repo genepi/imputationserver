@@ -130,6 +130,11 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			String[] chunkFiles = FileUtil.getFiles(input, "*.*");
 
 			context.beginTask("Start Imputation...");
+			
+			if (chunkFiles.length == 0) {
+				context.error("<br><b>Error:</b> No chunks found. Imputation cannot be started!");
+				return false;
+			}
 
 			for (String chunkFile : chunkFiles) {
 
