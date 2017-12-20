@@ -20,17 +20,17 @@ public class FileMerger {
 
 	public static final String R2_FLAG = "R2";
 
-	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, double rsq)
+	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, double minR2)
 			throws IOException {
 		LineReader reader = new LineReader(input);
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
-				if (rsq > 0) {
+				if (minR2 > 0) {
 					// rsq set. parse line and check rsq
 					String info = parseInfo(line);
 					if (info != null) {
-						boolean keep = keepVcfLineByInfo(info, R2_FLAG, rsq);
+						boolean keep = keepVcfLineByInfo(info, R2_FLAG, minR2);
 						if (keep) {
 							outData.write(line.getBytes());
 							outData.write("\n".getBytes());
@@ -53,7 +53,7 @@ public class FileMerger {
 				}
 			}
 		}
-		outHeader.write(("##imputationserver_filter R2>" + rsq + "\n").getBytes());
+		outHeader.write(("##imputationserver_filter R2>" + minR2 + "\n").getBytes());
 		outData.close();
 		outHeader.close();
 		reader.close();
@@ -135,7 +135,7 @@ public class FileMerger {
 				}
 			}
 		}
-		return false;
+		return true;
 	}
 
 	public static String parseInfo(String line) {

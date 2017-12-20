@@ -65,6 +65,7 @@ public class InputValidation extends WorkflowStep {
 		String reference = context.get("refpanel");
 		String phasing = context.get("phasing");
 		String build = context.get("build");
+		String r2Filter = context.get("r2Filter");
 
 		int sampleLimit = Integer.valueOf(context.get("sample-limit"));
 		int chunkSize = Integer.parseInt(context.get("chunksize"));
@@ -163,7 +164,7 @@ public class InputValidation extends WorkflowStep {
 							context.endTask("Please select eagle2 for chromosome X. ", WorkflowContext.ERROR);
 							return false;
 						}
-						
+
 					}
 
 					validVcfFiles.add(vcfFile);
@@ -213,25 +214,33 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
-					if (build == null){
+					if (build == null) {
 						build = "hg19";
 					}
-					
-					if(build.equals("hg19") && vcfFile.hasChrPrefix()){
-						context.endTask("Your upload data contains chromosome '" + vcfFile.getRawChromosome() + "'. This is not a valid hg19 encoding. Please ensure that your input data is build hg19 and chromosome is encoded as '"+ vcfFile.getChromosome() +"'."  , WorkflowContext.ERROR);
+
+					if (build.equals("hg19") && vcfFile.hasChrPrefix()) {
+						context.endTask("Your upload data contains chromosome '" + vcfFile.getRawChromosome()
+								+ "'. This is not a valid hg19 encoding. Please ensure that your input data is build hg19 and chromosome is encoded as '"
+								+ vcfFile.getChromosome() + "'.", WorkflowContext.ERROR);
 						return false;
 					}
-					
-					if (build.equals("hg38") && !vcfFile.hasChrPrefix()){
-						context.endTask("Your upload data contains chromosome '" + vcfFile.getRawChromosome() + "'. This is not a valid hg38 encoding. Please ensure that your input data is build hg38 and chromosome is encoded as 'chr"+ vcfFile.getChromosome() +"'." , WorkflowContext.ERROR);
+
+					if (build.equals("hg38") && !vcfFile.hasChrPrefix()) {
+						context.endTask("Your upload data contains chromosome '" + vcfFile.getRawChromosome()
+								+ "'. This is not a valid hg38 encoding. Please ensure that your input data is build hg38 and chromosome is encoded as 'chr"
+								+ vcfFile.getChromosome() + "'.", WorkflowContext.ERROR);
 						return false;
 					}
-					
+
 					infos = "Samples: " + noSamples + "\n" + "Chromosomes:" + chromosomeString + "\n" + "SNPs: "
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
 							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
 							+ "Phasing: " + phasing;
+
+					if (r2Filter != null && !r2Filter.isEmpty() && !r2Filter.equals("0")) {
+						infos += "\nRsq filter: " + r2Filter;
+					}
 
 				} else {
 					context.endTask("No valid chromosomes found!", WorkflowContext.ERROR);
@@ -257,7 +266,6 @@ public class InputValidation extends WorkflowStep {
 				return false;
 			}
 
-			
 			// init counters
 			context.incCounter("samples", noSamples);
 			context.incCounter("genotypes", noSamples * noSnps);
@@ -310,25 +318,25 @@ public class InputValidation extends WorkflowStep {
 			return false;
 		}
 
-		//check if mode is imputation 	
-		if (mode == null || mode.equals("imputation")){
-		
+		// check if mode is imputation
+		if (mode == null || mode.equals("imputation")) {
+
 			// check if reference panel supports selected phasing algorithm
 			if (phasing.equals("hapiur") && panel.getMapHapiUR() == null) {
 				context.error("Reference panel " + reference + " doesn't support phasing with HapiUR.");
 				return false;
 			}
-	
+
 			if (phasing.equals("shapeit") && panel.getMapShapeIT() == null) {
 				context.error("Reference panel " + reference + " doesn't support phasing with ShapeIt.");
 				return false;
 			}
-	
+
 			if (phasing.equals("eagle") && panel.getMapEagle() == null) {
 				context.error("Reference panel " + reference + " doesn't support phasing with Eagle.");
 				return false;
 			}
-		
+
 		}
 
 		// check populations

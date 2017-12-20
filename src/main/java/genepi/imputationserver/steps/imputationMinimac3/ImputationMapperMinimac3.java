@@ -18,6 +18,10 @@ import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.FileMerger.BgzipSplitOutputStream;
 import genepi.io.FileUtil;
+import genepi.io.table.reader.CsvTableReader;
+import genepi.io.table.writer.CsvTableWriter;
+import genepi.io.text.LineReader;
+import genepi.io.text.LineWriter;
 
 public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, Text> {
 
@@ -53,7 +57,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 	private String build = "hg19";
 
-	private double r2Filter = 0;
+	private double minR2 = 0;
 
 	private String refEagleIndexFilename;
 
@@ -79,9 +83,9 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		build = parameters.get(ImputationJobMinimac3.BUILD);
 		String r2FilterString = parameters.get(ImputationJobMinimac3.R2_FILTER);
 		if (r2FilterString == null) {
-			r2Filter = 0;
+			minR2 = 0;
 		} else {
-			r2Filter = Double.parseDouble(r2FilterString);
+			minR2 = Double.parseDouble(r2FilterString);
 		}
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String hdfsPathMinimacMap = parameters.get(ImputationJobMinimac3.MAP_MINIMAC);
@@ -220,7 +224,16 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			}
 
 			// store info file
-			HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
+
+			if (minR2 > 0) {
+				// filter by r2
+				String filteredInfoFilename = outputChunk.getInfoFilename() + "_filtered";
+				filterInfoFileByR2(outputChunk.getInfoFilename(), filteredInfoFilename, minR2);
+				HdfsUtil.put(filteredInfoFilename, HdfsUtil.path(output, chunk + ".info"));
+
+			} else {
+				HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
+			}
 
 			long start = System.currentTimeMillis();
 
@@ -231,7 +244,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 					HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
 
-			FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData, r2Filter);
+			FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData, minR2);
 			long end = System.currentTimeMillis();
 
 			System.out.println("Time filter and put: " + (end - start) + " ms");
@@ -239,9 +252,48 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		} catch (Exception e) {
 			if (!debugging) {
 				System.out.println("Mapper Task failed.");
+				e.printStackTrace();
 				cleanup(context);
 			}
 			throw e;
 		}
+	}
+
+	public void filterInfoFileByR2(String input, String output, double minR2) throws IOException {
+
+		LineReader readerInfo = new LineReader(input);
+		LineWriter writerInfo = new LineWriter(output);
+
+		readerInfo.next();
+		String header = readerInfo.get();
+
+		// find index for Rsq
+		String[] headerTiles = header.split("\t");
+		int index = -1;
+		for (int i = 0; i < headerTiles.length; i++) {
+			if (headerTiles[i].equals("Rsq")) {
+				index = i;
+			}
+		}
+
+		writerInfo.write(header);
+
+		while (readerInfo.next()) {
+			String line = readerInfo.get();
+			String[] tiles = line.split("\t");
+			String value = tiles[index];
+			try {
+				double r2 = Double.parseDouble(value);
+				if (r2 > minR2) {
+					writerInfo.write(line);
+				}
+			} catch (NumberFormatException e) {
+				writerInfo.write(line);
+			}
+		}
+
+		readerInfo.close();
+		writerInfo.close();
+
 	}
 }

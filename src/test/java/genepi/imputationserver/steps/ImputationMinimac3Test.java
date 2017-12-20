@@ -397,12 +397,15 @@ public class ImputationMinimac3Test {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
-		//FileUtil.deleteDirectory("test-data/tmp");
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		assertEquals(snpInInfo, file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
 	@Test
-	public void testPipelineWithEagleAdnR2Filter() throws IOException, ZipException {
+	public void testPipelineWithEagleAndR2Filter() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chr20";
 		String inputFolder = "test-data/data/chr20-unphased";
@@ -445,13 +448,25 @@ public class ImputationMinimac3Test {
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
 		
+		
 		//TODO: update SNPS_WITH_R2_BELOW_05
-		assertTrue(TOTAL_REFPANEL_CHR20_B37 - ONLY_IN_INPUT > file.getNoSnps());
+		assertTrue(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT > file.getNoSnps());
 
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		assertEquals(snpInInfo, file.getNoSnps());
+		
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 	
+	private int getLineCount(String filename) throws IOException{
+		LineReader reader = new LineReader(filename);
+		int lines = 0;
+		while(reader.next()){
+			lines++;
+		}
+		return lines;
+	}
 	
 	@Test
 	public void testPipelineWithEmptyPhasing() throws IOException, ZipException {
@@ -524,13 +539,7 @@ public class ImputationMinimac3Test {
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
 
-		LineReader readInfo = new LineReader("test-data/tmp/chr20.info.gz");
-
-		int infoCount = 0;
-
-		while (readInfo.next()) {
-			infoCount++;
-		}
+		int infoCount = getLineCount("test-data/tmp/chr20.info.gz");
 
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
