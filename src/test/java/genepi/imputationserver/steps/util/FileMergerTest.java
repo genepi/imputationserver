@@ -12,7 +12,7 @@ public class FileMergerTest extends TestCase {
 		assertFalse(FileMerger.keepVcfLineByInfo("lukas=3223;test=22;R2=0.2;rrr=eeew", "R2", 0.5f));
 		assertTrue(FileMerger.keepVcfLineByInfo("R2=0.8;ttt=dsa", "R2", 0.5f));
 		assertFalse(FileMerger.keepVcfLineByInfo("R2=0.2;rrr=eeew", "R2", 0.5f));
-		assertFalse(FileMerger.keepVcfLineByInfo("rrr=eeew", "R2", 0.5f));
+		assertTrue(FileMerger.keepVcfLineByInfo("rrr=eeew", "R2", 0.5f));
 	}
 
 	public void testParseInfo() {
