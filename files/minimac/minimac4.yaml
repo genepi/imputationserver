@@ -87,14 +87,13 @@ mapred:
      - id: r2Filter
        description: rsq Filter
        type: list
-       value: 0.001
+       value: 0
        values:
          0: off
          0.001: 0.001
          0.1: 0.1
          0.2: 0.2
          0.3: 0.3
-
 
      - id: phasing
        description: Phasing
@@ -103,7 +102,6 @@ mapred:
        values:
          eagle: Eagle v2.3 (phased output)
          no_phasing: No phasing
-
   
      - id: population
        description: Population
