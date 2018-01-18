@@ -53,18 +53,10 @@ public class FastQualityControl extends WorkflowStep {
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
 		// load reference panels
-		RefPanelList panels = null;
-		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
-
-		} catch (Exception e) {
-
-			context.error("File " + RefPanelList.FILENAME + " not found.");
-			return false;
-		}
+		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
 		// check reference panel
-		RefPanel panel = panels.getById(reference);
+		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
 		if (panel == null) {
 			context.error("Reference '" + reference + "' not found.");
 			context.error("Available references:");

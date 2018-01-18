@@ -126,16 +126,9 @@ public class InputValidation extends WorkflowStep {
 
 		String infos = null;
 
-		RefPanelList panels = null;
-		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
-		} catch (Exception e) {
-			context.endTask("File " + RefPanelList.FILENAME + " not found.", WorkflowContext.ERROR);
-			return false;
-		}
+		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		//
-		RefPanel panel = panels.getById(reference);
+		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
 		if (panel == null) {
 			context.endTask("Reference '" + reference + "' not found.", WorkflowContext.ERROR);
 			return false;
@@ -295,18 +288,9 @@ public class InputValidation extends WorkflowStep {
 		String phasing = context.get("phasing");
 		String mode = context.get("mode");
 
-		RefPanelList panels = null;
-		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
+		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		} catch (Exception e) {
-
-			context.error("File " + RefPanelList.FILENAME + " not found.");
-			return false;
-		}
-
-		//
-		RefPanel panel = panels.getById(reference);
+		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
 		if (panel == null) {
 			StringBuilder report = new StringBuilder();
 			report.append("Reference '" + reference + "' not found.\n");
