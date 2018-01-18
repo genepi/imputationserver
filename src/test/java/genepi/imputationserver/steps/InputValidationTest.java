@@ -500,7 +500,7 @@ public class InputValidationTest extends TestCase {
 		
 		@Override
 		protected void setupTabix(String folder) {
-			VcfFileUtil.setTabixBinary("files/minimac/bin/tabix");
+			VcfFileUtil.setTabixBinary("files/bin/tabix");
 		}
 
 	}
