@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>genepi</groupId>
-	<artifactId>minimac-cloud-improved</artifactId>
+	<artifactId>imputationserver</artifactId>
 	<version>1.1.0</version>
 	<packaging>jar</packaging>
 
@@ -101,6 +101,8 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
+							<finalName>imputationserver</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
 								<descriptor>src/main/assembly/assembly.xml</descriptor>
 							</descriptors>
@@ -213,7 +215,7 @@
 			<version>2.6.0-mr1-cdh5.10.0</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.sshd</groupId>
 			<artifactId>sshd-sftp</artifactId>
