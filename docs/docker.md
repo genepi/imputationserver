@@ -19,33 +19,24 @@ docker --version
 Docker version 17.03.1-ce, build c6d412e
 ````
 
-!!! warning
-    A local sudo user (not root) is required to run the image.
 
+## Quick Start
 
-## Michigan Imputation Server: Quick Start
-
-To test the overall setup, please execute the following commands to setup the Michigan Imputation Server using HapMap only.
+After the successful installation of Docker, all you need to do is:
 
 ### Setup
 
 ````sh
-docker pull seppinho/cloudgene-docker
-sudo docker run --privileged -it -p 8082:8082 seppinho/cloudgene-docker start-cloudgene.sh --repository https://github.com/genepi/imputationserver.git
+docker run -d -p 8080:80 genepi/imputationserver
 ````
+
+After ~ 1 minute your Imputation Server instance is ready and you are able to access it on http://localhost:8080 and impute against HapMap2.
 
 ### Connect
 
-````
-http://localhost:8082
-````
--or-
+**URL:** http://localhost:8082.
 
-````
-http://your-ip-address:8082
-````
-
-**Credentials**: admin / admin1978
+**Credentials:** admin / admin1978
 
 
 ### Download sample data
@@ -53,74 +44,66 @@ http://your-ip-address:8082
 A sample file (chromosome 1) including ~23k SNPs (simulated HapMap300 chip) can be found [here](https://imputationserver.sph.umich.edu/static/downloads/hapmap300.chr1.recode.vcf.gz).
 
 
-## Michigan Imputation Server: Production Mode
+##  Install 1000 Genomes Phase 3 reference panel
 
-For setting up Michigan Imputation Server using 1000 Genomes Phase3, please execute the following commands:
+This image is delivered with the Hapmap2 Reference Panel. To keep your jobs, results and installed reference panels between sessions, you need to mount a folder from your host to the container:
 
-### Create a local Docker directory
+### Step 1: Setup
 
-````sh
-mkdir /tmp/imputation-data
-````
+```sh
+docker run -d -p 8080:80  -v /home/user/imputationserver-data/:/data/ genepi/imputationserver
+```
 
-!!! warning
-    All subsequent commands must be executed from this directory (i.e. /tmp/imputation-data).
+**Note:** Please replace `/home/user/imputationserver-data` with the absolute path pointing to folder on your computer.
 
-### Get 1000 genomes reference data
+### Step 2: Login
 
-````sh
-cd /tmp/imputation-data
-wget https://imputationserver.sph.umich.edu/static/downloads/1KP3.tar.gz -O 1KGP3.tar.gz
-tar xvfz 1KGP3.tar.gz
-````
+**URL:** http://localhost:8082.
 
-!!! note
-    It's recommended to execute all commands from a HDD having at least 100 GB (Reference panel file size zipped: 14 GB).
+**Credentials:** admin / admin1978
 
-### Build latest source locally
+### Step 3: Go to Admin Panel
 
-````sh
-cd /tmp/imputation-data
-git clone https://github.com/genepi/imputationserver.git
-mvn clean install -Dmaven.test.skip=true -f imputationserver/pom.xml
-````
+After logging in, you have to open the *Admin-Panel*:
 
-### Start Docker image
+![Admin Panel](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/admin-panel.png?raw=true)
 
-````sh
-sudo docker pull seppinho/cloudgene-docker
-````
+### Step 3: Open Applications
 
-````sh
-cd /tmp/imputation-data
-sudo docker run --privileged -it -p 8082:8082 -p 50030:50030 -p 50060:50060 -v $(pwd)/imputationserver/target/minimac-cloud-assembly:/opt/cloudgene/apps/ -v $(pwd):/opt/cloudgene/input-data seppinho/cloudgene-docker start-cloudgene.sh
-````
+Click on the *Applications* tab to see all installed applications.
 
-!!! note
-    The `sudo docker run` command ends with a root bash within the Docker Image.
+![Applications](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/applications.png?raw=true)
 
-### Import 1000 genomes reference data
+### Step 4: Install Application
 
-````sh
-sh /opt/cloudgene/apps/config/init-1KP3.sh
-````
+After clicking on *Install App* a new Dialog appears, where you can enter the ID and the URL of a public available reference panel:
 
-!!! warning
-    This command has to be executed from the Docker root shell (e.g. `root@a4146a4ab3a3`).
+![Install App](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/install-app.png?raw=true)
 
-### Ready to connect!
+By clicking on *OK* the installation starts. Depending on your Internet connection and computer resources it could take several minutes.
 
-````
-http://localhost:8082
-````
+### Step 5: Submit Job
 
--or-
+If the installation was successful, you should see your reference panel in the Reference Panel list when you submit a new job:
 
-````
-http://your-ip-address:8082
-````
+![Reference Panel List](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/run.png?raw=true)
 
-**Credentials**: admin / admin1978
+Since all reference panels are installed in your provided data folder, you can stop and restart your cluster without reinstalling them.
+
+## Public Reference Panels
+
+Currently, the following Reference Panels are public available:
+
+### Hapmap2
+
+- **ID:** hapmap2
+- **URL:** https://imputationserver.sph.umich.edu/static/downloads/releases/hapmap2-1.0.0.zip
+
+### 1000 Genomes Phase 3
+
+- **ID:** 1000genomes-phase3
+- **URL:** https://imputationserver.sph.umich.edu/static/downloads/releases/1000genomes-phase3-1.0.0.zip
+
 
 
 ## Contact
