@@ -46,6 +46,12 @@ public class FileMerger {
 					outData.write("\n".getBytes());
 				}
 			} else {
+
+				//write filter command before ID List starting with #CHROM
+				if (line.startsWith("#CHROM")) {
+					outHeader.write(("##imputationserver_filter R2>" + minR2 + "\n").getBytes());
+				}
+
 				// remove minimac4 command
 				if (!line.startsWith("##minimac4_Command")) {
 					outHeader.write(line.getBytes());
@@ -53,7 +59,6 @@ public class FileMerger {
 				}
 			}
 		}
-		outHeader.write(("##imputationserver_filter R2>" + minR2 + "\n").getBytes());
 		outData.close();
 		outHeader.close();
 		reader.close();
