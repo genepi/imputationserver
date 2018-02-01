@@ -482,6 +482,27 @@ public class ImputationMinimac3Test {
 		return true;
 	}
 
+	private boolean checkSortPositionInfo(String filename) throws IOException {
+
+		LineReader reader = new LineReader(filename);
+		int pos = -1;
+		while (reader.next()) {
+
+			String line = reader.get();
+
+			if (!line.startsWith("SNP")) {
+				String snp = line.split("\t")[0];
+				if (Integer.valueOf(snp.split(":")[1]) <= pos) {
+					return false;
+				}
+				pos = Integer.valueOf(snp.split(":")[1]);
+			}
+
+		}
+
+		return true;
+	}
+
 	@Test
 	public void testPipelineWithEmptyPhasing() throws IOException, ZipException {
 
@@ -551,8 +572,10 @@ public class ImputationMinimac3Test {
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
 
-		assertEquals(true, checkAmountOfColumns("test-data/tmp/chr20.info.gz",13));
+		assertEquals(true, checkAmountOfColumns("test-data/tmp/chr20.info.gz", 13));
 		
+		assertEquals(true, checkSortPositionInfo("test-data/tmp/chr20.info.gz"));
+
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
