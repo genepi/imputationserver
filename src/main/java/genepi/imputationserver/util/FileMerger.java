@@ -1,5 +1,6 @@
 package genepi.imputationserver.util;
 
+import java.io.DataInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -47,7 +48,7 @@ public class FileMerger {
 				}
 			} else {
 
-				//write filter command before ID List starting with #CHROM
+				// write filter command before ID List starting with #CHROM
 				if (line.startsWith("#CHROM")) {
 					outHeader.write(("##imputationserver_filter R2>" + minR2 + "\n").getBytes());
 				}
@@ -81,46 +82,33 @@ public class FileMerger {
 
 		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(local));
 
-		Configuration conf = HdfsUtil.getConfiguration();
+		boolean firstFile = true;
 
-		FileSystem fileSystem = FileSystem.get(conf);
+		for (String file : hdfs) {
 
-		for (String folder : hdfs) {
+			DataInputStream in = HdfsUtil.open(file);
 
-			Path pathFolder = new Path(folder);
+			LineReader reader = new LineReader(in);
 
-			FileStatus[] files = fileSystem.listStatus(pathFolder);
+			boolean header = true;
 
-			boolean firstFile = true;
+			while (reader.next()) {
 
-			for (FileStatus file : files) {
+				String line = reader.get();
 
-				FSDataInputStream in = fileSystem.open(file.getPath());
-
-				LineReader reader = new LineReader(in);
-
-				boolean header = true;
-
-				while (reader.next()) {
-
-					String line = reader.get();
-
-					if (header) {
-						if (firstFile) {
-							firstFile = false;
-						} else {
-							out.write('\n');
-						}
-						header = false;
-					} else {
-						out.write('\n');
-
+				if (header) {
+					if (firstFile) {
+						out.write(line.toString().getBytes());
+						firstFile = false;
 					}
+					header = false;
+				} else {
+					out.write('\n');
 					out.write(line.toString().getBytes());
 				}
-				in.close();
-
 			}
+
+			in.close();
 
 		}
 

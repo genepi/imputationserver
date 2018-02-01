@@ -34,8 +34,8 @@ public class ImputationMinimac3Test {
 	public final int TOTAL_REFPANEL_CHRX_B37 = 1479509;
 	public final int TOTAL_REFPANEL_CHRX_B38 = 1077575;
 	public final int ONLY_IN_INPUT = 78;
-	//public final int SNPS_WITH_R2_BELOW_05 = 6344;
-	
+	// public final int SNPS_WITH_R2_BELOW_05 = 6344;
+
 	@BeforeClass
 	public static void setUp() throws Exception {
 		TestCluster.getInstance().start();
@@ -123,7 +123,7 @@ public class ImputationMinimac3Test {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithPhasedAndNoPhasingSelected() throws IOException, ZipException {
 
@@ -171,7 +171,7 @@ public class ImputationMinimac3Test {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWidthInvalidHttpUrl() throws IOException, ZipException {
 
@@ -413,7 +413,7 @@ public class ImputationMinimac3Test {
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
 		context.setInput("r2Filter", "0.5");
-		
+
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 		boolean result = run(context, qcStats);
@@ -447,27 +447,41 @@ public class ImputationMinimac3Test {
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
-		
-		
-		//TODO: update SNPS_WITH_R2_BELOW_05
+
+		// TODO: update SNPS_WITH_R2_BELOW_05
 		assertTrue(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT > file.getNoSnps());
 
 		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
 		assertEquals(snpInInfo, file.getNoSnps());
-		
+
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
-	private int getLineCount(String filename) throws IOException{
+
+	private int getLineCount(String filename) throws IOException {
 		LineReader reader = new LineReader(filename);
 		int lines = 0;
-		while(reader.next()){
+		while (reader.next()) {
 			lines++;
 		}
 		return lines;
 	}
-	
+
+	private boolean checkAmountOfColumns(String filename, int tabs) throws IOException {
+		LineReader reader = new LineReader(filename);
+		while (reader.next()) {
+
+			String line = reader.get();
+
+			if (line.split("\t").length > tabs) {
+				return false;
+			}
+
+		}
+
+		return true;
+	}
+
 	@Test
 	public void testPipelineWithEmptyPhasing() throws IOException, ZipException {
 
@@ -493,13 +507,11 @@ public class ImputationMinimac3Test {
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
 		result = run(context, imputation);
 		assertFalse(result);
-		
-		FileUtil.deleteDirectory("test-data/tmp");
 
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
-	
 	@Test
 	public void testCompareInfoAndDosageSize() throws IOException, ZipException {
 
@@ -539,14 +551,15 @@ public class ImputationMinimac3Test {
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
 
-		int infoCount = getLineCount("test-data/tmp/chr20.info.gz");
-
+		assertEquals(true, checkAmountOfColumns("test-data/tmp/chr20.info.gz",13));
+		
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
 		// subtract header
+		int infoCount = getLineCount("test-data/tmp/chr20.info.gz");
 		assertEquals(infoCount - 1, file.getNoSnps());
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -1091,7 +1104,7 @@ public class ImputationMinimac3Test {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithEagleHg38ToHg38() throws IOException, ZipException {
 
@@ -1101,7 +1114,7 @@ public class ImputationMinimac3Test {
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
 		context.setInput("build", "hg38");
-			
+
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 		boolean result = run(context, qcStats);
@@ -1308,9 +1321,9 @@ public class ImputationMinimac3Test {
 			FileUtil.deleteDirectory(file);
 		}
 		file.mkdirs();
-		
+
 		HdfsUtil.delete("cloudgene-hdfs");
-		
+
 		context.setVerbose(VERBOSE);
 		context.setInput("files", folder);
 		context.setInput("population", "eur");
