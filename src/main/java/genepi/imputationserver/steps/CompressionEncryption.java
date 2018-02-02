@@ -115,7 +115,7 @@ public class CompressionEncryption extends WorkflowStep {
 			for (String name : chromosomes.keySet()) {
 
 				ExportObject entry = chromosomes.get(name);
-				
+
 				context.println("Export and merge chromosome " + name);
 
 				// resort for chrX only
@@ -146,6 +146,7 @@ public class CompressionEncryption extends WorkflowStep {
 				for (String file : entry.getDataFiles()) {
 					context.println("Read file " + file);
 					vcfFile.addFile(HdfsUtil.open(file));
+					HdfsUtil.delete(file);
 				}
 
 				vcfFile.close();
@@ -271,11 +272,11 @@ public class CompressionEncryption extends WorkflowStep {
 
 		@Override
 		public int compare(String o1, String o2) {
-			
+
 			String region = o1.substring(o1.lastIndexOf("/") + 1).split("_")[1];
-			
+
 			String region2 = o2.substring(o2.lastIndexOf("/") + 1).split("_")[1];
-			
+
 			return Integer.valueOf(definedOrder.indexOf(region))
 					.compareTo(Integer.valueOf(definedOrder.indexOf(region2)));
 		}
