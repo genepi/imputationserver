@@ -1,6 +1,6 @@
 name:  Michigan Imputation Server
 description: Michigan Imputation Server provides a free genotype imputation service using <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a>. You can upload phased or unphased GWAS genotypes and receive phased and imputed genomes in return. For all uploaded data sets an extensive QC is performed.
-version: v1.1.0
+version: v1.1.2
 website: http://genome.sph.umich.edu/wiki/Minimac
 category:
  
