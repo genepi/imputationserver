@@ -26,15 +26,19 @@ After the successful installation of Docker, all you need to do is:
 
 ### Setup
 
+```sh
+docker pull genepi/imputationserver
+```
+
 ````sh
-docker run -d -p 8080:80 genepi/imputationserver
+docker run -d -p 8080:80 -e DOCKER_CORES="4" genepi/imputationserver
 ````
 
-After ~ 1 minute your Imputation Server instance is ready and you are able to access it on http://localhost:8080 and impute against HapMap2.
+After ~ 1 minute your Imputation Server instance is ready and you are able to access it on http://localhost:8080 and impute against HapMap2. To run more parallel tasks, please adapt the DOCKER_CORES parameter. 
 
 ### Connect
 
-**URL:** http://localhost:8082.
+**URL:** http://localhost:8080.
 
 **Credentials:** admin / admin1978
 
@@ -51,14 +55,18 @@ This image is delivered with the Hapmap2 Reference Panel. To keep your jobs, res
 ### Step 1: Setup
 
 ```sh
-docker run -d -p 8080:80  -v /home/user/imputationserver-data/:/data/ genepi/imputationserver
+docker pull genepi/imputationserver
 ```
 
-**Note:** Please replace `/home/user/imputationserver-data` with the absolute path pointing to folder on your computer.
+```sh
+docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ genepi/imputationserver
+```
+
+**Note:** Please replace `/home/user/imputationserver-data` with the absolute path pointing to the folder on your computer. To run more parallel tasks, please adapt the DOCKER_CORES parameter. 
 
 ### Step 2: Login
 
-**URL:** http://localhost:8082.
+**URL:** http://localhost:8080.
 
 **Credentials:** admin / admin1978
 
