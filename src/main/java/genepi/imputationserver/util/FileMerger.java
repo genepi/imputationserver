@@ -50,7 +50,7 @@ public class FileMerger {
 
 				// write filter command before ID List starting with #CHROM
 				if (line.startsWith("#CHROM")) {
-					outHeader.write(("##imputationserver_filter R2>" + minR2 + "\n").getBytes());
+					outHeader.write(("##imputationserver_filter=R2>" + minR2 + "\n").getBytes());
 				}
 
 				// remove minimac4 command
