@@ -114,7 +114,7 @@ public class StatisticsTask implements ITask {
 
 		String chrXInfoFile = FileUtil.path(statDir, "chrX-info.txt");
 		LineWriter chrXInfoWriter = new LineWriter(chrXInfoFile);
-		chrXInfoWriter.write("#Sample\tPosition",false);
+		chrXInfoWriter.write("#Sample\tPosition", false);
 
 		String typedOnleFile = FileUtil.path(statDir, "typed-only.txt");
 		LineWriter typedOnlyWriter = new LineWriter(typedOnleFile);
@@ -158,7 +158,7 @@ public class StatisticsTask implements ITask {
 		}
 
 		mafWriter.close();
-		
+
 		excludedChunkWriter.close();
 
 		chrXInfoWriter.close();
@@ -476,10 +476,9 @@ public class StatisticsTask implements ITask {
 
 					alleleSwitch++;
 					/*
-					 * logWriter.write("Allele switch" + snp.getID() + "\t" +
-					 * chr + ":"+ snp.getStart() + "\t" + "ref: " + legendRef +
-					 * "/" + legendAlt + "; data: " + studyRef + "/" + studyAlt
-					 * + ")");
+					 * logWriter.write("Allele switch" + snp.getID() + "\t" + chr + ":"+
+					 * snp.getStart() + "\t" + "ref: " + legendRef + "/" + legendAlt + "; data: " +
+					 * studyRef + "/" + studyAlt + ")");
 					 */
 				}
 
@@ -722,13 +721,15 @@ public class StatisticsTask implements ITask {
 
 		}
 
-		for (int i = 0; i < mixedGenotypes.length; i++) {
-			double missingRate = mixedGenotypes[i] / (double) count;
-			if (missingRate > CHR_X_MIXED_GENOTYPES) {
-				this.chrXMissingRate = true;
-				break;
-			}
+		if (mixedGenotypes != null) {
+			for (int i = 0; i < mixedGenotypes.length; i++) {
+				double missingRate = mixedGenotypes[i] / (double) count;
+				if (missingRate > CHR_X_MIXED_GENOTYPES) {
+					this.chrXMissingRate = true;
+					break;
+				}
 
+			}
 		}
 
 		vcfReader.close();
@@ -807,7 +808,7 @@ public class StatisticsTask implements ITask {
 			Genotype genotype = snp.getGenotype(name);
 
 			if (hapSamples.contains(name) && genotype.getPloidy() != 1) {
-				chrXInfoWriter.write(name + "\t" + snp.getContig()+":"+snp.getStart());
+				chrXInfoWriter.write(name + "\t" + snp.getContig() + ":" + snp.getStart());
 				this.chrXPloidyError = true;
 
 			}
@@ -890,7 +891,7 @@ public class StatisticsTask implements ITask {
 	public void setExcludedSnpsWriter(LineWriter excludedSnpsWriter) {
 		this.excludedSnpsWriter = excludedSnpsWriter;
 	}
-	
+
 	public int getOverallSnps() {
 		return overallSnps;
 	}
