@@ -22,12 +22,12 @@
 		<div class="row justify-content-center text-center ">
 			<div class="col-md-3 text-center">
 				<p>
-					<span class="lead" style="font-size: 200%;">18.6M</span><br>Imputed Genomes
+					<span class="lead" style="font-size: 200%;"><%= (Math.round(counter.attr('complete.chromosomes') / 22.0 /1000.0/1000.0 * 10) / 10).toLocaleString() %>M</span><br>Imputed Genomes
 				</p>
 			</div>
 			<div class="col-md-3 text-center">
 				<p>
-					<span class="lead" style="font-size: 200%;">3,160</span><br>Registerd Users
+					<span class="lead" style="font-size: 200%;"><%= Math.round(counter.attr('users')).toLocaleString() %></span><br>Registerd Users
 				</p>
 			</div>
 			<div class="col-md-3 text-center">
@@ -143,14 +143,14 @@
 
 					1000 Genomes<br>Phase 1
 
-				</div </div>
+				</div>
 			</div>
 			<div class="card " style="border-top-color: #4f5d73; border-top-width: 5px;">
 				<div class="card-body">
 
 					1000 Genomes<br>Phase 3
 
-				</div </div>
+				</div>
 			</div>
 
 			<div class="card " style="border-top-color: #4f5d73; border-top-width: 5px;">
