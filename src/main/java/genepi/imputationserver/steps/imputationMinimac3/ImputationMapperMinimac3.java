@@ -122,7 +122,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		if (hdfsPathMapEagle != null) {
 			String mapEagle = FileUtil.getFilename(hdfsPathMapEagle);
 			mapEagleFilename = cache.getFile(mapEagle);
-		}
+		} 
 		if (hdfsRefEagle != null) {
 			refEagleFilename = cache.getFile(FileUtil.getFilename(hdfsRefEagle));
 			refEagleIndexFilename = cache.getFile(FileUtil.getFilename(hdfsRefEagle + ".csi"));
@@ -164,9 +164,11 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
+		String minimacParams = store.getString("minimac.command");
+		
 		// config pipeline
 		pipeline = new ImputationPipelineMinimac3();
-		pipeline.setMinimacCommand(minimacCommand);
+		pipeline.setMinimacCommand(minimacCommand, minimacParams);
 		pipeline.setHapiUrCommand(hapiUrCommand);
 		pipeline.setVcfCookerCommand(vcfCookerCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
