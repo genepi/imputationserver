@@ -7,7 +7,10 @@ before_install:
 - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo
   tee /etc/hosts
 - cat /etc/hosts
-script: mvn clean test jacoco:report
+script:
+- mvn -Dtest=mvn -Dtest=ValidationTestSuite test jacoco:report
+- mvn -Dtest=mvn -Dtest=QcTestSuite test jacoco:report
+- mvn -Dtest=mvn -Dtest=ImputationTestSuite test jacoco:report
 after_success:
 - mvn coveralls:report
 notifications:
