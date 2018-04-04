@@ -1,6 +1,5 @@
 # Michigan Imputation Server
 [![Build Status](https://travis-ci.org/genepi/imputationserver.svg?branch=master)](https://travis-ci.org/genepi/imputationserver)
-[ ![Codeship Status for genepi/imputationserver](https://app.codeship.com/projects/9561ba10-beeb-0134-1fd6-0204b74559cb/status?branch=master)](https://app.codeship.com/projects/196409)
 [![Coverage Status](https://coveralls.io/repos/github/genepi/imputationserver/badge.svg)](https://coveralls.io/github/genepi/imputationserver?branch=master)
  <a href="https://twitter.com/intent/follow?screen_name=umimpute"> <img src="https://img.shields.io/twitter/follow/umimpute.svg?style=social" alt="follow on Twitter"></a>
 
