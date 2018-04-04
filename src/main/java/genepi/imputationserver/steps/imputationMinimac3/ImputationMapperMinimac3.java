@@ -94,8 +94,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		String hdfsPathMapEagle = parameters.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
 		String hdfsRefEagle = parameters.get(ImputationJobMinimac3.REF_PANEL_EAGLE_HDFS);
 
-		String minimacBin = parameters.get(ImputationJobMinimac3.MINIMAC_BIN);
-
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
 		String referencePanel = FileUtil.getFilename(hdfsPath);
@@ -122,13 +120,13 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		if (hdfsPathMapEagle != null) {
 			String mapEagle = FileUtil.getFilename(hdfsPathMapEagle);
 			mapEagleFilename = cache.getFile(mapEagle);
-		} 
+		}
 		if (hdfsRefEagle != null) {
 			refEagleFilename = cache.getFile(FileUtil.getFilename(hdfsRefEagle));
 			refEagleIndexFilename = cache.getFile(FileUtil.getFilename(hdfsRefEagle + ".csi"));
 		}
 
-		String minimacCommand = cache.getFile(minimacBin);
+		String minimacCommand = cache.getFile("Minimac4");
 		String hapiUrCommand = cache.getFile("hapi-ur");
 		String hapiUrPreprocessCommand = cache.getFile("insert-map.pl");
 		String vcfCookerCommand = cache.getFile("vcfCooker");
@@ -165,7 +163,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
 		String minimacParams = store.getString("minimac.command");
-		
+
 		// config pipeline
 		pipeline = new ImputationPipelineMinimac3();
 		pipeline.setMinimacCommand(minimacCommand, minimacParams);

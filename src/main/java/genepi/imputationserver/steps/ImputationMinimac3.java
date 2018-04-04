@@ -66,22 +66,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			r2Filter = "0";
 		}
 
-		String queue = "default";
-		if (context.get("queues") != null) {
-			queue = context.get("queues");
-		}
-
-		boolean noCache = false;
-		String minimacBin = "minimac";
-
-		if (context.get("nocache") != null) {
-			noCache = context.get("nocache").equals("yes");
-		}
-
-		if (context.get("minimacbin") != null) {
-			minimacBin = context.get("minimacbin");
-		}
-
 		// outputs
 		output = context.get("outputimputation");
 		String log = context.get("logfile");
@@ -141,7 +125,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				ChunkFileConverterResult result = convertChunkfile(chunkFile, context.getHdfsTemp());
 
 				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobId() + "-chr-" + chr,
-						new ContextLog(context), queue) {
+						new ContextLog(context)) {
 					@Override
 					protected void readConfigFile() {
 						File file = new File(folder + "/" + CONFIG_FILE);
@@ -206,8 +190,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setPopulation(population);
 				job.setRounds(rounds);
 				job.setWindow(window);
-				job.setNoCache(noCache);
-				job.setMinimacBin(minimacBin);
 				job.setJarByClass(ImputationJobMinimac3.class);
 
 				executeJarInBackground(chr, context, job);

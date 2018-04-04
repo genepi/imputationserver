@@ -45,7 +45,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String WINDOW = "MINIMAC_WINDOW";
 
-	public static final String MINIMAC_BIN = "MINIMAC_BIN";
+	//public static final String MINIMAC_BIN = "MINIMAC_BIN";
 
 	public static final String BUILD = "MINIMAC_BUILD";
 
@@ -61,7 +61,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String phasing;
 
-	private boolean noCache = false;
+	//private boolean noCache = false;
 
 	private String mapMinimac;
 
@@ -73,13 +73,11 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String refPanelEagleHDFS;
 
-	public ImputationJobMinimac3(String name, Log log, String queue) {
+	public ImputationJobMinimac3(String name, Log log) {
 		super(name, log);
 		set("mapred.task.timeout", "720000000");
 		set("mapred.map.tasks.speculative.execution", false);
 		set("mapred.reduce.tasks.speculative.execution", false);
-		log.info("setting queue to " + queue);
-		getConfiguration().set("mapred.job.queue.name", queue);
 		getConfiguration().set("mapred.reduce.tasks", "22");
 
 		// set values times 5 due to timeout of setup
@@ -187,7 +185,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		if (new File(folder).exists()) {
 			String[] files = FileUtil.getFiles(folder, "");
 			for (String file : files) {
-				if (!HdfsUtil.exists(HdfsUtil.path(hdfs, FileUtil.getFilename(file))) || noCache) {
+				if (!HdfsUtil.exists(HdfsUtil.path(hdfs, FileUtil.getFilename(file)))) {
 					HdfsUtil.delete(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
 					HdfsUtil.put(file, HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
 				}
@@ -255,14 +253,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public void setWindow(String window) {
 		set(WINDOW, window);
-	}
-
-	public void setNoCache(boolean noCache) {
-		this.noCache = noCache;
-	}
-
-	public void setMinimacBin(String minimacBin) {
-		set(MINIMAC_BIN, minimacBin);
 	}
 
 	public void setMapShapeITPattern(String mapPattern) {

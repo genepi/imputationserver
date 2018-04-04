@@ -112,15 +112,6 @@ mapred:
        values:
           qconly: Quality Control Only 
           imputation: Quality Control & Imputation
-
-     - id: queues
-       description: Queue
-       type: list
-       visible: false
-       value: default
-       values:
-          default: Default Queue
-          ltq: Longtime Queue
                    
      - id: rounds
        description: Rounds
@@ -154,33 +145,7 @@ mapred:
          true: yes
          false: no
        visible: true
-              
-     - id: encryption
-       description: Result Encryption
-       type: checkbox
-       value: yes
-       values:
-         true: yes
-         false: no
-       visible: false
        
-     - id: minimacbin
-       description: <b>Minimac Binary</b>
-       type: list
-       visible: false
-       value: Minimac4
-       values:
-          Minimac4: Minimac4 
-            
-     - id: nocache
-       description: <b>Disable Cache</b>
-       type: checkbox
-       value: no
-       values:
-         true: yes
-         false: no
-       visible: false  
-
      - id: check1
        description: I will not attempt to re-identify or contact research participants.
        type: agbcheckbox
