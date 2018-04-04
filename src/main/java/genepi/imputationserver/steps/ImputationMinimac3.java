@@ -60,6 +60,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String rounds = context.get("rounds");
 		String window = context.get("window");
 		String population = context.get("population");
+		String binariesHDFS = context.getConfig("binaries");
 
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
@@ -144,7 +145,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 						}
 					}
 				};
+								
 				job.setFolder(folder);
+				job.setBinariesHDFS(binariesHDFS);
 
 				String hdfsFilenameChromosome = resolvePattern(panel.getHdfs(), chr);
 				job.setRefPanelHdfs(hdfsFilenameChromosome);

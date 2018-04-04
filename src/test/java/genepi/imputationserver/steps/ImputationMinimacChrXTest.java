@@ -32,6 +32,8 @@ public class ImputationMinimacChrXTest {
 
 	public static final boolean VERBOSE = true;
 
+	public static final String BINARIES_HDFS = "binaries";
+	
 	public final int TOTAL_REFPANEL_CHRX_B37 = 1479509;
 	public final int TOTAL_REFPANEL_CHRX_B38 = 1077575;
 	// public final int SNPS_WITH_R2_BELOW_05 = 6344;
@@ -408,7 +410,8 @@ public class ImputationMinimacChrXTest {
 		context.setInput("phasing", phasing);
 		context.setInput("sample-limit", "0");
 		context.setInput("minimacbin", "Minimac4");
-
+		context.setConfig("binaries", BINARIES_HDFS);
+		
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/mafFile");
 
@@ -462,10 +465,11 @@ public class ImputationMinimacChrXTest {
 	}
 
 	private void importBinaries(String folder) {
-		System.out.println("Import Binaries:");
+		
+		System.out.println("Import Binaries to " + BINARIES_HDFS);
 		String[] files = FileUtil.getFiles(folder, "*.*");
 		for (String file : files) {
-			String target = HdfsUtil.path(ImputationJobMinimac3.DATA_FOLDER, FileUtil.getFilename(file));
+			String target = HdfsUtil.path(BINARIES_HDFS, FileUtil.getFilename(file));
 			System.out.println("  Import " + file + " to " + target);
 			HdfsUtil.put(file, target);
 		}

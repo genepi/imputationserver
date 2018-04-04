@@ -3,8 +3,14 @@ description: Michigan Imputation Server provides a free genotype imputation serv
 version: v1.1.2
 website: http://genome.sph.umich.edu/wiki/Minimac
 category:
+
+installation:
+
+  - import:
+      source: ${app_local_folder}/bin
+      target: ${app_hdfs_folder}/bin
  
-mapred:
+workflow:
 
   setups:
     - name: Input Validation
@@ -40,6 +46,7 @@ mapred:
       classname: genepi.imputationserver.steps.ImputationMinimac3
       params: $chunkFileDir $refpanel $chunksize $window $phasing $queues
       generates: $local $outputimputation $logfile $hadooplogs
+      binaries: ${app_hdfs_folder}/bin
 
     - name: Imputation (Report)
       rmd: report.Rmd

@@ -518,7 +518,7 @@ public class InputValidationTest extends TestCase {
 		context.setInput("population", "eur");
 		context.setInput("phasing", phasing);
 		context.setInput("sample-limit", "0");
-		context.setInput("chunksize", "10000000");
+		context.setInput("chunksize", "10000000");		
 		return context;
 
 	}

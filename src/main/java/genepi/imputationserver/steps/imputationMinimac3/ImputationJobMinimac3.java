@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
+import org.apache.hadoop.fs.Hdfs;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
@@ -45,13 +46,9 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String WINDOW = "MINIMAC_WINDOW";
 
-	//public static final String MINIMAC_BIN = "MINIMAC_BIN";
-
 	public static final String BUILD = "MINIMAC_BUILD";
 
 	public static final String R2_FILTER = "R2_FILTER";
-
-	public static final String DATA_FOLDER = "minimac-data-3";
 
 	private String refPanelHdfs;
 
@@ -60,8 +57,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	private String folder;
 
 	private String phasing;
-
-	//private boolean noCache = false;
 
 	private String mapMinimac;
 
@@ -72,6 +67,8 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	private String mapEagleHDFS;
 
 	private String refPanelEagleHDFS;
+
+	private String binariesHDFS;
 
 	public ImputationJobMinimac3(String name, Log log) {
 		super(name, log);
@@ -104,8 +101,18 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	@Override
 	protected void setupDistributedCache(CacheStore cache) throws IOException {
+
 		// installs and distributed all binaries
-		distribute(FileUtil.path(folder, "bin"), DATA_FOLDER, cache);
+		if (binariesHDFS == null) {
+			log.error("HDFS Binaries folder not set.");
+			throw new IOException("HDFS Binaries folder not set.");
+		}
+		if (!HdfsUtil.exists(binariesHDFS)) {
+			log.error("HDFS Binaries " + binariesHDFS + " not found.");
+			throw new IOException("HDFS Binaries " + binariesHDFS + " not found.");
+		}
+		log.info("Distribute binaries " + binariesHDFS + " to distributed cache...");
+		distribute(binariesHDFS, cache);
 
 		// distributed refpanels
 		if (HdfsUtil.exists(refPanelHdfs)) {
@@ -181,19 +188,9 @@ public class ImputationJobMinimac3 extends HadoopJob {
 		this.folder = folder;
 	}
 
-	protected void distribute(String folder, String hdfs, CacheStore cache) throws IOException {
-		if (new File(folder).exists()) {
-			String[] files = FileUtil.getFiles(folder, "");
-			for (String file : files) {
-				if (!HdfsUtil.exists(HdfsUtil.path(hdfs, FileUtil.getFilename(file)))) {
-					HdfsUtil.delete(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
-					HdfsUtil.put(file, HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
-				}
-				cache.addFile(HdfsUtil.path(hdfs, FileUtil.getFilename(file)));
-			}
-		} else {
-			log.warn("Local binary folder not found. Distribute all from hdfs.");
-			List<String> files = HdfsUtil.getFiles(hdfs);
+	protected void distribute(String hdfs, CacheStore cache) throws IOException {
+		if (HdfsUtil.exists(hdfs)) {
+			List<String> files = HdfsUtil.getFiles(hdfs, "");
 			for (String file : files) {
 				cache.addFile(file);
 			}
@@ -291,9 +288,13 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public void setBuild(String build) {
 		set(BUILD, build);
 	}
-	
-	public void setR2Filter(String r2Filter){
+
+	public void setR2Filter(String r2Filter) {
 		set(R2_FILTER, r2Filter);
+	}
+
+	public void setBinariesHDFS(String binariesHDFS) {
+		this.binariesHDFS = binariesHDFS;
 	}
 
 }
