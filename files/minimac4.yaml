@@ -88,7 +88,7 @@ mapred:
        type: list
        value: eagle
        values:
-         eagle: Eagle v2.3 (phased output)
+         eagle: Eagle v2.4 (phased output)
          no_phasing: No phasing
   
      - id: population
