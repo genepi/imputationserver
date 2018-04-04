@@ -8,7 +8,9 @@ before_install:
   tee /etc/hosts
 - cat /etc/hosts
 script:
-- mvn -Dtest=InputValidationTest test jacoco:report
+- mvn -Dtest=mvn -Dtest=ValidationTestSuite test jacoco:report
+- mvn -Dtest=mvn -Dtest=QcTestSuite test jacoco:report
+- mvn -Dtest=mvn -Dtest=ImputationTestSuite test jacoco:report
 after_success:
 - mvn coveralls:report
 notifications:
