@@ -61,7 +61,7 @@ public class TestCluster {
 			// set mincluster as default config
 			HdfsUtil.setDefaultConfiguration(conf);
 			System.setProperty("hadoop.log.dir", testClusterLog.getAbsolutePath());
-			MiniMRCluster mrCluster = new MiniMRCluster(2, fs.getUri()
+			MiniMRCluster mrCluster = new MiniMRCluster(1, fs.getUri()
 					.toString(), 1, null, null, new JobConf(conf));
 			JobConf mrClusterConf = mrCluster.createJobConf();
 			HdfsUtil.setDefaultConfiguration(new Configuration(mrClusterConf));
