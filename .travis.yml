@@ -11,6 +11,7 @@ script:
 - mvn -Dtest=mvn -Dtest=ValidationTestSuite test jacoco:report
 - mvn -Dtest=mvn -Dtest=QcTestSuite test jacoco:report
 - mvn -Dtest=mvn -Dtest=ImputationTestSuite test jacoco:report
+- mvn -Dtest=mvn -Dtest=ImputationChrXTestSuite test jacoco:report
 after_success:
 - mvn coveralls:report
 notifications:
