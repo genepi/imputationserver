@@ -1,0 +1,264 @@
+    <h2 id="api-reference">API Reference</h2>
+    <p>The REST APIs provide programmatic ways to submit new jobs and to download data from Michigan Imputation Server. The REST API identifies users using authentication tokens, responses are provided in JSON.</p>
+    <p>To use the API, please register a new account at <a href="https://imputationserver.sph.umich.edu">https://imputationserver.sph.umich.edu</a></p>
+      <hr>
+    <h3 id="authentication">Authentication</h3>
+    <p>Michigan Imputation Server uses a token-based authentication. The token is required for all future interaction with the server. The token can be created and downloaded from your user profile.</p>
+<hr>
+    <h3 id="job-submission">Job Submission</h3>
+    <p>The API allows to set several imputation parameters. Data need to be specified in vcf.gz or in the 23andMe data format (txt or zip).</p>
+    <h4 id="post-api-v2-jobs-submit-minimac">Request</h4>
+    <pre>POST /api/v2/jobs/submit/minimac</pre>
+    <p>The following parameters can be set:</p>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th style="text-align:left">Values</th>
+                <th style="text-align:left">Default Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>input-files</td>
+                <td style="text-align:left">/path/to/file</td>
+                <td style="text-align:left"></td>
+            </tr>
+            <tr>
+                <td>input-mode</td>
+                <td style="text-align:left">qconly, imputation</td>
+                <td style="text-align:left">imputation</td>
+            </tr>
+            <tr>
+                <td>input-files-source</td>
+                <td style="text-align:left">file-upload, sftp, http</td>
+                <td style="text-align:left">default: file-upload</td>
+            </tr>
+            <tr>
+                <td>input-refpanel</td>
+                <td style="text-align:left">hapmap2, phase1, phase3, hrc.r1.1.2016, caapa</td>
+                <td style="text-align:left">phase3</td>
+            </tr>
+            <tr>
+                <td>input-phasing</td>
+                <td style="text-align:left">eagle, hapiur, shapeit</td>
+                <td style="text-align:left">eagle</td>
+            </tr>
+            <tr>
+                <td>input-population</td>
+                <td style="text-align:left">eur, afr, asn, amr, sas, eas, AA, mixed</td>
+                <td style="text-align:left">eur</td>
+            </tr>
+        </tbody>
+    </table>
+    <h4 id="examples">Examples</h4>
+    <h5>Input data via file upload</h5>
+    <pre>curl -H &quot;X-Auth-Token: &lt;your-API-token&gt;&quot; -F &quot;input-files=@/path/to/genome.vcf.gz&quot; -F &quot;input-refpanel=hapmap2&quot; -F &quot;input-phasing=shapeit&quot; https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac</pre>
+    <h5>Input data from http Url</h5>
+    <pre>curl -H &quot;X-Auth-Token: &lt;your-API-token&gt;&quot; -F &quot;input-files=http://warehouse.pgp-hms.org/warehouse/165ead886710368efd2d91624aa74f72+89/genome_v4_Full_20160602094938.txt&quot; -F &quot;input-files-source=http&quot; -F &quot;input-mode=qc&quot; -F &quot;input-mode=imputation&quot; -F &quot;input-refpanel=hrc.r1.1.2016&quot; https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac</pre>    <h5>Response</h5>
+    <pre>{
+      &quot;id&quot;:&quot;job-20160504-155023&quot;,
+      &quot;message&quot;:&quot;Your job was successfully added to the job queue.&quot;,
+      &quot;success&quot;:true
+    }</pre                    <hr>
+    <h3 id="list-all-jobs">List all jobs</h3>
+    <p>All running and completed jobs can be returned as JSON objects at once.</p>
+    <h4 id="get-api-v2-jobs">Request</h4>
+    <pre>GET api/v2/jobs</pre>
+    <h4 id="examples">Examples</h4>
+<pre>curl -H &quot;X-Auth-Token: &lt;your-API-token&gt;&quot; https://imputationserver.sph.umich.edu/api/v2/jobs</pre>
+    <h5>Response</h5>
+    <pre>[
+      {
+        &quot;applicationId&quot;:&quot;minimac&quot;,
+        &quot;executionTime&quot;:0,
+        &quot;id&quot;:&quot;job-20160504-155023&quot;,
+        &quot;name&quot;:&quot;job-20160504-155023&quot;,
+        &quot;positionInQueue&quot;:0,
+        &quot;running&quot;:false,
+        &quot;state&quot;:5
+      },{
+        &quot;applicationId&quot;:&quot;minimac&quot;,
+        &quot;executionTime&quot;:0,
+        &quot;id&quot;:&quot;job-20160420-145809&quot;,
+        &quot;name&quot;:&quot;job-20160420-145809&quot;,
+        &quot;positionInQueue&quot;:0,
+        &quot;running&quot;:false,
+        &quot;state&quot;:5
+      },{
+        &quot;applicationId&quot;:&quot;minimac&quot;,
+        &quot;executionTime&quot;:0,
+        &quot;id&quot;:&quot;job-20160420-145756&quot;,
+        &quot;name&quot;:&quot;job-20160420-145756&quot;,
+        &quot;positionInQueue&quot;:0,
+        &quot;running&quot;:false,
+        &quot;state&quot;:5
+      }
+    ]</pre>
+                                    <hr>
+    <h3 id="monitor-a-running-job">Monitor a running job</h3>
+    <h4 id="api-v2-jobs-id-status">Request</h4>
+    <pre>api/v2/jobs/{id}/status</pre>
+    <h4 id="examples">Examples</h4>
+<pre>curl-H &quot;X-Auth-Token: &lt;your-API-token&gt;&quot; https://imputationserver.sph.umich.edu/api/v2/jobs/job-20160504-155023/status</pre>
+    <h5>Response</h5>
+    <pre>{
+      &quot;application&quot;:&quot;Michigan Imputation Server (Minimac3 1.0.13 - Cloudgene 1.13.0)&quot;,
+      &quot;applicationId&quot;:&quot;minimac&quot;,
+      &quot;deletedOn&quot;:-1,
+      &quot;endTime&quot;:1462369824173,
+      &quot;executionTime&quot;:0,
+      &quot;id&quot;:&quot;job-20160504-155023&quot;,
+      &quot;logs&quot;:&quot;&quot;,
+      &quot;name&quot;:&quot;job-20160504-155023&quot;,
+      &quot;outputParams&quot;:[],
+      &quot;positionInQueue&quot;:0,
+      &quot;running&quot;:false,
+      &quot;startTime&quot;:1462369824173,
+      &quot;state&quot;:5
+      ,&quot;steps&quot;:[]
+    }</pre>                    <hr>
+    <h3 id="get-job-details-and-download-links">Get job details and download links</h3>
+    <h4 id="get-api-v2-jobs-id-details">Request</h4>
+    <pre>GET /api/v2/jobs/{id}/details</pre>
+    <h4 id="examples">Examples</h4>
+    <pre>curl --H &quot;X-Auth-Token: &lt;your-API-token&gt;&quot; https://imputationserver.sph.umich.edu/api/v2/jobs/job-20160504-155023/details</pre>
+    <h5>Response</h5>
+    <pre>{
+    	&quot;application&quot;: &quot;Michigan Imputation Server (Experimental Mode) (Minimac3 1.0.13 - Cloudgene 1.13.0)&quot;,
+    	&quot;applicationId&quot;: &quot;minimac-admin&quot;,
+    	&quot;deletedOn&quot;: -1,
+    	&quot;endTime&quot;: 1462020562930,
+    	&quot;executionTime&quot;: 86610091,
+    	&quot;id&quot;: &quot;job-20160429-084540&quot;,
+    	&quot;logs&quot;: &quot;logs/job-20160429-084540&quot;,
+    	&quot;name&quot;: &quot;job-20160429-084540&quot;,
+      &quot;positionInQueue&quot;: 0,
+    	&quot;running&quot;: false,
+    	&quot;startTime&quot;: 1461933952839,
+    	&quot;state&quot;:,
+    	&quot;outputParams&quot;: [{
+    		&quot;description&quot;: &quot;Quality-Control Results&quot;,
+    		&quot;files&quot;: [{
+    			&quot;count&quot;: 10,
+    			&quot;hash&quot;: &quot;784c0243396e23221a8eb6d7efbad906&quot;,
+    			&quot;name&quot;: &quot;qcreport.html&quot;,
+    			&quot;parameterId&quot;: 201692,
+    			&quot;path&quot;: &quot;job-20160429-084540/qcreport/qcreport.html&quot;,
+    			&quot;size&quot;: &quot;17 KB&quot;,
+    			&quot;username&quot;: &quot;admin&quot;
+    		}],
+    		&quot;format&quot;: &quot;&quot;,
+    		&quot;id&quot;: 201692,
+    		&quot;input&quot;: false,
+    		&quot;name&quot;: &quot;qcreport&quot;,
+    		&quot;type&quot;: &quot;local-file&quot;,
+    		&quot;zip&quot;: false
+    	}, {
+    		&quot;description&quot;: &quot;Imputation Report&quot;,
+    		&quot;files&quot;: [{
+    			&quot;count&quot;: 10,
+    			&quot;hash&quot;: &quot;50baaf1e09c098dae097065303816252&quot;,
+    			&quot;name&quot;: &quot;report&quot;,
+    			&quot;parameterId&quot;: 201693,
+    			&quot;path&quot;: &quot;job-20160429-084540/report/report&quot;,
+    			&quot;size&quot;: &quot;1 KB&quot;,
+    			&quot;username&quot;: &quot;admin&quot;
+    		}],
+    		&quot;format&quot;: &quot;&quot;,
+    		&quot;id&quot;: 201693,
+    		&quot;input&quot;: false,
+    		&quot;name&quot;: &quot;report&quot;,
+    		&quot;type&quot;: &quot;local-file&quot;,
+    		&quot;zip&quot;: false
+    	}, {
+    		&quot;description&quot;: &quot;Imputation Results&quot;,
+    		&quot;files&quot;: [{
+    			&quot;count&quot;: 9,
+    			&quot;hash&quot;: &quot;3f993d442b62a432489cdeb0a1e6f2bd&quot;,
+    			&quot;name&quot;: &quot;chr_20.zip&quot;,
+    			&quot;parameterId&quot;: 201695,
+    			&quot;path&quot;: &quot;job-20160429-084540/local/chr_20.zip&quot;,
+    			&quot;size&quot;: &quot;2 GB&quot;,
+    			&quot;username&quot;: &quot;admin&quot;
+    		}],
+    		&quot;format&quot;: &quot;&quot;,
+    		&quot;id&quot;: 201695,
+    		&quot;input&quot;: false,
+    		&quot;name&quot;: &quot;local&quot;,
+    		&quot;type&quot;: &quot;local-folder&quot;,
+    		&quot;zip&quot;: false
+    	}],
+    	&quot;steps&quot;: [{
+    		&quot;id&quot;: 38445,
+    		&quot;logMessages&quot;: [{
+    			&quot;message&quot;: &quot;File Import successful. &quot;,
+    			&quot;time&quot;: 1462020565636,
+    			&quot;type&quot;: 0
+    		}, {
+    			&quot;message&quot;: &quot;1 valid VCF file(s) found.\n\nSamples: 10080\nChromosomes: 20\nSNPs: 17220\nChunks: 7\nDatatype: phased\nReference Panel: hrc.r1.1.2016\nPhasing: eagle&quot;,
+    			&quot;time&quot;: 1462020565636,
+    			&quot;type&quot;: 0
+    		}],
+    		&quot;name&quot;: &quot;Input Validation&quot;,
+    		&quot;up&quot;: null
+    	}, {
+    		&quot;id&quot;: 38446,
+    		&quot;logMessages&quot;: [{
+    			&quot;message&quot;: &quot;Execution successful.&quot;,
+    			&quot;time&quot;: 1462020565636,
+    			&quot;type&quot;: 0
+    		}, {
+    			&quot;message&quot;: &quot;&lt;b&gt;Statistics:&lt;\/b&gt; &lt;br&gt;Alternative allele frequency &gt; 0.5 sites: 4,443&lt;br&gt;Reference Overlap: 100.00% &lt;br&gt;Match: 16,621&lt;br&gt;Allele switch: 0&lt;br&gt;Strand flip: 0&lt;br&gt;Strand flip and allele switch: 0&lt;br&gt;A/T, C/G genotypes: 0&lt;br&gt;&lt;b&gt;Filtered sites:&lt;\/b&gt; &lt;br&gt;Filter flag set: 0&lt;br&gt;Invalid alleles: 0&lt;br&gt;Duplicated sites: 0&lt;br&gt;NonSNP sites: 0&lt;br&gt;Monomorphic sites: 564&lt;br&gt;Allele mismatch: 35&lt;br&gt;SNPs call rate &lt; 90%: 0&quot;,
+    			&quot;time&quot;: 1462020565636,
+    			&quot;type&quot;: 0
+    		}, {
+    			&quot;message&quot;: &quot;Excluded sites in total: 599&lt;br&gt;Remaining sites in total: 16,621&lt;br&gt;&quot;,
+    			&quot;time&quot;: 1462020565636,
+    			&quot;type&quot;: 2
+    		}],
+    		&quot;name&quot;: &quot;Quality Control&quot;,
+    		&quot;up&quot;: null
+    	}, {
+    		&quot;id&quot;: 38447,
+    		&quot;logMessages&quot;: [{
+    			&quot;message&quot;: &quot;Execution successful.&quot;,
+    			&quot;time&quot;: 1462020565636,
+    			&quot;type&quot;: 0
+    		}],
+    		&quot;name&quot;: &quot;Quality Control (Report)&quot;,
+    		&quot;up&quot;: null
+    	}, {
+    		&quot;id&quot;: 38448,
+    		&quot;logMessages&quot;: [{
+    			&quot;message&quot;: &quot;&lt;span class=\&quot;badge badge-success\&quot; style=\&quot;width: 40px\&quot;&gt;Chr 20&lt;\/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=\&quot;badge\&quot; style=\&quot;width: 8px\&quot;&gt;&amp;nbsp;&lt;\/span&gt; Waiting&lt;br&gt;&lt;span class=\&quot;badge badge-info\&quot; style=\&quot;width: 8px\&quot;&gt;&amp;nbsp;&lt;\/span&gt; Running&lt;br&gt;&lt;span class=\&quot;badge badge-success\&quot; style=\&quot;width: 8px\&quot;&gt;&amp;nbsp;&lt;\/span&gt; Complete&quot;,
+    			&quot;time&quot;: 1462020565636,
+    			&quot;type&quot;: 0
+    		}],
+    		&quot;name&quot;: &quot;Pre-phasing and Imputation&quot;,
+    		&quot;up&quot;: null
+    	}, {
+    		&quot;id&quot;: 38449,
+    		&quot;logMessages&quot;: [{
+    			&quot;message&quot;: &quot;Execution successful.&quot;,
+    			&quot;time&quot;: 1462020565645,
+    			&quot;type&quot;: 0
+    		}],
+    		&quot;name&quot;: &quot;Imputation (Report)&quot;,
+    		&quot;up&quot;: null
+    	}, {
+    		&quot;id&quot;: 38450,
+    		&quot;logMessages&quot;: [{
+    			&quot;message&quot;: &quot;Exported data.&quot;,
+    			&quot;time&quot;: 1462020565655,
+    			&quot;type&quot;: 0
+    		}, {
+    			&quot;message&quot;: &quot;We have sent an email to &lt;b&gt;sebastian.schoenherr@uibk.ac.at&lt;\/b&gt; with the password.&quot;,
+    			&quot;time&quot;: 1462020565655,
+    			&quot;type&quot;: 0
+    		}],
+    		&quot;name&quot;: &quot;Data Compression and Encryption&quot;,
+    		&quot;up&quot;: null
+    	}]
+    }</pre>
+<br><br><br><br>

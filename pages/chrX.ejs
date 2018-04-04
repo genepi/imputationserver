@@ -1,0 +1,29 @@
+<h2> Chromosome X Imputation </h2>
+<p>Michigan Imputation Server allows to impute chromosome X in combination with autosomes (chr1-22). Currently, three separate output files are generated (PAR, NON-PAR female, NON-PAR male).</p>
+<p><b>Please note:</b> Since chromosome X imputation is still work in progress (beta phase), it is highly likely that results need to be re-imputed.</p>
+<hr>
+
+<h3>Current workflow</h3>
+<p>Chromosome X is currently activated for <a target="_blank" href="http://www.shapeit.fr">ShapeIT</a> in combination with the <a target="_blank" href="http://www.haplotype-reference-consortium.org/">HRC version r1.1 panel</a> or the 1000G Phase 3 v5 reference
+  panel. Chromosome X imputation consists of the following steps:</p>
+<ul>
+  <li>Input Validation checks if chromosome is equal to X. 23 is currently not supported.</li>
+  <li>File is split by region (NON-PAR: 2,699,520-154,931,043; PAR:otherwise). </li>
+  <li>QC determines sex using <code> plink --check-sex </code> for NON-PAR. Undetermined samples are excluded using <a target="_blank" href="https://github.com/vcflib/vcflib/blob/master/src/vcfkeepsamples.cpp">vcflib</a>.</li>
+  <li>QC checks if heterozygous genotypes are included for male NON-PAR. Otherwise stop.</li>
+  <li>Three files are generated (PAR, NON-PAR female, NON-PAR male) and submitted as separate jobs to the server.</li>
+  <li>Imputation with minimac3. Please note that for NON-PAR male the correct ploidy is currently not set.</li>
+  <li> Compression and encryption.</li>
+</ul>
+
+
+<h3>Upcoming tasks</h3>
+<ul>
+  <li>Support 23 as a valid chromosome name</li>
+  <li>fix-ploidy for male</li>
+  <li>Merging NON-PAR regions for male and females with correct samples order</li>
+  <li>Integrating <a target="_blank" href="https://data.broadinstitute.org/alkesgroup/Eagle/">Eagle2</a> for chromosome X</li>
+</ul>
+
+<h3>   Contact </h3>
+<p> Feel free to contact <a href="mailto:cfuchsb@umich.edu">Christian Fuchsberger</a> in case of problems or feedback.</p>
