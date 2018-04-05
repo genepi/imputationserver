@@ -15,6 +15,7 @@ import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.log.Log;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
+import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.FileMerger.BgzipSplitOutputStream;
 import genepi.io.FileUtil;
@@ -128,12 +129,13 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		// create temp directory
 		PreferenceStore store = new PreferenceStore(context.getConfiguration());
+		DefaultPreferenceStore.init(store);
 		folder = store.getString("minimac.tmp");
 		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
 		boolean created = FileUtil.createDirectory(folder);
 
 		if (!created) {
-			throw new IOException(store.getString("minimac.tmp") + " is not writable!");
+			throw new IOException(folder + " is not writable!");
 		}
 
 		// create symbolic link --> index file is in the same folder as data

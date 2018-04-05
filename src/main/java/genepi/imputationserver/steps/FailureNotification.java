@@ -5,6 +5,7 @@ import java.io.File;
 import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.io.FileUtil;
 
 public class FailureNotification extends WorkflowStep {
@@ -19,6 +20,7 @@ public class FailureNotification extends WorkflowStep {
 		// read config if mails should be sent
 		String folder = getFolder(FailureNotification.class);
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
+		DefaultPreferenceStore.init(store);
 
 		String notification = "no";
 		if (store.getString("minimac.sendmail") != null && !store.getString("minimac.sendmail").equals("")) {

@@ -13,6 +13,7 @@ import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.steps.vcf.VcfChunk;
+import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -131,6 +132,8 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 						if (file.exists()) {
 							log.info("Loading distributed configuration file " + folder + "/" + CONFIG_FILE + "...");
 							PreferenceStore preferenceStore = new PreferenceStore(file);
+							DefaultPreferenceStore.init(preferenceStore);
+
 							preferenceStore.write(getConfiguration());
 							for (Object key : preferenceStore.getKeys()) {
 								log.info("  " + key + ": " + preferenceStore.getString(key.toString()));

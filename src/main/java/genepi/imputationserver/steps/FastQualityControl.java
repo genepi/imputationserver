@@ -16,6 +16,7 @@ import genepi.imputationserver.steps.fastqc.LiftOverTask;
 import genepi.imputationserver.steps.fastqc.StatisticsTask;
 import genepi.imputationserver.steps.fastqc.TaskResults;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.GenomicTools;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -49,6 +50,8 @@ public class FastQualityControl extends WorkflowStep {
 		}
 
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
+		DefaultPreferenceStore.init(store);
+
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 		int chunkSize = Integer.parseInt(store.getString("chunksize"));
 

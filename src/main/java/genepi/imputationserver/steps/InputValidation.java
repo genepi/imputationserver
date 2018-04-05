@@ -18,6 +18,7 @@ import genepi.hadoop.importer.ImporterFactory;
 import genepi.imputationserver.steps.converter.VCFBuilder;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -68,11 +69,13 @@ public class InputValidation extends WorkflowStep {
 		String r2Filter = context.get("r2Filter");
 
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
+		DefaultPreferenceStore.init(store);
+
 		int chunkSize = 20000000;
 		if (store.getString("chunksize") != null) {
 			chunkSize = Integer.parseInt(store.getString("chunksize"));
 		}
-		;
+		
 
 		int maxSamples = 0;
 		if (store.getString("samples.max") != null) {
