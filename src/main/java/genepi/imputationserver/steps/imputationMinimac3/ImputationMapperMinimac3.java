@@ -18,8 +18,6 @@ import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.FileMerger.BgzipSplitOutputStream;
 import genepi.io.FileUtil;
-import genepi.io.table.reader.CsvTableReader;
-import genepi.io.table.writer.CsvTableWriter;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
 
@@ -32,10 +30,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 	private String population;
 
 	private String phasing;
-
-	private String rounds;
-
-	private String window;
 
 	private String output;
 
@@ -78,8 +72,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		output = parameters.get(ImputationJobMinimac3.OUTPUT);
 		population = parameters.get(ImputationJobMinimac3.POPULATION);
 		phasing = parameters.get(ImputationJobMinimac3.PHASING);
-		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
-		window = parameters.get(ImputationJobMinimac3.WINDOW);
 		build = parameters.get(ImputationJobMinimac3.BUILD);
 		String r2FilterString = parameters.get(ImputationJobMinimac3.R2_FILTER);
 		if (r2FilterString == null) {
@@ -162,8 +154,12 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
+		int rounds = Integer.parseInt(store.getString("minimac.rounds"));
+		int window = Integer.parseInt(store.getString("minimac.window"));
+
 		String minimacParams = store.getString("minimac.command");
 
+		
 		// config pipeline
 		pipeline = new ImputationPipelineMinimac3();
 		pipeline.setMinimacCommand(minimacCommand, minimacParams);
@@ -175,10 +171,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		pipeline.setHapiUrPreprocessCommand(hapiUrPreprocessCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 		pipeline.setBuild(build);
-
-		// Minimac3
-		pipeline.setRounds(Integer.parseInt(rounds));
-		pipeline.setMinimacWindow(Integer.parseInt(window));
+		pipeline.setRounds(rounds);
+		pipeline.setMinimacWindow(window);
 
 	}
 

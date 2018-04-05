@@ -119,25 +119,7 @@ workflow:
        values:
           qconly: Quality Control Only 
           imputation: Quality Control & Imputation
-                   
-     - id: rounds
-       description: Rounds
-       type: number
-       value: 0
-       visible: false
-       
-     - id: window
-       description: Window size
-       type: number
-       value: 500000
-       visible: false
 
-     - id: chunksize
-       description: Chunk size
-       type: number
-       value: 20000000
-       visible: false
-   
      - id: sample-limit
        description: Limit
        type: number

@@ -57,8 +57,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String input = context.get("chunkFileDir");
 		String reference = context.get("refpanel");
 		String phasing = context.get("phasing");
-		String rounds = context.get("rounds");
-		String window = context.get("window");
 		String population = context.get("population");
 		String binariesHDFS = context.getConfig("binaries");
 
@@ -146,7 +144,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 					}
 				};
 								
-				job.setFolder(folder);
 				job.setBinariesHDFS(binariesHDFS);
 
 				String hdfsFilenameChromosome = resolvePattern(panel.getHdfs(), chr);
@@ -191,8 +188,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setPopulation(population);
-				job.setRounds(rounds);
-				job.setWindow(window);
 				job.setJarByClass(ImputationJobMinimac3.class);
 
 				executeJarInBackground(chr, context, job);

@@ -68,10 +68,10 @@ public class InputValidation extends WorkflowStep {
 		String r2Filter = context.get("r2Filter");
 
 		int sampleLimit = Integer.valueOf(context.get("sample-limit"));
-		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
-
+		int chunkSize = Integer.parseInt(store.getString("chunksize"));
+		
 		List<VcfFile> validVcfFiles = new Vector<VcfFile>();
 
 		context.beginTask("Analyze files ");

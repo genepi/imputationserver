@@ -1,18 +1,5 @@
 package genepi.imputationserver.steps.imputationMinimac3;
 
-import genepi.hadoop.command.Command;
-import genepi.imputationserver.steps.vcf.VcfChunk;
-import genepi.imputationserver.steps.vcf.VcfChunkOutput;
-import genepi.imputationserver.util.GenomicTools;
-import genepi.io.FileUtil;
-import genepi.io.plink.MapFileReader;
-import genepi.io.plink.Snp;
-import genepi.io.text.LineReader;
-import genepi.io.text.LineWriter;
-import groovy.text.SimpleTemplateEngine;
-import groovy.text.Template;
-import htsjdk.samtools.util.BlockCompressedOutputStream;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,6 +8,17 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.codehaus.groovy.control.CompilationFailedException;
+
+import genepi.hadoop.command.Command;
+import genepi.imputationserver.steps.vcf.VcfChunk;
+import genepi.imputationserver.steps.vcf.VcfChunkOutput;
+import genepi.imputationserver.util.GenomicTools;
+import genepi.io.FileUtil;
+import genepi.io.plink.MapFileReader;
+import genepi.io.plink.Snp;
+import genepi.io.text.LineReader;
+import groovy.text.SimpleTemplateEngine;
+import htsjdk.samtools.util.BlockCompressedOutputStream;
 
 public class ImputationPipelineMinimac3 {
 
@@ -439,6 +437,7 @@ public class ImputationPipelineMinimac3 {
 		binding.put("chr", chr);
 		binding.put("unphased", phasing != null && phasing.equals("shapeit") && !output.isPhased());
 		binding.put("mapMinimac", mapMinimac);
+		binding.put("rounds", rounds);
 
 		SimpleTemplateEngine engine = new SimpleTemplateEngine();
 		String outputTemplate = "";

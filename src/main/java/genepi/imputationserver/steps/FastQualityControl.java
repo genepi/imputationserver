@@ -36,7 +36,6 @@ public class FastQualityControl extends WorkflowStep {
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
 		String population = context.get("population");
-		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
 		String mafFile = context.get("mafFile");
 		String chunkFileDir = context.get("chunkFileDir");
@@ -51,7 +50,9 @@ public class FastQualityControl extends WorkflowStep {
 
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
+		int chunkSize = Integer.parseInt(store.getString("chunksize"));
 
+		
 		// load reference panels
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
