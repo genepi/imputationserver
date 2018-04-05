@@ -1,38 +1,87 @@
 package genepi.imputationserver.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.HashMap;
-import genepi.hadoop.PreferenceStore;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.hadoop.conf.Configuration;
 
 public class DefaultPreferenceStore {
 
-	public static void init(PreferenceStore store) {
+	private Properties properties = new Properties(defaults());
 
-		Map<String, String> defaults = new HashMap<String, String>();
-		defaults.put("chunksize", "20000000");
-		defaults.put("phasing.window", "5000000");
-		defaults.put("minimac.window", "500000");
-		defaults.put("minimac.rounds", "0");
-		defaults.put("samples.max", "0");
-		defaults.put("minimac.sendmail", "no");
-		defaults.put("server.url", "https://imputationserver.sph.umich.edu");
-		defaults.put("minimac.tmp", "/tmp");
-		defaults.put("minimac.command",
-				"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
-		defaults.put("ref.fasta", "v37");
-		defaults.put("hg38Tohg19", "chains/hg38ToHg19.over.chain.gz");
-		defaults.put("hg19Tohg38", "chains/hg19ToHg38.over.chain.gz");
+	public DefaultPreferenceStore(Configuration configuration) {
+		load(configuration);
+	}
 
-		// set all empty values to default values
+	public void load(File file) {
+		try {
+			properties.load(new FileInputStream(file));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-		for (String key : defaults.keySet()) {
-			String value = store.getString(key);
-			if (value == null) {
-				value = defaults.get(key);
-				store.setString(key, value);
-			}
+	public DefaultPreferenceStore() {
+
+	}
+
+	public void load(Configuration configuration) {
+		Map<String, String> pairs = configuration.getValByRegex("cloudgene.*");
+		for (String key : pairs.keySet()) {
+			String cleanKey = key.replace("cloudgene.", "");
+			String value = pairs.get(key);
+			properties.setProperty(cleanKey, value);
+		}
+	}
+
+	public void write(Configuration configuration) {
+
+		for (Object key : properties.keySet()) {
+			String newKey = "cloudgene." + key.toString();
+			String value = properties.getProperty(key.toString());
+			configuration.set(newKey, value);
 		}
 
+	}
+
+	public String getString(String key) {
+		return properties.getProperty(key);
+	}
+
+	public void setString(String key, String value) {
+		properties.setProperty(key, value);
+	}
+
+	public Set<Object> getKeys() {
+		return new HashSet<Object>(Collections.list( properties.propertyNames()));		
+	}
+
+	public static Properties defaults() {
+
+		Properties defaults = new Properties();
+		defaults.setProperty("chunksize", "20000000");
+		defaults.setProperty("phasing.window", "5000000");
+		defaults.setProperty("minimac.window", "500000");
+		defaults.setProperty("minimac.rounds", "0");
+		defaults.setProperty("minimac.sendmail", "no");
+		defaults.setProperty("server.url", "https://imputationserver.sph.umich.edu");
+		defaults.setProperty("minimac.tmp", "/tmp");
+		defaults.setProperty("minimac.command",
+				"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
+		defaults.setProperty("ref.fasta", "v37");
+		defaults.setProperty("hg38Tohg19", "chains/hg38ToHg19.over.chain.gz");
+		defaults.setProperty("hg19Tohg38", "chains/hg19ToHg38.over.chain.gz");
+
+		return defaults;
 	}
 
 }

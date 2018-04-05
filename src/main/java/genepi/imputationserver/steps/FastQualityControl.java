@@ -7,7 +7,6 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.fastqc.ITask;
@@ -49,9 +48,14 @@ public class FastQualityControl extends WorkflowStep {
 			buildGwas = "hg19";
 		}
 
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
-		DefaultPreferenceStore.init(store);
-
+		//load job.config
+		File jobConfig = new File(FileUtil.path(folder, "job.config"));
+		DefaultPreferenceStore store = new DefaultPreferenceStore();
+		if (jobConfig.exists()) {
+			store.load(jobConfig);
+		} else {
+			context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
+		}
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 		int chunkSize = Integer.parseInt(store.getString("chunksize"));
 

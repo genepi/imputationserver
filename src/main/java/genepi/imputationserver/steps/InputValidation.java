@@ -10,7 +10,6 @@ import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.hadoop.importer.IImporter;
@@ -68,14 +67,19 @@ public class InputValidation extends WorkflowStep {
 		String build = context.get("build");
 		String r2Filter = context.get("r2Filter");
 
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
-		DefaultPreferenceStore.init(store);
+		// load job.config
+		File jobConfig = new File(FileUtil.path(folder, "job.config"));
+		DefaultPreferenceStore store = new DefaultPreferenceStore();
+		if (jobConfig.exists()) {
+			store.load(jobConfig);
+		} else {
+			context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
+		}
 
 		int chunkSize = 20000000;
 		if (store.getString("chunksize") != null) {
 			chunkSize = Integer.parseInt(store.getString("chunksize"));
 		}
-		
 
 		int maxSamples = 0;
 		if (store.getString("samples.max") != null) {

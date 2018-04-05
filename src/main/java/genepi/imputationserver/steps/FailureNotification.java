@@ -2,7 +2,6 @@ package genepi.imputationserver.steps;
 
 import java.io.File;
 
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.util.DefaultPreferenceStore;
@@ -17,10 +16,15 @@ public class FailureNotification extends WorkflowStep {
 		Object name = context.getData("cloudgene.user.name");
 		String step = context.getData("cloudgene.failedStep.classname").toString();
 
-		// read config if mails should be sent
+		// load job.config
 		String folder = getFolder(FailureNotification.class);
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
-		DefaultPreferenceStore.init(store);
+		File jobConfig = new File(FileUtil.path(folder, "job.config"));
+		DefaultPreferenceStore store = new DefaultPreferenceStore();
+		if (jobConfig.exists()) {
+			store.load(jobConfig);
+		} else {
+			context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
+		}
 
 		String notification = "no";
 		if (store.getString("minimac.sendmail") != null && !store.getString("minimac.sendmail").equals("")) {

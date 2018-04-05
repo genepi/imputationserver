@@ -17,7 +17,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.command.Command;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
@@ -46,8 +45,13 @@ public class CompressionEncryption extends WorkflowStep {
 
 		// read config if mails should be sent
 		String folderConfig = getFolder(CompressionEncryption.class);
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folderConfig, "job.config")));
-		DefaultPreferenceStore.init(store);
+		File jobConfig = new File(FileUtil.path(folderConfig, "job.config"));
+		DefaultPreferenceStore store = new DefaultPreferenceStore();
+		if (jobConfig.exists()) {
+			store.load(jobConfig);
+		} else {
+			context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
+		}
 
 		String notification = "no";
 		if (store.getString("minimac.sendmail") != null && !store.getString("minimac.sendmail").equals("")) {

@@ -7,7 +7,6 @@ import java.util.Map;
 
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.ContextLog;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.io.HdfsLineWriter;
@@ -111,7 +110,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			String[] chunkFiles = FileUtil.getFiles(input, "*.*");
 
 			context.beginTask("Start Imputation...");
-			
+
 			if (chunkFiles.length == 0) {
 				context.error("<br><b>Error:</b> No chunks found. Imputation cannot be started!");
 				return false;
@@ -129,24 +128,25 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 					@Override
 					protected void readConfigFile() {
 						File file = new File(folder + "/" + CONFIG_FILE);
+						DefaultPreferenceStore preferenceStore = new DefaultPreferenceStore();
 						if (file.exists()) {
-							log.info("Loading distributed configuration file " + folder + "/" + CONFIG_FILE + "...");
-							PreferenceStore preferenceStore = new PreferenceStore(file);
-							DefaultPreferenceStore.init(preferenceStore);
-
-							preferenceStore.write(getConfiguration());
-							for (Object key : preferenceStore.getKeys()) {
-								log.info("  " + key + ": " + preferenceStore.getString(key.toString()));
-							}
+							log.info("Loading distributed configuration file '" + file.getAbsolutePath() + "'...");
+							preferenceStore.load(file);
 
 						} else {
-
-							log.info("No distributed configuration file (" + CONFIG_FILE + ") available.");
+							log.info("Configuration file '" + file.getAbsolutePath()
+									+ "' not available. Use default values");
 
 						}
+
+						preferenceStore.write(getConfiguration());
+						for (Object key : preferenceStore.getKeys()) {
+							log.info("  " + key + ": " + preferenceStore.getString(key.toString()));
+						}
+
 					}
 				};
-								
+
 				job.setBinariesHDFS(binariesHDFS);
 
 				String hdfsFilenameChromosome = resolvePattern(panel.getHdfs(), chr);

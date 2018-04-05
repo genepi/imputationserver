@@ -11,7 +11,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import genepi.hadoop.CacheStore;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.ParameterStore;
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.log.Log;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
@@ -128,8 +127,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		String tabixCommand = cache.getFile("tabix");
 
 		// create temp directory
-		PreferenceStore store = new PreferenceStore(context.getConfiguration());
-		DefaultPreferenceStore.init(store);
+		DefaultPreferenceStore store = new DefaultPreferenceStore(context.getConfiguration());
 		folder = store.getString("minimac.tmp");
 		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
 		boolean created = FileUtil.createDirectory(folder);
@@ -161,7 +159,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		String minimacParams = store.getString("minimac.command");
 
-		
 		// config pipeline
 		pipeline = new ImputationPipelineMinimac3();
 		pipeline.setMinimacCommand(minimacCommand, minimacParams);
