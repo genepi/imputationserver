@@ -403,13 +403,7 @@ public class ImputationMinimacChrXTest {
 		context.setInput("files", folder);
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
-		context.setInput("chunksize", "10000000");
-		context.setInput("phasingsize", "5000000");
-		context.setInput("rounds", "0");
-		context.setInput("window", "500000");
 		context.setInput("phasing", phasing);
-		context.setInput("sample-limit", "0");
-		context.setInput("minimacbin", "Minimac4");
 		context.setConfig("binaries", BINARIES_HDFS);
 		
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");

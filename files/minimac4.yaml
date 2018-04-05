@@ -120,12 +120,7 @@ workflow:
           qconly: Quality Control Only 
           imputation: Quality Control & Imputation
 
-     - id: sample-limit
-       description: Limit
-       type: number
-       value: 0
-       visible: false
-       
+
      - id: aesEncryption
        description: AES 256 encryption (7z required for zip extraction)
        type: checkbox

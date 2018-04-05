@@ -67,11 +67,18 @@ public class InputValidation extends WorkflowStep {
 		String build = context.get("build");
 		String r2Filter = context.get("r2Filter");
 
-		int sampleLimit = Integer.valueOf(context.get("sample-limit"));
-
 		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
-		int chunkSize = Integer.parseInt(store.getString("chunksize"));
-		
+		int chunkSize = 20000000;
+		if (store.getString("chunksize") != null) {
+			chunkSize = Integer.parseInt(store.getString("chunksize"));
+		}
+		;
+
+		int maxSamples = 0;
+		if (store.getString("samples.max") != null) {
+			maxSamples = Integer.parseInt(store.getString("samples.max"));
+		}
+
 		List<VcfFile> validVcfFiles = new Vector<VcfFile>();
 
 		context.beginTask("Analyze files ");
@@ -198,9 +205,9 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
-					if (noSamples > sampleLimit && sampleLimit != 0) {
+					if (noSamples > maxSamples && maxSamples != 0) {
 						context.endTask(
-								"The maximum number of samples is " + sampleLimit
+								"The maximum number of samples is " + maxSamples
 										+ ". Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
 								WorkflowContext.ERROR);
 

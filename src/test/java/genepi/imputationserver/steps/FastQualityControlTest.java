@@ -440,8 +440,6 @@ public class FastQualityControlTest extends TestCase {
 		context.setInput("files", folder);
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
-		context.setInput("chunksize", "20000000");
-		context.setInput("phasingsize", "5000000");
 		context.setOutput("mafFile", file.getAbsolutePath() + "/maffile.txt");
 		context.setOutput("chunkFileDir", file.getAbsolutePath());
 		context.setOutput("statisticDir", file.getAbsolutePath());

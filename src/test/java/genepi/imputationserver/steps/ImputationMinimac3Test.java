@@ -1,6 +1,8 @@
 package genepi.imputationserver.steps;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +13,6 @@ import org.junit.Test;
 
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.WorkflowStep;
-import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
@@ -19,9 +20,6 @@ import genepi.imputationserver.util.TestSFTPServer;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
-import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFFileReader;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -1019,13 +1017,7 @@ public class ImputationMinimac3Test {
 		context.setInput("files", folder);
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
-		context.setInput("chunksize", "10000000");
-		context.setInput("phasingsize", "5000000");
-		context.setInput("rounds", "0");
-		context.setInput("window", "500000");
 		context.setInput("phasing", phasing);
-		context.setInput("sample-limit", "0");
-		context.setInput("minimacbin", "Minimac4");
 		context.setConfig("binaries", BINARIES_HDFS);
 		
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
