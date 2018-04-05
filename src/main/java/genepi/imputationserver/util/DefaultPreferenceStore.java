@@ -19,20 +19,20 @@ public class DefaultPreferenceStore {
 		defaults.put("minimac.tmp", "/tmp");
 		defaults.put("minimac.command",
 				"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
-		defaults.put("ref.fasta", "human_g1k_v37.fasta");
+		defaults.put("ref.fasta", "v37");
 		defaults.put("hg38Tohg19", "chains/hg38ToHg19.over.chain.gz");
 		defaults.put("hg19Tohg38", "chains/hg19ToHg38.over.chain.gz");
 
-		//set all empty values to default values
-		
-		for (String key: defaults.keySet()){
+		// set all empty values to default values
+
+		for (String key : defaults.keySet()) {
 			String value = store.getString(key);
-			if (value == null){
+			if (value == null) {
 				value = defaults.get(key);
 				store.setString(key, value);
 			}
 		}
-		
+
 	}
 
 }
