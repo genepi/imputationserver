@@ -4,7 +4,7 @@
  <a href="https://twitter.com/intent/follow?screen_name=umimpute"> <img src="https://img.shields.io/twitter/follow/umimpute.svg?style=social" alt="follow on Twitter"></a>
 
 This repository includes the complete source code for the [Michigan Imputation Server](https://imputationserver.sph.umich.edu) workflow based on Minimac4. 
-The workflow itself is executed with the [Cloudgene workflow system](github.com/genepi/cloudgene) for Hadoop MapReduce. 
+The workflow itself is executed with the [Cloudgene workflow system](https://github.com/genepi/cloudgene) for Hadoop MapReduce. 
 
 Michigan Imputation Server consists of several parallelized pipeline steps: 
 
