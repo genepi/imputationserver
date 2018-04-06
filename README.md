@@ -27,4 +27,4 @@ Please cite this paper if you use Michigan Imputation Server:
 
 ## Contact
 
-Feel free to contact [us](https://imputationserver.sph.umich.edu/start.html#!pages/contact) in case of any problems.
+Feel free to contact [us](https://imputationserver.sph.umich.edu/index.html#!pages/contact) in case of any problems.
