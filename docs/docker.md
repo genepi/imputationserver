@@ -1,6 +1,6 @@
 # Michigan Imputation Server (MIS) on Docker
 
-This tutorial sets up the Michigan Imputation Server on [Docker](https://www.docker.com/). To impute against the [HRC](http://www.haplotype-reference-consortium.org) reference panel, please use the official instance of the [Michigan Imputation Server](https://imputationserver.sph.umich.edu).
+This tutorial starts Michigan Imputation Server on [Docker](https://www.docker.com/). To impute against the [HRC](http://www.haplotype-reference-consortium.org) reference panel, please use the official instance of the [Michigan Imputation Server](https://imputationserver.sph.umich.edu).
 
 
 ## License
@@ -43,7 +43,7 @@ Connect to the local instance with the following credentials and execute a job.
 
 ```sh
 TEST_DATA="https://imputationserver.sph.umich.edu/static/downloads/hapmap300.chr1.recode.vcf.gz"
-docker exec -t -i test cloudgene run imputationserver --files ${TEST_DATA} --refpanel apps@hapmap2 --conf /etc/hadoop/conf
+docker exec -t -i mis-docker cloudgene run imputationserver --files ${TEST_DATA} --refpanel apps@hapmap2 --conf /etc/hadoop/conf
 ```
 
 ## Install 1000G Phase 3 reference panel graphically
@@ -52,13 +52,13 @@ After logging in, you have to open the *Admin-Panel*:
 
 ![Admin Panel](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/admin-panel.png?raw=true)
 
-## Open Applications
+### Open Applications
 
 Click on the *Applications* tab to see all installed applications.
 
 ![Applications](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/applications.png?raw=true)
 
-## Install Application
+### Install Application
 
 After clicking on *Install App* a new Dialog appears, where you can enter the ID and the URL of a public available reference panel:
 
@@ -66,17 +66,7 @@ After clicking on *Install App* a new Dialog appears, where you can enter the ID
 
 By clicking on *OK* the installation starts. Depending on your Internet connection and computer resources it could take several minutes.
 
-### Hapmap2
-
-- **ID:** hapmap2
-- **URL:** https://imputationserver.sph.umich.edu/static/downloads/releases/hapmap2-1.0.0.zip
-
-### 1000 Genomes Phase 3
-
-- **ID:** 1000genomes-phase3
-- **URL:** https://imputationserver.sph.umich.edu/static/downloads/releases/1000genomes-phase3-1.0.0.zip
-
-## Submit Job
+### Submit Job
 
 If the installation was successful, you should see your reference panel in the Reference Panel list when you submit a new job:
 
@@ -89,6 +79,18 @@ Since all reference panels are installed in your provided data folder, you can s
 ```sh
 docker exec -t -i mis-docker cloudgene install 1000genomes-phase3 https://imputationserver.sph.umich.edu/static/downloads/releases/1000genomes-phase3-1.0.0.zip
 ```
+
+## Available Reference Panels
+
+### Hapmap2
+
+- **ID:** hapmap2
+- **URL:** https://imputationserver.sph.umich.edu/static/downloads/releases/hapmap2-1.0.0.zip
+
+### 1000 Genomes Phase 3
+
+- **ID:** 1000genomes-phase3
+- **URL:** https://imputationserver.sph.umich.edu/static/downloads/releases/1000genomes-phase3-1.0.0.zip
 
 ## Contact
 
