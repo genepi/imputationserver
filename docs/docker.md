@@ -47,9 +47,9 @@ docker exec -t -i mis-docker cloudgene run imputationserver \
 --files ${TEST_DATA} --refpanel apps@hapmap2 --conf /etc/hadoop/conf
 ```
 
-## 1000G Phase 3 reference panel intsallation
+## 1000G Phase 3 reference panel installation
 
-## Via the webservice
+### Graphical installation
 
 After logging in, you have to open the *Admin-Panel*:
 
@@ -78,7 +78,7 @@ If the installation was successful, you should see your reference panel in the R
 Since all reference panels are installed in your provided data folder, you can stop and restart your cluster without reinstalling them.
 
 
-### Via the command line 
+### Command line installation
 ```sh
 docker exec -t -i mis-docker cloudgene install 1000genomes-phase3 \
 https://imputationserver.sph.umich.edu/static/downloads/releases/1000genomes-phase3-1.0.0.zip
