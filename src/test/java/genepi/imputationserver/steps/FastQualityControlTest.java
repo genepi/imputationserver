@@ -354,6 +354,28 @@ public class FastQualityControlTest extends TestCase {
 
 	
 	@Test
+	public void testChrXInvalidAlleles() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chrX";
+		String inputFolder = "test-data/data/chrX-phased-invalid";
+
+		File file = new File("test-data/tmp");
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+
+		// run qc to create chunkfile
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		//FileUtil.deleteDirectory(file);
+
+	}
+	
+	@Test
 	public void testChrXMixedGenotypes() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
