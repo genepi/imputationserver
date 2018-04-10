@@ -371,7 +371,10 @@ public class FastQualityControlTest extends TestCase {
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 		boolean result = run(context, qcStats);
 
-		//FileUtil.deleteDirectory(file);
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Invalid alleles: 190"));
+		
+		FileUtil.deleteDirectory(file);
 
 	}
 	

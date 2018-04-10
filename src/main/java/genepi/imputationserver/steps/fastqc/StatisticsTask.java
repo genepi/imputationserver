@@ -661,7 +661,7 @@ public class StatisticsTask implements ITask {
 		vcfChunkWriterNonPar.writeHeader(header);
 		vcfChunkWriterPar1.writeHeader(header);
 		vcfChunkWriterPar2.writeHeader(header);
-		
+
 		int mixedGenotypes[] = null;
 		int count = 0;
 
@@ -672,7 +672,6 @@ public class StatisticsTask implements ITask {
 			nonParStart = 2781479;
 			nonParEnd = 155701383;
 		}
-
 
 		VCFCodec codec = new VCFCodec();
 		codec.setVCFHeader(vcfReader.getFileHeader(), VCFHeaderVersion.VCF4_1);
@@ -696,7 +695,7 @@ public class StatisticsTask implements ITask {
 					continue;
 				}
 
-				//now decode, since it's valid
+				// now decode, since it's a valid VCF
 				VariantContext line = codec.decode(lineString);
 
 				if (line.getContig().equals("23")) {
