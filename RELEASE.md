@@ -46,4 +46,6 @@ id: imputationserver
 url: https://github.com/genepi/imputationserver/releases/download/1.x.x/imputationserver.zip
 ```
 
+Use the following commit message: `Updated to version 1.x.x`
+
 **Travis tests the image and DockerHub deploys it. Check status on https://github.com/genepi/imputationserver-docker**
