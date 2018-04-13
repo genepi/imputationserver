@@ -77,7 +77,7 @@ workflow:
        value: hg19
        values:
          hg19: GRCh37/hg19
-         Hg38: GRCh38/hg38           
+         hg38: GRCh38/hg38           
 
      - id: r2Filter
        description: rsq Filter
