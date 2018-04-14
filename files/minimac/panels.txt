@@ -1,8 +1,0 @@
-panels:
-   
-  - id: hapmap2
-    pattern: hapmap_r22.chr$chr.CEU.hg19.recode.vcf.gz
-    hdfs: ref-panels/hapmap_r22.CEU.hg19.tgz
-    legendPattern: hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
-    legend: ref-panels/hapmap_r22.CEU.hg19.legends.tgz
-    build: hg19

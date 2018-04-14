@@ -7,12 +7,12 @@ import java.util.Map;
 
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.ContextLog;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.steps.vcf.VcfChunk;
+import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -57,29 +57,12 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String input = context.get("chunkFileDir");
 		String reference = context.get("refpanel");
 		String phasing = context.get("phasing");
-		String rounds = context.get("rounds");
-		String window = context.get("window");
 		String population = context.get("population");
+		String binariesHDFS = context.getConfig("binaries");
 
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
 			r2Filter = "0";
-		}
-
-		String queue = "default";
-		if (context.get("queues") != null) {
-			queue = context.get("queues");
-		}
-
-		boolean noCache = false;
-		String minimacBin = "minimac";
-
-		if (context.get("nocache") != null) {
-			noCache = context.get("nocache").equals("yes");
-		}
-
-		if (context.get("minimacbin") != null) {
-			minimacBin = context.get("minimacbin");
 		}
 
 		// outputs
@@ -93,17 +76,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 		// load reference panels
 
-		RefPanelList panels = null;
-		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
+		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		} catch (Exception e) {
-
-			context.error("File " + RefPanelList.FILENAME + " not found.");
-			return false;
-		}
-
-		RefPanel panel = panels.getById(reference);
+		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
 		if (panel == null) {
 			context.error("reference panel '" + reference + "' not found.");
 			return false;
@@ -135,7 +110,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 			String[] chunkFiles = FileUtil.getFiles(input, "*.*");
 
 			context.beginTask("Start Imputation...");
-			
+
 			if (chunkFiles.length == 0) {
 				context.error("<br><b>Error:</b> No chunks found. Imputation cannot be started!");
 				return false;
@@ -149,26 +124,30 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				ChunkFileConverterResult result = convertChunkfile(chunkFile, context.getHdfsTemp());
 
 				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobId() + "-chr-" + chr,
-						new ContextLog(context), queue) {
+						new ContextLog(context)) {
 					@Override
 					protected void readConfigFile() {
 						File file = new File(folder + "/" + CONFIG_FILE);
+						DefaultPreferenceStore preferenceStore = new DefaultPreferenceStore();
 						if (file.exists()) {
-							log.info("Loading distributed configuration file " + folder + "/" + CONFIG_FILE + "...");
-							PreferenceStore preferenceStore = new PreferenceStore(file);
-							preferenceStore.write(getConfiguration());
-							for (Object key : preferenceStore.getKeys()) {
-								log.info("  " + key + ": " + preferenceStore.getString(key.toString()));
-							}
+							log.info("Loading distributed configuration file '" + file.getAbsolutePath() + "'...");
+							preferenceStore.load(file);
 
 						} else {
-
-							log.info("No distributed configuration file (" + CONFIG_FILE + ") available.");
+							log.info("Configuration file '" + file.getAbsolutePath()
+									+ "' not available. Use default values");
 
 						}
+
+						preferenceStore.write(getConfiguration());
+						for (Object key : preferenceStore.getKeys()) {
+							log.info("  " + key + ": " + preferenceStore.getString(key.toString()));
+						}
+
 					}
 				};
-				job.setFolder(folder);
+
+				job.setBinariesHDFS(binariesHDFS);
 
 				String hdfsFilenameChromosome = resolvePattern(panel.getHdfs(), chr);
 				job.setRefPanelHdfs(hdfsFilenameChromosome);
@@ -212,10 +191,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setPopulation(population);
-				job.setRounds(rounds);
-				job.setWindow(window);
-				job.setNoCache(noCache);
-				job.setMinimacBin(minimacBin);
 				job.setJarByClass(ImputationJobMinimac3.class);
 
 				executeJarInBackground(chr, context, job);

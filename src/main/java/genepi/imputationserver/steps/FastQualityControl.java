@@ -7,7 +7,6 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.fastqc.ITask;
@@ -16,6 +15,7 @@ import genepi.imputationserver.steps.fastqc.LiftOverTask;
 import genepi.imputationserver.steps.fastqc.StatisticsTask;
 import genepi.imputationserver.steps.fastqc.TaskResults;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.GenomicTools;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -36,7 +36,6 @@ public class FastQualityControl extends WorkflowStep {
 		String inputFiles = context.get("files");
 		String reference = context.get("refpanel");
 		String population = context.get("population");
-		int chunkSize = Integer.parseInt(context.get("chunksize"));
 
 		String mafFile = context.get("mafFile");
 		String chunkFileDir = context.get("chunkFileDir");
@@ -49,22 +48,23 @@ public class FastQualityControl extends WorkflowStep {
 			buildGwas = "hg19";
 		}
 
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
-		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
-
-		// load reference panels
-		RefPanelList panels = null;
-		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
-
-		} catch (Exception e) {
-
-			context.error("File " + RefPanelList.FILENAME + " not found.");
-			return false;
+		//load job.config
+		File jobConfig = new File(FileUtil.path(folder, "job.config"));
+		DefaultPreferenceStore store = new DefaultPreferenceStore();
+		if (jobConfig.exists()) {
+			store.load(jobConfig);
+		} else {
+			context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
 		}
+		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
+		int chunkSize = Integer.parseInt(store.getString("chunksize"));
+
+		
+		// load reference panels
+		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
 		// check reference panel
-		RefPanel panel = panels.getById(reference);
+		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
 		if (panel == null) {
 			context.error("Reference '" + reference + "' not found.");
 			context.error("Available references:");

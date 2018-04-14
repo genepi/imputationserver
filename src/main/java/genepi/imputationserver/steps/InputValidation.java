@@ -10,7 +10,6 @@ import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.hadoop.importer.IImporter;
@@ -18,6 +17,7 @@ import genepi.hadoop.importer.ImporterFactory;
 import genepi.imputationserver.steps.converter.VCFBuilder;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -67,10 +67,24 @@ public class InputValidation extends WorkflowStep {
 		String build = context.get("build");
 		String r2Filter = context.get("r2Filter");
 
-		int sampleLimit = Integer.valueOf(context.get("sample-limit"));
-		int chunkSize = Integer.parseInt(context.get("chunksize"));
+		// load job.config
+		File jobConfig = new File(FileUtil.path(folder, "job.config"));
+		DefaultPreferenceStore store = new DefaultPreferenceStore();
+		if (jobConfig.exists()) {
+			store.load(jobConfig);
+		} else {
+			context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
+		}
 
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folder, "job.config")));
+		int chunkSize = 20000000;
+		if (store.getString("chunksize") != null) {
+			chunkSize = Integer.parseInt(store.getString("chunksize"));
+		}
+
+		int maxSamples = 0;
+		if (store.getString("samples.max") != null) {
+			maxSamples = Integer.parseInt(store.getString("samples.max"));
+		}
 
 		List<VcfFile> validVcfFiles = new Vector<VcfFile>();
 
@@ -126,16 +140,9 @@ public class InputValidation extends WorkflowStep {
 
 		String infos = null;
 
-		RefPanelList panels = null;
-		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
-		} catch (Exception e) {
-			context.endTask("File " + RefPanelList.FILENAME + " not found.", WorkflowContext.ERROR);
-			return false;
-		}
+		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		//
-		RefPanel panel = panels.getById(reference);
+		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
 		if (panel == null) {
 			context.endTask("Reference '" + reference + "' not found.", WorkflowContext.ERROR);
 			return false;
@@ -205,9 +212,9 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
-					if (noSamples > sampleLimit && sampleLimit != 0) {
+					if (noSamples > maxSamples && maxSamples != 0) {
 						context.endTask(
-								"The maximum number of samples is " + sampleLimit
+								"The maximum number of samples is " + maxSamples
 										+ ". Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
 								WorkflowContext.ERROR);
 
@@ -295,18 +302,9 @@ public class InputValidation extends WorkflowStep {
 		String phasing = context.get("phasing");
 		String mode = context.get("mode");
 
-		RefPanelList panels = null;
-		try {
-			panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
+		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		} catch (Exception e) {
-
-			context.error("File " + RefPanelList.FILENAME + " not found.");
-			return false;
-		}
-
-		//
-		RefPanel panel = panels.getById(reference);
+		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
 		if (panel == null) {
 			StringBuilder report = new StringBuilder();
 			report.append("Reference '" + reference + "' not found.\n");

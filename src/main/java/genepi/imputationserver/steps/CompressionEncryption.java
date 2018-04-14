@@ -1,20 +1,7 @@
 package genepi.imputationserver.steps;
 
-import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.PreferenceStore;
-import genepi.hadoop.command.Command;
-import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.common.WorkflowStep;
-import genepi.imputationserver.steps.vcf.MergedVcfFile;
-import genepi.imputationserver.util.ExportObject;
-import genepi.imputationserver.util.FileMerger;
-import genepi.imputationserver.util.PasswordCreator;
-import genepi.io.FileUtil;
-
 import java.io.File;
 import java.io.IOException;
-import java.security.SecureRandom;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,14 +11,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import genepi.hadoop.HdfsUtil;
+import genepi.hadoop.command.Command;
+import genepi.hadoop.common.WorkflowContext;
+import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.steps.vcf.MergedVcfFile;
+import genepi.imputationserver.util.DefaultPreferenceStore;
+import genepi.imputationserver.util.ExportObject;
+import genepi.imputationserver.util.FileMerger;
+import genepi.imputationserver.util.PasswordCreator;
+import genepi.io.FileUtil;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.util.Zip4jConstants;
 
 public class CompressionEncryption extends WorkflowStep {
 
@@ -48,7 +45,13 @@ public class CompressionEncryption extends WorkflowStep {
 
 		// read config if mails should be sent
 		String folderConfig = getFolder(CompressionEncryption.class);
-		PreferenceStore store = new PreferenceStore(new File(FileUtil.path(folderConfig, "job.config")));
+		File jobConfig = new File(FileUtil.path(folderConfig, "job.config"));
+		DefaultPreferenceStore store = new DefaultPreferenceStore();
+		if (jobConfig.exists()) {
+			store.load(jobConfig);
+		} else {
+			context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
+		}
 
 		String notification = "no";
 		if (store.getString("minimac.sendmail") != null && !store.getString("minimac.sendmail").equals("")) {

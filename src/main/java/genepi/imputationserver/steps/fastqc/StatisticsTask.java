@@ -19,6 +19,7 @@ import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.GenomicTools;
 import genepi.io.FileUtil;
+import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
@@ -32,8 +33,10 @@ import htsjdk.variant.variantcontext.writer.Options;
 import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder.OutputType;
+import htsjdk.variant.vcf.VCFCodec;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
+import htsjdk.variant.vcf.VCFHeaderVersion;
 
 public class StatisticsTask implements ITask {
 
@@ -476,9 +479,10 @@ public class StatisticsTask implements ITask {
 
 					alleleSwitch++;
 					/*
-					 * logWriter.write("Allele switch" + snp.getID() + "\t" + chr + ":"+
-					 * snp.getStart() + "\t" + "ref: " + legendRef + "/" + legendAlt + "; data: " +
-					 * studyRef + "/" + studyAlt + ")");
+					 * logWriter.write("Allele switch" + snp.getID() + "\t" +
+					 * chr + ":"+ snp.getStart() + "\t" + "ref: " + legendRef +
+					 * "/" + legendAlt + "; data: " + studyRef + "/" + studyAlt
+					 * + ")");
 					 */
 				}
 
@@ -658,8 +662,6 @@ public class StatisticsTask implements ITask {
 		vcfChunkWriterPar1.writeHeader(header);
 		vcfChunkWriterPar2.writeHeader(header);
 
-		CloseableIterator<VariantContext> it = vcfReader.iterator();
-
 		int mixedGenotypes[] = null;
 		int count = 0;
 
@@ -671,50 +673,73 @@ public class StatisticsTask implements ITask {
 			nonParEnd = 155701383;
 		}
 
-		while (it.hasNext()) {
+		VCFCodec codec = new VCFCodec();
+		codec.setVCFHeader(vcfReader.getFileHeader(), VCFHeaderVersion.VCF4_1);
+		LineReader reader = new LineReader(filename);
 
-			VariantContext line = it.next();
+		while (reader.next()) {
 
-			if (line.getContig().equals("23")) {
-				line = new VariantContextBuilder(line).chr("X").make();
-			}
+			String lineString = reader.get();
 
-			else if (line.getContig().equals("chr23")) {
-				line = new VariantContextBuilder(line).chr("chrX").make();
-			}
+			if (!lineString.startsWith("#")) {
 
-			if (line.getStart() < nonParStart) {
+				String tiles[] = lineString.split("\t", 6);
+				String ref = tiles[3];
+				String alt = tiles[4];
 
-				vcfChunkWriterPar1.add(line);
-
-				if (!paths.contains(par1)) {
-					paths.add(par1);
+				// filter invalid alleles
+				if (!GenomicTools.isValid(ref) || !GenomicTools.isValid(alt)) {
+					excludedSnpsWriter.write(tiles[0] + ":" + tiles[1] + ":" + ref + ":" + alt);
+					invalidAlleles++;
+					filtered++;
+					continue;
 				}
 
-			}
+				// now decode, since it's a valid VCF
+				VariantContext line = codec.decode(lineString);
 
-			else if (line.getStart() >= nonParStart && line.getStart() <= nonParEnd) {
-
-				count++;
-
-				checkPloidy(header.getGenotypeSamples(), line, phased, chrXInfoWriter, hapSamples);
-
-				mixedGenotypes = checkMixedGenotypes(mixedGenotypes, line);
-
-				vcfChunkWriterNonPar.add(line);
-
-				if (!paths.contains(nonPar)) {
-					paths.add(nonPar);
+				if (line.getContig().equals("23")) {
+					line = new VariantContextBuilder(line).chr("X").make();
 				}
 
-			}
+				else if (line.getContig().equals("chr23")) {
+					line = new VariantContextBuilder(line).chr("chrX").make();
+				}
 
-			else {
+				if (line.getStart() < nonParStart) {
 
-				vcfChunkWriterPar2.add(line);
+					vcfChunkWriterPar1.add(line);
 
-				if (!paths.contains(par2)) {
-					paths.add(par2);
+					if (!paths.contains(par1)) {
+						paths.add(par1);
+					}
+
+				}
+
+				else if (line.getStart() >= nonParStart && line.getStart() <= nonParEnd) {
+
+					count++;
+
+					checkPloidy(header.getGenotypeSamples(), line, phased, chrXInfoWriter, hapSamples);
+
+					mixedGenotypes = checkMixedGenotypes(mixedGenotypes, line);
+
+					vcfChunkWriterNonPar.add(line);
+
+					if (!paths.contains(nonPar)) {
+						paths.add(nonPar);
+					}
+
+				}
+
+				else {
+
+					vcfChunkWriterPar2.add(line);
+
+					if (!paths.contains(par2)) {
+						paths.add(par2);
+					}
+
 				}
 
 			}
@@ -733,6 +758,7 @@ public class StatisticsTask implements ITask {
 		}
 
 		vcfReader.close();
+		reader.close();
 
 		vcfChunkWriterPar1.close();
 		vcfChunkWriterPar2.close();
@@ -761,43 +787,6 @@ public class StatisticsTask implements ITask {
 
 		}
 		return mixedGenotypes;
-	}
-
-	public VariantContext makeDiploid(List<String> samples, VariantContext snp, boolean isPhased, LineWriter chrXWriter,
-			HashSet<String> hapSamples) throws IOException {
-
-		final GenotypesContext genotypes = GenotypesContext.create(samples.size());
-		String ref = snp.getReference().getBaseString();
-
-		for (final String name : samples) {
-
-			Genotype genotype = snp.getGenotype(name);
-
-			if (hapSamples.contains(name) && genotype.getPloidy() != 1) {
-
-				chrXWriter.write("Converting haploid to diploid: " + name + " was already diploid at position "
-						+ snp.getStart() + "\n");
-			}
-
-			if (genotype.getPloidy() == 1) {
-
-				hapSamples.add(name);
-
-				// better method available?
-				boolean isRef = ref.equals(genotype.getGenotypeString(true)) ? true : false;
-				final List<Allele> genotypeAlleles = new ArrayList<Allele>();
-				Allele allele = Allele.create(genotype.getGenotypeString(), isRef);
-				genotypeAlleles.add(allele);
-				genotypeAlleles.add(allele);
-				genotype = new GenotypeBuilder(name, genotypeAlleles).phased(isPhased).make();
-
-			}
-
-			genotypes.add(genotype);
-
-		}
-
-		return new VariantContextBuilder(snp).genotypes(genotypes).make();
 	}
 
 	public void checkPloidy(List<String> samples, VariantContext snp, boolean isPhased, LineWriter chrXInfoWriter,

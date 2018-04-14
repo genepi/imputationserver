@@ -1,6 +1,8 @@
 package genepi.imputationserver.steps;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +13,6 @@ import org.junit.Test;
 
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.WorkflowStep;
-import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
@@ -19,9 +20,6 @@ import genepi.imputationserver.util.TestSFTPServer;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
-import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFFileReader;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -29,10 +27,10 @@ public class ImputationMinimac3Test {
 
 	public static final boolean VERBOSE = true;
 
+	public static final String BINARIES_HDFS = "binaries";
+	
 	public final int TOTAL_REFPANEL_CHR20_B37 = 63402;
 	public final int TOTAL_REFPANEL_CHR20_B38 = 63384;
-	public final int TOTAL_REFPANEL_CHRX_B37 = 1479509;
-	public final int TOTAL_REFPANEL_CHRX_B38 = 1077575;
 	public final int ONLY_IN_INPUT = 78;
 	// public final int SNPS_WITH_R2_BELOW_05 = 6344;
 
@@ -65,7 +63,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -73,7 +71,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -113,7 +111,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -143,7 +141,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -151,7 +149,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -241,7 +239,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -249,7 +247,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -297,7 +295,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -305,7 +303,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -372,7 +370,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -380,7 +378,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -424,7 +422,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -432,7 +430,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -522,7 +520,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -552,7 +550,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -560,7 +558,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -607,7 +605,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -653,7 +651,7 @@ public class ImputationMinimac3Test {
 	@Test
 	public void testPipelineWithShapeIt() throws IOException, ZipException {
 
-		if (!new File("files/minimac/bin/shapeit").exists()) {
+		if (!new File("files/bin/shapeit").exists()) {
 			return;
 		}
 
@@ -673,7 +671,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -681,7 +679,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -705,7 +703,7 @@ public class ImputationMinimac3Test {
 	@Test
 	public void testPipelineWithHapiUr() throws IOException, ZipException {
 
-		if (!new File("files/minimac/bin/hapi-ur").exists()) {
+		if (!new File("files/bin/hapi-ur").exists()) {
 			return;
 		}
 
@@ -725,7 +723,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -733,7 +731,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -751,236 +749,6 @@ public class ImputationMinimac3Test {
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
-
-	}
-
-	@Test
-	public void testChrXPipelineWithEagle() throws IOException, ZipException {
-
-		// maybe git large files?
-		if (!new File(
-				"test-data/configs/hapmap-chrX/ref-panels/ALL.chrX.nonPAR.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.bcf")
-						.exists()) {
-			System.out.println("chrX bcf nonPAR file not available");
-			return;
-		}
-
-		String configFolder = "test-data/configs/hapmap-chrX";
-		String inputFolder = "test-data/data/chrX-unphased";
-
-		File file = new File("test-data/tmp");
-		if (file.exists()) {
-			FileUtil.deleteDirectory(file);
-		}
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle");
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
-
-		assertTrue(result);
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
-
-		assertEquals("X", vcfFile.getChromosome());
-
-		FileUtil.deleteDirectory(file);
-
-	}
-
-	@Test
-	public void testChrXPipelinePhased() throws IOException, ZipException {
-
-		String configFolder = "test-data/configs/hapmap-chrX";
-		String inputFolder = "test-data/data/chrX-phased";
-
-		File file = new File("test-data/tmp");
-		if (file.exists()) {
-			FileUtil.deleteDirectory(file);
-		}
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle-phasing");
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
-
-		assertTrue(result);
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
-
-		assertEquals("X", vcfFile.getChromosome());
-		assertEquals(26, vcfFile.getNoSamples());
-		assertEquals(true, vcfFile.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHRX_B37, vcfFile.getNoSnps());
-
-		FileUtil.deleteDirectory(file);
-
-	}
-
-	@Test
-	public void testChr23PipelinePhased() throws IOException, ZipException {
-
-		String configFolder = "test-data/configs/hapmap-chrX";
-		String inputFolder = "test-data/data/chr23-phased";
-
-		File file = new File("test-data/tmp");
-		if (file.exists()) {
-			FileUtil.deleteDirectory(file);
-		}
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle-phasing");
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
-
-		assertTrue(result);
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
-
-		assertEquals("X", vcfFile.getChromosome());
-		assertEquals(26, vcfFile.getNoSamples());
-		assertEquals(true, vcfFile.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHRX_B37, vcfFile.getNoSnps());
-
-		FileUtil.deleteDirectory(file);
-
-	}
-
-	@Test
-	public void testChrXLeaveOneOutPipelinePhased() throws IOException, ZipException {
-
-		// SNP 26963697 from input excluded and imputed!
-		// true genotypes:
-		// 1,1|1,1|1,1|1,1,1|1,1,1|1,1|1,1,0,1|1,1|0,1,1,1,1,1,1|1,1,1|1,1|1,1|1,1|1,1|1,1|0,
-
-		String configFolder = "test-data/configs/hapmap-chrX";
-		String inputFolder = "test-data/data/chrX-phased-loo";
-
-		File file = new File("test-data/tmp");
-		if (file.exists()) {
-			FileUtil.deleteDirectory(file);
-		}
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle-phasing");
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
-
-		assertTrue(result);
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
-
-		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFile.getVcfFilename()), false);
-
-		CloseableIterator<VariantContext> it = vcfReader.iterator();
-
-		while (it.hasNext()) {
-
-			VariantContext line = it.next();
-
-			if (line.getStart() == 26963697) {
-				assertEquals(2, line.getHetCount());
-				assertEquals(1, line.getHomRefCount());
-				assertEquals(23, line.getHomVarCount());
-
-			}
-		}
-
-		vcfReader.close();
-
-		FileUtil.deleteDirectory(file);
 
 	}
 
@@ -1003,7 +771,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -1011,7 +779,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -1027,53 +795,6 @@ public class ImputationMinimac3Test {
 		assertEquals(51, file.getNoSamples());
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B38 + ONLY_IN_INPUT, file.getNoSnps());
-
-		FileUtil.deleteDirectory("test-data/tmp");
-
-	}
-
-	@Test
-	public void testChrXPipelineWithPhasedHg38() throws IOException, ZipException {
-
-		String configFolder = "test-data/configs/hapmap-chrX-hg38";
-		String inputFolder = "test-data/data/chrX-phased";
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
-
-		assertTrue(result);
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
-
-		assertEquals("X", vcfFile.getChromosome());
-		assertEquals(26, vcfFile.getNoSamples());
-		assertEquals(true, vcfFile.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHRX_B38, vcfFile.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -1098,7 +819,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -1106,7 +827,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -1148,7 +869,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -1156,7 +877,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -1173,61 +894,6 @@ public class ImputationMinimac3Test {
 		assertEquals(true, file.isPhased());
 
 		assertEquals(TOTAL_REFPANEL_CHR20_B38 + ONLY_IN_INPUT, file.getNoSnps());
-
-		FileUtil.deleteDirectory("test-data/tmp");
-
-	}
-
-	@Test
-	public void testChrXPipelineWithEagleHg38() throws IOException, ZipException {
-
-		String configFolder = "test-data/configs/hapmap-chrX-hg38";
-		String inputFolder = "test-data/data/chrX-unphased";
-
-		// maybe git large files?
-		if (!new File(
-				"test-data/configs/hapmap-chrX-hg38/ref-panels/ALL.X.nonPAR.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.hg38.bcf")
-						.exists()) {
-			System.out.println("chrX bcf nonPAR file not available");
-			return;
-		}
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
-
-		assertTrue(result);
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
-
-		assertEquals("X", vcfFile.getChromosome());
-		assertEquals(26, vcfFile.getNoSamples());
-		assertEquals(true, vcfFile.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHRX_B38, vcfFile.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -1253,7 +919,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -1261,7 +927,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -1302,7 +968,7 @@ public class ImputationMinimac3Test {
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/minimac/bin");
+		importBinaries("files/bin");
 
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
@@ -1310,7 +976,7 @@ public class ImputationMinimac3Test {
 		assertTrue(result);
 
 		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files/minimac");
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
 		result = run(context, export);
 		assertTrue(result);
 
@@ -1351,14 +1017,9 @@ public class ImputationMinimac3Test {
 		context.setInput("files", folder);
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
-		context.setInput("chunksize", "10000000");
-		context.setInput("phasingsize", "5000000");
-		context.setInput("rounds", "0");
-		context.setInput("window", "500000");
 		context.setInput("phasing", phasing);
-		context.setInput("sample-limit", "0");
-		context.setInput("minimacbin", "Minimac4");
-
+		context.setConfig("binaries", BINARIES_HDFS);
+		
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/mafFile");
 
@@ -1411,11 +1072,11 @@ public class ImputationMinimac3Test {
 		}
 	}
 
-	private void importBinaries(String folder) {
-		System.out.println("Import Binaries:");
+	private void importBinaries(String folder) {		
+		System.out.println("Import Binaries to " + BINARIES_HDFS);
 		String[] files = FileUtil.getFiles(folder, "*.*");
 		for (String file : files) {
-			String target = HdfsUtil.path(ImputationJobMinimac3.DATA_FOLDER, FileUtil.getFilename(file));
+			String target = HdfsUtil.path(BINARIES_HDFS, FileUtil.getFilename(file));
 			System.out.println("  Import " + file + " to " + target);
 			HdfsUtil.put(file, target);
 		}
@@ -1472,7 +1133,7 @@ public class ImputationMinimac3Test {
 
 		@Override
 		protected void setupTabix(String folder) {
-			VcfFileUtil.setTabixBinary("files/minimac/bin/tabix");
+			VcfFileUtil.setTabixBinary("files/bin/tabix");
 		}
 
 	}
@@ -1494,7 +1155,7 @@ public class ImputationMinimac3Test {
 
 		@Override
 		protected void setupTabix(String folder) {
-			VcfFileUtil.setTabixBinary("files/minimac/bin/tabix");
+			VcfFileUtil.setTabixBinary("files/bin/tabix");
 		}
 
 	}

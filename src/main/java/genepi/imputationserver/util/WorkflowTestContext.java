@@ -24,7 +24,7 @@ public class WorkflowTestContext extends WorkflowContext {
 
 	private Map<String, Object> data = new HashMap<String, Object>();
 
-	private Map<String, String> config;
+	private Map<String, String> config = new HashMap<String, String>();
 
 	private StringBuffer memory = new StringBuffer();
 
@@ -249,6 +249,10 @@ public class WorkflowTestContext extends WorkflowContext {
 		} else {
 			return null;
 		}
+	}
+	
+	public void setConfig(String param, String value){
+		config.put(param, value);
 	}
 
 }

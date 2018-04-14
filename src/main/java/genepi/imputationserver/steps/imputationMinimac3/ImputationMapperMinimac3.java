@@ -11,15 +11,13 @@ import org.apache.hadoop.mapreduce.Mapper;
 import genepi.hadoop.CacheStore;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.ParameterStore;
-import genepi.hadoop.PreferenceStore;
 import genepi.hadoop.log.Log;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
+import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.FileMerger.BgzipSplitOutputStream;
 import genepi.io.FileUtil;
-import genepi.io.table.reader.CsvTableReader;
-import genepi.io.table.writer.CsvTableWriter;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
 
@@ -32,10 +30,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 	private String population;
 
 	private String phasing;
-
-	private String rounds;
-
-	private String window;
 
 	private String output;
 
@@ -78,8 +72,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		output = parameters.get(ImputationJobMinimac3.OUTPUT);
 		population = parameters.get(ImputationJobMinimac3.POPULATION);
 		phasing = parameters.get(ImputationJobMinimac3.PHASING);
-		rounds = parameters.get(ImputationJobMinimac3.ROUNDS);
-		window = parameters.get(ImputationJobMinimac3.WINDOW);
 		build = parameters.get(ImputationJobMinimac3.BUILD);
 		String r2FilterString = parameters.get(ImputationJobMinimac3.R2_FILTER);
 		if (r2FilterString == null) {
@@ -93,8 +85,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		String hdfsPathHapiURMap = parameters.get(ImputationJobMinimac3.MAP_HAPIUR_HDFS);
 		String hdfsPathMapEagle = parameters.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
 		String hdfsRefEagle = parameters.get(ImputationJobMinimac3.REF_PANEL_EAGLE_HDFS);
-
-		String minimacBin = parameters.get(ImputationJobMinimac3.MINIMAC_BIN);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
@@ -128,7 +118,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			refEagleIndexFilename = cache.getFile(FileUtil.getFilename(hdfsRefEagle + ".csi"));
 		}
 
-		String minimacCommand = cache.getFile(minimacBin);
+		String minimacCommand = cache.getFile("Minimac4");
 		String hapiUrCommand = cache.getFile("hapi-ur");
 		String hapiUrPreprocessCommand = cache.getFile("insert-map.pl");
 		String vcfCookerCommand = cache.getFile("vcfCooker");
@@ -137,13 +127,13 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		String tabixCommand = cache.getFile("tabix");
 
 		// create temp directory
-		PreferenceStore store = new PreferenceStore(context.getConfiguration());
+		DefaultPreferenceStore store = new DefaultPreferenceStore(context.getConfiguration());
 		folder = store.getString("minimac.tmp");
 		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
 		boolean created = FileUtil.createDirectory(folder);
 
 		if (!created) {
-			throw new IOException(store.getString("minimac.tmp") + " is not writable!");
+			throw new IOException(folder + " is not writable!");
 		}
 
 		// create symbolic link --> index file is in the same folder as data
@@ -164,9 +154,14 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
+		int rounds = Integer.parseInt(store.getString("minimac.rounds"));
+		int window = Integer.parseInt(store.getString("minimac.window"));
+
+		String minimacParams = store.getString("minimac.command");
+
 		// config pipeline
 		pipeline = new ImputationPipelineMinimac3();
-		pipeline.setMinimacCommand(minimacCommand);
+		pipeline.setMinimacCommand(minimacCommand, minimacParams);
 		pipeline.setHapiUrCommand(hapiUrCommand);
 		pipeline.setVcfCookerCommand(vcfCookerCommand);
 		pipeline.setShapeItCommand(shapeItCommand);
@@ -175,10 +170,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		pipeline.setHapiUrPreprocessCommand(hapiUrPreprocessCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 		pipeline.setBuild(build);
-
-		// Minimac3
-		pipeline.setRounds(Integer.parseInt(rounds));
-		pipeline.setMinimacWindow(Integer.parseInt(window));
+		pipeline.setRounds(rounds);
+		pipeline.setMinimacWindow(window);
 
 	}
 

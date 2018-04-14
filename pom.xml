@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>genepi</groupId>
-	<artifactId>minimac-cloud-improved</artifactId>
-	<version>1.1.2</version>
+	<artifactId>imputationserver</artifactId>
+	<version>1.1.5</version>
 	<packaging>jar</packaging>
 
 	<name>University of Michigan Imputation Server</name>
@@ -79,6 +79,7 @@
 									<include>org.xerial.snappy:snappy-java:*:*</include>
 									<include>org.xerial:xerial-core:*:*</include>
 									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
+									<include>org.codehaus.groovy:groovy-all:*:*</include>
 								</includes>
 							</artifactSet>
 
@@ -101,6 +102,8 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
+							<finalName>imputationserver</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
 								<descriptor>src/main/assembly/assembly.xml</descriptor>
 							</descriptors>
@@ -182,7 +185,7 @@
 		<dependency>
 			<groupId>com.github.samtools</groupId>
 			<artifactId>htsjdk</artifactId>
-			<version>2.14.3</version>
+			<version>2.9.1</version>
 		</dependency>
 
 		<dependency>
@@ -213,13 +216,20 @@
 			<version>2.6.0-mr1-cdh5.10.0</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.sshd</groupId>
 			<artifactId>sshd-sftp</artifactId>
 			<version>0.9.0</version>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>2.4.14</version>
+		</dependency>
+
 
 	</dependencies>
 </project>

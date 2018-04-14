@@ -354,6 +354,31 @@ public class FastQualityControlTest extends TestCase {
 
 	
 	@Test
+	public void testChrXInvalidAlleles() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chrX";
+		String inputFolder = "test-data/data/chrX-phased-invalid";
+
+		File file = new File("test-data/tmp");
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+
+		// run qc to create chunkfile
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Invalid alleles: 190"));
+		
+		FileUtil.deleteDirectory(file);
+
+	}
+	
+	@Test
 	public void testChrXMixedGenotypes() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
@@ -420,7 +445,7 @@ public class FastQualityControlTest extends TestCase {
 
 		@Override
 		protected void setupTabix(String folder) {
-			VcfFileUtil.setTabixBinary("files/minimac/bin/tabix");
+			VcfFileUtil.setTabixBinary("files/bin/tabix");
 		}
 
 	}
@@ -440,12 +465,12 @@ public class FastQualityControlTest extends TestCase {
 		context.setInput("files", folder);
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
-		context.setInput("chunksize", "20000000");
-		context.setInput("phasingsize", "5000000");
 		context.setOutput("mafFile", file.getAbsolutePath() + "/maffile.txt");
 		context.setOutput("chunkFileDir", file.getAbsolutePath());
 		context.setOutput("statisticDir", file.getAbsolutePath());
 		context.setOutput("chunksDir", file.getAbsolutePath());
+		context.setConfig("binaries",ImputationMinimac3Test. BINARIES_HDFS);
+
 		return context;
 
 	}

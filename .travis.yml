@@ -7,7 +7,8 @@ before_install:
 - sed -e "s/^\\(127\\.0\\.0\\.1.*\\)/\\1 $(hostname | cut -c1-63)/" /etc/hosts | sudo
   tee /etc/hosts
 - cat /etc/hosts
-script: mvn clean test jacoco:report
+script:
+- mvn -Dtest=AllTestsNoChrX test jacoco:report
 after_success:
 - mvn coveralls:report
 notifications:
@@ -15,3 +16,11 @@ notifications:
     on_success: always
     on_failure: always
     secure: jVbWz4bHJ4iwtCZdAcQHw4GRCjV4I+Ihs5bMHEZCiqzCO6KIxBCndn5lXFNbBLVp8kd2zhZzzIpfZNueIjkKVu5CZSrDpZ/vYnhsr1m37GN7qZ5QoNfh+1THuir23wUJZMADjnLpTx+Ntj68A2tD/B3IWWKWbJ+F+dxrmThwjngePBMofceNjc4Em2/ONwztLmFp82pWR/zdubDMZoVJ8m2sg8aXLp7r5WfAjEgzVlTJpXRy9HzwlFRTqVyZ8NORhcFZXrkyGyxo1DtNv0iySLk9S5E5pXe8ujPOekZMxi+hyIq9YSjzXzL9UmgkakVzjPR8hc9aR1OnIhe6XcDhC91jUNHRgo2JqJcjsYoEERpC3d7xZOSFCPAF1KV7g7qJahrIRnLBMioEvkFqrMjqLE1Mp1e4eFQUfcupaw6f+QIUIZw1yDQiDH2xyECU+NXMr02bOdmZ/I3mdPgjX3AdbcQtMYHjboi4AfemiLCG1pOWT/nTDq+/aKP6XPua9sIMde7PCSKAH1OD4syKPfcJKTwBUFQXWlA5rVX9hUdMKfFyy8Zdmd1UNs2lozJEgg+Iz7+aMCDr6CFKD+V367eNkjvDjca5Ro2SsTW0h8vXCAj36mcw6/E/ZN9kZeXjNDcSX3qvh9FvU+RUdutjJOcgvtCr6J2NDd0iQVAzrPspkXQ=
+deploy:
+  provider: releases
+  api_key:
+    secure: E7WTXvqqk32EjdwF0bJnREsfa2kVclgkgf5KHS9HJMyKKqKkUAA7SICuV0fS+IrIEh3KHNdrDy4bE+J9dX2hwidyjomTMM6JlGzOlGBK6p8rlPmlutIDlxMGx25Q7J2griLVrSnX/p6Wd1FXLGhh/g3DTLXqgJGBFrAl+uvuMRWlD2XdcWUq4VEuFEiHAtISqqT0t73TWobgSkxD+KyFnhk+BfiZePXHtjAtvn17S2Om6V4rRaG3gad7F1Gp/39qOPn3IqpHTA02FIME7PwiUMr/Pc7fT7/F58Tr9ergdMfLcHGugnqJr3GwUOvFrT6XPxtqfwzqBOXjzqvjaLzBAq66sVmjtyqTXY7hc89QHU863SWGcuVbUC2AOsHjXzm9lVYftbMO7br92DZsV06HP/WondOvIUil3TIcKnIAagH/5lIoSIk05SQ4wytPjXJQRJNA2HXUC/o+52ivJuwGZrg9pR2rpXgm0YWEccMfM1anoc/WVThr7R7U6O6kOau6rA1zptQh4ZFD2ROMLCV/b2n8VWPCuGRzqcvdq3LH7hyTRyplXKiUVerlz1MZqEdaSzj3gCytTBZW5SBD2s5olJ4k8VQ9E22z0pJ91Ud5VJvmQvfUIMH35zdJg2fc2O+bq5P15kWf3GxvxtYUIyCqXwGC4wgJgPTj0HKt3SVMIsc=
+  skip_cleanup: true
+  file: target/imputationserver.zip
+  on:
+    tags: true
