@@ -84,7 +84,7 @@ public class InputValidation extends WorkflowStep {
 		boolean phased = true;
 
 		try {
-			String[] genome = FileUtil.getFiles(files, "*.txt$|*.zip");
+			String[] genome = FileUtil.getFiles(files, "*.txt$|*.zip$");
 
 			if (genome.length == 1) {
 				context.updateTask("Check for valid 23andMe data", WorkflowContext.RUNNING);
