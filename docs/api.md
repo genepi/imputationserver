@@ -171,3 +171,12 @@ curl-H "X-Auth-Token: <your-API-token>" https://imputationserver.sph.umich.edu/a
   ,"steps":[]
 }
 ```
+
+## Monitor Job Details
+
+### /jobs/{id}
+
+### Examples
+
+#### curl
+curl --H "X-Auth-Token: <your-API-token>" https://imputationserver.sph.umich.edu/api/v2/jobs/job-20160504-155023/
