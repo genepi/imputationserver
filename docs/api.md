@@ -150,7 +150,7 @@ for job in r.json():
 #### curl
 
 ```sh
-curl-H "X-Auth-Token: <your-API-token>" https://imputationserver.sph.umich.edu/api/v2/jobs/job-20160504-155023/status
+curl -H "X-Auth-Token: <your-API-token>" https://imputationserver.sph.umich.edu/api/v2/jobs/job-20160504-155023/status
 ```
 
 ```json
@@ -179,4 +179,4 @@ curl-H "X-Auth-Token: <your-API-token>" https://imputationserver.sph.umich.edu/a
 ### Examples
 
 #### curl
-curl --H "X-Auth-Token: <your-API-token>" https://imputationserver.sph.umich.edu/api/v2/jobs/job-20160504-155023/
+curl -H "X-Auth-Token: <your-API-token>" https://imputationserver.sph.umich.edu/api/v2/jobs/job-20160504-155023/
