@@ -21,7 +21,7 @@ The following parameters can be set:
 | input-files      | /path/to/file |  |
 | input-mode | qconly, imputation     | imputation   |
 | input-files-source | file-upload, sftp, http     |  default: file-upload  |
-| input-refpanel     | apps@hapmap2, apps@phase1, apps@phase3, apps@hrc-r1.1 apps@caapa      | apps@hrc-r1.1 |
+| input-refpanel     | apps@hapmap2, apps@phase1, apps@phase3, apps@hrc-r1.1 apps@caapa      | - |
 | input-phasing | eagle, hapiur, shapeit      |  eagle  |
 | input-population | eur, afr, asn, amr, sas, eas, AA, mixed      |  eur  |
 
