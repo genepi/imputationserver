@@ -2,10 +2,13 @@
 
 The REST APIs provide programmatic ways to submit new jobs and to download data from Michigan Imputation Server. It identifies users using authentication tokens, responses are provided in JSON format.
 
-To use the API, please register a new account at https://imputationserver.sph.umich.edu
 
 ## Authentication
 Michigan Imputation Server uses a token-based authentication. The token is required for all future interaction with the server. The token can be created and downloaded from your user profile.
+dsf
+![Admin Panel](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/admin-panel.png?raw=true)
+![Activate API](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/api-empty.png?raw=true)
+![Activated API](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/api-activated.png?raw=true)
 
 ## Job Submission
 The API allows to set several imputation parameters. Data need to be specified in vcf.gz or in the 23andMe data format (txt or zip).
