@@ -63,6 +63,7 @@ public class InputValidation extends WorkflowStep {
 		setupTabix(folder);
 		String files = context.get("files");
 		String reference = context.get("refpanel");
+		String population = context.get("population");
 		String phasing = context.get("phasing");
 		String build = context.get("build");
 		String r2Filter = context.get("r2Filter");
@@ -243,7 +244,7 @@ public class InputValidation extends WorkflowStep {
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
 							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
-							+ "Phasing: " + phasing;
+							+ "Population: "+ population + "\n" + "Phasing: " + phasing;
 
 					if (r2Filter != null && !r2Filter.isEmpty() && !r2Filter.equals("0")) {
 						infos += "\nRsq filter: " + r2Filter;
