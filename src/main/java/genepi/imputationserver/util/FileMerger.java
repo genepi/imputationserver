@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.io.text.LineReader;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
 
@@ -55,6 +56,33 @@ public class FileMerger {
 
 				// remove minimac4 command
 				if (!line.startsWith("##minimac4_Command")) {
+					outHeader.write(line.getBytes());
+					outHeader.write("\n".getBytes());
+				}
+			}
+		}
+		outData.close();
+		outHeader.close();
+		reader.close();
+	}
+
+	public static void splitPhasedIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, VcfChunk chunk)
+			throws IOException {
+		LineReader reader = new LineReader(input);
+		while (reader.next()) {
+			String line = reader.get();
+			if (!line.startsWith("#")) {
+				//phased files also include phasingWindow
+				int pos = Integer.valueOf(line.split("\t",3)[1]);
+				// no rsq set. keep all lines without parsing
+				if(pos >= chunk.getStart() && pos <= chunk.getEnd()) {
+				outData.write(line.getBytes());
+				outData.write("\n".getBytes());
+				}
+			} else {
+
+				// remove eagle command (since paths are included)
+				if (!line.startsWith("##eagleCommand=eagle")) {
 					outHeader.write(line.getBytes());
 					outHeader.write("\n".getBytes());
 				}

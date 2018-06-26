@@ -42,6 +42,12 @@ public class CompressionEncryption extends WorkflowStep {
 		String output = context.get("outputimputation");
 		String localOutput = context.get("local");
 		String aesEncryption = context.get("aesEncryption");
+		String mode = context.get("mode");
+
+		boolean phasingOnly = false;
+		if (mode != null && mode.equals("phasing")) {
+			phasingOnly = true;
+		}
 
 		// read config if mails should be sent
 		String folderConfig = getFolder(CompressionEncryption.class);
@@ -84,9 +90,18 @@ public class CompressionEncryption extends WorkflowStep {
 
 				context.println("Find files " + name);
 
-				List<String> data = findFiles(folder, ".data.dose.vcf.gz");
-				List<String> header = findFiles(folder, ".header.dose.vcf.gz");
-				List<String> info = findFiles(folder, ".info");
+				List<String> data = new Vector<String>();
+				List<String> header = new Vector<String>();
+				List<String> info = new Vector<String>();
+
+				header = findFiles(folder, ".header.dose.vcf.gz");
+
+				if (phasingOnly) {
+					data = findFiles(folder, ".phased.vcf.gz");
+				} else {
+					data = findFiles(folder, ".data.dose.vcf.gz");
+					info = findFiles(folder, ".info");
+				}
 
 				// combine all X. to one folder
 				if (name.startsWith("X.")) {
@@ -132,11 +147,16 @@ public class CompressionEncryption extends WorkflowStep {
 				FileUtil.createDirectory(temp);
 
 				// output files
-				String dosageOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
-
-				String infoOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
-
-				FileMerger.mergeAndGzInfo(entry.getInfoFiles(), infoOutput);
+				String dosageOutput;
+				String infoOutput = "";
+				
+				if (phasingOnly) {
+					dosageOutput = FileUtil.path(temp, "chr" + name + ".phased.vcf.gz");
+				} else {
+					dosageOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
+					infoOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
+					FileMerger.mergeAndGzInfo(entry.getInfoFiles(), infoOutput);
+				}
 
 				MergedVcfFile vcfFile = new MergedVcfFile(dosageOutput);
 
@@ -181,7 +201,10 @@ public class CompressionEncryption extends WorkflowStep {
 				ArrayList<File> files = new ArrayList<File>();
 				files.add(new File(dosageOutput));
 				// files.add(new File(vcfOutput + ".tbi"));
-				files.add(new File(infoOutput));
+
+				if (!phasingOnly) {
+					files.add(new File(infoOutput));
+				}
 
 				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput, "chr_" + name + ".zip")));
 				file.createZipFile(files, param);

@@ -317,8 +317,8 @@ public class InputValidation extends WorkflowStep {
 			return false;
 		}
 
-		// check if mode is imputation
-		if (mode == null || mode.equals("imputation")) {
+		// check if mode is imputation or phasing-only
+		if (mode == null || mode.equals("imputation") || mode.equals("phasing")) {
 
 			// check if reference panel supports selected phasing algorithm
 			if (phasing.equals("hapiur") && panel.getMapHapiUR() == null) {

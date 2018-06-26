@@ -53,6 +53,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 	private double minR2 = 0;
 
+	private boolean phasingOnly = false;
+
 	private String refEagleIndexFilename;
 
 	private boolean debugging;
@@ -79,6 +81,15 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		} else {
 			minR2 = Double.parseDouble(r2FilterString);
 		}
+
+		String phasingOnlyString = parameters.get(ImputationJobMinimac3.PHASING_ONLY);
+
+		if (phasingOnlyString == null) {
+			phasingOnly = false;
+		} else {
+			phasingOnly = Boolean.parseBoolean(phasingOnlyString);
+		}
+
 		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String hdfsPathMinimacMap = parameters.get(ImputationJobMinimac3.MAP_MINIMAC);
 		String hdfsPathShapeITMap = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_HDFS);
@@ -206,41 +217,54 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			pipeline.setMapEagleFilename(mapEagleFilename);
 			pipeline.setRefEagleFilename(refEagleFilename);
 			pipeline.setPhasing(phasing);
+			pipeline.setPhasingOnly(phasingOnly);
 			pipeline.setPopulation(population);
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);
 			if (succesful) {
-				log.info("Imputation for chunk " + chunk + " successful.");
+				log.info("Phasing/Imputation for chunk " + chunk + " successful.");
 			} else {
-				log.stop("Imputation failed!", "");
+				log.stop("Phasing/Imputation failed!", "");
 				return;
 			}
 
-			// store info file
+			if (phasingOnly) {
 
-			if (minR2 > 0) {
-				// filter by r2
-				String filteredInfoFilename = outputChunk.getInfoFilename() + "_filtered";
-				filterInfoFileByR2(outputChunk.getInfoFilename(), filteredInfoFilename, minR2);
-				HdfsUtil.put(filteredInfoFilename, HdfsUtil.path(output, chunk + ".info"));
+				// store vcf file (remove header)
+				BgzipSplitOutputStream outData = new BgzipSplitOutputStream(
+						HdfsUtil.create(HdfsUtil.path(output, chunk + ".phased.vcf.gz")));
+
+				BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
+						HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
+
+				FileMerger.splitPhasedIntoHeaderAndData(outputChunk.getPhasedVcfFilename(), outHeader, outData, chunk);
 
 			} else {
-				HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
+				if (minR2 > 0) {
+					// filter by r2
+					String filteredInfoFilename = outputChunk.getInfoFilename() + "_filtered";
+					filterInfoFileByR2(outputChunk.getInfoFilename(), filteredInfoFilename, minR2);
+					HdfsUtil.put(filteredInfoFilename, HdfsUtil.path(output, chunk + ".info"));
+
+				} else {
+					HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
+				}
+
+				long start = System.currentTimeMillis();
+
+				// store vcf file (remove header)
+				BgzipSplitOutputStream outData = new BgzipSplitOutputStream(
+						HdfsUtil.create(HdfsUtil.path(output, chunk + ".data.dose.vcf.gz")));
+
+				BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
+						HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
+
+				FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData, minR2);
+				long end = System.currentTimeMillis();
+
+				System.out.println("Time filter and put: " + (end - start) + " ms");
+
 			}
-
-			long start = System.currentTimeMillis();
-
-			// store vcf file (remove header)
-			BgzipSplitOutputStream outData = new BgzipSplitOutputStream(
-					HdfsUtil.create(HdfsUtil.path(output, chunk + ".data.dose.vcf.gz")));
-
-			BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
-					HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
-
-			FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData, minR2);
-			long end = System.currentTimeMillis();
-
-			System.out.println("Time filter and put: " + (end - start) + " ms");
 
 		} catch (Exception e) {
 			if (!debugging) {

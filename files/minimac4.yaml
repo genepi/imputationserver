@@ -40,7 +40,7 @@ workflow:
     
   steps:
 
-#if($mode == "imputation")
+#if($mode == "imputation" || $mode == "phasing")
     - name: Pre-phasing and Imputation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.ImputationMinimac3
@@ -119,6 +119,7 @@ workflow:
        values:
           qconly: Quality Control Only 
           imputation: Quality Control & Imputation
+          phasing: Quality Control & Phasing Only
 
 
      - id: aesEncryption

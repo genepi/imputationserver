@@ -50,6 +50,7 @@ public class ImputationPipelineMinimac3 {
 	private String population;
 	private String phasing;
 	private String build = "hg19";
+	private boolean phasingOnly;
 
 	public boolean execute(VcfChunk chunk, VcfChunkOutput output) throws InterruptedException, IOException {
 
@@ -178,21 +179,28 @@ public class ImputationPipelineMinimac3 {
 				}
 			}
 
-			long time = System.currentTimeMillis();
-			boolean successful = imputeVCF(output);
-			time = (System.currentTimeMillis() - time) / 1000;
-
-			if (successful) {
-				System.out.println("  Minimac3 successful.[" + time + " sec]");
+			if (phasingOnly) {
 				return true;
 			} else {
-				String stdOut = FileUtil.readFileAsString(output.getPrefix() + ".minimac.out");
-				String stdErr = FileUtil.readFileAsString(output.getPrefix() + ".minimac.err");
 
-				System.out
-						.println("  Minimac3 failed[" + time + " sec]\n\nStdOut:\n" + stdOut + "\nStdErr:\n" + stdErr);
-				return false;
+				long time = System.currentTimeMillis();
+				boolean successful = imputeVCF(output);
+				time = (System.currentTimeMillis() - time) / 1000;
+
+				if (successful) {
+					System.out.println("  Minimac4 finished successfully.[" + time + " sec]");
+					return true;
+				} else {
+					String stdOut = FileUtil.readFileAsString(output.getPrefix() + ".minimac.out");
+					String stdErr = FileUtil.readFileAsString(output.getPrefix() + ".minimac.err");
+
+					System.out.println(
+							"  Minimac4 failed[" + time + " sec]\n\nStdOut:\n" + stdOut + "\nStdErr:\n" + stdErr);
+					return false;
+				}
+
 			}
+
 		}
 	}
 
@@ -543,6 +551,14 @@ public class ImputationPipelineMinimac3 {
 
 	public void setBuild(String build) {
 		this.build = build;
+	}
+
+	public boolean isPhasingOnly() {
+		return phasingOnly;
+	}
+
+	public void setPhasingOnly(boolean phasingOnly) {
+		this.phasingOnly = phasingOnly;
 	}
 
 }

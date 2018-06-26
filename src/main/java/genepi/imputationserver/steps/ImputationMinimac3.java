@@ -59,7 +59,8 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		String phasing = context.get("phasing");
 		String population = context.get("population");
 		String binariesHDFS = context.getConfig("binaries");
-
+		String mode = context.get("mode");
+		
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
 			r2Filter = "0";
@@ -181,6 +182,12 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 						job.setRefEagleHdfs(refEagleFilenameChromosome);
 					}
 					job.setPhasing(phasing);
+					
+					if(mode != null && mode.equals("phasing")) {
+					job.setPhasingOnly("true");
+					} else {
+						job.setPhasingOnly("false");	
+					}
 
 				} else {
 					context.println("Input data is phased.");

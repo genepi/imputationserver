@@ -32,6 +32,8 @@ public class ImputationMinimac3Test {
 	public final int TOTAL_REFPANEL_CHR20_B37 = 63402;
 	public final int TOTAL_REFPANEL_CHR20_B38 = 63384;
 	public final int ONLY_IN_INPUT = 78;
+	public final int TOTAL_SNPS_INPUT = 7824;
+	public final int SNPS_MONOMORPHIC = 11;
 	// public final int SNPS_WITH_R2_BELOW_05 = 6344;
 
 	@BeforeClass
@@ -397,6 +399,56 @@ public class ImputationMinimac3Test {
 
 		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
 		assertEquals(snpInInfo, file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+	
+	@Test
+	public void testPipelineWithEaglePhasingOnly() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		
+		context.setInput("mode", "phasing");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.phased.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		//assertEquals(true, file.isPhased());
+		assertEquals(TOTAL_SNPS_INPUT - SNPS_MONOMORPHIC, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -1018,6 +1070,7 @@ public class ImputationMinimac3Test {
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
 		context.setInput("phasing", phasing);
+		context.setInput("mode", "imputation");
 		context.setConfig("binaries", BINARIES_HDFS);
 		
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
