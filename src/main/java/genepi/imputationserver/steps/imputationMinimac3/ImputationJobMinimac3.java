@@ -274,7 +274,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 	public void setR2Filter(String r2Filter) {
 		set(R2_FILTER, r2Filter);
 	}
-	
+
 	public void setPhasingOnly(String phasingOnly) {
 		set(PHASING_ONLY, phasingOnly);
 	}

@@ -403,7 +403,7 @@ public class ImputationPipelineMinimac3 {
 		params.add("--allowRefAltSwap");
 		params.add("--vcfOutFormat");
 		params.add("z");
-		params.add("--outputUnphased");
+		//params.add("--outputUnphased");
 		params.add("--keepMissingPloidyX");
 
 		eagle.setParams(params);
