@@ -215,9 +215,8 @@ public class InputValidation extends WorkflowStep {
 					}
 
 					if (noSamples > maxSamples && maxSamples != 0) {
-						context.endTask(
-								"The maximum number of samples is " + maxSamples
-										+ ". Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
+						context.endTask("The maximum number of samples is " + maxSamples
+								+ ". Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
 								WorkflowContext.ERROR);
 
 						return false;
@@ -245,7 +244,7 @@ public class InputValidation extends WorkflowStep {
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
 							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
-							+ "Population: "+ population + "\n" + "Phasing: " + phasing + "\n" + "Mode: " + mode;
+							+ "Population: " + population + "\n" + "Phasing: " + phasing + "\n" + "Mode: " + mode;
 
 					if (r2Filter != null && !r2Filter.isEmpty() && !r2Filter.equals("0")) {
 						infos += "\nRsq filter: " + r2Filter;
