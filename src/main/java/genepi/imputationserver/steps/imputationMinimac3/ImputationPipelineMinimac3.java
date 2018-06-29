@@ -179,7 +179,7 @@ public class ImputationPipelineMinimac3 {
 				}
 			}
 
-			if (phasingOnly) {
+			if (phasing.equals("eagle") && phasingOnly) {
 				return true;
 			} else {
 
