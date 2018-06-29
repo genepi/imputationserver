@@ -67,6 +67,7 @@ public class InputValidation extends WorkflowStep {
 		String phasing = context.get("phasing");
 		String build = context.get("build");
 		String r2Filter = context.get("r2Filter");
+		String mode = context.get("mode");
 
 		// load job.config
 		File jobConfig = new File(FileUtil.path(folder, "job.config"));
@@ -244,7 +245,7 @@ public class InputValidation extends WorkflowStep {
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
 							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
-							+ "Population: "+ population + "\n" + "Phasing: " + phasing;
+							+ "Population: "+ population + "\n" + "Phasing: " + phasing + "\n" + "Mode: " + mode;
 
 					if (r2Filter != null && !r2Filter.isEmpty() && !r2Filter.equals("0")) {
 						infos += "\nRsq filter: " + r2Filter;
