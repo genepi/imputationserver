@@ -2,6 +2,7 @@
 
 ## Requirements
 
+This tutorial will help you to integrate your own reference poanel. A working reference panel can be found [here](https://imputationserver.sph.umich.edu/static/downloads/releases/hapmap2-1.0.0.zip).)
 ### Data
 
 Your reference data has to be available in the VCF file format (one for each chromosome). Currently GRCh37 coordinates are required. 
@@ -15,7 +16,7 @@ Your reference data has to be available in the VCF file format (one for each chr
 ## Folder Structure
 
 We recommend the following folder structure:
-
+http://imputationserver.readthedocs.io/en/latest/docker/#install-1000g-phase-3-reference-panel
 ```ansi
 my-ref-panel
 ├── cloudgene.yaml
@@ -72,12 +73,13 @@ installation:
 
 
 ## Create bcf files
+BCF files are required for phasing with [eagle](https://data.broadinstitute.org/alkesgroup/Eagle/).
 
 - TODO: add command
 
 ## Create m3vcf files
 
-Create m3vcf files with Minimac3:
+m3vcf files are used to store large reference panels in a compact way. Learn more about the file format [here](https://genome.sph.umich.edu/wiki/M3VCF_Files).
 
 ```sh
 for CHR in `seq 1 22`
