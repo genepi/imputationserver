@@ -89,6 +89,9 @@ done
 
 ## Create legend files
 
+A legend file is a space-separated file consisting of for columns (id, position, a0, a1, population.aaf). 
+a0 and a1 containg the ref/alt alleles, population.aaf the alternate allele frequency. 
+Population must be substituted by the actual population (e.g. eur). See [here](https://github.com/genepi/imputationserver/blob/master/test-data/configs/hapmap-chr20/ref-panels/hapmap_r22.chr20.CEU.hg19_impute.legend.gz?raw=true) for an example.
 
 
 ## map files and other
