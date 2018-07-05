@@ -12,6 +12,7 @@ pages:
 - Developer Documentation:
   - API: api.md
   - Docker: docker.md
+  - Create Reference Panels: create-reference-panels.md
 - Contact: contact.md
 
 
