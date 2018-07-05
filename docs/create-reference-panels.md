@@ -99,4 +99,7 @@ A legend file for chr20 can be found [here](https://github.com/genepi/imputation
 
 The genetic maps for eagle (in our case hg19) can be found [here](https://data.broadinstitute.org/alkesgroup/Eagle/downloads/tables/genetic_map_hg19_withX.txt.gz).
 
+## Integrate your new reference panel
+The created folder structure must be compressed to a zip archive and can now be integrated into Michigan Imputation Server. Please go to [this page](http://imputationserver.readthedocs.io/en/latest/docker/#install-1000g-phase-3-reference-panel) for further instructions. A full working zip archive for Hapmap can be found [here](https://imputationserver.sph.umich.edu/static/downloads/releases/hapmap2-1.0.0.zip).
+
 
