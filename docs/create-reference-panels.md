@@ -89,11 +89,14 @@ done
 
 ## Create legend files
 
-A legend file is a space-separated file consisting of 5 columns (`id`, `position`, `a0`, `a1`, `population.aaf`). 
+A legend file is a space-separated file consisting of 5 columns (`id`, `position`, `a0`, `a1`, `population.aaf`). It is used by Imputation Server to create QC Statistics. 
 `a0` and `a1` including the ref/alt alleles, `population.aaf` the alternate allele frequency. 
-Please note that "population" must be substituted by the actual population (e.g. eur). This population must be finally set in the [minimac4.yaml file](https://github.com/genepi/imputationserver/blob/master/files/minimac4.yaml). A legend file can be found [here](https://github.com/genepi/imputationserver/blob/master/test-data/configs/hapmap-chr20/ref-panels/hapmap_r22.chr20.CEU.hg19_impute.legend.gz?raw=true).
+Please note that `population` must be substituted by the actual population (e.g. eur). This population is then specified in the [minimac4.yaml file](https://github.com/genepi/imputationserver/blob/master/files/minimac4.yaml). 
+A legend file for chr20 can be found [here](https://github.com/genepi/imputationserver/blob/master/test-data/configs/hapmap-chr20/ref-panels/hapmap_r22.chr20.CEU.hg19_impute.legend.gz?raw=true).
 
 
-## map files and other
+## Reference genetic maps
 
-- The eagle files for hg19 including chromosome X can be found [here](https://data.broadinstitute.org/alkesgroup/Eagle/downloads/tables/genetic_map_hg19_withX.txt.gz).
+The genetic maps for eagle (in our case hg19) can be found [here](https://data.broadinstitute.org/alkesgroup/Eagle/downloads/tables/genetic_map_hg19_withX.txt.gz).
+
+
