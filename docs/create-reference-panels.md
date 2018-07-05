@@ -4,13 +4,12 @@
 
 ### Data
 
-Your reference data has to be available in vcf files (one for each chromosome).
+Your reference data has to be available in the VCF file format (one for each chromosome). Currently GRCh37 coordinates are required. 
 
 ### Software
 
-- Minimac3
-- bcftools
-- legend file creator (see imputationserver on github)
+- [Minimac3](https://github.com/Santy-8128/Minimac3)
+- [bcftools](https://samtools.github.io/bcftools/bcftools.html)
 
 
 ## Folder Structure
@@ -90,9 +89,8 @@ done
 
 ## Create legend files
 
-- TODO: add command and add link to legend-file creator
 
 
 ## map files and other
 
-- TODO: add link to eagle map files
+- The eagle files for hg19 including chromosome X can be found [here](https://data.broadinstitute.org/alkesgroup/Eagle/downloads/tables/genetic_map_hg19_withX.txt.gz).
