@@ -1,8 +1,13 @@
 # Create a Reference Panel
 
+This tutorial will help you to create your own reference panel and integrate it into Michigan Imputation Server. 
+
 ## Requirements
 
-This tutorial will help you to integrate your own reference poanel. A working reference panel can be found [here](https://imputationserver.sph.umich.edu/static/downloads/releases/hapmap2-1.0.0.zip).)
+### Running Docker Cluster
+First, please setup a new local Michigan Imputation Server using Docker and install the HapMap reference panel. 
+Instructions can be found [here](http://imputationserver.readthedocs.io/en/latest/docker/).
+
 ### Data
 
 Your reference data has to be available in the VCF file format (one for each chromosome). Currently GRCh37 coordinates are required. 
@@ -16,14 +21,16 @@ Your reference data has to be available in the VCF file format (one for each chr
 ## Folder Structure
 
 We recommend the following folder structure:
-http://imputationserver.readthedocs.io/en/latest/docker/#install-1000g-phase-3-reference-panel
+
 ```ansi
 my-ref-panel
 ├── cloudgene.yaml
 ├── bcfs
 |   ├── chr1.bcf
+    ├── chr1.bcf.csi
 |   ├── ...
-|   └── chr22.bcf
+    ├── chr22.bcf
+|   └── chr22.bcf.csi
 ├── legends
 |   ├── chr1.legend.gz
 |   ├── ...
@@ -74,9 +81,13 @@ installation:
 
 ## Create bcf files
 BCF files are required for phasing with [eagle](https://data.broadinstitute.org/alkesgroup/Eagle/).
-
-- TODO: add command
-
+```sh
+for CHR in `seq 1 22`
+do
+    bcftools view chr${CHR}.vcf.gz -o chr${CHR}.bcf -Oz 
+    bcftool index chr${CHR}.bcf  
+done
+```
 ## Create m3vcf files
 
 m3vcf files are used to store large reference panels in a compact way. Learn more about the file format [here](https://genome.sph.umich.edu/wiki/M3VCF_Files).
