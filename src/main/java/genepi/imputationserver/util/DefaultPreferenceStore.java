@@ -76,7 +76,7 @@ public class DefaultPreferenceStore {
 		defaults.setProperty("server.url", "https://imputationserver.sph.umich.edu");
 		defaults.setProperty("minimac.tmp", "/tmp");
 		defaults.setProperty("minimac.command",
-				"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
+				"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --cpus 1 --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
 		defaults.setProperty("ref.fasta", "v37");
 		defaults.setProperty("hg38Tohg19", "chains/hg38ToHg19.over.chain.gz");
 		defaults.setProperty("hg19Tohg38", "chains/hg19ToHg38.over.chain.gz");
