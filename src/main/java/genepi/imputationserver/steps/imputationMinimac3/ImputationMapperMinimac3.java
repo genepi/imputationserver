@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps.imputationMinimac3;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -61,6 +62,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 	private Log log;
 
+	private String hdfsPath;
+
 	protected void setup(Context context) throws IOException, InterruptedException {
 
 		HdfsUtil.setDefaultConfiguration(context.getConfiguration());
@@ -75,6 +78,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		population = parameters.get(ImputationJobMinimac3.POPULATION);
 		phasing = parameters.get(ImputationJobMinimac3.PHASING);
 		build = parameters.get(ImputationJobMinimac3.BUILD);
+
 		String r2FilterString = parameters.get(ImputationJobMinimac3.R2_FILTER);
 		if (r2FilterString == null) {
 			minR2 = 0;
@@ -90,7 +94,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			phasingOnly = Boolean.parseBoolean(phasingOnlyString);
 		}
 
-		String hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
+		hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String hdfsPathMinimacMap = parameters.get(ImputationJobMinimac3.MAP_MINIMAC);
 		String hdfsPathShapeITMap = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_HDFS);
 		String hdfsPathHapiURMap = parameters.get(ImputationJobMinimac3.MAP_HAPIUR_HDFS);
@@ -202,6 +206,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 				return;
 			}
 
+			long startTotal = System.currentTimeMillis();
+
 			VcfChunk chunk = new VcfChunk(value.toString());
 
 			VcfChunkOutput outputChunk = new VcfChunkOutput(chunk, folder);
@@ -221,14 +227,16 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			pipeline.setPopulation(population);
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);
-			if (succesful) {
-				log.info("Phasing/Imputation for chunk " + chunk + " successful.");
-			} else {
+			ImputationStatistic statistics = pipeline.getStatistic();
+
+			if (!succesful) {
 				log.stop("Phasing/Imputation failed!", "");
 				return;
 			}
 
 			if (phasingOnly) {
+
+				long start = System.currentTimeMillis();
 
 				// store vcf file (remove header)
 				BgzipSplitOutputStream outData = new BgzipSplitOutputStream(
@@ -238,6 +246,9 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 						HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
 
 				FileMerger.splitPhasedIntoHeaderAndData(outputChunk.getPhasedVcfFilename(), outHeader, outData, chunk);
+				long end = System.currentTimeMillis();
+
+				statistics.setImportTime((end - start) / 1000);
 
 			} else {
 				if (minR2 > 0) {
@@ -262,9 +273,22 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 				FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData, minR2);
 				long end = System.currentTimeMillis();
 
+				statistics.setImportTime((end - start) / 1000);
+
 				System.out.println("Time filter and put: " + (end - start) + " ms");
 
 			}
+
+			InetAddress addr = java.net.InetAddress.getLocalHost();
+			String hostname = addr.getHostName();
+
+			long endTotal = System.currentTimeMillis();
+
+			long timeTotal = (endTotal - startTotal) / 1000;
+
+			log.info(context.getJobName() + "\t" + hdfsPath + "\t" + hostname + "\t" + chunk + "\t"
+					+ statistics.getPhasingTime() + "\t" + statistics.getImputationTime() + "\t"
+					+ statistics.getImportTime() + "\t" + timeTotal);
 
 		} catch (Exception e) {
 			if (!debugging) {

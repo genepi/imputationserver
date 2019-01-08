@@ -52,6 +52,8 @@ public class ImputationPipelineMinimac3 {
 	private String build = "hg19";
 	private boolean phasingOnly;
 
+	private ImputationStatistic statistic = new ImputationStatistic(); 
+	
 	public boolean execute(VcfChunk chunk, VcfChunkOutput output) throws InterruptedException, IOException {
 
 		System.out.println("Starting pipeline for chunk " + chunk + " [Phased: " + chunk.isPhased() + "]...");
@@ -75,6 +77,8 @@ public class ImputationPipelineMinimac3 {
 			boolean successful = imputeVCF(output);
 			time = (System.currentTimeMillis() - time) / 1000;
 
+			statistic.setImputationTime(time);
+			
 			if (successful) {
 				System.out.println("  Minimac3 successful. [" + time + " sec]");
 				return true;
@@ -98,6 +102,8 @@ public class ImputationPipelineMinimac3 {
 				boolean successful = phaseWithEagle(chunk, output, refEagleFilename, mapEagleFilename);
 				time = (System.currentTimeMillis() - time) / 1000;
 
+				statistic.setPhasingTime(time);
+				
 				if (successful) {
 					System.out.println("  Eagle successful [" + time + " sec]");
 				} else {
@@ -146,6 +152,8 @@ public class ImputationPipelineMinimac3 {
 					successful = phaseWithHapiUr(chunk, output, mapfilePath);
 					time = (System.currentTimeMillis() - time) / 1000;
 
+					statistic.setPhasingTime(time);
+					
 					if (successful) {
 						System.out.println("  HapiUR successful [" + time + " sec]");
 					} else {
@@ -169,6 +177,8 @@ public class ImputationPipelineMinimac3 {
 					successful = phaseWithShapeIt(chunk, output, mapfilePath);
 					time = (System.currentTimeMillis() - time) / 1000;
 
+					statistic.setPhasingTime(time);
+					
 					if (successful) {
 						System.out.println("  ShapeIt successful. [" + time + " sec]");
 					} else {
@@ -187,6 +197,8 @@ public class ImputationPipelineMinimac3 {
 				boolean successful = imputeVCF(output);
 				time = (System.currentTimeMillis() - time) / 1000;
 
+				statistic.setImputationTime(time);
+				
 				if (successful) {
 					System.out.println("  Minimac4 finished successfully.[" + time + " sec]");
 					return true;
@@ -559,6 +571,10 @@ public class ImputationPipelineMinimac3 {
 
 	public void setPhasingOnly(boolean phasingOnly) {
 		this.phasingOnly = phasingOnly;
+	}
+	
+	public ImputationStatistic getStatistic() {
+		return statistic;
 	}
 
 }
