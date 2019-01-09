@@ -26,6 +26,7 @@ import genepi.imputationserver.util.ExportObject;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.PasswordCreator;
 import genepi.io.FileUtil;
+import genepi.io.text.LineReader;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
@@ -161,10 +162,36 @@ public class CompressionEncryption extends WorkflowStep {
 				MergedVcfFile vcfFile = new MergedVcfFile(dosageOutput);
 
 				// add one header
-				// TODO: check number of samples per chunk....
 				String header = entry.getHeaderFiles().get(0);
 				vcfFile.addFile(HdfsUtil.open(header));
 
+				// simple header check				
+				String headerLine = null;				
+				for (String file : entry.getHeaderFiles()) {
+					context.println("Read header file " + file);
+					LineReader reader = new LineReader(HdfsUtil.open(file));
+					while(reader.next()) {
+						String line = reader.get();
+						if (line.startsWith("#CHROM")) {
+							if (headerLine != null) {
+								if (headerLine.equals(line)) {
+									context.println("  Header is the same as header of first file.");
+								}else {
+									context.println("  ERROR: Header is different as header of first file.");
+									context.println(headerLine);
+									context.println(line);
+									throw new Exception("Different sample order in chunks.");
+								}
+							}else {
+								headerLine = line;
+								context.println("  Keep this header as first header.");
+							}
+						}
+						
+					}
+					HdfsUtil.delete(file);
+				}
+				
 				// add data files
 				for (String file : entry.getDataFiles()) {
 					context.println("Read file " + file);
