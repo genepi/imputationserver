@@ -30,6 +30,8 @@ public class MinimalVariantContext {
 
 	private String id = null;
 
+	private String genotype = null;
+
 	public MinimalVariantContext(int samples) {
 		genotypes = new boolean[samples];
 	}
@@ -95,6 +97,7 @@ public class MinimalVariantContext {
 	public void setReferenceAllele(String referenceAllele) {
 		this.referenceAllele = referenceAllele;
 		this.id = null;
+		this.genotype = null;
 	}
 
 	public String getAlternateAllele() {
@@ -104,6 +107,7 @@ public class MinimalVariantContext {
 	public void setAlternateAllele(String alternateAllele) {
 		this.alternateAllele = alternateAllele;
 		this.id = null;
+		this.genotype = null;
 	}
 
 	public void setNSamples(int nSamples) {
@@ -156,6 +160,18 @@ public class MinimalVariantContext {
 
 	public boolean isCalled(int sample) {
 		return genotypes[sample];
+	}
+
+	public String getGenotype() {
+
+		if (genotype == null) {
+			StringBuilder builder = new StringBuilder(2);
+			builder.append(referenceAllele);
+			builder.append(alternateAllele);
+			genotype = builder.toString();
+		}
+		return genotype;
+
 	}
 
 	public String toString() {

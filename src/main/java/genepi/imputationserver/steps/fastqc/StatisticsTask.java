@@ -2,7 +2,6 @@ package genepi.imputationserver.steps.fastqc;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,12 +20,8 @@ import genepi.imputationserver.util.GenomicTools;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
-import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
-import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.variantcontext.GenotypeBuilder;
-import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
 import htsjdk.variant.variantcontext.writer.Options;
@@ -224,7 +219,8 @@ public class StatisticsTask implements ITask {
 			if (chunks.get(chunkNumber) == null) {
 				int chunkStart = chunkNumber * chunkSize + 1;
 				int chunkEnd = chunkStart + chunkSize - 1;
-				VcfChunk chunk = initChunk(contig, chunkStart, chunkEnd, myvcfFile.isPhased(), header);
+				VcfChunk chunk = initChunk(contig, chunkStart, chunkEnd, myvcfFile.isPhased(), snp.getNSamples(),
+						header);
 				chunks.put(chunkNumber, chunk);
 			}
 
@@ -237,7 +233,7 @@ public class StatisticsTask implements ITask {
 				if (chunks.get(nextChunkNumber) == null) {
 					int nextChunkEnd = nextChunkStart + chunkSize - 1;
 					VcfChunk nextChunk = initChunk(contig, nextChunkStart, nextChunkEnd, myvcfFile.isPhased(),
-							vcfReader.getFileHeader());
+							snp.getNSamples(), vcfReader.getFileHeader());
 					chunks.put(nextChunkNumber, nextChunk);
 				}
 			}
@@ -282,8 +278,8 @@ public class StatisticsTask implements ITask {
 
 	}
 
-	private VcfChunk initChunk(String chr, int chunkStart, int chunkEnd, boolean phased, List<String> header)
-			throws IOException {
+	private VcfChunk initChunk(String chr, int chunkStart, int chunkEnd, boolean phased, int samples,
+			List<String> header) throws IOException {
 		overallChunks++;
 
 		String chunkName = null;
@@ -298,6 +294,11 @@ public class StatisticsTask implements ITask {
 		chunk.setVcfFilename(chunkName);
 		chunk.setIndexFilename(chunkName + TabixUtils.STANDARD_INDEX_EXTENSION);
 		chunk.setPhased(phased);
+
+		chunk.snpsPerSampleCount = new int[samples];
+		for (int i = 0; i < samples; i++) {
+			chunk.snpsPerSampleCount[i] = 0;
+		}
 
 		BGzipLineWriter writer = new BGzipLineWriter(chunk.getVcfFilename());
 		for (String headerLine : header) {
@@ -364,26 +365,17 @@ public class StatisticsTask implements ITask {
 			chunk.lastPos = snp.getStart();
 		}
 
-		if (chunk.snpsPerSampleCount == null) {
-			chunk.snpsPerSampleCount = new int[snp.getNSamples()];
-			for (int i = 0; i < snp.getNSamples(); i++) {
-				chunk.snpsPerSampleCount[i] = 0;
-			}
-		}
-
 		// filter flag
 		if (snp.isFiltered()) {
 			if (insideChunk) {
 
+				filtered++;
 				if (snp.getFilters().contains("DUP")) {
 					duplicates++;
 					excludedSnpsWriter.write(snp + "\t" + "Filter Duplicate");
-					filtered++;
 				} else {
-
-					excludedSnpsWriter.write(snp + "\t" + "Filter Other");
 					filterFlag++;
-					filtered++;
+					excludedSnpsWriter.write(snp + "\t" + "Filter Other");
 				}
 			}
 			return;
@@ -441,8 +433,6 @@ public class StatisticsTask implements ITask {
 
 			char legendRef = refSnp.getAlleleA();
 			char legendAlt = refSnp.getAlleleB();
-			char studyRef = snp.getReferenceAllele().charAt(0);
-			char studyAlt = snp.getAlternateAllele().charAt(0);
 
 			/** simple match of ref/alt in study and legend file **/
 			if (GenomicTools.match(snp, refSnp)) {
@@ -482,7 +472,7 @@ public class StatisticsTask implements ITask {
 			}
 
 			/** simple strand swaps **/
-			else if (GenomicTools.strandFlip(studyRef, studyAlt, legendRef, legendAlt)) {
+			else if (GenomicTools.strandFlip(snp, refSnp)) {
 
 				if (insideChunk) {
 
@@ -495,7 +485,7 @@ public class StatisticsTask implements ITask {
 
 			}
 
-			else if (GenomicTools.strandFlipAndAlleleSwitch(studyRef, studyAlt, legendRef, legendAlt)) {
+			else if (GenomicTools.strandFlipAndAlleleSwitch(snp, refSnp)) {
 
 				if (insideChunk) {
 
@@ -511,7 +501,7 @@ public class StatisticsTask implements ITask {
 			}
 
 			// filter allele mismatches
-			else if (GenomicTools.alleleMismatch(studyRef, studyAlt, legendRef, legendAlt)) {
+			else if (GenomicTools.alleleMismatch(snp, refSnp)) {
 
 				if (insideChunk) {
 					alleleMismatch++;
@@ -536,20 +526,8 @@ public class StatisticsTask implements ITask {
 			if (insideChunk) {
 
 				// allele-frequency check
-				if (!population.equals("mixed") && refSnp.hasFrequencies()) {
-					SnpStats statistics;
-
-					if (GenomicTools.strandFlipAndAlleleSwitch(studyRef, studyAlt, legendRef, legendAlt)
-							|| GenomicTools.alleleSwitch(snp, refSnp)) {
-
-						// swap alleles
-						statistics = GenomicTools.calculateAlleleFreq(snp, refSnp, true, refSamples);
-					}
-
-					else {
-						statistics = GenomicTools.calculateAlleleFreq(snp, refSnp, false, refSamples);
-					}
-
+				if (population != null && !population.equals("mixed") && refSnp.hasFrequencies()) {
+					SnpStats statistics = GenomicTools.calculateAlleleFreq(snp, refSnp, refSamples);
 					mafWriter.write(snp + "\t" + statistics.toString());
 				}
 				overallSnps++;

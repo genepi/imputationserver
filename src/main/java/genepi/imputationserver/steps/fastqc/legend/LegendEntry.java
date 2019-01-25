@@ -15,6 +15,8 @@ public class LegendEntry {
 	private boolean frequencies = false;;
 
 	private String type;
+	
+	private String genotype = null;
 
 	public char getAlleleA() {
 		return alleleA;
@@ -22,6 +24,7 @@ public class LegendEntry {
 
 	public void setAlleleA(char alleleA) {
 		this.alleleA = alleleA;
+		this.genotype = null;
 	}
 
 	public char getAlleleB() {
@@ -30,6 +33,7 @@ public class LegendEntry {
 
 	public void setAlleleB(char alleleB) {
 		this.alleleB = alleleB;
+		this.genotype = null;
 	}
 
 	public float getFrequencyA() {
@@ -84,6 +88,16 @@ public class LegendEntry {
 
 	public boolean hasFrequencies() {
 		return frequencies;
+	}
+	
+	public String getGenotype() {
+		if (genotype == null) {
+			StringBuilder builder = new StringBuilder(2);
+			builder.append(alleleA);
+			builder.append(alleleB);
+			genotype = builder.toString();
+		}
+		return genotype;
 	}
 
 }
