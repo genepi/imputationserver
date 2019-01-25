@@ -44,10 +44,10 @@ public class StatisticsTask implements ITask {
 	public static final String X_PAR2 = "X.PAR2";
 	public static final String X_NON_PAR = "X.nonPAR";
 
-	private static double SAMPLE_CALL_RATE = 0.5;
-	private static int MIN_SNPS = 3;
-	private static double OVERLAP = 0.5;
-	private static double CHR_X_MIXED_GENOTYPES = 0.1;
+	public static final double SAMPLE_CALL_RATE = 0.5;
+	public static final int MIN_SNPS = 3;
+	public static final double OVERLAP = 0.5;
+	public static final double CHR_X_MIXED_GENOTYPES = 0.1;
 
 	private String chunkFileDir = "tmp";
 	private String chunksDir = "tmp";
@@ -62,7 +62,6 @@ public class StatisticsTask implements ITask {
 	private LineWriter excludedSnpsWriter;
 	private String legendFile;
 	private int refSamples;
-	private boolean liftOver;
 	private String build;
 
 	// overall stats
@@ -90,9 +89,9 @@ public class StatisticsTask implements ITask {
 	private boolean chrXPloidyError = false;
 
 	// chunk results
-	int removedChunksSnps;
-	int removedChunksOverlap;
-	int removedChunksCallRate;
+	private int removedChunksSnps;
+	private int removedChunksOverlap;
+	private int removedChunksCallRate;
 
 	@Override
 	public String getName() {
@@ -321,14 +320,11 @@ public class StatisticsTask implements ITask {
 		String ref = snp.getReferenceAllele();
 		int position = snp.getStart();
 
-		String _contig = chunk.getChromosome();
-
 		boolean insideChunk = position >= chunk.getStart() && position <= chunk.getEnd();
 
 		if (snp.getAlternateAllele().contains(",")) {
 			if (insideChunk) {
-				excludedSnpsWriter.write(_contig + ":" + snp.getStart() + ":" + ref + ":" + snp.getAlternateAllele()
-						+ "\t" + "Multiallelic Site");
+				excludedSnpsWriter.write(snp + "\t" + "Multiallelic Site");
 				System.out.println(snp.getAlternateAllele());
 				multiallelicSites++;
 				filtered++;
@@ -338,12 +334,10 @@ public class StatisticsTask implements ITask {
 
 		String alt = snp.getAlternateAllele() + "";
 
-		String uniqueName = _contig + ":" + snp.getStart() + ":" + ref + ":" + alt;
-
 		// filter invalid alleles
 		if (!GenomicTools.isValid(ref) || !GenomicTools.isValid(alt)) {
 			if (insideChunk) {
-				excludedSnpsWriter.write(uniqueName + "\t" + "Invalid Alleles");
+				excludedSnpsWriter.write(snp + "\t" + "Invalid Alleles");
 				invalidAlleles++;
 				filtered++;
 			}
@@ -356,7 +350,7 @@ public class StatisticsTask implements ITask {
 
 			if (insideChunk) {
 				duplicates++;
-				excludedSnpsWriter.write(uniqueName + "\t" + "Duplicate");
+				excludedSnpsWriter.write(snp + "\t" + "Duplicate");
 				filtered++;
 			}
 
@@ -383,11 +377,11 @@ public class StatisticsTask implements ITask {
 
 				if (snp.getFilters().contains("DUP")) {
 					duplicates++;
-					excludedSnpsWriter.write(uniqueName + "\t" + "Filter Duplicate");
+					excludedSnpsWriter.write(snp + "\t" + "Filter Duplicate");
 					filtered++;
 				} else {
 
-					excludedSnpsWriter.write(uniqueName + "\t" + "Filter Other");
+					excludedSnpsWriter.write(snp + "\t" + "Filter Other");
 					filterFlag++;
 					filtered++;
 				}
@@ -409,7 +403,7 @@ public class StatisticsTask implements ITask {
 		// filter indels
 		if (snp.isIndel() || snp.isComplexIndel()) {
 			if (insideChunk) {
-				excludedSnpsWriter.write(uniqueName + "\t" + "InDel");
+				excludedSnpsWriter.write(snp + "\t" + "InDel");
 				noSnps++;
 				filtered++;
 			}
@@ -419,7 +413,7 @@ public class StatisticsTask implements ITask {
 		// monomorphic only excludes 0/0;
 		if (samples > 1 && snp.isMonomorphicInSamples()) {
 			if (insideChunk) {
-				excludedSnpsWriter.write(uniqueName + "\t" + "Monomorphic");
+				excludedSnpsWriter.write(snp + "\t" + "Monomorphic");
 				monomorphic++;
 				filtered++;
 			}
@@ -435,7 +429,7 @@ public class StatisticsTask implements ITask {
 				notFoundInLegend++;
 				chunk.notFoundInLegendChunk++;
 				vcfWriter.write(snp.getRawLine());
-				typedOnlyWriter.write(_contig + ":" + snp.getStart());
+				typedOnlyWriter.write(snp.toString());
 			}
 
 		} else {
@@ -479,10 +473,9 @@ public class StatisticsTask implements ITask {
 
 					alleleSwitch++;
 					/*
-					 * logWriter.write("Allele switch" + snp.getID() + "\t" +
-					 * chr + ":"+ snp.getStart() + "\t" + "ref: " + legendRef +
-					 * "/" + legendAlt + "; data: " + studyRef + "/" + studyAlt
-					 * + ")");
+					 * logWriter.write("Allele switch" + snp.getID() + "\t" + chr + ":"+
+					 * snp.getStart() + "\t" + "ref: " + legendRef + "/" + legendAlt + "; data: " +
+					 * studyRef + "/" + studyAlt + ")");
 					 */
 				}
 
@@ -495,8 +488,7 @@ public class StatisticsTask implements ITask {
 
 					strandFlipSimple++;
 					filtered++;
-					excludedSnpsWriter
-							.write(uniqueName + "\t" + "Strand flip" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
+					excludedSnpsWriter.write(snp + "\t" + "Strand flip" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
 
 				}
 				return;
@@ -509,8 +501,8 @@ public class StatisticsTask implements ITask {
 
 					filtered++;
 					strandFlipAndAlleleSwitch++;
-					excludedSnpsWriter.write(uniqueName + "\t" + "Strand flip and Allele switch" + "\t" + "Ref:"
-							+ legendRef + "/" + legendAlt);
+					excludedSnpsWriter.write(
+							snp + "\t" + "Strand flip and Allele switch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
 
 				}
 
@@ -525,7 +517,7 @@ public class StatisticsTask implements ITask {
 					alleleMismatch++;
 					filtered++;
 					excludedSnpsWriter
-							.write(uniqueName + "\t" + "Allele mismatch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
+							.write(snp + "\t" + "Allele mismatch" + "\t" + "Ref:" + legendRef + "/" + legendAlt);
 				}
 				return;
 			}
@@ -535,7 +527,7 @@ public class StatisticsTask implements ITask {
 				if (insideChunk) {
 					lowCallRate++;
 					filtered++;
-					excludedSnpsWriter.write(uniqueName + "\t" + "Low call rate" + "\t" + "Value: "
+					excludedSnpsWriter.write(snp + "\t" + "Low call rate" + "\t" + "Value: "
 							+ (1.0 - snp.getNoCallCount() / (double) snp.getNSamples()));
 				}
 				return;
@@ -558,7 +550,7 @@ public class StatisticsTask implements ITask {
 						statistics = GenomicTools.calculateAlleleFreq(snp, refSnp, false, refSamples);
 					}
 
-					mafWriter.write(uniqueName + "\t" + statistics.toString());
+					mafWriter.write(snp + "\t" + statistics.toString());
 				}
 				overallSnps++;
 				chunk.overallSnpsChunk++;
@@ -867,10 +859,6 @@ public class StatisticsTask implements ITask {
 
 	public void setRefSamples(int refSamples) {
 		this.refSamples = refSamples;
-	}
-
-	public void setLiftOver(boolean liftOver) {
-		this.liftOver = liftOver;
 	}
 
 	public void setVcfFilenames(String[] vcfFilenames) {

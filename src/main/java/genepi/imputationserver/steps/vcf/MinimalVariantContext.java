@@ -23,21 +23,24 @@ public class MinimalVariantContext {
 	private int nSamples;
 
 	private String rawLine;
-	
+
 	private String filters;
-	
+
 	private boolean[] genotypes;
 
-	public MinimalVariantContext(int samples){
+	private String id = null;
+
+	public MinimalVariantContext(int samples) {
 		genotypes = new boolean[samples];
 	}
-	
+
 	public int getHetCount() {
 		return hetCount;
 	}
 
 	public void setHetCount(int hetCount) {
 		this.hetCount = hetCount;
+		this.id = null;
 	}
 
 	public int getHomRefCount() {
@@ -46,6 +49,7 @@ public class MinimalVariantContext {
 
 	public void setHomRefCount(int homRefCount) {
 		this.homRefCount = homRefCount;
+		this.id = null;
 	}
 
 	public int getHomVarCount() {
@@ -54,6 +58,7 @@ public class MinimalVariantContext {
 
 	public void setHomVarCount(int homVarCount) {
 		this.homVarCount = homVarCount;
+		this.id = null;
 	}
 
 	public int getNoCallCount() {
@@ -62,6 +67,7 @@ public class MinimalVariantContext {
 
 	public void setNoCallCount(int noCallCount) {
 		this.noCallCount = noCallCount;
+		this.id = null;
 	}
 
 	public int getStart() {
@@ -70,6 +76,7 @@ public class MinimalVariantContext {
 
 	public void setStart(int start) {
 		this.start = start;
+		this.id = null;
 	}
 
 	public String getContig() {
@@ -78,6 +85,7 @@ public class MinimalVariantContext {
 
 	public void setContig(String contig) {
 		this.contig = contig;
+		this.id = null;
 	}
 
 	public String getReferenceAllele() {
@@ -86,6 +94,7 @@ public class MinimalVariantContext {
 
 	public void setReferenceAllele(String referenceAllele) {
 		this.referenceAllele = referenceAllele;
+		this.id = null;
 	}
 
 	public String getAlternateAllele() {
@@ -94,10 +103,12 @@ public class MinimalVariantContext {
 
 	public void setAlternateAllele(String alternateAllele) {
 		this.alternateAllele = alternateAllele;
+		this.id = null;
 	}
 
 	public void setNSamples(int nSamples) {
 		this.nSamples = nSamples;
+		this.id = null;
 	}
 
 	public int getNSamples() {
@@ -106,6 +117,7 @@ public class MinimalVariantContext {
 
 	public void setRawLine(String rawLine) {
 		this.rawLine = rawLine;
+		this.id = null;
 	}
 
 	public String getRawLine() {
@@ -119,9 +131,10 @@ public class MinimalVariantContext {
 	public String getFilters() {
 		return filters;
 	}
-	
+
 	public void setFilters(String filters) {
 		this.filters = filters;
+		this.id = null;
 	}
 
 	public boolean isIndel() {
@@ -136,11 +149,28 @@ public class MinimalVariantContext {
 		return (homRefCount + noCallCount == nSamples);
 	}
 
-	public void setCalled(int sample, boolean called){
+	public void setCalled(int sample, boolean called) {
 		genotypes[sample] = called;
+		this.id = null;
 	}
-	
+
 	public boolean isCalled(int sample) {
 		return genotypes[sample];
 	}
+
+	public String toString() {
+		if (id == null) {
+			StringBuilder builder = new StringBuilder(7);
+			builder.append(getContig());
+			builder.append(":");
+			builder.append(getStart());
+			builder.append(":");
+			builder.append(getReferenceAllele());
+			builder.append(":");
+			builder.append(getAlternateAllele());
+			id = builder.toString();
+		}
+		return id;
+	}
+
 }
