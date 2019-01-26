@@ -28,23 +28,11 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 	public String folder;
 
-	private String population;
-
-	private String phasing;
-
 	private String output;
 
 	private String refFilename = "";
 
 	private String mapMinimacFilename;
-
-	private String mapShapeITPattern;
-
-	private String mapHapiURPattern;
-
-	private String mapShapeITFilename = "";
-
-	private String mapHapiURFilename = "";
 
 	private String mapEagleFilename = "";
 
@@ -72,11 +60,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		// get parameters
 		ParameterStore parameters = new ParameterStore(context);
-		mapShapeITPattern = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_PATTERN);
-		mapHapiURPattern = parameters.get(ImputationJobMinimac3.MAP_HAPIUR_PATTERN);
+
 		output = parameters.get(ImputationJobMinimac3.OUTPUT);
-		population = parameters.get(ImputationJobMinimac3.POPULATION);
-		phasing = parameters.get(ImputationJobMinimac3.PHASING);
 		build = parameters.get(ImputationJobMinimac3.BUILD);
 
 		String r2FilterString = parameters.get(ImputationJobMinimac3.R2_FILTER);
@@ -96,8 +81,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 		hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
 		String hdfsPathMinimacMap = parameters.get(ImputationJobMinimac3.MAP_MINIMAC);
-		String hdfsPathShapeITMap = parameters.get(ImputationJobMinimac3.MAP_SHAPEIT_HDFS);
-		String hdfsPathHapiURMap = parameters.get(ImputationJobMinimac3.MAP_HAPIUR_HDFS);
 		String hdfsPathMapEagle = parameters.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
 		String hdfsRefEagle = parameters.get(ImputationJobMinimac3.REF_PANEL_EAGLE_HDFS);
 
@@ -116,14 +99,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		} else {
 			System.out.println("No minimac map file set.");
 		}
-		if (hdfsPathShapeITMap != null) {
-			String mapShapeIT = FileUtil.getFilename(hdfsPathShapeITMap);
-			mapShapeITFilename = cache.getArchive(mapShapeIT);
-		}
-		if (hdfsPathHapiURMap != null) {
-			String mapHapiUR = FileUtil.getFilename(hdfsPathHapiURMap);
-			mapHapiURFilename = cache.getArchive(mapHapiUR);
-		}
+
 		if (hdfsPathMapEagle != null) {
 			String mapEagle = FileUtil.getFilename(hdfsPathMapEagle);
 			mapEagleFilename = cache.getFile(mapEagle);
@@ -134,10 +110,6 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		}
 
 		String minimacCommand = cache.getFile("Minimac4");
-		String hapiUrCommand = cache.getFile("hapi-ur");
-		String hapiUrPreprocessCommand = cache.getFile("insert-map.pl");
-		String vcfCookerCommand = cache.getFile("vcfCooker");
-		String shapeItCommand = cache.getFile("shapeit");
 		String eagleCommand = cache.getFile("eagle");
 		String tabixCommand = cache.getFile("tabix");
 
@@ -177,12 +149,8 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		// config pipeline
 		pipeline = new ImputationPipelineMinimac3();
 		pipeline.setMinimacCommand(minimacCommand, minimacParams);
-		pipeline.setHapiUrCommand(hapiUrCommand);
-		pipeline.setVcfCookerCommand(vcfCookerCommand);
-		pipeline.setShapeItCommand(shapeItCommand);
 		pipeline.setEagleCommand(eagleCommand);
 		pipeline.setTabixCommand(tabixCommand);
-		pipeline.setHapiUrPreprocessCommand(hapiUrPreprocessCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 		pipeline.setBuild(build);
 		pipeline.setRounds(rounds);
@@ -216,15 +184,9 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 
 			pipeline.setRefFilename(refFilename);
 			pipeline.setMapMinimac(mapMinimacFilename);
-			pipeline.setMapShapeITPattern(mapShapeITPattern);
-			pipeline.setMapShapeITFilename(mapShapeITFilename);
-			pipeline.setMapHapiURFilename(mapHapiURFilename);
-			pipeline.setMapHapiURPattern(mapHapiURPattern);
 			pipeline.setMapEagleFilename(mapEagleFilename);
 			pipeline.setRefEagleFilename(refEagleFilename);
-			pipeline.setPhasing(phasing);
 			pipeline.setPhasingOnly(phasingOnly);
-			pipeline.setPopulation(population);
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);
 			ImputationStatistic statistics = pipeline.getStatistic();

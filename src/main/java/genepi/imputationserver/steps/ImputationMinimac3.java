@@ -56,11 +56,9 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		// inputs
 		String input = context.get("chunkFileDir");
 		String reference = context.get("refpanel");
-		String phasing = context.get("phasing");
-		String population = context.get("population");
 		String binariesHDFS = context.getConfig("binaries");
 		String mode = context.get("mode");
-		
+
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
 			r2Filter = "0";
@@ -91,17 +89,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 		context.println("  Legend: " + panel.getLegend());
 		context.println("  Version: " + panel.getVersion());
 
-		if (phasing.equals("hapiur") && !panel.checkHapiUR()) {
-			context.error("Map HapiUR  '" + panel.getMapHapiUR() + "' not found.");
-			return false;
-		}
-
-		if (phasing.equals("shapeit") && !panel.checkShapeIT()) {
-			context.error("Map ShapeIT  '" + panel.getMapShapeIT() + "' not found.");
-			return false;
-		}
-
-		if (phasing.equals("eagle") && !panel.checkEagleMap()) {
+		if (!panel.checkEagleMap()) {
 			context.error("Eagle map file not found.");
 			return false;
 		}
@@ -164,29 +152,17 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				if (result.needsPhasing) {
 					context.println("Input data is unphased.");
-					if (phasing.equals("shapeit")) {
-						// shapeit
-						context.println("  Setting up shapeit map files...");
-						job.setMapShapeITHdfs(panel.getMapShapeIT());
-						job.setMapShapeITPattern(panel.getMapPatternShapeIT());
-					} else if (phasing.equals("hapiur")) {
-						// hapiUR
-						context.println("  Setting up hapiur map files...");
-						job.setMapHapiURHdfs(panel.getMapHapiUR());
-						job.setMapHapiURPattern(panel.getMapPatternHapiUR());
-					} else if (phasing.equals("eagle")) {
-						// eagle
-						context.println("  Setting up eagle reference and map files...");
-						job.setMapEagleHdfs(panel.getMapEagle());
-						String refEagleFilenameChromosome = resolvePattern(panel.getRefEagle(), chr);
-						job.setRefEagleHdfs(refEagleFilenameChromosome);
-					}
-					job.setPhasing(phasing);
-					
-					if(mode != null && mode.equals("phasing")) {
-					job.setPhasingOnly("true");
+
+					// eagle
+					context.println("  Setting up eagle reference and map files...");
+					job.setMapEagleHdfs(panel.getMapEagle());
+					String refEagleFilenameChromosome = resolvePattern(panel.getRefEagle(), chr);
+					job.setRefEagleHdfs(refEagleFilenameChromosome);
+
+					if (mode != null && mode.equals("phasing")) {
+						job.setPhasingOnly("true");
 					} else {
-						job.setPhasingOnly("false");	
+						job.setPhasingOnly("false");
 					}
 
 				} else {
@@ -197,7 +173,6 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
-				job.setPopulation(population);
 				job.setJarByClass(ImputationJobMinimac3.class);
 
 				executeJarInBackground(chr, context, job);

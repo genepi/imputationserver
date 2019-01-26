@@ -23,7 +23,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "missing-reference-panel", "shapeit");
+		WorkflowTestContext context = buildContext(inputFolder, "missing-reference-panel");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -39,31 +39,6 @@ public class InputValidationTest extends TestCase {
 
 	}
 
-	public void testWithInnsufficientSamples() throws IOException {
-
-		String configFolder = "test-data/configs/hapmap-chr1";
-		String inputFolder = "test-data/data/single";
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeit");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is failed
-		assertEquals(false, result);
-
-		// check analyze task
-		assertTrue(context.hasInMemory("[RUN] Analyze file minimac_test.50.vcf.gz"));
-
-		// check error message
-		assertTrue(context.hasInMemory("[ERROR] At least 50 samples must be included"));
-
-	}
-	
 	
 	public void testHg19DataWithBuild38() throws IOException {
 
@@ -71,7 +46,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/three";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("build", "hg38");
 		
 		// create step instance
@@ -98,7 +73,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/chr20-unphased-hg38";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("build", "hg19");
 		
 		// create step instance
@@ -129,7 +104,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/wrong_files";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -152,7 +127,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/wrong_vcf";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -175,7 +150,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/unorderd";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -198,7 +173,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/wrong_chrs";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -223,7 +198,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -254,7 +229,7 @@ public class InputValidationTest extends TestCase {
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/three";
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -282,130 +257,8 @@ public class InputValidationTest extends TestCase {
 
 	}
 
-	public void testUnphasedVcfWithShapeIt() throws IOException {
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "test-data/data/chr20-unphased";
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeIt");
 
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
 
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is ok
-		assertEquals(true, result);
-
-		// check analyze task and results
-
-		assertTrue(context.hasInMemory("Datatype: unphased"));
-	}
-	
-	public void testPhasedVcfWithShapeIt() throws IOException {
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "test-data/data/chr20-phased";
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeIt");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is ok
-		assertEquals(true, result);
-
-		// check analyze task and results
-
-		assertTrue(context.hasInMemory("Datatype: phased"));
-
-	}
-	
-	
-	public void testPhasedVcfWithEmptyPhasing() throws IOException {
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "test-data/data/chr20-phased";
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is ok
-		assertEquals(true, result);
-
-		// check analyze task and results
-
-		assertTrue(context.hasInMemory("Datatype: phased"));
-
-	}
-	
-	public void testPhasedVcfWithNoAlgorithmSelected() throws IOException {
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "test-data/data/chr20-phased";
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "no_phasing");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is ok
-		assertEquals(true, result);
-
-		// check analyze task and results
-
-		assertTrue(context.hasInMemory("Datatype: phased"));
-
-	}
-	
-	public void testUnphasedVcfWithEmptyPhasing() throws IOException {
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "test-data/data/chr20-unphased";
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is failed
-		assertEquals(false, result);
-
-		// check analyze task and results
-
-		assertTrue(context.hasInMemory("Datatype: unphased"));
-	}
-	
-	public void testUnphasedVcfWithNoAlgorithmSelected() throws IOException {
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "test-data/data/chr20-unphased";
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "no_phasing");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is failed
-		assertEquals(false, result);
-
-		// check analyze task and results
-
-		assertTrue(context.hasInMemory("Datatype: unphased"));
-	}
-	
 	public void testTabixIndexCreationChr20() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -413,7 +266,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/chr20-phased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -451,7 +304,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -510,13 +363,12 @@ public class InputValidationTest extends TestCase {
 		return step.run(context);
 	}
 
-	protected WorkflowTestContext buildContext(String folder, String referencePanel, String phasing) {
+	protected WorkflowTestContext buildContext(String folder, String referencePanel) {
 		WorkflowTestContext context = new WorkflowTestContext();
 		context.setVerbose(VERBOSE);
 		context.setInput("files", folder);
 		context.setInput("refpanel", referencePanel);
 		context.setInput("population", "eur");
-		context.setInput("phasing", phasing);
 		return context;
 
 	}

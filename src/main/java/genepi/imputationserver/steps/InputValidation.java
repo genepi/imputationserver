@@ -14,7 +14,6 @@ import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.hadoop.importer.IImporter;
 import genepi.hadoop.importer.ImporterFactory;
-import genepi.imputationserver.steps.converter.VCFBuilder;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
@@ -64,7 +63,6 @@ public class InputValidation extends WorkflowStep {
 		String files = context.get("files");
 		String reference = context.get("refpanel");
 		String population = context.get("population");
-		String phasing = context.get("phasing");
 		String build = context.get("build");
 		String r2Filter = context.get("r2Filter");
 		String mode = context.get("mode");
@@ -98,37 +96,6 @@ public class InputValidation extends WorkflowStep {
 		int noSamples = 0;
 
 		boolean phased = true;
-
-		try {
-			String[] genome = FileUtil.getFiles(files, "*.txt$|*.zip$");
-
-			if (genome.length == 1) {
-				context.updateTask("Check for valid 23andMe data", WorkflowContext.RUNNING);
-				VCFBuilder builder = new VCFBuilder(genome[0]);
-
-				String newFiles = FileUtil.path(context.getLocalTemp(), "vcfs");
-				String tempFiles = FileUtil.path(context.getLocalTemp(), "23andMe-temp");
-
-				builder.setReference(store.getString("ref.fasta"));
-				builder.setOutDirectory(newFiles);
-				builder.setExcludeList("MT,X,Y");
-				builder.setTempDirectory(tempFiles);
-				builder.build();
-
-				// update files with new location
-				files = newFiles;
-				context.setInput("inputs", newFiles);
-
-				context.incCounter("23andme-input", 1);
-			} else if (genome.length > 1) {
-				context.endTask("Please upload your 23andMe data as a single txt or zip file", WorkflowContext.ERROR);
-				return false;
-			}
-		} catch (Exception e1) {
-			context.endTask("Converter task failed! \n" + e1.getMessage(), WorkflowContext.ERROR);
-			e1.printStackTrace();
-			return false;
-		}
 
 		String[] vcfFiles = FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$");
 
@@ -167,15 +134,6 @@ public class InputValidation extends WorkflowStep {
 
 				if (VcfFileUtil.isValidChromosome(vcfFile.getChromosome())) {
 
-					if (VcfFileUtil.isChrX(vcfFile.getChromosome())) {
-
-						if (!phasing.equals("eagle") && !vcfFile.isPhased()) {
-							context.endTask("Please select eagle2 for chromosome X. ", WorkflowContext.ERROR);
-							return false;
-						}
-
-					}
-
 					validVcfFiles.add(vcfFile);
 					chromosomes.add(vcfFile.getChromosome());
 
@@ -204,13 +162,6 @@ public class InputValidation extends WorkflowStep {
 						context.endTask(
 								"File should be phased, but also includes unphased and/or missing genotypes! Please double-check!",
 								WorkflowContext.ERROR);
-						return false;
-					}
-
-					if (!phased && noSamples < 50 && !phasing.equals("eagle")) {
-						context.endTask("At least 50 samples must be included for pre-phasing using " + phasing
-								+ ". Please select eagle.", WorkflowContext.ERROR);
-
 						return false;
 					}
 
@@ -244,7 +195,7 @@ public class InputValidation extends WorkflowStep {
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
 							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
-							+ "Population: " + population + "\n" + "Phasing: " + phasing + "\n" + "Mode: " + mode;
+							+ "Population: " + population + "\n" + "Phasing: eagle" + "\n" + "Mode: " + mode;
 
 					if (r2Filter != null && !r2Filter.isEmpty() && !r2Filter.equals("0")) {
 						infos += "\nRsq filter: " + r2Filter;
@@ -269,18 +220,13 @@ public class InputValidation extends WorkflowStep {
 
 			context.endTask(validVcfFiles.size() + " valid VCF file(s) found.\n\n" + infos, WorkflowContext.OK);
 
-			if (!phased && (phasing == null || phasing.isEmpty() || phasing.equals("no_phasing"))) {
-				context.error("Your input data is unphased. Please select an algorithm for phasing.");
-				return false;
-			}
-
 			// init counters
 			context.incCounter("samples", noSamples);
 			context.incCounter("genotypes", noSamples * noSnps);
 			context.incCounter("chromosomes", noSamples * chromosomes.size());
 			context.incCounter("runs", 1);
 			context.incCounter("refpanel_" + reference, 1);
-			context.incCounter("phasing_" + phasing, 1);
+			context.incCounter("phasing_" + "eagle", 1);
 
 			return true;
 
@@ -300,8 +246,6 @@ public class InputValidation extends WorkflowStep {
 		setupTabix(folder);
 		String reference = context.get("refpanel");
 		String population = context.get("population");
-		String phasing = context.get("phasing");
-		String mode = context.get("mode");
 
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
@@ -315,27 +259,6 @@ public class InputValidation extends WorkflowStep {
 			}
 			context.error(report.toString());
 			return false;
-		}
-
-		// check if mode is imputation or phasing-only
-		if (mode == null || mode.equals("imputation") || mode.equals("phasing")) {
-
-			// check if reference panel supports selected phasing algorithm
-			if (phasing.equals("hapiur") && panel.getMapHapiUR() == null) {
-				context.error("Reference panel " + reference + " doesn't support phasing with HapiUR.");
-				return false;
-			}
-
-			if (phasing.equals("shapeit") && panel.getMapShapeIT() == null) {
-				context.error("Reference panel " + reference + " doesn't support phasing with ShapeIt.");
-				return false;
-			}
-
-			if (phasing.equals("eagle") && panel.getMapEagle() == null) {
-				context.error("Reference panel " + reference + " doesn't support phasing with Eagle.");
-				return false;
-			}
-
 		}
 
 		// check populations

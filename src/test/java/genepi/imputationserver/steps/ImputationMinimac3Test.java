@@ -53,7 +53,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-phased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -101,7 +101,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-phased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -131,7 +131,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-phased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "no_phasing");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -179,7 +179,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "https://imputationserver.sph.umich.edu/invalid-url/downloads/hapmap300.chr1.recode.vcf.gz";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeit");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -201,7 +201,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "https://imputationserver.sph.umich.edu/static/images/impute.png";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeit");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -223,7 +223,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "https://imputationserver.sph.umich.edu/static/downloads/hapmap300.chr1.recode.vcf.gz";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeit");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -279,7 +279,7 @@ public class ImputationMinimac3Test {
 				+ TestSFTPServer.USERNAME + ";" + TestSFTPServer.PASSWORD;
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -338,7 +338,7 @@ public class ImputationMinimac3Test {
 				+ "WRONG_USERNAME" + ";" + TestSFTPServer.PASSWORD;
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -360,7 +360,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -411,7 +411,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		
 		context.setInput("mode", "phasing");
 
@@ -461,7 +461,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("r2Filter", "0.5");
 
 		// run qc to create chunkfile
@@ -560,7 +560,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -590,7 +590,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -645,7 +645,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -679,139 +679,13 @@ public class ImputationMinimac3Test {
 	}
 
 	@Test
-	public void testPipelineWithEagleAnd23AndMe() throws IOException, ZipException {
-
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "test-data/data/23andMe";
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is failed
-		assertEquals(true, result);
-
-		FileUtil.deleteDirectory("test-data/tmp");
-
-	}
-
-	@Test
-	public void testPipelineWithShapeIt() throws IOException, ZipException {
-
-		if (!new File("files/bin/shapeit").exists()) {
-			return;
-		}
-
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "test-data/data/chr20-unphased";
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "shapeit");
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
-
-		assertTrue(result);
-		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
-
-		assertEquals("20", file.getChromosome());
-		assertEquals(51, file.getNoSamples());
-		assertEquals(false, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
-
-		FileUtil.deleteDirectory("test-data/tmp");
-
-	}
-
-	@Test
-	public void testPipelineWithHapiUr() throws IOException, ZipException {
-
-		if (!new File("files/bin/hapi-ur").exists()) {
-			return;
-		}
-
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "test-data/data/chr20-unphased";
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "hapiur");
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
-
-		assertTrue(result);
-		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
-
-		assertEquals("20", file.getChromosome());
-		assertEquals(51, file.getNoSamples());
-		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
-
-		FileUtil.deleteDirectory("test-data/tmp");
-
-	}
-
-	@Test
 	public void testPipelineWithPhasedHg19ToHg38() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chr20-hg38";
 		String inputFolder = "test-data/data/chr20-phased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -859,7 +733,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -908,7 +782,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-unphased-hg38";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("build", "hg38");
 
 		// run qc to create chunkfile
@@ -958,7 +832,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-phased-hg38";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("build", "hg38");
 
 		// run qc to create chunkfile
@@ -1007,7 +881,7 @@ public class ImputationMinimac3Test {
 		String inputFolder = "test-data/data/chr20-unphased-hg38";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("build", "hg38");
 
 		// run qc to create chunkfile
@@ -1055,7 +929,7 @@ public class ImputationMinimac3Test {
 		return step.run(context);
 	}
 
-	protected WorkflowTestContext buildContext(String folder, String refpanel, String phasing) {
+	protected WorkflowTestContext buildContext(String folder, String refpanel) {
 		WorkflowTestContext context = new WorkflowTestContext();
 		File file = new File("test-data/tmp");
 		if (file.exists()) {
@@ -1069,7 +943,6 @@ public class ImputationMinimac3Test {
 		context.setInput("files", folder);
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
-		context.setInput("phasing", phasing);
 		context.setInput("mode", "imputation");
 		context.setConfig("binaries", BINARIES_HDFS);
 		
