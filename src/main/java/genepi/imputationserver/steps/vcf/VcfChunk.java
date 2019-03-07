@@ -8,8 +8,6 @@ public class VcfChunk {
 
 	private String vcfFilename;
 
-	private String indexFilename;
-
 	private boolean phased = true;
 	
 	private int start;
@@ -34,11 +32,10 @@ public class VcfChunk {
 		end = Integer.parseInt(tiles[2]);
 		phased = tiles[3].equals("VCF-PHASED");
 		vcfFilename = tiles[4];
-		indexFilename = tiles[5];
 
-		if (tiles.length > 7) {
-			snps = Integer.parseInt(tiles[6]);
-			inReference = Integer.parseInt(tiles[7]);
+		if (tiles.length > 6) {
+			snps = Integer.parseInt(tiles[5]);
+			inReference = Integer.parseInt(tiles[6]);
 		}
 	}
 
@@ -56,14 +53,6 @@ public class VcfChunk {
 
 	public void setVcfFilename(String vcfFilename) {
 		this.vcfFilename = vcfFilename;
-	}
-
-	public String getIndexFilename() {
-		return indexFilename;
-	}
-
-	public void setIndexFilename(String indexFilename) {
-		this.indexFilename = indexFilename;
 	}
 
 	public boolean isPhased() {
@@ -114,7 +103,7 @@ public class VcfChunk {
 	public String serialize() {
 		return chromosome + "\t" + start + "\t" + end + "\t"
 				+ (phased ? "VCF-PHASED" : "VCF-UNPHASED") + "\t" + vcfFilename
-				+ "\t" + indexFilename + "\t" + snps + "\t" + inReference;
+				+ "\t" + snps + "\t" + inReference;
 	}
 
 	public String getId() {

@@ -265,7 +265,6 @@ public class StatisticsTask implements ITask {
 				chunkSummary(openChunk, metafileWriter, excludedChunkWriter);
 			} else {
 				new File(openChunk.getVcfFilename()).delete();
-				new File(openChunk.getIndexFilename()).delete();
 				overallChunks--;
 			}
 		}
@@ -292,7 +291,6 @@ public class StatisticsTask implements ITask {
 		chunk.setStart(chunkStart);
 		chunk.setEnd(chunkEnd);
 		chunk.setVcfFilename(chunkName);
-		chunk.setIndexFilename(chunkName + TabixUtils.STANDARD_INDEX_EXTENSION);
 		chunk.setPhased(phased);
 
 		chunk.snpsPerSampleCount = new int[samples];
@@ -582,7 +580,7 @@ public class StatisticsTask implements ITask {
 				&& chunk.validSnpsChunk >= MIN_SNPS) {
 
 			// create index
-			VcfFileUtil.createIndex(chunk.getVcfFilename());
+			//VcfFileUtil.createIndex(chunk.getVcfFilename());
 
 			// update chunk
 			chunk.setSnps(chunk.overallSnpsChunk);

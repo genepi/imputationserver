@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.commons.io.FileUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 
 import genepi.hadoop.command.Command;
@@ -36,7 +37,7 @@ public class ImputationPipeline {
 
 	private String build = "hg19";
 	private boolean phasingOnly;
-	
+
 	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.1.11";
 	public static final String IMPUTATION_VERSION = "minimac-1.0.1-7228771";
 	public static final String PHASING_VERSION = "eagle-2.4";
@@ -52,29 +53,29 @@ public class ImputationPipeline {
 			return false;
 		}
 
+		if (!new File(output.getVcfFilename()).exists()) {
+			System.out.println("vcf.gz file not found: " + output.getVcfFilename());
+			return false;
+		}
+
 		// replace X.nonpar / X.par with X needed by eagle and minimac
 		if (chunk.getChromosome().startsWith("X.")) {
 			output.setChromosome("X");
 		}
 
-		// impute only for phased chromosomes
+		// create tabix index
+		Command tabix = new Command(tabixCommand);
+		tabix.setSilent(false);
+		tabix.setParams(output.getVcfFilename());
+		System.out.println("Command: " + tabix.getExecutedCommand());
+		if (tabix.execute() != 0) {
+			System.out.println("Error during index creation: " + tabix.getStdOut());
+			return false;
+		}
+
 		if (chunk.isPhased()) {
 
-			FileUtil.copy(output.getVcfFilename(), output.getPhasedVcfFilename());
-
-			long time = System.currentTimeMillis();
-			boolean successful = imputeVCF(output);
-			time = (System.currentTimeMillis() - time) / 1000;
-
-			statistic.setImputationTime(time);
-
-			if (successful) {
-				System.out.println("  Minimac3 successful. [" + time + " sec]");
-				return true;
-			} else {
-				System.out.println("  Minimac3 failed [" + time + " sec]");
-				return false;
-			}
+			FileUtils.moveFile(new File(output.getVcfFilename()), new File(output.getPhasedVcfFilename()));
 
 		} else {
 
@@ -92,9 +93,9 @@ public class ImputationPipeline {
 			statistic.setPhasingTime(time);
 
 			if (successful) {
-				System.out.println("  Eagle successful [" + time + " sec]");
+				System.out.println("  " + PHASING_VERSION + " finished successfully. [" + time + " sec]");
 			} else {
-				System.out.println("  Eagle failed[" + time + " sec]");
+				System.out.println("  " + PHASING_VERSION + " failed. [" + time + " sec]");
 				return false;
 			}
 
@@ -102,24 +103,25 @@ public class ImputationPipeline {
 				return true;
 			}
 
-			time = System.currentTimeMillis();
-			successful = imputeVCF(output);
-			time = (System.currentTimeMillis() - time) / 1000;
+		}
 
-			statistic.setImputationTime(time);
+		//Imputation
+		
+		long time = System.currentTimeMillis();
+		boolean successful = imputeVCF(output);
+		time = (System.currentTimeMillis() - time) / 1000;
 
-			if (successful) {
-				System.out.println("  Minimac4 finished successfully.[" + time + " sec]");
-				return true;
-			} else {
-				String stdOut = FileUtil.readFileAsString(output.getPrefix() + ".minimac.out");
-				String stdErr = FileUtil.readFileAsString(output.getPrefix() + ".minimac.err");
+		statistic.setImputationTime(time);
 
-				System.out
-						.println("  Minimac4 failed[" + time + " sec]\n\nStdOut:\n" + stdOut + "\nStdErr:\n" + stdErr);
-				return false;
-			}
-
+		if (successful) {
+			System.out.println("  " + IMPUTATION_VERSION + " finished successfully. [" + time + " sec]");
+			return true;
+		} else {
+			String stdOut = FileUtil.readFileAsString(output.getPrefix() + ".minimac.out");
+			String stdErr = FileUtil.readFileAsString(output.getPrefix() + ".minimac.err");
+			System.out.println("  " + IMPUTATION_VERSION + " failed. [" + time + " sec]\n\nStdOut:\n" + stdOut
+					+ "\nStdErr:\n" + stdErr);
+			return false;
 		}
 	}
 
@@ -133,47 +135,6 @@ public class ImputationPipeline {
 
 		int end = input.getEnd() + phasingWindow;
 
-		if (!new File(output.getVcfFilename()).exists()) {
-			System.out.println("vcf file not created!");
-			return false;
-		}
-
-		// bgzip
-		try {
-			boolean first = true;
-			LineReader reader = new LineReader(output.getVcfFilename());
-			BlockCompressedOutputStream out = new BlockCompressedOutputStream(output.getVcfFilename() + ".gz");
-			while (reader.next()) {
-				if (!first) {
-					out.write("\n".getBytes());
-				}
-				out.write(reader.get().getBytes());
-				first = false;
-			}
-			reader.close();
-			out.close();
-
-		} catch (Exception e) {
-			System.out.println("my bgzip failed.");
-			e.printStackTrace();
-			return false;
-		}
-
-		if (!new File(output.getVcfFilename() + ".gz").exists()) {
-			System.out.println("vcf.gz file not created!");
-			return false;
-		}
-
-		// create tabix index
-		Command tabix = new Command(tabixCommand);
-		tabix.setSilent(false);
-		tabix.setParams(output.getVcfFilename() + ".gz");
-		System.out.println("Command: " + tabix.getExecutedCommand());
-		if (tabix.execute() != 0) {
-			System.out.println("Error during index creation: " + tabix.getStdOut());
-			return false;
-		}
-
 		// start eagle
 		Command eagle = new Command(eagleCommand);
 		eagle.setSilent(false);
@@ -184,7 +145,7 @@ public class ImputationPipeline {
 		params.add("--vcfRef");
 		params.add(reference);
 		params.add("--vcfTarget");
-		params.add(output.getVcfFilename() + ".gz");
+		params.add(output.getVcfFilename());
 		params.add("--geneticMapFile");
 		params.add(mapFilename);
 		params.add("--outPrefix");

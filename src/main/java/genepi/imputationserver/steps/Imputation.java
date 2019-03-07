@@ -426,11 +426,6 @@ public class Imputation extends ParallelHadoopJobStep {
 			HdfsUtil.put(sourceVcf, targetVcf);
 			chunk.setVcfFilename(targetVcf);
 
-			// put index file
-			String sourceIndex = chunk.getIndexFilename();
-			String targetIndex = HdfsUtil.path(output, FileUtil.getFilename(sourceIndex));
-			HdfsUtil.put(sourceIndex, targetIndex);
-			chunk.setIndexFilename(targetIndex);
 			writer.write(chunk.serialize());
 
 		}

@@ -199,6 +199,8 @@ public class InputValidationTest extends TestCase {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		
+		context.setInput("phasing", "eagle");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -230,6 +232,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/three";
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setInput("phasing", "eagle");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -305,6 +308,7 @@ public class InputValidationTest extends TestCase {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setInput("phasing", "eagle");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
