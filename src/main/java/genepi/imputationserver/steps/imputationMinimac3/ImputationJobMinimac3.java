@@ -48,10 +48,9 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public ImputationJobMinimac3(String name, Log log) {
 		super(name, log);
-		set("mapred.task.timeout", "720000000");
+		set("mapred.task.timeout", "10368000000");
 		set("mapred.map.tasks.speculative.execution", false);
 		set("mapred.reduce.tasks.speculative.execution", false);
-		getConfiguration().set("mapred.reduce.tasks", "22");
 
 		// set values times 5 due to timeout of setup
 		set("mapred.tasktracker.expiry.interval", "3000000");
