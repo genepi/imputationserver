@@ -1,4 +1,4 @@
-package genepi.imputationserver.steps.imputationMinimac3;
+package genepi.imputationserver.steps.imputation;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,7 +14,7 @@ import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.log.LogCollector;
 import genepi.io.FileUtil;
 
-public class ImputationJobMinimac3 extends HadoopJob {
+public class ImputationJob extends HadoopJob {
 
 	public static final String REF_PANEL = "MINIMAC_REFPANEL";
 
@@ -46,7 +46,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String binariesHDFS;
 
-	public ImputationJobMinimac3(String name, Log log) {
+	public ImputationJob(String name, Log log) {
 		super(name, log);
 		set("mapred.task.timeout", "10368000000");
 		set("mapred.map.tasks.speculative.execution", false);
@@ -63,7 +63,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 		NLineInputFormat.setNumLinesPerSplit(job, 1);
 
-		job.setMapperClass(ImputationMapperMinimac3.class);
+		job.setMapperClass(ImputationMapper.class);
 		job.setInputFormatClass(NLineInputFormat.class);
 
 		job.setMapOutputKeyClass(Text.class);

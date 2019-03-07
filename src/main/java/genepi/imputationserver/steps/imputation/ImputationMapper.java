@@ -1,4 +1,4 @@
-package genepi.imputationserver.steps.imputationMinimac3;
+package genepi.imputationserver.steps.imputation;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -22,9 +22,9 @@ import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
 
-public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, Text> {
+public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
-	private ImputationPipelineMinimac3 pipeline;
+	private ImputationPipeline pipeline;
 
 	public String folder;
 
@@ -61,17 +61,17 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		// get parameters
 		ParameterStore parameters = new ParameterStore(context);
 
-		output = parameters.get(ImputationJobMinimac3.OUTPUT);
-		build = parameters.get(ImputationJobMinimac3.BUILD);
+		output = parameters.get(ImputationJob.OUTPUT);
+		build = parameters.get(ImputationJob.BUILD);
 
-		String r2FilterString = parameters.get(ImputationJobMinimac3.R2_FILTER);
+		String r2FilterString = parameters.get(ImputationJob.R2_FILTER);
 		if (r2FilterString == null) {
 			minR2 = 0;
 		} else {
 			minR2 = Double.parseDouble(r2FilterString);
 		}
 
-		String phasingOnlyString = parameters.get(ImputationJobMinimac3.PHASING_ONLY);
+		String phasingOnlyString = parameters.get(ImputationJob.PHASING_ONLY);
 
 		if (phasingOnlyString == null) {
 			phasingOnly = false;
@@ -79,10 +79,10 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 			phasingOnly = Boolean.parseBoolean(phasingOnlyString);
 		}
 
-		hdfsPath = parameters.get(ImputationJobMinimac3.REF_PANEL_HDFS);
-		String hdfsPathMinimacMap = parameters.get(ImputationJobMinimac3.MAP_MINIMAC);
-		String hdfsPathMapEagle = parameters.get(ImputationJobMinimac3.MAP_EAGLE_HDFS);
-		String hdfsRefEagle = parameters.get(ImputationJobMinimac3.REF_PANEL_EAGLE_HDFS);
+		hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
+		String hdfsPathMinimacMap = parameters.get(ImputationJob.MAP_MINIMAC);
+		String hdfsPathMapEagle = parameters.get(ImputationJob.MAP_EAGLE_HDFS);
+		String hdfsRefEagle = parameters.get(ImputationJob.REF_PANEL_EAGLE_HDFS);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
@@ -147,7 +147,7 @@ public class ImputationMapperMinimac3 extends Mapper<LongWritable, Text, Text, T
 		String minimacParams = store.getString("minimac.command");
 
 		// config pipeline
-		pipeline = new ImputationPipelineMinimac3();
+		pipeline = new ImputationPipeline();
 		pipeline.setMinimacCommand(minimacCommand, minimacParams);
 		pipeline.setEagleCommand(eagleCommand);
 		pipeline.setTabixCommand(tabixCommand);

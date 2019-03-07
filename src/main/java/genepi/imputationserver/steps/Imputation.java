@@ -10,7 +10,7 @@ import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.ContextLog;
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.io.HdfsLineWriter;
-import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
+import genepi.imputationserver.steps.imputation.ImputationJob;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
@@ -19,7 +19,7 @@ import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 
-public class ImputationMinimac3 extends ParallelHadoopJobStep {
+public class Imputation extends ParallelHadoopJobStep {
 
 	Map<String, HadoopJob> jobs = null;
 
@@ -37,7 +37,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 	public static int THREADS = 25;
 
-	public ImputationMinimac3() {
+	public Imputation() {
 		super(THREADS);
 		jobs = new HashMap<String, HadoopJob>();
 	}
@@ -51,7 +51,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		final String folder = getFolder(ImputationMinimac3.class);
+		final String folder = getFolder(Imputation.class);
 
 		// inputs
 		String input = context.get("chunkFileDir");
@@ -112,7 +112,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 
 				ChunkFileConverterResult result = convertChunkfile(chunkFile, context.getHdfsTemp());
 
-				ImputationJobMinimac3 job = new ImputationJobMinimac3(context.getJobId() + "-chr-" + chr,
+				ImputationJob job = new ImputationJob(context.getJobId() + "-chr-" + chr,
 						new ContextLog(context)) {
 					@Override
 					protected void readConfigFile() {
@@ -173,7 +173,7 @@ public class ImputationMinimac3 extends ParallelHadoopJobStep {
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
-				job.setJarByClass(ImputationJobMinimac3.class);
+				job.setJarByClass(ImputationJob.class);
 
 				executeJarInBackground(chr, context, job);
 				jobs.put(chr, job);

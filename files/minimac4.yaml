@@ -1,7 +1,7 @@
 name:  Michigan Imputation Server
 description: This is the new Michigan Imputation Server Pipeline using <a href="https://github.com/statgen/Minimac4">Minimac4</a>. Documentation can be found <a href="http://imputationserver.readthedocs.io/en/latest/">here</a>.<br><br>If your input data is <b>GRCh37/hg19</b> please ensure chromosomes are encoded without prefix  (e.g. <b>20</b>).<br>If your input data is <b>GRCh38hg38</b> please ensure chromosomes are encoded with prefix 'chr' (e.g. <b>chr20</b>).
-version: 1.1.10
-website: https://genome.sph.umich.edu/wiki/Minimac4
+version: 1.1.11
+website: https://imputationserver.readthedocs.io
 category:
 
 installation:
@@ -43,7 +43,7 @@ workflow:
 #if($mode == "imputation" || $mode == "phasing")
     - name: Pre-phasing and Imputation
       jar: imputationserver.jar
-      classname: genepi.imputationserver.steps.ImputationMinimac3
+      classname: genepi.imputationserver.steps.Imputation
       params: $chunkFileDir $refpanel $chunksize $window $phasing $queues
       generates: $local $outputimputation $logfile $hadooplogs
       binaries: ${app_hdfs_folder}/bin
@@ -157,7 +157,7 @@ workflow:
     - id: report
       description: Imputation Report
       type: local-file
-      download: true
+      download: false
       temp: false
       autoExport: true
 

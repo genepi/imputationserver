@@ -14,7 +14,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
-import genepi.imputationserver.steps.imputationMinimac3.ImputationPipelineMinimac3;
+import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.io.text.LineReader;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
@@ -52,9 +52,9 @@ public class FileMerger {
 
 				// write filter command before ID List starting with #CHROM
 				if (line.startsWith("##INFO")) {
-					outHeader.write(("##pipeline=" + ImputationPipelineMinimac3.PIPELINE_VERSION+ "\n").getBytes());
-					outHeader.write(("##imputation=" + ImputationPipelineMinimac3.IMPUTATION_VERSION+ "\n").getBytes());
-					outHeader.write(("##phasing=" + ImputationPipelineMinimac3.PHASING_VERSION+ "\n").getBytes());
+					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION+ "\n").getBytes());
+					outHeader.write(("##imputation=" + ImputationPipeline.IMPUTATION_VERSION+ "\n").getBytes());
+					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION+ "\n").getBytes());
 					outHeader.write(("##r2Filter=" + minR2 + "\n").getBytes());
 				}
 

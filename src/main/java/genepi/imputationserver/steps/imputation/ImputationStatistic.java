@@ -1,4 +1,4 @@
-package genepi.imputationserver.steps.imputationMinimac3;
+package genepi.imputationserver.steps.imputation;
 
 public class ImputationStatistic {
 

@@ -480,7 +480,7 @@ public class ImputationMinimacChrXTest {
 
 	}
 
-	class ImputationMinimac3Mock extends ImputationMinimac3 {
+	class ImputationMinimac3Mock extends Imputation {
 
 		private String folder;
 

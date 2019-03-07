@@ -1,4 +1,4 @@
-package genepi.imputationserver.steps.imputationMinimac3;
+package genepi.imputationserver.steps.imputation;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import genepi.io.text.LineReader;
 import groovy.text.SimpleTemplateEngine;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
 
-public class ImputationPipelineMinimac3 {
+public class ImputationPipeline {
 
 	private String minimacCommand;
 	private String minimacParams;

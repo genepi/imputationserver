@@ -1025,7 +1025,7 @@ public class ImputationMinimac3Test {
 
 	}
 
-	class ImputationMinimac3Mock extends ImputationMinimac3 {
+	class ImputationMinimac3Mock extends Imputation {
 
 		private String folder;
 
