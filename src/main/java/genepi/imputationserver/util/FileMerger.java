@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.imputationserver.steps.imputationMinimac3.ImputationPipelineMinimac3;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.io.text.LineReader;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
@@ -50,12 +51,15 @@ public class FileMerger {
 			} else {
 
 				// write filter command before ID List starting with #CHROM
-				if (line.startsWith("#CHROM")) {
-					outHeader.write(("##imputationserver_filter=R2>" + minR2 + "\n").getBytes());
+				if (line.startsWith("##INFO")) {
+					outHeader.write(("##pipeline=" + ImputationPipelineMinimac3.PIPELINE_VERSION+ "\n").getBytes());
+					outHeader.write(("##imputation=" + ImputationPipelineMinimac3.IMPUTATION_VERSION+ "\n").getBytes());
+					outHeader.write(("##phasing=" + ImputationPipelineMinimac3.PHASING_VERSION+ "\n").getBytes());
+					outHeader.write(("##r2Filter=" + minR2 + "\n").getBytes());
 				}
 
 				// remove minimac4 command
-				if (!line.startsWith("##minimac4_Command")) {
+				if (!line.startsWith("##minimac4_Command") && !line.startsWith("##source")) {
 					outHeader.write(line.getBytes());
 					outHeader.write("\n".getBytes());
 				}
@@ -76,8 +80,8 @@ public class FileMerger {
 				int pos = Integer.valueOf(line.split("\t",3)[1]);
 				// no rsq set. keep all lines without parsing
 				if(pos >= chunk.getStart() && pos <= chunk.getEnd()) {
-				outData.write(line.getBytes());
-				outData.write("\n".getBytes());
+					outData.write(line.getBytes());
+					outData.write("\n".getBytes());
 				}
 			} else {
 
