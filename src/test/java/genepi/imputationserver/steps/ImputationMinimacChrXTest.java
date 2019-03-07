@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,17 +12,11 @@ import org.junit.Test;
 
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.WorkflowStep;
-import genepi.imputationserver.steps.ImputationMinimac3Test.CompressionEncryptionMock;
-import genepi.imputationserver.steps.ImputationMinimac3Test.ImputationMinimac3Mock;
-import genepi.imputationserver.steps.ImputationMinimac3Test.QcStatisticsMock;
-import genepi.imputationserver.steps.imputationMinimac3.ImputationJobMinimac3;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
-import genepi.imputationserver.util.TestSFTPServer;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
-import genepi.io.text.LineReader;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
@@ -69,7 +64,7 @@ public class ImputationMinimacChrXTest {
 		}
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -118,7 +113,7 @@ public class ImputationMinimacChrXTest {
 		}
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle-phasing");
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -170,7 +165,7 @@ public class ImputationMinimacChrXTest {
 		}
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle-phasing");
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -226,7 +221,7 @@ public class ImputationMinimacChrXTest {
 		}
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1", "eagle-phasing");
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -287,7 +282,7 @@ public class ImputationMinimacChrXTest {
 		String inputFolder = "test-data/data/chrX-phased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -343,7 +338,7 @@ public class ImputationMinimacChrXTest {
 		}
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2", "eagle");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -389,7 +384,7 @@ public class ImputationMinimacChrXTest {
 		return step.run(context);
 	}
 
-	protected WorkflowTestContext buildContext(String folder, String refpanel, String phasing) {
+	protected WorkflowTestContext buildContext(String folder, String refpanel) {
 		WorkflowTestContext context = new WorkflowTestContext();
 		File file = new File("test-data/tmp");
 		if (file.exists()) {
@@ -403,7 +398,6 @@ public class ImputationMinimacChrXTest {
 		context.setInput("files", folder);
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
-		context.setInput("phasing", phasing);
 		context.setConfig("binaries", BINARIES_HDFS);
 		
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");

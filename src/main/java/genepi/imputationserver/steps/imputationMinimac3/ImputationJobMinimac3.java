@@ -20,25 +20,13 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public static final String REF_PANEL_HDFS = "MINIMAC_REFPANEL_HDFS";
 
-	public static final String MAP_SHAPEIT_HDFS = "MINIMAC_MAP_SHAPEIT_HDFS";
-
-	public static final String MAP_SHAPEIT_PATTERN = "MINIMAC_MAP_SHAPEIT_PATTERN";
-
-	public static final String MAP_HAPIUR_HDFS = "MINIMAC_MAP_HAPIUR_HDFS";
-
-	public static final String MAP_HAPIUR_PATTERN = "MINIMAC_MAP_HAPIUR_PATTERN";
-
 	public static final String REF_PANEL_EAGLE_HDFS = "MINIMAC_REFPANEL_EAGLE_HDFS";
 
 	public static final String MAP_EAGLE_HDFS = "MINIMAC_MAP_EAGLE_HDFS";
 
 	public static final String MAP_MINIMAC = "MINIMAC_MAP";
 
-	public static final String POPULATION = "MINIMAC_USES_POP";
-
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
-
-	public static final String PHASING = "MINIMAC_PHASING";
 
 	public static final String BUILD = "MINIMAC_BUILD";
 
@@ -50,13 +38,7 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	private String logFilename;
 
-	private String phasing;
-
 	private String mapMinimac;
-
-	private String mapShapeITHDFS;
-
-	private String mapHapiURHDFS;
 
 	private String mapEagleHDFS;
 
@@ -128,52 +110,25 @@ public class ImputationJobMinimac3 extends HadoopJob {
 			}
 		}
 
-		// check if phasing
-		if (phasing != null) {
-			// add ShapeIT Map File to cache
-			if (phasing.equals("shapeit") && mapShapeITHDFS != null) {
-				if (HdfsUtil.exists(mapShapeITHDFS)) {
-					String name = FileUtil.getFilename(mapShapeITHDFS);
-					log.info("Add ShapeIT map  " + mapShapeITHDFS + " to distributed cache...");
-					cache.addArchive(name, mapShapeITHDFS);
-				} else {
-					throw new IOException("ShapeIT map " + mapShapeITHDFS + " not found.");
-				}
+		// add Eagle Map File to cache
+		if (mapEagleHDFS != null) {
+			if (HdfsUtil.exists(mapEagleHDFS)) {
+				log.info("Add Eagle map  " + mapEagleHDFS + " to distributed cache...");
+				cache.addFile(mapEagleHDFS);
+			} else {
+				throw new IOException("Map " + mapEagleHDFS + " not found.");
 			}
+		}
 
-			// add HapiUR Map File to cache
-			if (phasing.equals("hapiur") && mapHapiURHDFS != null) {
-				if (HdfsUtil.exists(mapHapiURHDFS)) {
-					String name = FileUtil.getFilename(mapHapiURHDFS);
-					log.info("Add HapiUR map  " + mapHapiURHDFS + " to distributed cache...");
-					cache.addArchive(name, mapHapiURHDFS);
-				} else {
-					throw new IOException("HapiUR Map " + mapHapiURHDFS + " not found.");
-				}
+		// add Eagle Refpanel File for this chromosome to cache
+		if (refPanelEagleHDFS != null) {
+			if (!HdfsUtil.exists(refPanelEagleHDFS)) {
+				throw new IOException("Eagle Reference Panel " + refPanelEagleHDFS + " not found.");
 			}
-
-			// add Eagle Map File to cache
-			if (phasing.equals("eagle") && mapEagleHDFS != null) {
-				if (HdfsUtil.exists(mapEagleHDFS)) {
-					log.info("Add Eagle map  " + mapEagleHDFS + " to distributed cache...");
-					cache.addFile(mapEagleHDFS);
-				} else {
-					throw new IOException("Map " + mapEagleHDFS + " not found.");
-				}
-			}
-
-			// add Eagle Refpanel File for this chromosome to cache
-			if (phasing.equals("eagle") && refPanelEagleHDFS != null) {
-				if (!HdfsUtil.exists(refPanelEagleHDFS)) {
-					throw new IOException("Eagle Reference Panel " + refPanelEagleHDFS + " not found.");
-				}
-				log.info("Add Eagle reference  " + refPanelEagleHDFS + " do distributed cache...");
-				cache.addFile(refPanelEagleHDFS);
-				log.info("Add Eagle reference  index " + refPanelEagleHDFS + ".csi to distributed cache...");
-				cache.addFile(refPanelEagleHDFS + ".csi");
-			}
-		} else {
-			log.info("No map files added to distributed cache. Input data is phased.");
+			log.info("Add Eagle reference  " + refPanelEagleHDFS + " do distributed cache...");
+			cache.addFile(refPanelEagleHDFS);
+			log.info("Add Eagle reference  index " + refPanelEagleHDFS + ".csi to distributed cache...");
+			cache.addFile(refPanelEagleHDFS + ".csi");
 		}
 
 	}
@@ -223,33 +178,6 @@ public class ImputationJobMinimac3 extends HadoopJob {
 
 	public void setLogFilename(String logFilename) {
 		this.logFilename = logFilename;
-	}
-
-	public void setPopulation(String population) {
-		set(POPULATION, population);
-	}
-
-	public void setPhasing(String phasing) {
-		set(PHASING, phasing);
-		this.phasing = phasing;
-	}
-
-	public void setMapShapeITPattern(String mapPattern) {
-		set(MAP_SHAPEIT_PATTERN, mapPattern);
-	}
-
-	public void setMapShapeITHdfs(String mapHDFS1) {
-		this.mapShapeITHDFS = mapHDFS1;
-		set(MAP_SHAPEIT_HDFS, mapHDFS1);
-	}
-
-	public void setMapHapiURPattern(String mapPattern) {
-		set(MAP_HAPIUR_PATTERN, mapPattern);
-	}
-
-	public void setMapHapiURHdfs(String mapHDFS2) {
-		this.mapHapiURHDFS = mapHDFS2;
-		set(MAP_HAPIUR_HDFS, mapHDFS2);
 	}
 
 	public void setMapEagleHdfs(String mapHdfs) {
