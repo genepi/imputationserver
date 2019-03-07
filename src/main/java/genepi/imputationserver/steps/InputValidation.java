@@ -65,6 +65,7 @@ public class InputValidation extends WorkflowStep {
 		String population = context.get("population");
 		String build = context.get("build");
 		String r2Filter = context.get("r2Filter");
+		String phasing = context.get("phasing");
 		String mode = context.get("mode");
 
 		// load job.config
@@ -217,8 +218,14 @@ public class InputValidation extends WorkflowStep {
 		}
 
 		if (validVcfFiles.size() > 0) {
-
+			
 			context.endTask(validVcfFiles.size() + " valid VCF file(s) found.\n\n" + infos, WorkflowContext.OK);
+			
+			if (!phased && (phasing == null || phasing.isEmpty() || phasing.equals("no_phasing"))) {
+				context.error("Your input data is unphased. Please select an algorithm for phasing.");
+				return false;
+			}
+
 
 			// init counters
 			context.incCounter("samples", noSamples);
