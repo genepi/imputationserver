@@ -561,26 +561,14 @@ public class ImputationMinimac3Test {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+		
+		// run and test
+		boolean result = run(context, inputValidation);
 
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
-
-		assertTrue(result);
-		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
 		assertFalse(result);
-
-		FileUtil.deleteDirectory("test-data/tmp");
-
 	}
 
 	@Test
