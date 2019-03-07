@@ -9,7 +9,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import groovy.text.SimpleTemplateEngine;
 import junit.framework.TestCase;
 
-public class ImputationPipelineMinimac3Test extends TestCase {
+public class ImputationPipelineTest extends TestCase {
 
 	public static final boolean VERBOSE = true;
 

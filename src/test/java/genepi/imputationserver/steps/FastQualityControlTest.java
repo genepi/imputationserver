@@ -469,7 +469,7 @@ public class FastQualityControlTest extends TestCase {
 		context.setOutput("chunkFileDir", file.getAbsolutePath());
 		context.setOutput("statisticDir", file.getAbsolutePath());
 		context.setOutput("chunksDir", file.getAbsolutePath());
-		context.setConfig("binaries",ImputationMinimac3Test. BINARIES_HDFS);
+		context.setConfig("binaries",ImputationTest. BINARIES_HDFS);
 
 		return context;
 

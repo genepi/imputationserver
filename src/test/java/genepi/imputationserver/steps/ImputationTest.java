@@ -23,7 +23,7 @@ import genepi.io.text.LineReader;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
-public class ImputationMinimac3Test {
+public class ImputationTest {
 
 	public static final boolean VERBOSE = true;
 

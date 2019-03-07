@@ -23,7 +23,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
-public class ImputationMinimacChrXTest {
+public class ImputationChrXTest {
 
 	public static final boolean VERBOSE = true;
 
