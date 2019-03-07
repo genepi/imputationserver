@@ -6,7 +6,7 @@ Update your repository and run all tests with 'mvn test'. If an error is raised,
 
 ### Update version number
 
-Update version according Sematic Versioning:
+Update version according Semantic Versioning:
 
 > Given a version number MAJOR.MINOR.PATCH, increment the:
 >
@@ -21,7 +21,8 @@ Update version according Sematic Versioning:
 
 We track our current version in
 - `pom.xml`
-- `files/minimac.yaml`.
+- `files/minimac4.yaml`
+- `genepi.imputationserver.steps.imputation.ImputationPipeline`.
 
 Set the new version without the `v` prefix.
 
