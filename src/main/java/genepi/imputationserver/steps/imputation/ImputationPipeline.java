@@ -39,7 +39,7 @@ public class ImputationPipeline {
 	private boolean phasingOnly;
 
 	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.1.11";
-	public static final String IMPUTATION_VERSION = "minimac-1.0.1-7228771";
+	public static final String IMPUTATION_VERSION = "minimac4-1.0.1-7228771";
 	public static final String PHASING_VERSION = "eagle-2.4";
 
 	private ImputationStatistic statistic = new ImputationStatistic();
