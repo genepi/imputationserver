@@ -1,6 +1,6 @@
-name:  Michigan Imputation Server
+name:  Michigan Imputation Server (Minimac4)
 description: This is the new Michigan Imputation Server Pipeline using <a href="https://github.com/statgen/Minimac4">Minimac4</a>. Documentation can be found <a href="http://imputationserver.readthedocs.io/en/latest/">here</a>.<br><br>If your input data is <b>GRCh37/hg19</b> please ensure chromosomes are encoded without prefix  (e.g. <b>20</b>).<br>If your input data is <b>GRCh38hg38</b> please ensure chromosomes are encoded with prefix 'chr' (e.g. <b>chr20</b>).
-version: 1.1.11
+version: 1.1.12
 website: https://imputationserver.readthedocs.io
 category:
 
@@ -59,7 +59,7 @@ workflow:
        category: RefPanel
 
      - id: files
-       description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF</a> & <a href="https://github.com/genepi/23andme-tools" target="_blank">23andMe</a>)
+       description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF</a>)
        type: local-folder
 
      - id: build
