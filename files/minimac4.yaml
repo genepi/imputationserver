@@ -27,7 +27,6 @@ workflow:
 
     - name: Quality Control (Report)
       rmd: qc-report.Rmd
-      params: $mafFile
       output: ${qcreport}.html
       generates: $qcreport
       
@@ -44,20 +43,12 @@ workflow:
     - name: Pre-phasing and Imputation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.Imputation
-      params: $chunkFileDir $refpanel $chunksize $window $phasing $queues
       generates: $local $outputimputation $logfile $hadooplogs
       binaries: ${app_hdfs_folder}/bin
-
-    - name: Imputation (Report)
-      rmd: report.Rmd
-      params: $local/results
-      output: $report
-      generates: $report
 
     - name: Data Compression and Encryption
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.CompressionEncryption
-      params: $local $report $encryption
 #end
 
   inputs:
@@ -151,13 +142,6 @@ workflow:
       description: Quality-Control Report
       type: local-file
       download: true
-      temp: false
-      autoExport: true
-
-    - id: report
-      description: Imputation Report
-      type: local-file
-      download: false
       temp: false
       autoExport: true
 
