@@ -26,6 +26,7 @@ public class FileMerger {
 	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, double minR2)
 			throws IOException {
 		LineReader reader = new LineReader(input);
+		boolean writeVersion = true;
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
@@ -51,11 +52,12 @@ public class FileMerger {
 			} else {
 
 				// write filter command before ID List starting with #CHROM
-				if (line.startsWith("##INFO")) {
+				if (writeVersion && line.startsWith("##INFO")) {
 					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION+ "\n").getBytes());
 					outHeader.write(("##imputation=" + ImputationPipeline.IMPUTATION_VERSION+ "\n").getBytes());
 					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION+ "\n").getBytes());
 					outHeader.write(("##r2Filter=" + minR2 + "\n").getBytes());
+					writeVersion = false;
 				}
 
 				// remove minimac4 command
