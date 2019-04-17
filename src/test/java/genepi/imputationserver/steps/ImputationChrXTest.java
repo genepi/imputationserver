@@ -28,7 +28,9 @@ public class ImputationChrXTest {
 	public static final boolean VERBOSE = true;
 
 	public static final String BINARIES_HDFS = "binaries";
-	
+
+	public static final String PASSWORD = "random-pwd";
+
 	public final int TOTAL_REFPANEL_CHRX_B37 = 1479509;
 	public final int TOTAL_REFPANEL_CHRX_B38 = 1077575;
 	// public final int SNPS_WITH_R2_BELOW_05 = 6344;
@@ -42,7 +44,6 @@ public class ImputationChrXTest {
 	public static void tearDown() throws Exception {
 		TestCluster.getInstance().stop();
 	}
-
 
 	@Test
 	public void testChrXPipelineWithEagle() throws IOException, ZipException {
@@ -89,7 +90,7 @@ public class ImputationChrXTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -100,7 +101,7 @@ public class ImputationChrXTest {
 		FileUtil.deleteDirectory(file);
 
 	}
-	
+
 	@Test
 	public void testChrXPipelinePhased() throws IOException, ZipException {
 
@@ -138,7 +139,7 @@ public class ImputationChrXTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -190,7 +191,7 @@ public class ImputationChrXTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -246,7 +247,7 @@ public class ImputationChrXTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -273,7 +274,6 @@ public class ImputationChrXTest {
 		FileUtil.deleteDirectory(file);
 
 	}
-	
 
 	@Test
 	public void testChrXPipelineWithPhasedHg38() throws IOException, ZipException {
@@ -307,7 +307,7 @@ public class ImputationChrXTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -321,7 +321,6 @@ public class ImputationChrXTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
 
 	@Test
 	public void testChrXPipelineWithEagleHg38() throws IOException, ZipException {
@@ -363,7 +362,7 @@ public class ImputationChrXTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -377,7 +376,6 @@ public class ImputationChrXTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-
 
 	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
 		step.setup(context);
@@ -399,7 +397,8 @@ public class ImputationChrXTest {
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
 		context.setConfig("binaries", BINARIES_HDFS);
-		
+		context.setInput("password", PASSWORD);
+
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/mafFile");
 
@@ -453,7 +452,7 @@ public class ImputationChrXTest {
 	}
 
 	private void importBinaries(String folder) {
-		
+
 		System.out.println("Import Binaries to " + BINARIES_HDFS);
 		String[] files = FileUtil.getFiles(folder, "*.*");
 		for (String file : files) {

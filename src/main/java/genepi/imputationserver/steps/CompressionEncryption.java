@@ -33,8 +33,6 @@ import net.lingala.zip4j.util.Zip4jConstants;
 
 public class CompressionEncryption extends WorkflowStep {
 
-	public static final String DEFAULT_PASSWORD = "imputation@michigan";
-
 	@Override
 	public boolean run(WorkflowContext context) {
 
@@ -44,6 +42,7 @@ public class CompressionEncryption extends WorkflowStep {
 		String localOutput = context.get("local");
 		String aesEncryption = context.get("aesEncryption");
 		String mode = context.get("mode");
+		String password = context.get("password");
 
 		boolean phasingOnly = false;
 		if (mode != null && mode.equals("phasing")) {
@@ -70,9 +69,7 @@ public class CompressionEncryption extends WorkflowStep {
 			serverUrl = store.getString("server.url");
 		}
 
-		String password = DEFAULT_PASSWORD;
-
-		if (notification.equals("yes")) {
+		if(password == null || (password != null && password.equals("auto"))) {
 			password = PasswordCreator.createPassword();
 		}
 

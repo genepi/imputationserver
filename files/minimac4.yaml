@@ -127,14 +127,20 @@ workflow:
      - id: myseparator
        type: separator
 
-     - id: check1
-       description: I will not attempt to re-identify or contact research participants.
-       type: terms_checkbox
+     - id: password
+       description: User set password.
+       default: auto
+       visible: false
+       type: text
 
 
      - id: check2
        description: I will report any inadvertent data release, security breach or other data management incident of which I become aware.
        type: terms_checkbox
+       
+     - id: check2
+       description: I will report any inadvertent data release, security breach or other data management incident of which I become aware.
+       type: terms_checkbox   
 
          
   outputs:

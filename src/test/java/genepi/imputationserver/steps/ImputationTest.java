@@ -29,6 +29,8 @@ public class ImputationTest {
 
 	public static final String BINARIES_HDFS = "binaries";
 	
+	public static final String PASSWORD = "random-pwd";
+	
 	public final int TOTAL_REFPANEL_CHR20_B37 = 63402;
 	public final int TOTAL_REFPANEL_CHR20_B38 = 63384;
 	public final int ONLY_IN_INPUT = 78;
@@ -79,7 +81,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -90,7 +92,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
-		FileUtil.deleteDirectory("test-data/tmp");
+		//FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -157,7 +159,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -255,7 +257,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_1.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -311,7 +313,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -386,7 +388,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -439,7 +441,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -488,7 +490,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -604,7 +606,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -699,7 +701,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -747,7 +749,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -797,7 +799,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -847,7 +849,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -896,7 +898,7 @@ public class ImputationTest {
 
 		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
 		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(CompressionEncryption.DEFAULT_PASSWORD);
+			zipFile.setPassword(PASSWORD);
 		}
 		zipFile.extractAll("test-data/tmp");
 
@@ -932,6 +934,7 @@ public class ImputationTest {
 		context.setInput("population", "eur");
 		context.setInput("refpanel", refpanel);
 		context.setInput("mode", "imputation");
+		context.setInput("password", PASSWORD);
 		context.setConfig("binaries", BINARIES_HDFS);
 		
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
