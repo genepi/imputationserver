@@ -28,8 +28,8 @@ public class PasswordCreator {
 			String symbol = RandomStringUtils.random(symbols, 35, 125, false, false, null, new SecureRandom());
 			
 			// exclude non password-friendly symbols (quotes, ^, \)
-			symbol = symbol.replaceAll("'", "").replaceAll("\"", "").replaceAll("^", "").replaceAll(",", "")
-					.replaceAll((char) 96 + "", "").replaceAll((char) 92 + "", "");
+			symbol = symbol.replaceAll("'", "").replaceAll("\"", "").replaceAll("\\^", "").replaceAll(",", "")
+					.replaceAll((char) 96 + "", "").replaceAll("\\\\", "");
 			
 			pwd = shuffleAndCheck(upper + lower + number + symbol, duplicates);
 
