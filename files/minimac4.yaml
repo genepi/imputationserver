@@ -27,6 +27,7 @@ workflow:
 
     - name: Quality Control (Report)
       rmd: qc-report.Rmd
+      params: $mafFile
       output: ${qcreport}.html
       generates: $qcreport
       
