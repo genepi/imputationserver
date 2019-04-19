@@ -129,7 +129,7 @@ workflow:
 
      - id: password
        description: Password set by user.
-       default: auto
+       value: auto
        visible: false
        type: text
 
