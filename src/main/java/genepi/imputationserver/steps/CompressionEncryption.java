@@ -290,7 +290,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 		} else {
 			context.ok(
-					"Email notification (and therefore encryption) is disabled. All results are encrypted with password <b>"
+					"Email notification is disabled. All results are encrypted with password <b>"
 							+ password + "</b>");
 			return true;
 		}
