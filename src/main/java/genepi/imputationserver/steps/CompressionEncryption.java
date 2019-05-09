@@ -2,6 +2,8 @@ package genepi.imputationserver.steps;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,7 +71,7 @@ public class CompressionEncryption extends WorkflowStep {
 			serverUrl = store.getString("server.url");
 		}
 
-		if(password == null || (password != null && password.equals("auto"))) {
+		if (password == null || (password != null && password.equals("auto"))) {
 			password = PasswordCreator.createPassword();
 		}
 
@@ -147,7 +149,7 @@ public class CompressionEncryption extends WorkflowStep {
 				// output files
 				String dosageOutput;
 				String infoOutput = "";
-				
+
 				if (phasingOnly) {
 					dosageOutput = FileUtil.path(temp, "chr" + name + ".phased.vcf.gz");
 				} else {
@@ -162,33 +164,47 @@ public class CompressionEncryption extends WorkflowStep {
 				String header = entry.getHeaderFiles().get(0);
 				vcfFile.addFile(HdfsUtil.open(header));
 
-				// simple header check				
-				String headerLine = null;				
+				// simple header check
+				String headerLine = null;
 				for (String file : entry.getHeaderFiles()) {
+
 					context.println("Read header file " + file);
-					LineReader reader = new LineReader(HdfsUtil.open(file));
-					while(reader.next()) {
-						String line = reader.get();
-						if (line.startsWith("#CHROM")) {
-							if (headerLine != null) {
-								if (headerLine.equals(line)) {
-									context.println("  Header is the same as header of first file.");
-								}else {
-									context.println("  ERROR: Header is different as header of first file.");
-									context.println(headerLine);
-									context.println(line);
-									throw new Exception("Different sample order in chunks.");
+					LineReader reader = null;
+					try {
+						reader = new LineReader(HdfsUtil.open(file));
+						while (reader.next()) {
+							String line = reader.get();
+							if (line.startsWith("#CHROM")) {
+								if (headerLine != null) {
+									if (headerLine.equals(line)) {
+										context.println("  Header is the same as header of first file.");
+									} else {
+										context.println("  ERROR: Header is different as header of first file.");
+										context.println(headerLine);
+										context.println(line);
+										throw new Exception("Different sample order in chunks.");
+									}
+								} else {
+									headerLine = line;
+									context.println("  Keep this header as first header.");
 								}
-							}else {
-								headerLine = line;
-								context.println("  Keep this header as first header.");
 							}
+
 						}
-						
+						if (reader != null) {
+							reader.close();
+						}
+						HdfsUtil.delete(file);
+					} catch (Exception e) {
+						if (reader != null) {
+							reader.close();
+						}
+						StringWriter errors = new StringWriter();
+						e.printStackTrace(new PrintWriter(errors));
+						context.println("Error reading header file: " + errors.toString());
 					}
-					HdfsUtil.delete(file);
 				}
-				
+
 				// add data files
 				for (String file : entry.getDataFiles()) {
 					context.println("Read file " + file);
@@ -290,8 +306,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 		} else {
 			context.ok(
-					"Email notification is disabled. All results are encrypted with password <b>"
-							+ password + "</b>");
+					"Email notification is disabled. All results are encrypted with password <b>" + password + "</b>");
 			return true;
 		}
 
