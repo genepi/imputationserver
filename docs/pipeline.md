@@ -27,8 +27,6 @@ Our pipeline performs the following steps:
 
     Variant exclusion: Variants are excluded in case of: [a] invalid alleles occur (!(A,C,G,T)), [b] duplicates (DUP filter or (pos - 1 == pos)), [c] indels, [d] monomorphic sites, [e] allele mismatch between reference panel and study, [f] SNP call rate < 90%.
 
-    **Please note:** Target-only sites for unphased data are not included in the final output.
-
     **On Sample level:**
 
     *   For chr1-22, a chunk is excluded if one sample has a call rate < 50 %. Only complete chunks are excluded, not samples (see "On Chunk level" above)
@@ -47,7 +45,9 @@ Our pipeline performs the following steps:
 --outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 -allowRefAltSwap
 --vcfOutFormat z
 ````
-
+    
+**Please note:** Target-only sites for unphased data are not included in the final output.
+    
 ## Imputation
 
 ###
@@ -67,6 +67,7 @@ If a map file is available (currently TOPMed only), the following cmd is execute
 --window 500000 --prefix chunk_1_0000000001_0020000000 --cpus 1 --chr 20 --noPhoneHome
 --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 --referenceEstimates --map B38_MAP_FILE.map
 ````
+## Compression and Encryption
 
 * Merge all chunks of one chromosome into one single vcf.gz
 * Encrypt data with one-time password
