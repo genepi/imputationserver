@@ -27,7 +27,7 @@ Our pipeline performs the following steps:
 
     Variant exclusion: Variants are excluded in case of: [a] invalid alleles occur (!(A,C,G,T)), [b] duplicates (DUP filter or (pos - 1 == pos)), [c] indels, [d] monomorphic sites, [e] allele mismatch between reference panel and study, [f] SNP call rate < 90%.
 
-    **Update:** Typed-only sites are included in the final output.
+    **Please note:** Target-only sites for unphased data are not included in the final output.
 
     **On Sample level:**
 
@@ -45,31 +45,7 @@ Our pipeline performs the following steps:
 ./eagle --vcfRef HRC.r1-1.GRCh37.chr20.shapeit3.mac5.aa.genotypes.bcf
 --vcfTarget chunk_20_0000000001_0020000000.vcf.gz  --geneticMapFile genetic_map_chr20_combined_b37.txt
 --outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 -allowRefAltSwap
---vcfOutFormat z --outputUnphased
-````
-
-**ShapeIt**
-````sh
-./vcfCooker --in-vcf chunk_20_0000000001_0020000000.vcf --write-bed --out chunk_20_0000000001_0020000000
-````
-````sh
-./shapeit --input-bed chunk_20_0000000001_0020000000.bed chunk_20_0000000001_0020000000.bim
-chunk_20_0000000001_0020000000.fam --input-map genetic_map_b37.tar.gz/genetic_map_chr20_combined_b37.txt
---output-max chunk_20_0000000001_0020000000.phased --input-from 1 --input-to 25000000
---effective-size 11418
-````
-
-**HapiUR**
-````sh
-./vcfCooker --in-vcf chunk_20_0000000001_0020000000.vcf --write-bed --out chunk_20_0000000001_0020000000
-````
-````sh
-./insert-map.pl chunk_20_0000000001_0020000000.bim genetic_map_chr20_combined_hapiur_b37.txt
-````
-````sh
-./hapi-ur -g chunk_20_0000000001_0020000000.bed -s chunk_20_0000000001_0020000000.map.bim
--i chunk_20_0000000001_0020000000.fam -w 73 -o chunk_20_0000000001_0020000000 -c 20 --start 1
---end 25000000 --impute2
+--vcfOutFormat z
 ````
 
 ## Imputation
@@ -80,16 +56,15 @@ chunk_20_0000000001_0020000000.fam --input-map genetic_map_b37.tar.gz/genetic_ma
 ````sh
 ./Minimac4 --refHaps HRC.r1-1.GRCh37.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz
 --haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000
---window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome
+--window 500000 --prefix chunk_1_0000000001_0020000000 --cpus 1 --chr 20 --noPhoneHome
 --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001
 ````
-
 If a map file is available (currently TOPMed only), the following cmd is executed:
 
 ````sh
 ./Minimac4 --refHaps HRC.r1-1.GRCh38.chr1.shapeit3.mac5.aa.genotypes.m3vcf.gz
 --haps chunk_1_0000000001_0020000000.phased.vcf --start 1 --end 20000000
---window 500000 --prefix chunk_1_0000000001_0020000000 --chr 20 --noPhoneHome
+--window 500000 --prefix chunk_1_0000000001_0020000000 --cpus 1 --chr 20 --noPhoneHome
 --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 --referenceEstimates --map B38_MAP_FILE.map
 ````
 
