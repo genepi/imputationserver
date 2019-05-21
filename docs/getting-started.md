@@ -86,7 +86,7 @@ Please select the population of your uploaded samples. This information is used 
 | **AMR** | all |
 | **EUR** | all |
 | **Mixed** | all |
-| **AA** | CAPPA |
+| **AA** | CAAPA |
 | **ASN** | 1000 Genomes Phase 1 (Version 3) |
 | **EAS** | 1000 Genomes Phase 3 (Version 5) |
 | **SAS** | 1000 Genomes Phase 3 (Version 5) |
