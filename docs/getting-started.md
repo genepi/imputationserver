@@ -12,10 +12,11 @@ Please cite this paper if you use Michigan Imputation Server in your GWAS study:
 
 ## Setup your first imputation job
 
-Please [login](https://imputationserver.sph.umich.edu/index.html#!pages/login) with your credentials and click on the **Run** tab to start a new imputation job. The submission dialog appears where you can specify the properties of your imputation job.
+Please [login](https://imputationserver.sph.umich.edu/index.html#!pages/login) with your credentials and click on the **Run** tab to start a new imputation job. The submission dialog allows you to specify the properties of your imputation job.
 
 ![](images/submit-job01.png)
 
+The following options can now be specified:
 
 ### Reference Panel
 
@@ -68,9 +69,15 @@ After clicking on the **Add URLs** button, a new dialog appears where you can ad
 
 ![](images/upload-data04.png)		
 
+### Build
+Please select the build of your data. Currently the options **hg19** and **hg38** are supported. Michigan Imputation Server automatically updates the genome positions (liftOver) of your data. All reference panels except TOPMed are based on hg19 coordinates.
+
+### rsq Filter
+To minimize the file size, Michigan Imputation Server includes a r<sup>2</sup> filter option, excluding all imputed SNPs with a r<sup>2</sup>-value (= imputation quality) smaller then the specified value.
+
 ### Phasing
 
-If your uploaded data is *unphased*, then you can decide which algorithm is used to phase your data before we can start genotype imputation. Eagle v2.4 is the default phasing method. In case your uploaded VCF file contains phased genotypes, this selection has no effect and genotypes are used as uploaded.
+If your uploaded data is *unphased*, Eagle v2.4 will be used for phasing. In case your uploaded VCF file already contains phased genotypes, plese select "No phasing".
 
 |  Algorithm | Description |
 | ---------- |-------------|
@@ -92,13 +99,6 @@ Please select the population of your uploaded samples. This information is used 
 | **SAS** | 1000 Genomes Phase 3 (Version 5) |
 
 In case your population is not listed or your samples are from different populations, please select **Mixed** to skip the allele frequency check.
-
-### Build
-Please select the build of your data. Currently the options **hg19** and **hg38** are supported. Michigan Imputation Server automatically updates the genome positions (liftOver) of your data. All reference panels except TOPMed are based on hg19 coordinates.
-
-### rsq Filter
-To minimize the file size, Michigan Imputation Server includes a r^2 filter option, excluding all imputed SNPs with a value smaller then the specified value.
-
 
 ### Mode
 
