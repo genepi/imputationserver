@@ -10,7 +10,7 @@ The TOPmed panel consists of currently 125,568 haplotypes.
 | ||
 | | |
 | Number of Samples | 62784 |
-| Sites (chr1-22) | 463,000,000 |
+| Sites (chr1-22) | - |
 | Chromosomes | 1-22, X|
 | Website: | [https://www.nhlbiwgs.org/](https://www.nhlbiwgs.org/) |
 

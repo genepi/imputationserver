@@ -1,7 +1,7 @@
 # Getting started
 
 To use Michigan Imputation Server, a [registration](https://imputationserver.sph.umich.edu/index.html#!pages/register) is required.
-We send an activation mail to the provided address. Please follow the instructions on the email to activate your account. If it doesn't arrive, ensure you have entered the correct email and check your spam folder.
+We send an activation mail to the provided address. Please follow the instructions in the email to activate your account. If it doesn't arrive, ensure you have entered the correct email address and check your spam folder.
 
 **After the email address has been verified, the service can be used without any costs.**
 
@@ -14,76 +14,71 @@ Please cite this paper if you use Michigan Imputation Server in your GWAS study:
 
 Please [login](https://imputationserver.sph.umich.edu/index.html#!pages/login) with your credentials and click on the **Run** tab to start a new imputation job. The submission dialog appears where you can specify the properties of your imputation job.
 
-![](images/image02.png)
+![](images/submit-job01.png)
 
 
 ### Reference Panel
 
-Our server offers genotype imputation from different reference panels. The most accurate and largest panel is **HRC (Version r1.1 2016)**. Please select one that fulfils your needs and supports the population of your input data:
+Our server offers genotype imputation from different reference panels. The most accurate and largest panel is **HRC (Version r1.1 2016)**. Please select one that fulfills your needs and supports the population of your input data:
 
-- TOPMed Freeze5
 - HRC (Version r1.1 2016)
 - HRC (Version r1 2015)
 - 1000 Genomes Phase 3 (Version 5)
 - 1000 Genomes Phase 1 (Version 3)
 - CAAPA - African American Panel
 - HapMap 2
+- TOPMed Freeze5 (soon)
 
 More details about all available reference panels can be found [here](/reference-panels/).
 
 ### Input files
 
-VCF files can be uploaded either from your local disk or by specifying a remote sftp location. In both cases, several files or several locations can be selected at once. Please make sure that all files fulfil the [requirements](/prepare-your-data).
+VCF files can be uploaded either from your local disk or by specifying a remote sftp ot HTTPS location. In both cases, several files or several locations can be selected at once. Please make sure that all files fulfill the [requirements](/prepare-your-data).
 
 
 #### Upload VCF files from your computer
 
 When using the file upload, data is uploaded from your local file system to Michigan Imputation Server. By clicking on **Select Files** an open dialog appears where you can select your VCF files:
 
-![](images/fileupload01.png)
+![](images/upload-data01.png)
 
 Multiple files can be selected using the `ctrl`, `cmd` or `shift` keys, depending on your Operating System.
 After you confirmed your choice, all selected files are listed in the submission dialog:
 
-![](images/fileupload02.png)
-
+![](images/upload-data02.png)
 
 
 #### Import VCF files from SFTP Server
 
-An other convenient way to use your data is by importing it directly from a remote SSH server. This can be achieved by selecting **Secure File Transfer Protocol**.
+An other convenient way to use your data is by importing it directly from a remote SSH server. This can be achieved by selecting **Secure File Transfer Protocol (SFTP)**.
 
-![](images/image03.png)
+After clicking on the **Import Files** button, a new dialog appears where you can enter your SFTP credentials and the URLs of your files or folders. A URL consists of the server address followed by the full Unix path. A path can be either point to a folder or to a file. Several paths can be specified in consecutive lines.
 
-After clicking on the **Add Files** button, a new dialog appears where you can enter your SFTP credentials and the URLs of your files or folders. A URL consists of the server address followed by the full Unix path. A path can be either point to a folder or to a file. Several paths can be specified in consecutive lines.
-
-In this examples, the server address is `sftp://my-server.com` followed by the full path of the folder `/home/lforer/mystudy/` which contains all VCF files. No colon is included between server path and file path.
-
-![](images/sftp01.png)
-
-It is also possible to specify only a subset of VCF files:
-
-![](images/sftp02.png)
+![](images/upload-data03.png)
 
 
 !!! important
     Be sure that your SFTP server is **not in a private network** and you are able to establish a connection from outside.
 
+#### Import VCF files from HTTPS
+
+Data can also be imported by using HTTP(S) link. This can be achieved by selecting **URLs (HTTP)**.
+
+After clicking on the **Add URLs** button, a new dialog appears where you can add the links.
+
+![](images/upload-data04.png)		
+
 ### Phasing
 
-If your uploaded data is *unphased*, then you can decide which algorithm is used to phase your data before we can start genotype imputation. Eagle v2.3 is the default phasing method. In case your uploaded VCF file contains phased genotypes, this selection has no effect and genotypes are used as uploaded.
+If your uploaded data is *unphased*, then you can decide which algorithm is used to phase your data before we can start genotype imputation. Eagle v2.4 is the default phasing method. In case your uploaded VCF file contains phased genotypes, this selection has no effect and genotypes are used as uploaded.
 
 |  Algorithm | Description |
 | ---------- |-------------|
-| **Eagle v2.3** | The [Eagle](https://data.broadinstitute.org/alkesgroup/Eagle/) algorithm estimates haplotype phase using the selected reference panel. This method is suitable for single sample imputation. After imputation you will receive phased genotypes in your VCF files. |
-| **ShapeIT v2.r790** | The [ShapeIT](https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html) algorithm estimates haplotype phase within your uploaded data. Your uploaded data needs min. 50 samples to use this method. After imputation you will receive unphased genotypes in your VCF files. |
-| **HapiUR** | The [HapiUR](https://code.google.com/p/hapi-ur/) algorithm estimates haplotype phase within your uploaded data. Your uploaded data needs min. 50 samples to use this method. After imputation you will receive phased genotypes in your VCF files. |
-
-If you plan to impute a single sample (e.g. from 23andMe) then you have to use **Eagle**. All other algorithms are not using a reference based approach and need more than 50 samples.
+| **Eagle v2.4** | The [Eagle](https://data.broadinstitute.org/alkesgroup/Eagle/) algorithm estimates haplotype phase using the HRC reference panel. This method is also suitable for single sample imputation. After phasing or imputation you will receive phased genotypes in your VCF files. |
 
 ### Population
 
-Please select the population of your uploaded samples. This information is used to compare the allele frequencies between your data and the reference panel. Please note that not every reference panel supports all subpopulations.
+Please select the population of your uploaded samples. This information is used to compare the allele frequencies between your data and the reference panel. Please note that not every reference panel supports all sub-populations.
 
 |  Population | Supported Reference Panels |
 | ----------- | ---------------------------|
@@ -98,30 +93,40 @@ Please select the population of your uploaded samples. This information is used 
 
 In case your population is not listed or your samples are from different populations, please select **Mixed** to skip the allele frequency check.
 
+### Build
+Please select the build of your data. Currently the options **hg19** and **hg38** are supported. Michigan Imputation Server automatically updates the genome positions (liftOver) of your data. All reference panels except TOPMed are based on hg19 coordinates.
+
+### rsq Filter
+To minimize the file size, Michigan Imputation Server includes a r^2 filter option, excluding all imputed SNPs with a value smaller then the specified value.
+
+
 ### Mode
 
-Please select if you want to run **Quality Control & Imputation** or **Quality Control Only**.
+Please select if you want to run **Quality Control & Imputation**, **Quality Control & Phasing Only**  or **Quality Control Only**.
 
 
 ### AES 256 encryption
 
-Imputation Server encrypts all zip files by default. Please click on the checkbox to use AES 256 encryption. Please note that AES encryption does not work with standard unzip programs. We recommender to use 7z instead.
-
+Imputation Server encrypts all zip files by default. Please tick this checkbox to use AES 256 encryption. Please note that AES encryption does not work with standard unzip programs. We recommend to use 7z instead.
 
 
 ## Start your imputation job
 
-After confirming our *Terms of Service*, the imputation process can be started immediately by clicking on **Start Imputation**. Input Validation and Quality Control are executed immediately to give you feedback about the data-format and its quality. If your data passed this steps, your job is added to our Imputation queue and will be processed as soon as possible. You can check the position in the queue on the job summary page.
+After confirming our *Terms of Service*, the imputation process can be started immediately by clicking on **Start Imputation**. Input Validation and Quality Control are executed immediately to give you feedback about the data-format and its quality. If your data passed this steps, your job is added to our imputation queue and will be processed as soon as possible. You can check the position in the queue on the job summary page.
 
-![](images/queue.png)
+![](images/queue01.png)
 
 We notify you by email as soon as the job is finished or your data don't pass the Quality Control steps.
 
 ### Input Validation
 
-In a first step we check if your uploaded files are valid and we calculate some basics statistics such as #samples, chromosomes and SNPs.
+In a first step we check if your uploaded files are valid and we calculate some basic statistics such as amount of samples, chromosomes and SNPs.
 
-![](images/input-validation.png)
+![](images/input-validation01.png)
+
+After Input Validation has finished, basic statistics can be viewed directly in the web interface.
+
+![](images/input-validation02.png)
 
 If you encounter problems with your data please read this tutorial about [Data Preparation](/prepare-your-data) to ensure your data is in the correct format.
 
@@ -138,7 +143,7 @@ In this step we check each variant and exclude it in case of:
 
 All filtered variants are listed in a file called `statistics.txt` which can be downloaded by clicking on the provided link. More informations about our QC pipeline can be found [here](/pipeline).
 
-![](images/qc.png)
+![](images/quality-control02.png)
 
 If you selected a population, we compare the allele frequencies of the uploaded data with those from the reference panel. The result of this check is available in the QC report and can be downloaded by clicking on `qcreport.html`.
 
@@ -146,15 +151,15 @@ If you selected a population, we compare the allele frequencies of the uploaded 
 
 Imputation is achieved with Minimac4. The progress of all uploaded chromosomes is updated in real time and visualized with different colors.
 
-![](images/results.png)
+![](images/imputation01.png)
 
 ### Data Compression and Encryption
 
-If imputation was successfull, we compress and encrypt your data and send you a random password via mail.
+If imputation was successful, we compress and encrypt your data and send you a random password via mail.
 
-![](images/export.png)
+![](images/compression01.png)
 
-This password is not stored on our server. Therefore, if you lost the password, there is no way to resend it to you.
+This password is not stored on our server at any time. Therefore, if you lost the password, there is no way to resend it to you.
 
 ## Download results
 
@@ -162,33 +167,28 @@ The user is notified by email, as soon as the imputation job has finished. A zip
 
 ![](images/downloads01.png)
 
-!!! important "All data is deleted automatically after 3 day"
+!!! important "All data is deleted automatically after 5 days"
     Be sure to download all needed data in this time period. We send you a reminder 24 hours before we delete your data. Once your job hast the state **retired**, we are not able to recover your data!
 
 
 
-###  Via web Browser
+###  Via a web browser
 
 All results can be downloaded directly via your browser by clicking on the filename.
 
-![](images/downloads02.png)
+![](images/share-data02.png)
 
-### Via Commandline
+In order to download results via the commandline using `wget`or `aria2` you need to click on the **share** symbol (located right to the file size) to get the needed private links.
 
-In order to download results via the commandline using `wget`or `aria2` you need to click on the **share** symbol to get the needed private links.
-
-![](images/downloads03.png)
+![](images/share-data01.png)
 
 A new dialog appears which provides you the private link. Click on the tab **wget command** to get a copy & paste ready command that can be used on Linux or MacOS to download the file in you terminal:
 
-![](images/share01.png)
 
 ### Download all results at once
 
 To download all files of a folder (for example folder **Imputation Results**) you can click on the **share** symbol of the folder:
 
-![](images/downloads04.png)
+![](images/share-data02.png)
 
 A new dialog appears which provides you all private links at once. Click on the tab  **wget commands** to get copy & paste ready commands that can be used on Linux or MacOS to download all files:
-
-![](images/share02.png)
