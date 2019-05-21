@@ -10,7 +10,7 @@ Michigan Imputation Server uses a token-based authentication. The token is requi
 ![Activate API](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/api.png)
 
 ## Job Submission
-The API allows to set several imputation parameters. Data need to be specified in vcf.gz or in the 23andMe data format (txt or zip).
+The API allows to set several imputation parameters.
 
 ### POST /jobs/submit/minimac4
 
