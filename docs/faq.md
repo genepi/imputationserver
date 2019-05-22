@@ -1,22 +1,22 @@
-# FAQ
+# Frequently Asked Questions
 
-## No password received
-- Please check your Mail SPAM folder. Passwords are not stored on server side at any time.
+## I did not receive a password for my imputation job
+Michigan Imputation Server creates a random password for each imputation job. This password is not stored on server-side at any time. If you didn't receive a password, please check your Mail SPAM folder. Please note that we are not able to re-send you the password.  
 
-## Unzip not working
-- When selecting AES256 encryption, please use 7z to unzip your files (sudo apt-get install p7zip-full).
-
-## Password includes special characters
-- Please put single/double quotes around the password when extracting it from the command line.
+## Unzip command is not working
+Please check the following points: (1) When selecting AES256 encryption, please use 7z to unzip your files (Debian: `sudo apt-get install p7zip-full`). For our default encryption all common programs should work. (2) If your password includes special characters (e.g. \\), please put single or double quotes around the password when extracting it from the command line (e.g. `7z x -p"PASSWORD" chr_22.zip`).
 
 ## Extending expiration date or reset download counter
-- Please [contact us](/contact).
+Your data is available for 7 days. In case you need an extension, please let [us](/contact) know.
 
-## Problems with wget
-- Please give [aria2](https://aria2.github.io/) a try.
+## How can I improve the download speed?
+[aria2](https://aria2.github.io/) allows parallel downloads. Please keep in mind to raise the k parameter significantly (-k, --min-split-size=SIZE). You will otherwise hit the download limit (thanks to Anthony Marcketta).
 
-## Download all results at once
-- Open the results tab. The last column includes direct links to all files.
+## Can I download all results at once?
+We provide wget command for all results. Please open the results tab. The last column in each row includes direct links to all files.
 
-## Local Imputation Server Setup
-- Please have a look [here](/docker).
+## Can I set up Michigan Imputation Server locally?
+We are providing a single-node Docker image that can be used to impute from Hapmap2 and 1000G Phase3 locally. Click [here](/docker) to give it a try. For usage in production, we highly recommend setting up a Hadoop cluster.
+
+## Your web service looks great. Can I set up my own web service as well?
+All web service functionality is provided by [Cloudgene](http://www.cloudgene.io/). Please contact us, in case you want to set up your own service.
