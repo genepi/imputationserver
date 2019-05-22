@@ -4,9 +4,8 @@ The REST APIs provide programmatic ways to submit new jobs and to download data 
 
 
 ## Authentication
-Michigan Imputation Server uses a token-based authentication. The token is required for all future interaction with the server. The token can be created and downloaded from your user profile:
+Michigan Imputation Server uses a token-based authentication. The token is required for all future interaction with the server. The token can be created and downloaded from your user profile (username -> Profile):
 
-![Admin Panel](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/admin-panel.png?raw=true)
 ![Activate API](https://raw.githubusercontent.com/genepi/imputationserver-docker/master/images/api.png)
 
 ## Job Submission
@@ -20,6 +19,7 @@ The following parameters can be set:
 | ------------- |:-------------| :-----|
 | input-files      | /path/to/file |  |
 | input-mode | qconly, imputation     | imputation   |
+| input-password | user-defined password      |  auto  |
 | input-files-source | file-upload, sftp, http     |  default: file-upload  |
 | input-refpanel     | apps@hapmap2, apps@phase1, apps@phase3, apps@hrc-r1.1 apps@caapa      | - |
 | input-phasing | eagle, hapiur, shapeit      |  eagle  |
