@@ -1,6 +1,8 @@
 # Contact
 
-The complete Michigan Imputation Server source code is available on [GitHub](https://github.com/genepi/imputationserver). Feel free to create issues and pull requests. Please contact [Christian Fuchsberger](mailto:cfuchsb@umich.edu) in case of other problems.
+The complete Michigan Imputation Server source code is available on [GitHub](https://github.com/genepi/imputationserver). Feel free to create issues and pull requests. Before contacting us, please also have a look at the [FAQ page](/faq) first. 
+
+Please contact [Christian Fuchsberger](mailto:cfuchsb@umich.edu) in case of other problems.
 
 ## Michigan Imputation Server Team
 
