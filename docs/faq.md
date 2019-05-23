@@ -10,7 +10,7 @@ Please check the following points: (1) When selecting AES256 encryption, please 
 Your data is available for 7 days. In case you need an extension, please let [us](/contact) know.
 
 ## How can I improve the download speed?
-[aria2](https://aria2.github.io/) allows parallel downloads. Please keep in mind to raise the k parameter significantly (-k, --min-split-size=SIZE). You will otherwise hit the download limit (thanks to Anthony Marcketta).
+[aria2](https://aria2.github.io/) tries to utilize your maximum download bandwidth. Please keep in mind to raise the k parameter significantly (-k, --min-split-size=SIZE). You will otherwise hit the Michigan Imputation Server download limit for each file (thanks to Anthony Marcketta for point this out).
 
 ## Can I download all results at once?
 We provide wget command for all results. Please open the results tab. The last column in each row includes direct links to all files.
