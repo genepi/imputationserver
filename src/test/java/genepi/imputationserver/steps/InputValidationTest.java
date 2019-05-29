@@ -142,6 +142,122 @@ public class InputValidationTest extends TestCase {
 		assertTrue(context.hasInMemory("[ERROR] Unable to parse header with error"));
 
 	}
+	
+	public void testMixedPopulation() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/single";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hrc-fake");
+		
+		context.setInput("phasing", "eagle");
+		context.setInput("population", "mixed");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(true, result);
+
+	}
+	
+	public void testCorrectHrcPopulation() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/single";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hrc-fake");
+		
+		context.setInput("phasing", "eagle");
+		context.setInput("population", "eur");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(true, result);
+
+	}
+	
+	public void testWrongHrcPopulation() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/single";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hrc-fake");
+		
+		context.setInput("phasing", "eagle");
+		context.setInput("population", "aas");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+		
+		assertTrue(context.hasInMemory("[ERROR] Please select EUR or mixed population for the HRC panel"));
+
+	}	
+	
+	public void testWrong1KP3Population() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/single";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase3-fake");
+		
+		context.setInput("phasing", "eagle");
+		context.setInput("population", "asn");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+		
+		assertTrue(context.hasInMemory("[ERROR] Please select AFR, AMR, EAS, SAS, EUR or mixed population for 1000G Phase 3"));
+
+	}	
+	
+	public void testWrongTopmedPopulation() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/single";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "TOPMedfreeze6-fake");
+		
+		context.setInput("phasing", "eagle");
+		context.setInput("population", "asn");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+		
+		assertTrue(context.hasInMemory("[ERROR] Please select AFR, AMR, EAS, SAS, EUR or mixed population for TOPMed"));
+
+	}
 
 	public void testUnorderedVcfFile() throws IOException {
 

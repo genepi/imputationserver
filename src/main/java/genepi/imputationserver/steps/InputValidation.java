@@ -218,14 +218,13 @@ public class InputValidation extends WorkflowStep {
 		}
 
 		if (validVcfFiles.size() > 0) {
-			
+
 			context.endTask(validVcfFiles.size() + " valid VCF file(s) found.\n\n" + infos, WorkflowContext.OK);
-			
+
 			if (!phased && (phasing == null || phasing.isEmpty() || phasing.equals("no_phasing"))) {
 				context.error("Your input data is unphased. Please select an algorithm for phasing.");
 				return false;
 			}
-
 
 			// init counters
 			context.incCounter("samples", noSamples);
@@ -268,41 +267,53 @@ public class InputValidation extends WorkflowStep {
 			return false;
 		}
 
-		// check populations
-		if ((reference.contains("hrc") && !population.equals("eur"))) {
+		// check population
+		if (!population.equals("mixed")) {
 
-			context.error("Please select the EUR population for the HRC panel");
+			if (reference.equals("hapmap2") && !population.equals("eur")) {
 
-			return false;
-		}
+				context.error("Please select EUR or mixed population for the HapMap reference panel");
 
-		if ((reference.equals("caapa") && !population.equals("AA"))) {
+				return false;
+			}
 
-			context.error("Please select the AA population for the CAAPA panel");
+			if (reference.contains("phase1") && (!population.equals("afr") && !population.equals("amr")
+					&& !population.equals("asn") && !population.equals("eur"))) {
 
-			return false;
-		}
+				context.error("Please select AFR, AMR, ASN, EUR or mixed population for 1000G Phase 1");
 
-		if ((reference.equals("hapmap2") && !population.equals("eur"))) {
+				return false;
+			}
 
-			context.error("Please select the EUR population for the HapMap reference panel");
+			if (reference.contains("phase3") && (!population.equals("afr") && !population.equals("amr")
+					&& !population.equals("eas") && !population.equals("sas") && !population.equals("eur"))) {
 
-			return false;
-		}
+				context.error("Please select AFR, AMR, EAS, SAS, EUR or mixed population for 1000G Phase 3");
 
-		if ((reference.equals("phase1") && population.equals("sas"))
-				|| (reference.equals("phase1") && population.equals("eas"))) {
+				return false;
+			}
 
-			context.error("The selected population (SAS, EAS) is not allowed for this panel");
+			if (reference.equals("caapa") && !population.equals("AA")) {
 
-			return false;
-		}
+				context.error("Please select AA or mixed population for the CAAPA panel");
 
-		if ((reference.equals("phase3") && population.equals("asn"))) {
+				return false;
+			}
 
-			context.error("The selected population (ASN) is not allowed for the 1000G Phase3 reference panel");
+			if (reference.contains("hrc") && !population.equals("eur")) {
 
-			return false;
+				context.error("Please select EUR or mixed population for the HRC panel");
+
+				return false;
+			}
+
+			if (reference.toLowerCase().contains("topmed") && (!population.equals("afr") && !population.equals("amr")
+					&& !population.equals("eas") && !population.equals("sas") && !population.equals("eur"))) {
+
+				context.error("Please select AFR, AMR, EAS, SAS, EUR or mixed population for TOPMed");
+
+				return false;
+			}
 		}
 
 		return true;
