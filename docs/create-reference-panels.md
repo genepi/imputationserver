@@ -13,9 +13,9 @@ Instructions can be found [here](http://imputationserver.readthedocs.io/en/lates
 Your reference data has to be available in the VCF file format (one for each chromosome). Currently GRCh37 coordinates are required. 
 
 ### Software
-
-- [Minimac3](https://github.com/Santy-8128/Minimac3)
-- [bcftools](https://samtools.github.io/bcftools/bcftools.html)
+- To create the m3vcf files for imputation, please use [Minimac3](https://github.com/Santy-8128/Minimac3).
+- To create the bcf files for phasing, please use [bcftools](https://samtools.github.io/bcftools/bcftools.html) and tabix.
+- To create legend files for QC, please use vcftools.
 
 
 ## Folder Structure
@@ -106,6 +106,8 @@ A legend file is a tab-delimited file consisting of 5 columns (`id`, `position`,
 `a0` and `a1` including the ref/alt alleles, `population.aaf` the alternate allele frequency. 
 Please note that `population` must be substituted by the actual population (e.g. eur). This population is then specified in the [minimac4.yaml file](https://github.com/genepi/imputationserver/blob/master/files/minimac4.yaml). 
 A legend file for chr20 can be found [here](https://github.com/genepi/imputationserver/blob/master/test-data/configs/hapmap-chr20/ref-panels/hapmap_r22.chr20.CEU.hg19_impute.legend.gz?raw=true).
+
+Please execute the following commands (starting from vcf files) to create the legend files:
 
 ```sh
 for CHR in `seq 1 22`
