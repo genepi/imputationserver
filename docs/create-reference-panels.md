@@ -2,21 +2,10 @@
 
 This tutorial will help you to create your own reference panel and integrate it into Michigan Imputation Server. 
 
-## Requirements
-
-### Running Docker Cluster
-First, please setup a new local Michigan Imputation Server using Docker and install the HapMap reference panel. 
-Instructions can be found [here](http://imputationserver.readthedocs.io/en/latest/docker/).
-
-### Data
-
-Your reference data has to be available in the VCF file format (one for each chromosome). Currently GRCh37 coordinates are required. 
-
-### Software
-- To create the m3vcf files for imputation, please use [Minimac3](https://github.com/Santy-8128/Minimac3).
-- To create the bcf files for phasing, please use [bcftools](https://samtools.github.io/bcftools/bcftools.html) and tabix.
+## Required Software
+- To create m3vcf files for imputation, please use [Minimac3](https://github.com/Santy-8128/Minimac3).
+- To create bcf files for phasing, please use [bcftools](https://samtools.github.io/bcftools/bcftools.html) and tabix.
 - To create legend files for QC, please use vcftools.
-
 
 ## Folder Structure
 
