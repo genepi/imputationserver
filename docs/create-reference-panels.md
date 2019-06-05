@@ -84,8 +84,8 @@ BCF files are required for phasing with [eagle](https://data.broadinstitute.org/
 ```sh
 for CHR in `seq 1 22`
 do
-    bcftools view chr${CHR}.vcf.gz -o chr${CHR}.bcf -Oz 
-    bcftool index chr${CHR}.bcf  
+    bcftools view chr${CHR}.vcf.gz -O b -o chr${CHR}.bcf.gz
+    bcftools index chr${CHR}.bcf.gz  
 done
 ```
 ## Create m3vcf files
