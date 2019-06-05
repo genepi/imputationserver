@@ -84,8 +84,8 @@ BCF files are required for phasing with [eagle](https://data.broadinstitute.org/
 ```sh
 for CHR in `seq 1 22`
 do
-    bcftools view chr${CHR}.vcf.gz -O b -o chr${CHR}.bcf.gz
-    bcftools index chr${CHR}.bcf.gz  
+    bcftools view chr${CHR}.vcf.gz -O b -o chr${CHR}.bcf
+    bcftools index chr${CHR}.bcf
 done
 ```
 ## Create m3vcf files
@@ -102,10 +102,19 @@ done
 
 ## Create legend files
 
-A legend file is a space-separated file consisting of 5 columns (`id`, `position`, `a0`, `a1`, `population.aaf`). It is used by Imputation Server to create QC Statistics. 
+A legend file is a tab-delimited file consisting of 5 columns (`id`, `position`, `a0`, `a1`, `population.aaf`). It is used by Michigan Imputation Server to create QC Statistics. 
 `a0` and `a1` including the ref/alt alleles, `population.aaf` the alternate allele frequency. 
 Please note that `population` must be substituted by the actual population (e.g. eur). This population is then specified in the [minimac4.yaml file](https://github.com/genepi/imputationserver/blob/master/files/minimac4.yaml). 
 A legend file for chr20 can be found [here](https://github.com/genepi/imputationserver/blob/master/test-data/configs/hapmap-chr20/ref-panels/hapmap_r22.chr20.CEU.hg19_impute.legend.gz?raw=true).
+
+```sh
+for CHR in `seq 1 22`
+do
+    vcftools --gzvcf chr${CHR}.vcf.gz --freq --out chr$i
+    sed 's/:/\t/g' chr$i.frq | sed 1d | awk '{print $1":"$2" "$2" "$5" "$7" "$8}' > chr$i.legend
+    cat <header.txt> chr$i.legend | bgzip > chr$i.legend.gz
+done
+```
 
 
 ## Reference genetic maps
