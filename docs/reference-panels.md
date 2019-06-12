@@ -75,7 +75,7 @@ Whole genome sequences were available on 883 individuals from 19 case-control st
 
 | ||
 | | |
-| Number of Samples | - |
+| Number of Samples | 60 |
 | Sites (chr1-22) | 2,542,916 |
 | Chromosomes | 1-22 |
 | Website: | [http://www.hapmap.org](http://www.hapmap.org) |
