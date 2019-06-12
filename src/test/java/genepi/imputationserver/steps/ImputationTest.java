@@ -271,7 +271,7 @@ public class ImputationTest {
 
 	}
 
-	@Test
+	/*@Test
 	public void testPipelineWithSFTP() throws IOException, ZipException, InterruptedException {
 
 		TestSFTPServer server = new TestSFTPServer("test-data/data");
@@ -353,7 +353,7 @@ public class ImputationTest {
 
 		server.stop();
 
-	}
+	}*/
 
 	@Test
 	public void testPipelineWithEagle() throws IOException, ZipException {
