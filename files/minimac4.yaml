@@ -93,16 +93,10 @@ workflow:
      - id: population
        description: Population
        type: list
-       value: eur
        values:
-         eur: EUR
-         afr: AFR
-         asn: ASN (Phase1 only)
-         amr: AMR
-         sas: SAS (Phase3 only)
-         eas: EAS (Phase3 only)
-         AA: AA (CAAPA)
-         mixed: Mixed
+          bind: refpanel
+          property: populations
+          category: RefPanel
                 
      - id: mode
        description: Mode

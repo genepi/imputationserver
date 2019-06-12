@@ -207,7 +207,7 @@ public class InputValidationTest extends TestCase {
 		// check if step is failed
 		assertEquals(false, result);
 		
-		assertTrue(context.hasInMemory("[ERROR] Please select EUR or mixed population for the HRC panel"));
+		assertTrue(context.hasInMemory("[ERROR] Population 'aas' is not supported by reference panel 'hrc-fake'"));
 
 	}	
 	
@@ -231,7 +231,7 @@ public class InputValidationTest extends TestCase {
 		// check if step is failed
 		assertEquals(false, result);
 		
-		assertTrue(context.hasInMemory("[ERROR] Please select AFR, AMR, EAS, SAS, EUR or mixed population for 1000G Phase 3"));
+		assertTrue(context.hasInMemory("[ERROR] Population 'asn' is not supported by reference panel 'phase3-fake'"));
 
 	}	
 	
@@ -255,7 +255,7 @@ public class InputValidationTest extends TestCase {
 		// check if step is failed
 		assertEquals(false, result);
 		
-		assertTrue(context.hasInMemory("[ERROR] Please select AFR, AMR, EAS, SAS, EUR or mixed population for TOPMed"));
+		assertTrue(context.hasInMemory("[ERROR] Population 'asn' is not supported by reference panel 'TOPMedfreeze6-fake'"));
 
 	}
 

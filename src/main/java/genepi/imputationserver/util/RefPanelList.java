@@ -1,7 +1,6 @@
 package genepi.imputationserver.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 import com.esotericsoftware.yamlbeans.YamlWriter;
 
@@ -35,18 +33,16 @@ public class RefPanelList {
 
 		if (properties != null) {
 			RefPanel panel = new RefPanel();
-			Map<String, String> map = (Map<String, String>) properties;
-			panel.setBuild(map.get("build"));
-			panel.setHdfs(map.get("hdfs"));
-			panel.setId(map.get("id"));
-			panel.setLegend(map.get("legend"));
-			panel.setMapEagle(map.get("mapEagle"));
-			panel.setMapHapiUR(map.get("mapHapiUR"));
-			panel.setMapMinimac(map.get("mapMinimac"));
-			panel.setMapPatternHapiUR(map.get("mapPatternHapiUR"));
-			panel.setMapPatternShapeIT(map.get("mapPatternShapeIT"));
-			panel.setMapShapeIT(map.get("mapShapeIT"));
-			panel.setRefEagle(map.get("refEagle"));
+			Map<String, Object> map = (Map<String, Object>) properties;
+			panel.setBuild(map.get("build").toString());
+			panel.setHdfs(map.get("hdfs").toString());
+			panel.setId(map.get("id").toString());
+			panel.setLegend(map.get("legend").toString());
+			panel.setMapEagle(map.get("mapEagle").toString());
+			panel.setMapMinimac(map.get("mapMinimac").toString());
+			panel.setRefEagle(map.get("refEagle").toString());
+			panel.setPopulations((Map<String, String>)map.get("populations"));
+			panel.setSamples((Map<String, String>)map.get("samples"));;			
 			return panel;
 		}
 		for (RefPanel panel : panels) {

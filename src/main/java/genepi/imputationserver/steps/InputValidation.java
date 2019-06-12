@@ -54,7 +54,7 @@ public class InputValidation extends WorkflowStep {
 	}
 
 	protected void setupTabix(String folder) {
-		VcfFileUtil.setTabixBinary(FileUtil.path(folder, "bin", "tabix"));
+		//VcfFileUtil.setTabixBinary(FileUtil.path(folder, "bin", "tabix"));
 	}
 
 	private boolean checkVcfFiles(WorkflowContext context) {
@@ -267,53 +267,17 @@ public class InputValidation extends WorkflowStep {
 			return false;
 		}
 
-		// check population
-		if (!population.equals("mixed")) {
-
-			if (reference.equals("hapmap2") && !population.equals("eur")) {
-
-				context.error("Please select EUR or mixed population for the HapMap reference panel");
-
-				return false;
+		if (!panel.supportsPopulation(population)) {
+			StringBuilder report = new StringBuilder();
+			report.append("Population '" + population + "' is not supported by reference panel '" + reference + "'.\n");
+			if (panel.getPopulations() != null) {
+				report.append("Available populations:");
+				for (String pop : panel.getPopulations().values()) {
+					report.append("\n - " + pop);
+				}
 			}
-
-			if (reference.contains("phase1") && (!population.equals("afr") && !population.equals("amr")
-					&& !population.equals("asn") && !population.equals("eur"))) {
-
-				context.error("Please select AFR, AMR, ASN, EUR or mixed population for 1000G Phase 1");
-
-				return false;
-			}
-
-			if (reference.contains("phase3") && (!population.equals("afr") && !population.equals("amr")
-					&& !population.equals("eas") && !population.equals("sas") && !population.equals("eur"))) {
-
-				context.error("Please select AFR, AMR, EAS, SAS, EUR or mixed population for 1000G Phase 3");
-
-				return false;
-			}
-
-			if (reference.equals("caapa") && !population.equals("AA")) {
-
-				context.error("Please select AA or mixed population for the CAAPA panel");
-
-				return false;
-			}
-
-			if (reference.contains("hrc") && !population.equals("eur")) {
-
-				context.error("Please select EUR or mixed population for the HRC panel");
-
-				return false;
-			}
-
-			if (reference.toLowerCase().contains("topmed") && (!population.equals("afr") && !population.equals("amr")
-					&& !population.equals("eas") && !population.equals("sas") && !population.equals("eur"))) {
-
-				context.error("Please select AFR, AMR, EAS, SAS, EUR or mixed population for TOPMed");
-
-				return false;
-			}
+			context.error(report.toString());
+			return false;
 		}
 
 		return true;

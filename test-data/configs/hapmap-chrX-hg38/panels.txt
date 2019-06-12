@@ -6,3 +6,7 @@ panels:
     mapEagle: ref-panels/genetic_map_hg38_withX.txt.gz
     refEagle: ref-panels/ALL.$chr.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.hg38.bcf
     build: hg38
+    samples:
+      eur: 60
+    populations:
+      eur: EUR

@@ -51,6 +51,7 @@ public class StatisticsTask implements ITask {
 
 	// input variables
 	private String population;
+	private boolean alleleFrequencyCheck;
 	private int chunkSize;
 	private int phasingWindow;
 	private String[] vcfFilenames;
@@ -524,7 +525,7 @@ public class StatisticsTask implements ITask {
 			if (insideChunk) {
 
 				// allele-frequency check
-				if (population != null && !population.equals("mixed") && refSnp.hasFrequencies()) {
+				if (alleleFrequencyCheck && refSnp.hasFrequencies()) {
 					SnpStats statistics = GenomicTools.calculateAlleleFreq(snp, refSnp, refSamples);
 					mafWriter.write(snp + "\t" + statistics.toString());
 				}
@@ -959,6 +960,14 @@ public class StatisticsTask implements ITask {
 
 	public void setBuild(String build) {
 		this.build = build;
+	}
+	
+	public void setAlleleFrequencyCheck(boolean alleleFrequencyCheck) {
+		this.alleleFrequencyCheck = alleleFrequencyCheck;
+	}
+	
+	public boolean isAlleleFrequencyCheck() {
+		return alleleFrequencyCheck;
 	}
 
 }
