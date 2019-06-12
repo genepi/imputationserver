@@ -26,7 +26,7 @@ public class InputValidation extends WorkflowStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		URLClassLoader cl = (URLClassLoader) InputValidation.class.getClassLoader();
+		/*URLClassLoader cl = (URLClassLoader) InputValidation.class.getClassLoader();
 
 		try {
 			URL url = cl.findResource("META-INF/MANIFEST.MF");
@@ -39,7 +39,7 @@ public class InputValidation extends WorkflowStep {
 
 		} catch (IOException E) {
 			// handle
-		}
+		}*/
 
 		if (!checkParameters(context)) {
 			return false;
