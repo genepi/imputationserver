@@ -76,7 +76,7 @@ It is also possible to submit a job via the commandline instead of the webbrowse
 First, start the Cloudgene webserver and give your docker container a name (e.g. mis-docker):
 
 ```sh
-docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ --name mis-docker genepi/imputationserver:v1.1.15
+docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ --name mis-docker genepi/imputationserver:v1.1.16
 ```
 
 After ~2-3 minutes your Michigan Imputation Server instance is ready.
