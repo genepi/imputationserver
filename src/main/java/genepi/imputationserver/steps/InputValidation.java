@@ -54,7 +54,7 @@ public class InputValidation extends WorkflowStep {
 	}
 
 	protected void setupTabix(String folder) {
-		//VcfFileUtil.setTabixBinary(FileUtil.path(folder, "bin", "tabix"));
+		VcfFileUtil.setTabixBinary(FileUtil.path(folder, "bin", "tabix"));
 	}
 
 	private boolean checkVcfFiles(WorkflowContext context) {
