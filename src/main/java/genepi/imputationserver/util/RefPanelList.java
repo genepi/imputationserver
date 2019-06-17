@@ -39,7 +39,11 @@ public class RefPanelList {
 			panel.setId(map.get("id").toString());
 			panel.setLegend(map.get("legend").toString());
 			panel.setMapEagle(map.get("mapEagle").toString());
-			panel.setMapMinimac(map.get("mapMinimac").toString());
+			if (map.get("mapMinimac") != null) {
+				panel.setMapMinimac(map.get("mapMinimac").toString());
+			}else {
+				panel.setMapMinimac(null);
+			}
 			panel.setRefEagle(map.get("refEagle").toString());
 			panel.setPopulations((Map<String, String>)map.get("populations"));
 			panel.setSamples((Map<String, String>)map.get("samples"));;			
