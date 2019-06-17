@@ -51,7 +51,7 @@ public class StatisticsTask implements ITask {
 
 	// input variables
 	private String population;
-	private boolean alleleFrequencyCheck;
+	private boolean alleleFrequencyCheck = true;
 	private int chunkSize;
 	private int phasingWindow;
 	private String[] vcfFilenames;
