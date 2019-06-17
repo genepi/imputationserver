@@ -26,20 +26,18 @@ public class InputValidation extends WorkflowStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		/*URLClassLoader cl = (URLClassLoader) InputValidation.class.getClassLoader();
-
-		try {
-			URL url = cl.findResource("META-INF/MANIFEST.MF");
-			Manifest manifest = new Manifest(url.openStream());
-			Attributes attr = manifest.getMainAttributes();
-			String buildVesion = attr.getValue("Version");
-			String buildTime = attr.getValue("Build-Time");
-			String builtBy = attr.getValue("Built-By");
-			context.println("Version: " + buildVesion + " (Built by " + builtBy + " on " + buildTime + ")");
-
-		} catch (IOException E) {
-			// handle
-		}*/
+		/*
+		 * URLClassLoader cl = (URLClassLoader) InputValidation.class.getClassLoader();
+		 * 
+		 * try { URL url = cl.findResource("META-INF/MANIFEST.MF"); Manifest manifest =
+		 * new Manifest(url.openStream()); Attributes attr =
+		 * manifest.getMainAttributes(); String buildVesion = attr.getValue("Version");
+		 * String buildTime = attr.getValue("Build-Time"); String builtBy =
+		 * attr.getValue("Built-By"); context.println("Version: " + buildVesion +
+		 * " (Built by " + builtBy + " on " + buildTime + ")");
+		 * 
+		 * } catch (IOException E) { // handle }
+		 */
 
 		if (!checkParameters(context)) {
 			return false;
@@ -112,9 +110,15 @@ public class InputValidation extends WorkflowStep {
 
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
-		if (panel == null) {
-			context.endTask("Reference '" + reference + "' not found.", WorkflowContext.ERROR);
+		RefPanel panel = null;
+		try {
+			panel = panels.getById(reference, context.getData("refpanel"));
+			if (panel == null) {
+				context.endTask("Reference '" + reference + "' not found.", WorkflowContext.ERROR);
+				return false;
+			}
+		} catch (Exception e) {
+			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
 			return false;
 		}
 
@@ -255,28 +259,36 @@ public class InputValidation extends WorkflowStep {
 
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
-		if (panel == null) {
-			StringBuilder report = new StringBuilder();
-			report.append("Reference '" + reference + "' not found.\n");
-			report.append("Available reference IDs:");
-			for (RefPanel p : panels.getPanels()) {
-				report.append("\n - " + p.getId());
-			}
-			context.error(report.toString());
-			return false;
-		}
+		try {
 
-		if (!panel.supportsPopulation(population)) {
-			StringBuilder report = new StringBuilder();
-			report.append("Population '" + population + "' is not supported by reference panel '" + reference + "'.\n");
-			if (panel.getPopulations() != null) {
-				report.append("Available populations:");
-				for (String pop : panel.getPopulations().values()) {
-					report.append("\n - " + pop);
+			RefPanel panel = panels.getById(reference, context.getData("refpanel"));
+			if (panel == null) {
+				StringBuilder report = new StringBuilder();
+				report.append("Reference '" + reference + "' not found.\n");
+				report.append("Available reference IDs:");
+				for (RefPanel p : panels.getPanels()) {
+					report.append("\n - " + p.getId());
 				}
+				context.error(report.toString());
+				return false;
 			}
-			context.error(report.toString());
+
+			if (!panel.supportsPopulation(population)) {
+				StringBuilder report = new StringBuilder();
+				report.append(
+						"Population '" + population + "' is not supported by reference panel '" + reference + "'.\n");
+				if (panel.getPopulations() != null) {
+					report.append("Available populations:");
+					for (String pop : panel.getPopulations().values()) {
+						report.append("\n - " + pop);
+					}
+				}
+				context.error(report.toString());
+				return false;
+			}
+
+		} catch (Exception e) {
+			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
 			return false;
 		}
 

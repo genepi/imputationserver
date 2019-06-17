@@ -29,24 +29,68 @@ public class RefPanelList {
 		this.panels = panels;
 	}
 
-	public RefPanel getById(String id, Object properties) {
+	public RefPanel getById(String id, Object properties) throws IOException {
 
 		if (properties != null) {
 			RefPanel panel = new RefPanel();
 			Map<String, Object> map = (Map<String, Object>) properties;
-			panel.setBuild(map.get("build").toString());
-			panel.setHdfs(map.get("hdfs").toString());
-			panel.setId(map.get("id").toString());
-			panel.setLegend(map.get("legend").toString());
-			panel.setMapEagle(map.get("mapEagle").toString());
+
+			if (map.get("hdfs") != null) {
+				panel.setHdfs(map.get("hdfs").toString());
+			} else {
+				throw new IOException("Property 'hdfs' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("id") != null) {
+				panel.setId(map.get("id").toString());
+			} else {
+				throw new IOException("Property 'id' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("legend") != null) {
+				panel.setLegend(map.get("legend").toString());
+			} else {
+				throw new IOException("Property 'legend' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("mapEagle") != null) {
+				panel.setMapEagle(map.get("mapEagle").toString());
+			} else {
+				throw new IOException("Property 'mapEagle' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("refEagle") != null) {
+				panel.setRefEagle(map.get("refEagle").toString());
+			} else {
+				throw new IOException("Property 'refEagle' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("populations") != null) {
+				panel.setPopulations((Map<String, String>) map.get("populations"));
+			} else {
+				throw new IOException("Property 'populations' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("samples") != null) {
+				panel.setSamples((Map<String, String>) map.get("samples"));
+				;
+			} else {
+				throw new IOException("Property 'samples' not found in cloudgene.yaml.");
+			}
+
+			// optional parameters
+			if (map.get("build") != null) {
+				panel.setBuild(map.get("build").toString());
+			} else {
+				panel.setBuild(null);
+			}
+
 			if (map.get("mapMinimac") != null) {
 				panel.setMapMinimac(map.get("mapMinimac").toString());
-			}else {
+			} else {
 				panel.setMapMinimac(null);
 			}
-			panel.setRefEagle(map.get("refEagle").toString());
-			panel.setPopulations((Map<String, String>)map.get("populations"));
-			panel.setSamples((Map<String, String>)map.get("samples"));;			
+
 			return panel;
 		}
 		for (RefPanel panel : panels) {

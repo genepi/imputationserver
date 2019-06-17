@@ -62,14 +62,20 @@ public class FastQualityControl extends WorkflowStep {
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
 		// check reference panel
-		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
-		if (panel == null) {
-			context.error("Reference '" + reference + "' not found.");
-			context.error("Available references:");
-			for (RefPanel p : panels.getPanels()) {
-				context.error(p.getId());
-			}
+		RefPanel panel = null;
+		try {
+			panel = panels.getById(reference, context.getData("refpanel"));
+			if (panel == null) {
+				context.error("Reference '" + reference + "' not found.");
+				context.error("Available references:");
+				for (RefPanel p : panels.getPanels()) {
+					context.error(p.getId());
+				}
 
+				return false;
+			}
+		} catch (Exception e) {
+			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
 			return false;
 		}
 
@@ -147,7 +153,6 @@ public class FastQualityControl extends WorkflowStep {
 			return false;
 		}
 
-		
 		int refSamples = panel.getSamplesByPopulation(population);
 		if (refSamples <= 0) {
 			context.warning("Skip allele frequency check.");
