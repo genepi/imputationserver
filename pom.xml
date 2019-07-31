@@ -180,7 +180,7 @@
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-hadoop</artifactId>
-			<version>mr1-1.3.0</version>
+			<version>mr1-1.3.2</version>
 		</dependency>
 
 		<dependency>
@@ -201,6 +201,12 @@
 			<version>2.6.0-cdh5.16.1</version>
 			<type>test-jar</type>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>net.java.dev.jets3t</groupId>
+					<artifactId>jets3t</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -209,6 +215,12 @@
 			<version>2.6.0-cdh5.16.1</version>
 			<type>test-jar</type>
 			<scope>test</scope>
+						<exclusions>
+				<exclusion>
+					<groupId>net.java.dev.jets3t</groupId>
+					<artifactId>jets3t</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -216,6 +228,16 @@
 			<artifactId>hadoop-test</artifactId>
 			<version>2.6.0-mr1-cdh5.16.1</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-httpclient</groupId>
+					<artifactId>commons-httpclient</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>net.java.dev.jets3t</groupId>
+					<artifactId>jets3t</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
