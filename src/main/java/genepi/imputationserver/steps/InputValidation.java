@@ -3,7 +3,6 @@ package genepi.imputationserver.steps;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -26,10 +25,8 @@ public class InputValidation extends WorkflowStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		URLClassLoader cl = (URLClassLoader) InputValidation.class.getClassLoader();
-
 		try {
-			URL url = cl.findResource("META-INF/MANIFEST.MF");
+			URL url = InputValidation.class.getClassLoader().getResource("META-INF/MANIFEST.MF");
 			Manifest manifest = new Manifest(url.openStream());
 			Attributes attr = manifest.getMainAttributes();
 			String buildVesion = attr.getValue("Version");
