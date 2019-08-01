@@ -346,7 +346,7 @@ public class InputValidation extends WorkflowStep {
 					try {
 
 						context.updateTask("Import " + url2 + "...", WorkflowContext.RUNNING);
-
+						context.log("Import " + url2 + "...");
 						IImporter importer = ImporterFactory.createImporter(url, target);
 
 						if (importer != null) {
