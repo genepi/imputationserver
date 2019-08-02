@@ -94,7 +94,7 @@ public class ImputationChrMT {
 
 		assertEquals("MT", vcfFile.getChromosome());
 		assertEquals(5435, vcfFile.getNoSamples());
-		//FileUtil.deleteDirectory(file);
+		FileUtil.deleteDirectory(file);
 
 	}
 
