@@ -132,6 +132,10 @@ public class StatisticsTask implements ITask {
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
 			String chromosome = myvcfFile.getChromosome();
+			
+			if (VcfFileUtil.isChrMT(chromosome)) {
+				myvcfFile.setPhased(true);
+			}
 
 			if (VcfFileUtil.isChrX(chromosome)) {
 
@@ -324,7 +328,6 @@ public class StatisticsTask implements ITask {
 		if (snp.getAlternateAllele().contains(",")) {
 			if (insideChunk) {
 				excludedSnpsWriter.write(snp + "\t" + "Multiallelic Site");
-				System.out.println(snp.getAlternateAllele());
 				multiallelicSites++;
 				filtered++;
 			}
