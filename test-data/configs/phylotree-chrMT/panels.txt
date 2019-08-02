@@ -1,5 +1,5 @@
 panels:
   - id: phylotree
-    hdfs: ref-panels/phylotree17.m3vcf.gz
-    legend: ref-panels/phylotree17-chr$chr.legend.gz
+    hdfs: ref-panels/chrMT.phylotree17.m3vcf.gz
+    legend: ref-panels/chrMT.phylotree17.legend.gz
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
