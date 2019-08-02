@@ -3,7 +3,6 @@ package genepi.imputationserver.steps.fastqc;
 import java.io.IOException;
 import java.util.Vector;
 
-import genepi.imputationserver.steps.vcf.VcfLiftOver;
 import genepi.imputationserver.steps.vcf.VcfLiftOverFast;
 import genepi.io.FileUtil;
 import genepi.io.text.LineWriter;

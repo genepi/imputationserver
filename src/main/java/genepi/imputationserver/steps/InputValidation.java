@@ -3,7 +3,6 @@ package genepi.imputationserver.steps;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -26,19 +25,18 @@ public class InputValidation extends WorkflowStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		/*
-		 * URLClassLoader cl = (URLClassLoader) InputValidation.class.getClassLoader();
-		 * 
-		 * try { URL url = cl.findResource("META-INF/MANIFEST.MF"); Manifest manifest =
-		 * new Manifest(url.openStream()); Attributes attr =
-		 * manifest.getMainAttributes(); String buildVesion = attr.getValue("Version");
-		 * String buildTime = attr.getValue("Build-Time"); String builtBy =
-		 * attr.getValue("Built-By"); context.println("Version: " + buildVesion +
-		 * " (Built by " + builtBy + " on " + buildTime + ")");
-		 * 
-		 * } catch (IOException E) { // handle }
-		 */
+		try {
+			URL url = InputValidation.class.getClassLoader().getResource("META-INF/MANIFEST.MF");
+			Manifest manifest = new Manifest(url.openStream());
+			Attributes attr = manifest.getMainAttributes();
+			String buildVesion = attr.getValue("Version");
+			String buildTime = attr.getValue("Build-Time");
+			String builtBy = attr.getValue("Built-By");
+			context.println("Version: " + buildVesion + " (Built by " + builtBy + " on " + buildTime + ")");
 
+		} catch (IOException E) {
+			// handle
+		}
 		if (!checkParameters(context)) {
 			return false;
 		}
@@ -325,7 +323,7 @@ public class InputValidation extends WorkflowStep {
 					try {
 
 						context.updateTask("Import " + url2 + "...", WorkflowContext.RUNNING);
-
+						context.log("Import " + url2 + "...");
 						IImporter importer = ImporterFactory.createImporter(url, target);
 
 						if (importer != null) {

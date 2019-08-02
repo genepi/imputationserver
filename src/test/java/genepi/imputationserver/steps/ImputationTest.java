@@ -270,6 +270,59 @@ public class ImputationTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
+	
+	@Test
+	public void testPipelineWithS3() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "s3://imputationserver-aws-testdata/test-s3/hapmap300.chr1.recode.vcf.gz";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(true, result);
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		result = run(context, qcStats);
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_1.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr1.dose.vcf.gz", 100000000, false);
+
+		assertEquals("1", file.getChromosome());
+		assertEquals(60, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
 
 	/*@Test
 	public void testPipelineWithSFTP() throws IOException, ZipException, InterruptedException {

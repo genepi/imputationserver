@@ -67,8 +67,13 @@ public class VcfLiftOverFast {
 		reader.close();
 		sorter.doneAdding();
 
+		int pos = -1;
 		for (VcfLine vcfLine : sorter) {
+			if (vcfLine.getPosition() < pos) {
+				throw new IOException("Sorting VCF file after Liftover failed.");
+			}
 			writer.write(vcfLine.getLine());
+			pos = vcfLine.getPosition();
 		}
 		writer.close();
 		sorter.cleanup();

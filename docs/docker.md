@@ -18,7 +18,7 @@ Docker must be installed on your local computer. Please checkout the [step by st
 After the successful installation of Docker, all you need to do is:
 
 ````sh
-docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ genepi/imputationserver:v1.1.15
+docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ genepi/imputationserver:v1.1.16
 ````
 Please replace `/home/user/imputationserver-data` with the absolute path pointing to a local folder on your computer. This allows you to keep all data after a restart. To run more parallel tasks, please adapt the `DOCKER_CORES` parameter.
 
@@ -73,27 +73,43 @@ Since all reference panels are installed in your provided data folder, you can s
 
 It is also possible to submit a job via the commandline instead of the webbrowser.
 
-First, start the Cloudgene webserver:
+First, start the Cloudgene webserver and give your docker container a name (e.g. mis-docker):
 
 ```sh
-docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ --name mis-docker genepi/imputationserver:v1.1.15
+docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ --name mis-docker genepi/imputationserver:v1.1.16
 ```
 
+After ~2-3 minutes your Michigan Imputation Server instance is ready.
 
 ### Run imputation on the command line
 
+To start a new job via the commandline you have to execute the following command:
+
 ```sh
-TEST_DATA="https://imputationserver.sph.umich.edu/static/downloads/hapmap300.chr1.recode.vcf.gz"
 docker exec -t -i mis-docker cloudgene run imputationserver \
---files ${TEST_DATA} --refpanel apps@hapmap2 --conf /etc/hadoop/conf
+  --files https://imputationserver.sph.umich.edu/static/downloads/hapmap300.chr1.recode.vcf.gz \
+  --refpanel apps@hapmap2 \
 ```
 
-### Install 1000 Genomes Phase3 using the command line
+Your input vcf files can be specified with the `--files` parameter. You can either use files inside your docker image (e.g. `--files /data/my.vcf.gz` uses a vcf stored in your mounted folder) or a http link. To impute more files at once, you can use a folder as input (e.g. `--files /path/vcfs`)
+
+If your imputation was successful, you see the random password that was used to encrypt your results (please use it without the html tags. e.g. o1%bUVuBEf7Cl):
+
+```
+[OK]    Email notification is disabled. All results are encrypted with password <b>o1%bUVuBEf7Cl</b>
+```
+
+The imputed genotypes are stored in `/opt/cloudgene/<JOB-ID>/local`. You can change this location by using the `--output` parameter (e.g. `--output /data/my_first_job` stores the results in your mounted folder).
+
+### Install reference panels on the command line
+
+To install additional reference panels via the command line, you can use the `install` command followed by the name and the location of the reference panel. The following command installs the 1000 genomes phase 3 reference panel:
+
 ```sh
-docker exec -t -i mis-docker cloudgene install 1000genomes-phase3 \
-https://imputationserver.sph.umich.edu/static/downloads/releases/1000genomes-phase3-1.0.0.zip
+docker exec -t -i mis-docker cloudgene install 1000genomes-phase3 https://imputationserver.sph.umich.edu/static/downloads/releases/1000genomes-phase3-1.0.0.zip
 ```
 
+The location of the reference panel can be either a local file or a http(s) link.
 
 ## Contact
 
