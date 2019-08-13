@@ -47,7 +47,7 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Monomorphic sites: 331"));
 
 	}
-
+	
 	public void testQcStatisticAllChunksExcluded() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -144,8 +144,8 @@ public class FastQualityControlTest extends TestCase {
 		run(context, qcStats);
 
 		// check statistics
-		assertTrue(context.hasInMemory("Excluded sites in total: 3,057"));
-		assertTrue(context.hasInMemory("Remaining sites in total: 117,499"));
+		assertTrue(context.hasInMemory("Excluded sites in total: 3,058"));
+		assertTrue(context.hasInMemory("Remaining sites in total: 117,498"));
 
 	}
 
@@ -478,6 +478,47 @@ public class FastQualityControlTest extends TestCase {
 		context.setConfig("binaries",ImputationTest. BINARIES_HDFS);
 
 		return context;
+
+	}
+	
+	public void testQcStatisticsAllowStrandFlips() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("Excluded sites in total: 3,058"));
+		assertTrue(context.hasInMemory("Remaining sites in total: 117,498"));
+
+	}
+	
+	public void testQcStatisticsDontAllowStrandFlips() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("Excluded sites in total: 3,058"));
+		assertTrue(context.hasInMemory("Remaining sites in total: 117,498"));
+		assertTrue(context.hasInMemory("<b>Error:</b> More than -1 obvious strand flips have been detected. Please check strand. Imputation cannot be started!"));
 
 	}
 

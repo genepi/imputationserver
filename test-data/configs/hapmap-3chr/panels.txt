@@ -11,3 +11,19 @@ panels:
     populations:
       eur: EUR
       mixed: Mixed
+    qcFilter:
+      strandFlips: 100    
+      
+  - id: hapmap2-qcfilter
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
+    mapEagle: ref-panels/genetic_map_hg19_chr1.txt
+    refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
+    samples:
+      eur: 60
+      mixed: -1
+    populations:
+      eur: EUR
+      mixed: Mixed
+    qcFilter:
+      strandFlips: -1   

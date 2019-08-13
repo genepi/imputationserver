@@ -127,7 +127,6 @@ public class FastQualityControl extends WorkflowStep {
 		}
 
 		// calculate statistics
-
 		StatisticsTask task = new StatisticsTask();
 		task.setVcfFilenames(vcfFilenames);
 		task.setExcludedSnpsWriter(excludedSnpsWriter);
@@ -158,7 +157,9 @@ public class FastQualityControl extends WorkflowStep {
 			context.warning("Skip allele frequency check.");
 			task.setAlleleFrequencyCheck(false);
 		}
-
+		
+		int strandFlips = panel.getQcFilterByKey("strandFlips");
+		
 		task.setLegendFile(legend);
 		task.setRefSamples(refSamples);
 		task.setMafFile(mafFile);
@@ -275,9 +276,9 @@ public class FastQualityControl extends WorkflowStep {
 
 		}
 		// strand flips (normal flip & allele switch + strand flip)
-		else if (task.getStrandFlipSimple() + task.getStrandFlipAndAlleleSwitch() > 100) {
+		else if (task.getStrandFlipSimple() + task.getStrandFlipAndAlleleSwitch() > strandFlips) {
 			text.append(
-					"<br><b>Error:</b> More than 100 obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
+					"<br><b>Error:</b> More than " +strandFlips +" obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
 			context.error(text.toString());
 
 			return false;

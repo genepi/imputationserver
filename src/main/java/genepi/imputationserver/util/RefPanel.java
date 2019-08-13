@@ -30,6 +30,8 @@ public class RefPanel {
 
 	private Map<String, String> populations;
 
+	private Map<String, String> qcFilter;
+
 	public String getId() {
 		return id;
 	}
@@ -158,6 +160,26 @@ public class RefPanel {
 			return populations.containsKey(population);
 		}
 
+	}
+
+	public Map<String, String> getQcFilter() {
+		return qcFilter;
+	}
+
+	public int getQcFilterByKey(String key) {
+		if (qcFilter == null) {
+			return 0;
+		}
+		String n = qcFilter.get(key);
+		if (n != null) {
+			return Integer.parseInt(n);
+		} else {
+			return 100;
+		}
+	}
+
+	public void setQcFilter(Map<String, String> qcFilter) {
+		this.qcFilter = qcFilter;
 	}
 
 }

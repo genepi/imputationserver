@@ -325,7 +325,6 @@ public class StatisticsTask implements ITask {
 		if (snp.getAlternateAllele().contains(",")) {
 			if (insideChunk) {
 				excludedSnpsWriter.write(snp + "\t" + "Multiallelic Site");
-				System.out.println(snp.getAlternateAllele());
 				multiallelicSites++;
 				filtered++;
 			}

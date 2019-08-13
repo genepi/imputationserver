@@ -77,6 +77,12 @@ public class RefPanelList {
 			} else {
 				throw new IOException("Property 'samples' not found in cloudgene.yaml.");
 			}
+			
+			if (map.get("qcFilter") != null) {
+				panel.setQcFilter((Map<String, String>) map.get("qcFilter"));
+			} else {
+				throw new IOException("Property 'qcFilter' not found in cloudgene.yaml.");
+			}
 
 			// optional parameters
 			if (map.get("build") != null) {
