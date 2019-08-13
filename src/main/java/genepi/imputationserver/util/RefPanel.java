@@ -2,6 +2,7 @@ package genepi.imputationserver.util;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -21,17 +22,13 @@ public class RefPanel {
 
 	private String build = "hg19";
 
-	private String mapPatternShapeIT;
-
-	private String mapPatternHapiUR;
-
-	private String mapShapeIT;
-
-	private String mapHapiUR;
-
 	private String mapEagle;
 
 	private String refEagle;
+
+	private Map<String, String> samples;
+
+	private Map<String, String> populations;
 
 	public String getId() {
 		return id;
@@ -85,38 +82,6 @@ public class RefPanel {
 		return mapMinimac;
 	}
 
-	public String getMapPatternShapeIT() {
-		return mapPatternShapeIT;
-	}
-
-	public void setMapPatternShapeIT(String mapPatternShapeIT) {
-		this.mapPatternShapeIT = mapPatternShapeIT;
-	}
-
-	public String getMapPatternHapiUR() {
-		return mapPatternHapiUR;
-	}
-
-	public void setMapPatternHapiUR(String mapPatternHapiUR) {
-		this.mapPatternHapiUR = mapPatternHapiUR;
-	}
-
-	public String getMapShapeIT() {
-		return mapShapeIT;
-	}
-
-	public void setMapShapeIT(String mapShapeIT) {
-		this.mapShapeIT = mapShapeIT;
-	}
-
-	public String getMapHapiUR() {
-		return mapHapiUR;
-	}
-
-	public void setMapHapiUR(String mapHapiUR) {
-		this.mapHapiUR = mapHapiUR;
-	}
-
 	public void setMapEagle(String mapEagle) {
 		this.mapEagle = mapEagle;
 	}
@@ -142,7 +107,7 @@ public class RefPanel {
 		return HdfsUtil.exists(mapEagle);
 
 	}
-	
+
 	public boolean checkEagleBcf() {
 
 		if (refEagle == null) {
@@ -153,23 +118,45 @@ public class RefPanel {
 
 	}
 
-	public boolean checkHapiUR() {
-
-		if (mapHapiUR == null) {
-			return false;
-		}
-
-		return HdfsUtil.exists(mapHapiUR);
-
+	public void setSamples(Map<String, String> samples) {
+		this.samples = samples;
 	}
 
-	public boolean checkShapeIT() {
+	public Map<String, String> getSamples() {
+		return samples;
+	}
 
-		if (mapShapeIT == null) {
-			return false;
+	public int getSamplesByPopulation(String population) {
+		if (samples == null) {
+			return 0;
+		}
+		String n = samples.get(population);
+		if (n != null) {
+			return Integer.parseInt(n);
+		} else {
+			return 0;
+		}
+	}
+
+	public void setPopulations(Map<String, String> populations) {
+		this.populations = populations;
+	}
+
+	public Map<String, String> getPopulations() {
+		return populations;
+	}
+
+	public boolean supportsPopulation(String population) {
+
+		if (population == null || population.equals("")) {
+			return true;
 		}
 
-		return HdfsUtil.exists(mapShapeIT);
+		if (populations == null) {
+			return false;
+		} else {
+			return populations.containsKey(population);
+		}
 
 	}
 

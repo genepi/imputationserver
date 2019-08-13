@@ -16,7 +16,6 @@ import genepi.imputationserver.steps.fastqc.StatisticsTask;
 import genepi.imputationserver.steps.fastqc.TaskResults;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
-import genepi.imputationserver.util.GenomicTools;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -48,7 +47,7 @@ public class FastQualityControl extends WorkflowStep {
 			buildGwas = "hg19";
 		}
 
-		//load job.config
+		// load job.config
 		File jobConfig = new File(FileUtil.path(folder, "job.config"));
 		DefaultPreferenceStore store = new DefaultPreferenceStore();
 		if (jobConfig.exists()) {
@@ -59,23 +58,26 @@ public class FastQualityControl extends WorkflowStep {
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 		int chunkSize = Integer.parseInt(store.getString("chunksize"));
 
-		
 		// load reference panels
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
 		// check reference panel
-		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
-		if (panel == null) {
-			context.error("Reference '" + reference + "' not found.");
-			context.error("Available references:");
-			for (RefPanel p : panels.getPanels()) {
-				context.error(p.getId());
-			}
+		RefPanel panel = null;
+		try {
+			panel = panels.getById(reference, context.getData("refpanel"));
+			if (panel == null) {
+				context.error("Reference '" + reference + "' not found.");
+				context.error("Available references:");
+				for (RefPanel p : panels.getPanels()) {
+					context.error(p.getId());
+				}
 
+				return false;
+			}
+		} catch (Exception e) {
+			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
 			return false;
 		}
-
-		int referenceSamples = GenomicTools.getPanelSize(reference);
 
 		String[] vcfFilenames = FileUtil.getFiles(inputFiles, "*.vcf.gz$|*.vcf$");
 
@@ -138,8 +140,27 @@ public class FastQualityControl extends WorkflowStep {
 			legend = FileUtil.path(folder, legend);
 		}
 
+		if (!panel.supportsPopulation(population)) {
+			StringBuilder report = new StringBuilder();
+			report.append("Population '" + population + "' is not supported by reference panel '" + reference + "'.\n");
+			if (panel.getPopulations() != null) {
+				report.append("Available populations:");
+				for (String pop : panel.getPopulations().values()) {
+					report.append("\n - " + pop);
+				}
+			}
+			context.error(report.toString());
+			return false;
+		}
+
+		int refSamples = panel.getSamplesByPopulation(population);
+		if (refSamples <= 0) {
+			context.warning("Skip allele frequency check.");
+			task.setAlleleFrequencyCheck(false);
+		}
+
 		task.setLegendFile(legend);
-		task.setRefSamples(referenceSamples);
+		task.setRefSamples(refSamples);
 		task.setMafFile(mafFile);
 		task.setChunkFileDir(chunkFileDir);
 		task.setChunksDir(chunksDir);
@@ -150,18 +171,16 @@ public class FastQualityControl extends WorkflowStep {
 
 		if (!results.isSuccess()) {
 			return false;
-
 		}
 
 		try {
-			
+
 			excludedSnpsWriter.close();
-			
+
 			if (!excludedSnpsWriter.hasData()) {
 				FileUtil.deleteFile(excludedSnpsFile);
 			}
 
-			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -202,11 +221,12 @@ public class FastQualityControl extends WorkflowStep {
 
 		text.append("Excluded sites in total: " + formatter.format(task.getFiltered()) + "<br>");
 		text.append("Remaining sites in total: " + formatter.format(task.getOverallSnps()) + "<br>");
-		
-		if(task.getFiltered()>0){
-		text.append("See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
+
+		if (task.getFiltered() > 0) {
+			text.append(
+					"See " + context.createLinkToFile("statisticDir", "snps-excluded.txt") + " for details" + "<br>");
 		}
-		
+
 		if (task.getNotFoundInLegend() > 0) {
 			text.append("Typed only sites: " + formatter.format(task.getNotFoundInLegend()) + "<br>");
 			text.append("See " + context.createLinkToFile("statisticDir", "typed-only.txt") + " for details" + "<br>");

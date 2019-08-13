@@ -1,7 +1,6 @@
 package genepi.imputationserver.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 import com.esotericsoftware.yamlbeans.YamlWriter;
 
@@ -31,22 +29,68 @@ public class RefPanelList {
 		this.panels = panels;
 	}
 
-	public RefPanel getById(String id, Object properties) {
+	public RefPanel getById(String id, Object properties) throws IOException {
 
 		if (properties != null) {
 			RefPanel panel = new RefPanel();
-			Map<String, String> map = (Map<String, String>) properties;
-			panel.setBuild(map.get("build"));
-			panel.setHdfs(map.get("hdfs"));
-			panel.setId(map.get("id"));
-			panel.setLegend(map.get("legend"));
-			panel.setMapEagle(map.get("mapEagle"));
-			panel.setMapHapiUR(map.get("mapHapiUR"));
-			panel.setMapMinimac(map.get("mapMinimac"));
-			panel.setMapPatternHapiUR(map.get("mapPatternHapiUR"));
-			panel.setMapPatternShapeIT(map.get("mapPatternShapeIT"));
-			panel.setMapShapeIT(map.get("mapShapeIT"));
-			panel.setRefEagle(map.get("refEagle"));
+			Map<String, Object> map = (Map<String, Object>) properties;
+
+			if (map.get("hdfs") != null) {
+				panel.setHdfs(map.get("hdfs").toString());
+			} else {
+				throw new IOException("Property 'hdfs' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("id") != null) {
+				panel.setId(map.get("id").toString());
+			} else {
+				throw new IOException("Property 'id' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("legend") != null) {
+				panel.setLegend(map.get("legend").toString());
+			} else {
+				throw new IOException("Property 'legend' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("mapEagle") != null) {
+				panel.setMapEagle(map.get("mapEagle").toString());
+			} else {
+				throw new IOException("Property 'mapEagle' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("refEagle") != null) {
+				panel.setRefEagle(map.get("refEagle").toString());
+			} else {
+				throw new IOException("Property 'refEagle' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("populations") != null) {
+				panel.setPopulations((Map<String, String>) map.get("populations"));
+			} else {
+				throw new IOException("Property 'populations' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("samples") != null) {
+				panel.setSamples((Map<String, String>) map.get("samples"));
+				;
+			} else {
+				throw new IOException("Property 'samples' not found in cloudgene.yaml.");
+			}
+
+			// optional parameters
+			if (map.get("build") != null) {
+				panel.setBuild(map.get("build").toString());
+			} else {
+				panel.setBuild(null);
+			}
+
+			if (map.get("mapMinimac") != null) {
+				panel.setMapMinimac(map.get("mapMinimac").toString());
+			} else {
+				panel.setMapMinimac(null);
+			}
+
 			return panel;
 		}
 		for (RefPanel panel : panels) {

@@ -46,8 +46,6 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Remaining sites in total: 96"));
 		assertTrue(context.hasInMemory("Monomorphic sites: 331"));
 
-		FileUtil.deleteDirectory("test-data/tmp");
-
 	}
 
 	public void testQcStatisticAllChunksExcluded() throws IOException {
@@ -67,8 +65,6 @@ public class FastQualityControlTest extends TestCase {
 		assertFalse(result);
 		// check statistics
 		assertTrue(context.hasInMemory("No chunks passed the QC step"));
-
-		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -94,7 +90,6 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("36 Chunk(s) excluded"));
 		assertTrue(context.hasInMemory("No chunks passed the QC step"));
 
-		FileUtil.deleteDirectory("test-data/tmp");
 	}
 
 	public void testCountLinesInFailedChunkFile() throws IOException {
@@ -132,7 +127,6 @@ public class FastQualityControlTest extends TestCase {
 		assertEquals("chunk_1_0120000001_0140000000" + "\t" + "108" + "\t" + "0.9391304347826087" + "\t" + "19",
 				testLine);
 
-		FileUtil.deleteDirectory("test-data/tmp");
 	}
 
 	public void testQcStatisticsAllChunksPassed() throws IOException {
@@ -153,7 +147,6 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Excluded sites in total: 3,057"));
 		assertTrue(context.hasInMemory("Remaining sites in total: 117,499"));
 
-		FileUtil.deleteDirectory("test-data/tmp");
 	}
 
 	public void testCountSitesForOneChunkedContig() throws IOException {
@@ -194,7 +187,7 @@ public class FastQualityControlTest extends TestCase {
 			}
 
 		}
-		FileUtil.deleteDirectory(new File(out));
+
 	}
 
 	public void testCountAmountSplitsForSeveralContigs() throws IOException {
@@ -228,7 +221,6 @@ public class FastQualityControlTest extends TestCase {
 		// https://genome.ucsc.edu/goldenpath/help/hg19.chrom.sizes
 		assertEquals(13 + 13 + 10, count);
 
-		FileUtil.deleteDirectory(new File(out));
 	}
 
 	public void testCountLinesInChunkMetaFile() throws IOException {
@@ -257,7 +249,6 @@ public class FastQualityControlTest extends TestCase {
 
 		assertEquals(13, count);
 
-		FileUtil.deleteDirectory(new File(out));
 	}
 
 	public void testCountSamplesInCreatedChunk() throws IOException {
@@ -289,7 +280,6 @@ public class FastQualityControlTest extends TestCase {
 
 		}
 
-		FileUtil.deleteDirectory(new File(out));
 	}
 
 	@Test
@@ -314,8 +304,6 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(result);
 		assertTrue(context.hasInMemory("Monomorphic sites: 11"));
 
-		FileUtil.deleteDirectory("test-data/tmp");
-
 	}
 
 	@Test
@@ -324,18 +312,12 @@ public class FastQualityControlTest extends TestCase {
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-unphased";
 
-		File file = new File("test-data/tmp");
-		if (file.exists()) {
-			FileUtil.deleteDirectory(file);
-		}
-
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "phase1");
 
 		// run qc to create chunkfile
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
 		boolean result = run(context, qcStats);
-
 		assertTrue(result);
 
 		String out = context.getOutput("chunksDir");
@@ -348,8 +330,6 @@ public class FastQualityControlTest extends TestCase {
 
 		assertEquals(13, count);
 
-		FileUtil.deleteDirectory(file);
-
 	}
 
 	
@@ -358,11 +338,6 @@ public class FastQualityControlTest extends TestCase {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-phased-invalid";
-
-		File file = new File("test-data/tmp");
-		if (file.exists()) {
-			FileUtil.deleteDirectory(file);
-		}
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "phase1");
@@ -374,8 +349,6 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(result);
 		assertTrue(context.hasInMemory("Invalid alleles: 190"));
 		
-		FileUtil.deleteDirectory(file);
-
 	}
 	
 	@Test
@@ -383,11 +356,6 @@ public class FastQualityControlTest extends TestCase {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-unphased-mixed";
-
-		File file = new File("test-data/tmp");
-		if (file.exists()) {
-			FileUtil.deleteDirectory(file);
-		}
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "phase1");
@@ -399,8 +367,6 @@ public class FastQualityControlTest extends TestCase {
 		assertFalse(result);
 		assertTrue(context.hasInMemory("Chromosome X nonPAR region includes > 10 % mixed genotypes."));
 
-		FileUtil.deleteDirectory(file);
-
 	}
 	
 	@Test
@@ -408,11 +374,6 @@ public class FastQualityControlTest extends TestCase {
 
 		String configFolder = "test-data/configs/hapmap-chrX";
 		String inputFolder = "test-data/data/chrX-unphased-ploidy";
-
-		File file = new File("test-data/tmp");
-		if (file.exists()) {
-			FileUtil.deleteDirectory(file);
-		}
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "phase1");
@@ -424,8 +385,50 @@ public class FastQualityControlTest extends TestCase {
 		assertFalse(result);
 		assertTrue(context.hasInMemory("ChrX nonPAR region includes ambiguous samples"));
 
-		FileUtil.deleteDirectory(file);
+	}
+	
+	
+	@Test
+	public void testAlleleFrequencyCheckWithWrongPopulation() {
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/single";
 
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setInput("population", "afr");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		assertFalse(result);
+
+		// check statistics
+		assertTrue(context.hasInMemory("Population 'afr' is not supported by reference panel 'hapmap2'."));
+	}
+	
+	@Test
+	public void testAlleleFrequencyCheckWithNoSamplesForPopulation() {
+		
+		
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setInput("population", "mixed");
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+
+		// check statistics
+		assertTrue(context.hasInMemory("[WARN] Skip allele frequency check."));
 	}
 	
 	class FastQualityControlMock extends FastQualityControl {
@@ -459,6 +462,9 @@ public class FastQualityControlTest extends TestCase {
 		WorkflowTestContext context = new WorkflowTestContext();
 
 		File file = new File("test-data/tmp");
+		if (file.exists()) {
+			FileUtil.deleteDirectory(file);
+		}
 		file.mkdirs();
 
 		context.setVerbose(VERBOSE);

@@ -37,7 +37,6 @@ public class InputValidation extends WorkflowStep {
 		} catch (IOException E) {
 			// handle
 		}
-
 		if (!checkParameters(context)) {
 			return false;
 		}
@@ -109,9 +108,15 @@ public class InputValidation extends WorkflowStep {
 
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
-		if (panel == null) {
-			context.endTask("Reference '" + reference + "' not found.", WorkflowContext.ERROR);
+		RefPanel panel = null;
+		try {
+			panel = panels.getById(reference, context.getData("refpanel"));
+			if (panel == null) {
+				context.endTask("Reference '" + reference + "' not found.", WorkflowContext.ERROR);
+				return false;
+			}
+		} catch (Exception e) {
+			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
 			return false;
 		}
 
@@ -252,65 +257,37 @@ public class InputValidation extends WorkflowStep {
 
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
-		if (panel == null) {
-			StringBuilder report = new StringBuilder();
-			report.append("Reference '" + reference + "' not found.\n");
-			report.append("Available reference IDs:");
-			for (RefPanel p : panels.getPanels()) {
-				report.append("\n - " + p.getId());
+		try {
+
+			RefPanel panel = panels.getById(reference, context.getData("refpanel"));
+			if (panel == null) {
+				StringBuilder report = new StringBuilder();
+				report.append("Reference '" + reference + "' not found.\n");
+				report.append("Available reference IDs:");
+				for (RefPanel p : panels.getPanels()) {
+					report.append("\n - " + p.getId());
+				}
+				context.error(report.toString());
+				return false;
 			}
-			context.error(report.toString());
+
+			if (!panel.supportsPopulation(population)) {
+				StringBuilder report = new StringBuilder();
+				report.append(
+						"Population '" + population + "' is not supported by reference panel '" + reference + "'.\n");
+				if (panel.getPopulations() != null) {
+					report.append("Available populations:");
+					for (String pop : panel.getPopulations().values()) {
+						report.append("\n - " + pop);
+					}
+				}
+				context.error(report.toString());
+				return false;
+			}
+
+		} catch (Exception e) {
+			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
 			return false;
-		}
-
-		// check population
-		if (!population.equals("mixed")) {
-
-			if (reference.equals("hapmap2") && !population.equals("eur")) {
-
-				context.error("Please select EUR or mixed population for the HapMap reference panel");
-
-				return false;
-			}
-
-			if (reference.contains("phase1") && (!population.equals("afr") && !population.equals("amr")
-					&& !population.equals("asn") && !population.equals("eur"))) {
-
-				context.error("Please select AFR, AMR, ASN, EUR or mixed population for 1000G Phase 1");
-
-				return false;
-			}
-
-			if (reference.contains("phase3") && (!population.equals("afr") && !population.equals("amr")
-					&& !population.equals("eas") && !population.equals("sas") && !population.equals("eur"))) {
-
-				context.error("Please select AFR, AMR, EAS, SAS, EUR or mixed population for 1000G Phase 3");
-
-				return false;
-			}
-
-			if (reference.equals("caapa") && !population.equals("AA")) {
-
-				context.error("Please select AA or mixed population for the CAAPA panel");
-
-				return false;
-			}
-
-			if (reference.contains("hrc") && !population.equals("eur")) {
-
-				context.error("Please select EUR or mixed population for the HRC panel");
-
-				return false;
-			}
-
-			if (reference.toLowerCase().contains("topmed") && (!population.equals("afr") && !population.equals("amr")
-					&& !population.equals("eas") && !population.equals("sas") && !population.equals("eur"))) {
-
-				context.error("Please select AFR, AMR, EAS, SAS, EUR or mixed population for TOPMed");
-
-				return false;
-			}
 		}
 
 		return true;

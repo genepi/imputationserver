@@ -215,43 +215,6 @@ public class GenomicTools {
 		return new ChiSquareObject(chisq, p, q);
 	}
 
-	public static int getPanelSize(String panelId) {
-		switch (panelId) {
-		case "phase1":
-			return 1092;
-		case "phase3":
-			return 2535;
-		case "hrc":
-			return 32611;
-		case "hrc.r1.1.2016":
-			return 32470;
-		case "hapmap2":
-			return 1301;
-		case "caapa":
-			return 883;
-		case "TOPMedfreeze65k":
-			return 62784;
-		default:
-			return 2535;
-		}
-	}
-
-	public static int getPopSize(String pop) {
-
-		switch (pop) {
-		case "eur":
-			return 11418;
-		case "afr":
-			return 17469;
-		case "asn":
-		case "sas":
-		case "eas":
-			return 14269;
-		default:
-			return 15000;
-		}
-	}
-
 	public static boolean alleleMismatch(MinimalVariantContext snp, LegendEntry refEntry) {
 
 		char studyRef = snp.getReferenceAllele().charAt(0);

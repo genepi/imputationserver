@@ -1,4 +1,5 @@
-name:  Michigan Imputation Server (Minimac4)
+id: imputationserver
+name: Michigan Imputation Server (Minimac4)
 description: This is the new Michigan Imputation Server Pipeline using <a href="https://github.com/statgen/Minimac4">Minimac4</a>. Documentation can be found <a href="http://imputationserver.readthedocs.io/en/latest/">here</a>.<br><br>If your input data is <b>GRCh37/hg19</b> please ensure chromosomes are encoded without prefix  (e.g. <b>20</b>).<br>If your input data is <b>GRCh38hg38</b> please ensure chromosomes are encoded with prefix 'chr' (e.g. <b>chr20</b>).
 version: 1.1.18
 website: https://imputationserver.readthedocs.io
@@ -93,16 +94,10 @@ workflow:
      - id: population
        description: Population
        type: list
-       value: eur
        values:
-         eur: EUR
-         afr: AFR
-         asn: ASN (Phase1 only)
-         amr: AMR
-         sas: SAS (Phase3 only)
-         eas: EAS (Phase3 only)
-         AA: AA (CAAPA)
-         mixed: Mixed
+          bind: refpanel
+          property: populations
+          category: RefPanel
                 
      - id: mode
        description: Mode

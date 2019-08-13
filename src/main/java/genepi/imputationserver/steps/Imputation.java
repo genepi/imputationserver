@@ -77,9 +77,15 @@ public class Imputation extends ParallelHadoopJobStep {
 
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
-		if (panel == null) {
-			context.error("reference panel '" + reference + "' not found.");
+		RefPanel panel = null;
+		try {
+			panel = panels.getById(reference, context.getData("refpanel"));
+			if (panel == null) {
+				context.error("reference panel '" + reference + "' not found.");
+				return false;
+			}
+		} catch (Exception e) {
+			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
 			return false;
 		}
 
@@ -112,8 +118,7 @@ public class Imputation extends ParallelHadoopJobStep {
 
 				ChunkFileConverterResult result = convertChunkfile(chunkFile, context.getHdfsTemp());
 
-				ImputationJob job = new ImputationJob(context.getJobId() + "-chr-" + chr,
-						new ContextLog(context)) {
+				ImputationJob job = new ImputationJob(context.getJobId() + "-chr-" + chr, new ContextLog(context)) {
 					@Override
 					protected void readConfigFile() {
 						File file = new File(folder + "/" + CONFIG_FILE);
