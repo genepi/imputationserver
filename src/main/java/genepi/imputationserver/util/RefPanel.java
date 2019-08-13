@@ -191,7 +191,7 @@ public class RefPanel {
 
 	public double getQcFilterByKey(String key) {
 		if (qcFilter == null) {
-			return 0;
+			qcFilter = defaultQcFilter;
 		}
 		String n = qcFilter.get(key);
 		if (n != null) {

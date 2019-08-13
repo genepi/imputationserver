@@ -69,7 +69,5 @@ panels:
       eur: EUR
       mixed: Mixed
     qcFilter:
-     sampleCallrate: 80
-      
-      
+     sampleCallrate: 80     
        
