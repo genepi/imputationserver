@@ -55,14 +55,10 @@ public class RefPanelList {
 
 			if (map.get("mapEagle") != null) {
 				panel.setMapEagle(map.get("mapEagle").toString());
-			} else {
-				throw new IOException("Property 'mapEagle' not found in cloudgene.yaml.");
 			}
 
 			if (map.get("refEagle") != null) {
 				panel.setRefEagle(map.get("refEagle").toString());
-			} else {
-				throw new IOException("Property 'refEagle' not found in cloudgene.yaml.");
 			}
 
 			if (map.get("populations") != null) {
@@ -77,11 +73,9 @@ public class RefPanelList {
 			} else {
 				throw new IOException("Property 'samples' not found in cloudgene.yaml.");
 			}
-			
+
 			if (map.get("qcFilter") != null) {
 				panel.setQcFilter((Map<String, String>) map.get("qcFilter"));
-			} else {
-				throw new IOException("Property 'qcFilter' not found in cloudgene.yaml.");
 			}
 
 			// optional parameters
