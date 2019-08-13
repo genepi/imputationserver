@@ -20,7 +20,6 @@ import genepi.imputationserver.util.GenomicTools;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
-import htsjdk.tribble.util.TabixUtils;
 import htsjdk.variant.variantcontext.Genotype;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.VariantContextBuilder;
@@ -39,10 +38,10 @@ public class StatisticsTask implements ITask {
 	public static final String X_PAR2 = "X.PAR2";
 	public static final String X_NON_PAR = "X.nonPAR";
 
-	public static final double SAMPLE_CALL_RATE = 0.5;
-	public static final int MIN_SNPS = 3;
-	public static final double OVERLAP = 0.5;
-	public static final double CHR_X_MIXED_GENOTYPES = 0.1;
+	private double sampleCallrate;
+	private double minSnps;
+	private double referenceOverlap;
+	private double mixedGenotypeschrX;
 
 	private String chunkFileDir = "tmp";
 	private String chunksDir = "tmp";
@@ -563,7 +562,7 @@ public class StatisticsTask implements ITask {
 			int snps = chunk.snpsPerSampleCount[i];
 			double sampleCallRate = snps / (double) chunk.overallSnpsChunk;
 
-			if (sampleCallRate < SAMPLE_CALL_RATE) {
+			if (sampleCallRate < sampleCallrate) {
 				lowSampleCallRate = true;
 				countLowSamples++;
 			}
@@ -576,8 +575,8 @@ public class StatisticsTask implements ITask {
 
 		double overlap = chunk.foundInLegendChunk / (double) (chunk.foundInLegendChunk + chunk.notFoundInLegendChunk);
 
-		if (overlap >= OVERLAP && chunk.foundInLegendChunk >= MIN_SNPS && !lowSampleCallRate
-				&& chunk.validSnpsChunk >= MIN_SNPS) {
+		if (overlap >= referenceOverlap && chunk.foundInLegendChunk >= minSnps && !lowSampleCallRate
+				&& chunk.validSnpsChunk >= minSnps) {
 
 			// create index
 			//VcfFileUtil.createIndex(chunk.getVcfFilename());
@@ -592,9 +591,9 @@ public class StatisticsTask implements ITask {
 			excludedChunkWriter
 					.write(chunk.toString() + "\t" + chunk.overallSnpsChunk + "\t" + overlap + "\t" + countLowSamples);
 
-			if (overlap < OVERLAP) {
+			if (overlap < referenceOverlap) {
 				removedChunksOverlap++;
-			} else if (chunk.foundInLegendChunk < MIN_SNPS || chunk.validSnpsChunk < MIN_SNPS) {
+			} else if (chunk.foundInLegendChunk < minSnps || chunk.validSnpsChunk < minSnps) {
 				removedChunksSnps++;
 			} else if (lowSampleCallRate) {
 				removedChunksCallRate++;
@@ -717,7 +716,7 @@ public class StatisticsTask implements ITask {
 		if (mixedGenotypes != null) {
 			for (int i = 0; i < mixedGenotypes.length; i++) {
 				double missingRate = mixedGenotypes[i] / (double) count;
-				if (missingRate > CHR_X_MIXED_GENOTYPES) {
+				if (missingRate > mixedGenotypeschrX) {
 					this.chrXMissingRate = true;
 					break;
 				}
@@ -967,6 +966,38 @@ public class StatisticsTask implements ITask {
 	
 	public boolean isAlleleFrequencyCheck() {
 		return alleleFrequencyCheck;
+	}
+	
+	public double getSampleCallrate() {
+		return sampleCallrate;
+	}
+
+	public void setSampleCallrate(double sampleCallrate) {
+		this.sampleCallrate = sampleCallrate;
+	}
+
+	public double getMinSnps() {
+		return minSnps;
+	}
+
+	public void setMinSnps(double minSnps) {
+		this.minSnps = minSnps;
+	}
+
+	public double getReferenceOverlap() {
+		return referenceOverlap;
+	}
+
+	public void setReferenceOverlap(double referenceOverlap) {
+		this.referenceOverlap = referenceOverlap;
+	}
+
+	public double getMixedGenotypeschrX() {
+		return mixedGenotypeschrX;
+	}
+
+	public void setMixedGenotypeschrX(double mixedGenotypeschrX) {
+		this.mixedGenotypeschrX = mixedGenotypeschrX;
 	}
 
 }

@@ -2,6 +2,7 @@ package genepi.imputationserver.util;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -10,7 +11,15 @@ import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
 
+
 public class RefPanel {
+	
+	public static final String STRAMD_FLIPS = "100";
+	public static final String SAMPLE_CALL_RATE = "0.5";
+	public static final String MIN_SNPS = "3";
+	public static final String OVERLAP = "0.5";
+	public static final String CHR_X_MIXED_GENOTYPES = "0.1";
+	
 
 	private String id;
 
@@ -29,8 +38,22 @@ public class RefPanel {
 	private Map<String, String> samples;
 
 	private Map<String, String> populations;
+	
+	private Map<String, String> defaultQcFilter;
 
 	private Map<String, String> qcFilter;
+
+	/**
+	 * 
+	 */
+	public RefPanel() {
+		defaultQcFilter = new HashMap<String,String>();
+		defaultQcFilter.put("overlap", OVERLAP);
+		defaultQcFilter.put("minSnps", MIN_SNPS);
+		defaultQcFilter.put("sampleCallrate", SAMPLE_CALL_RATE);
+		defaultQcFilter.put("mixedGenotypeschrX", CHR_X_MIXED_GENOTYPES);
+		defaultQcFilter.put("strandFlips", STRAMD_FLIPS);
+	}
 
 	public String getId() {
 		return id;
@@ -166,15 +189,15 @@ public class RefPanel {
 		return qcFilter;
 	}
 
-	public int getQcFilterByKey(String key) {
+	public double getQcFilterByKey(String key) {
 		if (qcFilter == null) {
 			return 0;
 		}
 		String n = qcFilter.get(key);
 		if (n != null) {
-			return Integer.parseInt(n);
+			return Double.parseDouble(n);
 		} else {
-			return 100;
+			return Double.parseDouble(defaultQcFilter.get(key));
 		}
 	}
 

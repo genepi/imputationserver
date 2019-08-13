@@ -158,7 +158,11 @@ public class FastQualityControl extends WorkflowStep {
 			task.setAlleleFrequencyCheck(false);
 		}
 		
-		int strandFlips = panel.getQcFilterByKey("strandFlips");
+		double referenceOverlap = panel.getQcFilterByKey("overlap");
+		int minSnps = (int) panel.getQcFilterByKey("minSnps");
+		double sampleCallrate = panel.getQcFilterByKey("sampleCallrate");
+		double mixedGenotypesChrX = panel.getQcFilterByKey("mixedGenotypeschrX");
+		int strandFlips = (int) (panel.getQcFilterByKey("strandFlips"));
 		
 		task.setLegendFile(legend);
 		task.setRefSamples(refSamples);
@@ -167,7 +171,12 @@ public class FastQualityControl extends WorkflowStep {
 		task.setChunksDir(chunksDir);
 		task.setStatDir(statDir);
 		task.setBuild(panel.getBuild());
-
+		
+		task.setReferenceOverlap(referenceOverlap);
+		task.setMinSnps(minSnps);
+		task.setSampleCallrate(sampleCallrate);
+		task.setMixedGenotypeschrX(mixedGenotypesChrX);
+		
 		TaskResults results = runTask(context, task);
 
 		if (!results.isSuccess()) {
@@ -237,7 +246,7 @@ public class FastQualityControl extends WorkflowStep {
 
 			text.append("<br><b>Warning:</b> " + formatter.format(task.getRemovedChunksSnps())
 
-					+ " Chunk(s) excluded: < 3 SNPs (see "
+					+ " Chunk(s) excluded: < " + minSnps + " SNPs (see "
 					+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + "  for details).");
 		}
 
@@ -245,7 +254,7 @@ public class FastQualityControl extends WorkflowStep {
 
 			text.append("<br><b>Warning:</b> " + formatter.format(task.getRemovedChunksCallRate())
 
-					+ " Chunk(s) excluded: at least one sample has a call rate < 50% (see "
+					+ " Chunk(s) excluded: at least one sample has a call rate < "+ sampleCallrate + "% (see "
 					+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
 		}
 
@@ -253,7 +262,7 @@ public class FastQualityControl extends WorkflowStep {
 
 			text.append("<br><b>Warning:</b> " + formatter.format(task.getRemovedChunksOverlap())
 
-					+ " Chunk(s) excluded: reference overlap < 50% (see "
+					+ " Chunk(s) excluded: reference overlap < "+ (referenceOverlap*100) +"% (see "
 					+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
 		}
 

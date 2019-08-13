@@ -507,7 +507,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter");
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter-strandflips");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -521,5 +521,61 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("<b>Error:</b> More than -1 obvious strand flips have been detected. Please check strand. Imputation cannot be started!"));
 
 	}
+	
+	public void testQcStatisticsFilterOverlap() throws IOException {
 
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter-ref-overlap");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("<b>Warning:</b> 36 Chunk(s) excluded: reference overlap < 99.0% (see [NOT AVAILABLE] for details)"));
+
+	}
+	
+	public void testQcStatisticsFilterMinSnps() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter-min-snps");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("<b>Warning:</b> 2 Chunk(s) excluded: < 1000 SNPs (see [NOT AVAILABLE]  for details)."));
+
+	}
+
+	public void testQcStatisticsFilterSampleCallrate() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter-low-callrate");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("<b>Warning:</b> 36 Chunk(s) excluded: at least one sample has a call rate < 80.0% (see [NOT AVAILABLE] for details)"));
+
+	}
 }
