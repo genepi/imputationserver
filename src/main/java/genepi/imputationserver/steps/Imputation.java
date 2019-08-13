@@ -105,8 +105,10 @@ public class Imputation extends ParallelHadoopJobStep {
 		for (Map.Entry<String, String> entry : panel.getSamples().entrySet()) {
 			context.println(" Samples: " + entry.getKey() + "/" + entry.getValue());
 		}
-		for (Map.Entry<String, String> entry : panel.getQcFilter().entrySet()) {
-			context.println(" QC Filters: " + entry.getKey() + "/" + entry.getValue());
+		if (panel.getQcFilter() != null) {
+			for (Map.Entry<String, String> entry : panel.getQcFilter().entrySet()) {
+				context.println(" QC Filters: " + entry.getKey() + "/" + entry.getValue());
+			}
 		}
 
 		// execute one job per chromosome
@@ -169,11 +171,6 @@ public class Imputation extends ParallelHadoopJobStep {
 
 					if (!panel.checkEagleMap()) {
 						context.error("Eagle map file not found.");
-						return false;
-					}
-
-					if (!panel.checkEagleBcf()) {
-						context.error("Eagle bcf files not found.");
 						return false;
 					}
 
