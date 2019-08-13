@@ -575,7 +575,7 @@ public class FastQualityControlTest extends TestCase {
 		run(context, qcStats);
 
 		// check statistics
-		assertTrue(context.hasInMemory("<b>Warning:</b> 36 Chunk(s) excluded: at least one sample has a call rate < 80.0% (see [NOT AVAILABLE] for details)"));
+		assertTrue(context.hasInMemory("<b>Warning:</b> 36 Chunk(s) excluded: at least one sample has a call rate < 101.0% (see [NOT AVAILABLE] for details)"));
 
 	}
 }

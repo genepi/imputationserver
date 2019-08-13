@@ -158,12 +158,6 @@ public class FastQualityControl extends WorkflowStep {
 			task.setAlleleFrequencyCheck(false);
 		}
 		
-		double referenceOverlap = panel.getQcFilterByKey("overlap");
-		int minSnps = (int) panel.getQcFilterByKey("minSnps");
-		double sampleCallrate = panel.getQcFilterByKey("sampleCallrate");
-		double mixedGenotypesChrX = panel.getQcFilterByKey("mixedGenotypeschrX");
-		int strandFlips = (int) (panel.getQcFilterByKey("strandFlips"));
-		
 		task.setLegendFile(legend);
 		task.setRefSamples(refSamples);
 		task.setMafFile(mafFile);
@@ -171,6 +165,12 @@ public class FastQualityControl extends WorkflowStep {
 		task.setChunksDir(chunksDir);
 		task.setStatDir(statDir);
 		task.setBuild(panel.getBuild());
+		
+		double referenceOverlap = panel.getQcFilterByKey("overlap");
+		int minSnps = (int) panel.getQcFilterByKey("minSnps");
+		double sampleCallrate = panel.getQcFilterByKey("sampleCallrate");
+		double mixedGenotypesChrX = panel.getQcFilterByKey("mixedGenotypeschrX");
+		int strandFlips = (int) (panel.getQcFilterByKey("strandFlips"));
 		
 		task.setReferenceOverlap(referenceOverlap);
 		task.setMinSnps(minSnps);
@@ -254,7 +254,7 @@ public class FastQualityControl extends WorkflowStep {
 
 			text.append("<br><b>Warning:</b> " + formatter.format(task.getRemovedChunksCallRate())
 
-					+ " Chunk(s) excluded: at least one sample has a call rate < "+ sampleCallrate + "% (see "
+					+ " Chunk(s) excluded: at least one sample has a call rate < "+ (sampleCallrate*100) + "% (see "
 					+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
 		}
 
