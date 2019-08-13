@@ -34,11 +34,11 @@ panels:
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
     samples:
-      afr: 1
-      amr: 1
-      eas: 1
-      sas: 1
-      eur: 1
+      afr: 661
+      amr: 347
+      eas: 504
+      sas: 489
+      eur: 503
       mixed: -1
     populations:
       afr: AFR
@@ -56,11 +56,11 @@ panels:
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
     samples:
-      afr: 1
-      amr: 1
-      eas: 1
-      sas: 1
-      eur: 1
+      afr: 661
+      amr: 347
+      eas: 504
+      sas: 489
+      eur: 503
       mixed: -1
     populations:
       afr: AFR
