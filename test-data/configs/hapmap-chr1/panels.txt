@@ -11,8 +11,6 @@ panels:
     populations:
       eur: EUR
       mixed: Mixed
-    qcFilter:
-      strandFlips: 100    
       
   - id: hrc-fake
     hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
@@ -25,8 +23,6 @@ panels:
     populations:
       eur: EUR
       mixed: Mixed
-    qcFilter:
-      strandFlips: 100 
           
   - id: phase3-fake
     hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
@@ -46,9 +42,7 @@ panels:
       eas: EAS
       sas: SAS
       eur: EUR
-      mixed: Mixed
-    qcFilter:
-      strandFlips: 100       
+      mixed: Mixed     
       
   - id: TOPMedfreeze6-fake
     hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
@@ -69,6 +63,4 @@ panels:
       sas: SAS
       eur: EUR
       mixed: Mixed
-    qcFilter:
-      strandFlips: 100          
   

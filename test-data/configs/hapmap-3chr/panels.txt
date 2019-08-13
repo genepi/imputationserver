@@ -11,8 +11,6 @@ panels:
     populations:
       eur: EUR
       mixed: Mixed
-    qcFilter:
-      strandFlips: 100
       
   - id: hapmap2-qcfilter-strandflips
     hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz

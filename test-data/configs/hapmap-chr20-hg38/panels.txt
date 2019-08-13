@@ -10,5 +10,3 @@ panels:
       eur: 60
     populations:
       eur: EUR
-    qcFilter:
-      strandFlips: 100
