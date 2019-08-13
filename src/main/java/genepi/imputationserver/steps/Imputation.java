@@ -91,13 +91,22 @@ public class Imputation extends ParallelHadoopJobStep {
 
 		context.println("Reference Panel: ");
 		context.println("  Name: " + reference);
+		context.println("  ID: " + panel.getId());
+		context.println("  Build: " + panel.getBuild());
 		context.println("  Location: " + panel.getHdfs());
 		context.println("  Legend: " + panel.getLegend());
 		context.println("  Version: " + panel.getVersion());
-
-		if (!panel.checkEagleMap()) {
-			context.error("Eagle map file not found.");
-			return false;
+		context.println("  Eagle Map: " + panel.getMapEagle());
+		context.println("  Eagle BCFs: " + panel.getRefEagle());
+		context.println("  Minimac Map: " + panel.getMapMinimac());
+		for (Map.Entry<String, String> entry : panel.getPopulations().entrySet()) {
+			context.println(" Populations: " + entry.getKey() + "/" + entry.getValue());
+		}
+		for (Map.Entry<String, String> entry : panel.getSamples().entrySet()) {
+			context.println(" Samples: " + entry.getKey() + "/" + entry.getValue());
+		}
+		for (Map.Entry<String, String> entry : panel.getQcFilter().entrySet()) {
+			context.println(" QC Filters: " + entry.getKey() + "/" + entry.getValue());
 		}
 
 		// execute one job per chromosome
@@ -157,6 +166,16 @@ public class Imputation extends ParallelHadoopJobStep {
 
 				if (result.needsPhasing) {
 					context.println("Input data is unphased.");
+
+					if (!panel.checkEagleMap()) {
+						context.error("Eagle map file not found.");
+						return false;
+					}
+
+					if (!panel.checkEagleBcf()) {
+						context.error("Eagle bcf files not found.");
+						return false;
+					}
 
 					// eagle
 					context.println("  Setting up eagle reference and map files...");
