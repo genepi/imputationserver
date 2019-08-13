@@ -99,15 +99,18 @@ public class Imputation extends ParallelHadoopJobStep {
 		context.println("  Eagle Map: " + panel.getMapEagle());
 		context.println("  Eagle BCFs: " + panel.getRefEagle());
 		context.println("  Minimac Map: " + panel.getMapMinimac());
+		context.println("  Populations:");
 		for (Map.Entry<String, String> entry : panel.getPopulations().entrySet()) {
-			context.println(" Populations: " + entry.getKey() + "/" + entry.getValue());
+			context.println("    " + entry.getKey() + "/" + entry.getValue());
 		}
+		context.println("  Samples:");
 		for (Map.Entry<String, String> entry : panel.getSamples().entrySet()) {
-			context.println(" Samples: " + entry.getKey() + "/" + entry.getValue());
+			context.println("    " + entry.getKey() + "/" + entry.getValue());
 		}
 		if (panel.getQcFilter() != null) {
+			context.println("  QC Filters:");
 			for (Map.Entry<String, String> entry : panel.getQcFilter().entrySet()) {
-				context.println(" QC Filters: " + entry.getKey() + "/" + entry.getValue());
+				context.println("    " + entry.getKey() + "/" + entry.getValue());
 			}
 		}
 
