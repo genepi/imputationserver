@@ -578,4 +578,61 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("<b>Warning:</b> 36 Chunk(s) excluded: at least one sample has a call rate < 101.0% (see [NOT AVAILABLE] for details)"));
 
 	}
+	
+	@Test
+	public void testChr23PipelineLifting() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chrX-hg38";
+		String inputFolder = "test-data/data/chr23-unphased";
+
+		// maybe git large files?
+		if (!new File(
+				"test-data/configs/hapmap-chrX-hg38/ref-panels/ALL.X.nonPAR.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.hg38.bcf")
+						.exists()) {
+			System.out.println("chrX bcf nonPAR file not available");
+			return;
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// run qc to create chunkfile
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 8,973"));
+		assertTrue(context.hasInMemory("[MESSAGE] [WARN] Excluded sites in total: 18,076"));
+
+
+	}
+	
+	@Test
+	public void testChrXPipelineLifting() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chrX-hg38";
+		String inputFolder = "test-data/data/chrX-unphased";
+
+		// maybe git large files?
+		if (!new File(
+				"test-data/configs/hapmap-chrX-hg38/ref-panels/ALL.X.nonPAR.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.hg38.bcf")
+						.exists()) {
+			System.out.println("chrX bcf nonPAR file not available");
+			return;
+		}
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// run qc to create chunkfile
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 8,973"));
+		assertTrue(context.hasInMemory("[MESSAGE] [WARN] Excluded sites in total: 18,076"));
+
+
+	}
+	
 }

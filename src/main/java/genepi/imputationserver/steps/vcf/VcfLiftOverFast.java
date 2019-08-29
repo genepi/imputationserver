@@ -37,6 +37,14 @@ public class VcfLiftOverFast {
 				VcfLine vcfLine = new VcfLine(line);
 				String contig = "";
 				String newContig = "";
+
+				if (vcfLine.getContig().equals("chr23")) {
+					vcfLine.setContig("chrX");
+				}
+				if (vcfLine.getContig().equals("23")) {
+					vcfLine.setContig("X");
+				}
+
 				if (vcfLine.getContig().startsWith("chr")) {
 					contig = vcfLine.getContig();
 					newContig = vcfLine.getContig().replaceAll("chr", "");
