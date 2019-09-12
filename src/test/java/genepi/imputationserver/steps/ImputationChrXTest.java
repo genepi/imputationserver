@@ -12,12 +12,16 @@ import org.junit.Test;
 
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.common.WorkflowStep;
+import genepi.imputationserver.steps.ImputationTest.CompressionEncryptionMock;
+import genepi.imputationserver.steps.ImputationTest.ImputationMinimac3Mock;
+import genepi.imputationserver.steps.ImputationTest.QcStatisticsMock;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import htsjdk.samtools.util.CloseableIterator;
+import htsjdk.variant.variantcontext.GenotypesContext;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import net.lingala.zip4j.core.ZipFile;
@@ -376,6 +380,78 @@ public class ImputationChrXTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
+	
+	@Test
+	public void testPipelineChrXWithEaglePhasingOnly() throws IOException, ZipException {
+		
+		if (!new File(
+				"test-data/configs/hapmap-chrX-hg38/ref-panels/ALL.X.nonPAR.phase1_v3.snps_indels_svs.genotypes.all.noSingleton.recode.hg38.bcf")
+						.exists()) {
+			System.out.println("chrX bcf nonPAR file not available");
+			return;
+		}
+
+
+		String configFolder = "test-data/configs/hapmap-chrX";
+		String inputFolder = "test-data/data/chrX-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+		
+		context.setInput("mode", "phasing");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
+		if (zipFile.isEncrypted()) {
+			zipFile.setPassword(PASSWORD);
+		}
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.phased.vcf.gz", 100000000, false);
+		
+		assertEquals(true, vcfFile.isPhased());
+		
+		VCFFileReader vcfReader = new VCFFileReader(new File(vcfFile.getVcfFilename()), false);
+		
+		CloseableIterator<VariantContext> it = vcfReader.iterator();
+
+		while (it.hasNext()) {
+
+			VariantContext line = it.next();
+
+			if (line.getStart() == 44322058) {
+				assertEquals("A", line.getGenotype("HG00096").getGenotypeString());
+				System.out.println(line.getGenotype("HG00097").getGenotypeString());
+				assertEquals("A|A", line.getGenotype("HG00097").getGenotypeString());
+			}
+		}
+		
+		vcfReader.close();
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
 
 	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
 		step.setup(context);
