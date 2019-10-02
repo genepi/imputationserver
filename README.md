@@ -1,17 +1,19 @@
-# Michigan Imputation Server
+![Imputationserver Logo](logo.png)
+
+
 [![Build Status](https://travis-ci.org/genepi/imputationserver.svg?branch=master)](https://travis-ci.org/genepi/imputationserver)
 [![Coverage Status](https://coveralls.io/repos/github/genepi/imputationserver/badge.svg)](https://coveralls.io/github/genepi/imputationserver?branch=master)
 [![Publication](https://img.shields.io/badge/Published-Nature%20Genetics-26af64.svg?colorB=26af64&style=popout)](https://www.nature.com/articles/ng.3656)
  <a href="https://twitter.com/intent/follow?screen_name=umimpute"> <img src="https://img.shields.io/twitter/follow/umimpute.svg?style=social" alt="follow on Twitter"></a>
 
-This repository includes the complete source code for the [Michigan Imputation Server](https://imputationserver.sph.umich.edu) workflow based on Minimac4. 
-The workflow itself is executed with the [Cloudgene workflow system](https://github.com/genepi/cloudgene) for Hadoop MapReduce. 
+This repository includes the complete source code for the [Michigan Imputation Server](https://imputationserver.sph.umich.edu) workflow based on Minimac4.
+The workflow itself is executed with the [Cloudgene workflow system](https://github.com/genepi/cloudgene) for Hadoop MapReduce.
 
-Michigan Imputation Server consists of several parallelized pipeline steps: 
+Michigan Imputation Server consists of several parallelized pipeline steps:
 
 - Quality Control
 - QC Report
-- Phasing and Imputation 
+- Phasing and Imputation
 - Compression and Encryption
 
 ## Documentation
