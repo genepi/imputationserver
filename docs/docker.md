@@ -18,7 +18,7 @@ Docker must be installed on your local computer. Please checkout the [step by st
 After the successful installation of Docker, all you need to do is:
 
 ````sh
-docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ genepi/imputationserver:v1.1.16
+docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ genepi/imputationserver:v1.2.2
 ````
 Please replace `/home/user/imputationserver-data` with the absolute path pointing to a local folder on your computer. This allows you to keep all data after a restart. To run more parallel tasks, please adapt the `DOCKER_CORES` parameter.
 
@@ -76,7 +76,7 @@ It is also possible to submit a job via the commandline instead of the webbrowse
 First, start the Cloudgene webserver and give your docker container a name (e.g. mis-docker):
 
 ```sh
-docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ --name mis-docker genepi/imputationserver:v1.1.16
+docker run -d -p 8080:80 -e DOCKER_CORES="4" -v /home/user/imputationserver-data/:/data/ --name mis-docker genepi/imputationserver:v1.2.2
 ```
 
 After ~2-3 minutes your Michigan Imputation Server instance is ready.
