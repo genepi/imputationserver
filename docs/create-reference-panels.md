@@ -52,7 +52,11 @@ properties:
   mapEagle: ${hdfs_app_folder}/map/genetic_map_hg19_withX.txt.gz
   refEagle: ${hdfs_app_folder}/bcfs/chr$chr.bcf
   build: hg19
-
+  samples:
+    eur: 2504
+  populations:
+    eur: EUR
+    
 installation:
 
   - import:
