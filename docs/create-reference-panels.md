@@ -41,6 +41,7 @@ Create a new folder and create a `cloudgene.yaml` file:
 ```
 name:  My Reference Panel name
 description: a short description
+category: RefPanel
 version: 1.0.0
 website: http://my-reference-panel.com
 
