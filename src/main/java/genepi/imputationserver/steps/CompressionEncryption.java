@@ -228,6 +228,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				// run tabix on last file only
 				if (lastChromosome) {
+					context.println("Run tabix on chromosome " + lastChromosome);
 					Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
 					tabix.setSilent(false);
 					tabix.setParams("-f", dosageOutput);
