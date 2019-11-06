@@ -41,6 +41,7 @@ Create a new folder and create a `cloudgene.yaml` file:
 ```
 name:  My Reference Panel name
 description: a short description
+category: RefPanel
 version: 1.0.0
 website: http://my-reference-panel.com
 
@@ -51,7 +52,11 @@ properties:
   mapEagle: ${hdfs_app_folder}/map/genetic_map_hg19_withX.txt.gz
   refEagle: ${hdfs_app_folder}/bcfs/chr$chr.bcf
   build: hg19
-
+  samples:
+    eur: 2504
+  populations:
+    eur: EUR
+    
 installation:
 
   - import:

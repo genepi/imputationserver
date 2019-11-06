@@ -2,6 +2,8 @@ package genepi.imputationserver.util;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -9,7 +11,15 @@ import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
 
+
 public class RefPanel {
+	
+	public static final String STRAMD_FLIPS = "100";
+	public static final String SAMPLE_CALL_RATE = "0.5";
+	public static final String MIN_SNPS = "3";
+	public static final String OVERLAP = "0.5";
+	public static final String CHR_X_MIXED_GENOTYPES = "0.1";
+	
 
 	private String id;
 
@@ -21,17 +31,29 @@ public class RefPanel {
 
 	private String build = "hg19";
 
-	private String mapPatternShapeIT;
-
-	private String mapPatternHapiUR;
-
-	private String mapShapeIT;
-
-	private String mapHapiUR;
-
 	private String mapEagle;
 
 	private String refEagle;
+
+	private Map<String, String> samples;
+
+	private Map<String, String> populations;
+	
+	private Map<String, String> defaultQcFilter;
+
+	private Map<String, String> qcFilter;
+
+	/**
+	 * 
+	 */
+	public RefPanel() {
+		defaultQcFilter = new HashMap<String,String>();
+		defaultQcFilter.put("overlap", OVERLAP);
+		defaultQcFilter.put("minSnps", MIN_SNPS);
+		defaultQcFilter.put("sampleCallrate", SAMPLE_CALL_RATE);
+		defaultQcFilter.put("mixedGenotypeschrX", CHR_X_MIXED_GENOTYPES);
+		defaultQcFilter.put("strandFlips", STRAMD_FLIPS);
+	}
 
 	public String getId() {
 		return id;
@@ -85,38 +107,6 @@ public class RefPanel {
 		return mapMinimac;
 	}
 
-	public String getMapPatternShapeIT() {
-		return mapPatternShapeIT;
-	}
-
-	public void setMapPatternShapeIT(String mapPatternShapeIT) {
-		this.mapPatternShapeIT = mapPatternShapeIT;
-	}
-
-	public String getMapPatternHapiUR() {
-		return mapPatternHapiUR;
-	}
-
-	public void setMapPatternHapiUR(String mapPatternHapiUR) {
-		this.mapPatternHapiUR = mapPatternHapiUR;
-	}
-
-	public String getMapShapeIT() {
-		return mapShapeIT;
-	}
-
-	public void setMapShapeIT(String mapShapeIT) {
-		this.mapShapeIT = mapShapeIT;
-	}
-
-	public String getMapHapiUR() {
-		return mapHapiUR;
-	}
-
-	public void setMapHapiUR(String mapHapiUR) {
-		this.mapHapiUR = mapHapiUR;
-	}
-
 	public void setMapEagle(String mapEagle) {
 		this.mapEagle = mapEagle;
 	}
@@ -142,7 +132,7 @@ public class RefPanel {
 		return HdfsUtil.exists(mapEagle);
 
 	}
-	
+
 	public boolean checkEagleBcf() {
 
 		if (refEagle == null) {
@@ -153,24 +143,66 @@ public class RefPanel {
 
 	}
 
-	public boolean checkHapiUR() {
+	public void setSamples(Map<String, String> samples) {
+		this.samples = samples;
+	}
 
-		if (mapHapiUR == null) {
-			return false;
+	public Map<String, String> getSamples() {
+		return samples;
+	}
+
+	public int getSamplesByPopulation(String population) {
+		if (samples == null) {
+			return 0;
+		}
+		String n = samples.get(population);
+		if (n != null) {
+			return Integer.parseInt(n);
+		} else {
+			return 0;
+		}
+	}
+
+	public void setPopulations(Map<String, String> populations) {
+		this.populations = populations;
+	}
+
+	public Map<String, String> getPopulations() {
+		return populations;
+	}
+
+	public boolean supportsPopulation(String population) {
+
+		if (population == null || population.equals("")) {
+			return true;
 		}
 
-		return HdfsUtil.exists(mapHapiUR);
+		if (populations == null) {
+			return false;
+		} else {
+			return populations.containsKey(population);
+		}
 
 	}
 
-	public boolean checkShapeIT() {
+	public Map<String, String> getQcFilter() {
+		return qcFilter;
+	}
 
-		if (mapShapeIT == null) {
-			return false;
+	public double getQcFilterByKey(String key) {
+		if (qcFilter == null) {
+			qcFilter = defaultQcFilter;
 		}
+		String n = qcFilter.get(key);
+		if (n != null) {
+			return Double.parseDouble(n);
+		} else {
+			return Double.parseDouble(defaultQcFilter.get(key));
+		}
+	}
 
-		return HdfsUtil.exists(mapShapeIT);
-
+	public void setQcFilter(Map<String, String> qcFilter) {
+		this.qcFilter = qcFilter;
 	}
 
 }

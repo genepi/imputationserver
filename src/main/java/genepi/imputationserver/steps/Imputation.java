@@ -77,21 +77,41 @@ public class Imputation extends ParallelHadoopJobStep {
 
 		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
-		RefPanel panel = panels.getById(reference, context.getData("refpanel"));
-		if (panel == null) {
-			context.error("reference panel '" + reference + "' not found.");
+		RefPanel panel = null;
+		try {
+			panel = panels.getById(reference, context.getData("refpanel"));
+			if (panel == null) {
+				context.error("reference panel '" + reference + "' not found.");
+				return false;
+			}
+		} catch (Exception e) {
+			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
 			return false;
 		}
 
 		context.println("Reference Panel: ");
 		context.println("  Name: " + reference);
+		context.println("  ID: " + panel.getId());
+		context.println("  Build: " + panel.getBuild());
 		context.println("  Location: " + panel.getHdfs());
 		context.println("  Legend: " + panel.getLegend());
 		context.println("  Version: " + panel.getVersion());
-
-		if (!panel.checkEagleMap()) {
-			context.error("Eagle map file not found.");
-			return false;
+		context.println("  Eagle Map: " + panel.getMapEagle());
+		context.println("  Eagle BCFs: " + panel.getRefEagle());
+		context.println("  Minimac Map: " + panel.getMapMinimac());
+		context.println("  Populations:");
+		for (Map.Entry<String, String> entry : panel.getPopulations().entrySet()) {
+			context.println("    " + entry.getKey() + "/" + entry.getValue());
+		}
+		context.println("  Samples:");
+		for (Map.Entry<String, String> entry : panel.getSamples().entrySet()) {
+			context.println("    " + entry.getKey() + "/" + entry.getValue());
+		}
+		if (panel.getQcFilter() != null) {
+			context.println("  QC Filters:");
+			for (Map.Entry<String, String> entry : panel.getQcFilter().entrySet()) {
+				context.println("    " + entry.getKey() + "/" + entry.getValue());
+			}
 		}
 
 		// execute one job per chromosome
@@ -112,8 +132,7 @@ public class Imputation extends ParallelHadoopJobStep {
 
 				ChunkFileConverterResult result = convertChunkfile(chunkFile, context.getHdfsTemp());
 
-				ImputationJob job = new ImputationJob(context.getJobId() + "-chr-" + chr,
-						new ContextLog(context)) {
+				ImputationJob job = new ImputationJob(context.getJobId() + "-chr-" + chr, new ContextLog(context)) {
 					@Override
 					protected void readConfigFile() {
 						File file = new File(folder + "/" + CONFIG_FILE);
@@ -152,6 +171,11 @@ public class Imputation extends ParallelHadoopJobStep {
 
 				if (result.needsPhasing) {
 					context.println("Input data is unphased.");
+
+					if (!panel.checkEagleMap()) {
+						context.error("Eagle map file not found.");
+						return false;
+					}
 
 					// eagle
 					context.println("  Setting up eagle reference and map files...");

@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.hadoop.conf.Configuration;
@@ -88,7 +89,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				String name = FileUtil.getFilename(folder);
 
-				context.println("Find files " + name);
+				context.println("Prepare files for chromosome: " + name);
 
 				List<String> data = new Vector<String>();
 				List<String> header = new Vector<String>();
@@ -130,7 +131,17 @@ public class CompressionEncryption extends WorkflowStep {
 
 			}
 
-			for (String name : chromosomes.keySet()) {
+			Set<String> chromosomesSet = chromosomes.keySet();
+			boolean lastChromosome = false;
+			int index = 0;
+
+			for (String name : chromosomesSet) {
+
+				index++;
+
+				if (index == chromosomesSet.size()) {
+					lastChromosome = true;
+				}
 
 				ExportObject entry = chromosomes.get(name);
 
@@ -160,10 +171,6 @@ public class CompressionEncryption extends WorkflowStep {
 
 				MergedVcfFile vcfFile = new MergedVcfFile(dosageOutput);
 
-				// add one header
-				String header = entry.getHeaderFiles().get(0);
-				vcfFile.addFile(HdfsUtil.open(header));
-
 				// simple header check
 				String headerLine = null;
 				for (String file : entry.getHeaderFiles()) {
@@ -186,6 +193,7 @@ public class CompressionEncryption extends WorkflowStep {
 									}
 								} else {
 									headerLine = line;
+									vcfFile.addFile(HdfsUtil.open(file));
 									context.println("  Keep this header as first header.");
 								}
 							}
@@ -205,6 +213,10 @@ public class CompressionEncryption extends WorkflowStep {
 					}
 				}
 
+				if (headerLine == null || headerLine.trim().isEmpty()) {
+					throw new Exception("No valid header file found");
+				}
+
 				// add data files
 				for (String file : entry.getDataFiles()) {
 					context.println("Read file " + file);
@@ -214,8 +226,9 @@ public class CompressionEncryption extends WorkflowStep {
 
 				vcfFile.close();
 
-				// verify if valid vcf.gz
-				if (name.contains("22")) {
+				// run tabix on last file only
+				if (lastChromosome) {
+					context.println("Run tabix on chromosome " + lastChromosome);
 					Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
 					tabix.setSilent(false);
 					tabix.setParams("-f", dosageOutput);

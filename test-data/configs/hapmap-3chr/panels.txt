@@ -5,5 +5,70 @@ panels:
     legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
-    mapShapeIT: ref-panels/genetic_map_b37.tar.gz
-    mapPatternShapeIT: genetic_map_chr$chr_combined_b37.txt
+    samples:
+      eur: 60
+      mixed: -1
+    populations:
+      eur: EUR
+      mixed: Mixed
+      
+  - id: hapmap2-qcfilter-strandflips
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
+    mapEagle: ref-panels/genetic_map_hg19_chr1.txt
+    refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
+    samples:
+      eur: 60
+      mixed: -1
+    populations:
+      eur: EUR
+      mixed: Mixed
+    qcFilter:
+      strandFlips: -1
+      
+  - id: hapmap2-qcfilter-ref-overlap
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
+    mapEagle: ref-panels/genetic_map_hg19_chr1.txt
+    refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
+    samples:
+      eur: 60
+      mixed: -1
+    populations:
+      eur: EUR
+      mixed: Mixed
+    qcFilter:
+      overlap: 0.99
+      strandFlips: 100
+      minSnps: 1000
+      
+  - id: hapmap2-qcfilter-min-snps
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
+    mapEagle: ref-panels/genetic_map_hg19_chr1.txt
+    refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
+    samples:
+      eur: 60
+      mixed: -1
+    populations:
+      eur: EUR
+      mixed: Mixed
+    qcFilter:
+     strandFlips: 100
+     minSnps: 1000
+
+  - id: hapmap2-qcfilter-low-callrate
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
+    mapEagle: ref-panels/genetic_map_hg19_chr1.txt
+    refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
+    samples:
+      eur: 60
+      mixed: -1
+    populations:
+      eur: EUR
+      mixed: Mixed
+    qcFilter:
+     sampleCallrate: 1.01   
+     strandFlips: 100
+       
