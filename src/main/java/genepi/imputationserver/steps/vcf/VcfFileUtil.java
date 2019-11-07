@@ -245,6 +245,7 @@ public class VcfFileUtil {
 		validChromosomes.add("chr21");
 		validChromosomes.add("chr22");
 		validChromosomes.add("chr23");
+		validChromosomes.add("chrX");
 		validChromosomes.add("chrMT");
 
 	
