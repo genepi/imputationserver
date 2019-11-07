@@ -139,6 +139,8 @@ public class FastQualityControl extends WorkflowStep {
 			legend = FileUtil.path(folder, legend);
 		}
 
+		// check chromosomes
+
 		if (!panel.supportsPopulation(population)) {
 			StringBuilder report = new StringBuilder();
 			report.append("Population '" + population + "' is not supported by reference panel '" + reference + "'.\n");
@@ -157,7 +159,7 @@ public class FastQualityControl extends WorkflowStep {
 			context.warning("Skip allele frequency check.");
 			task.setAlleleFrequencyCheck(false);
 		}
-		
+
 		task.setLegendFile(legend);
 		task.setRefSamples(refSamples);
 		task.setMafFile(mafFile);
@@ -165,18 +167,18 @@ public class FastQualityControl extends WorkflowStep {
 		task.setChunksDir(chunksDir);
 		task.setStatDir(statDir);
 		task.setBuild(panel.getBuild());
-		
+
 		double referenceOverlap = panel.getQcFilterByKey("overlap");
 		int minSnps = (int) panel.getQcFilterByKey("minSnps");
 		double sampleCallrate = panel.getQcFilterByKey("sampleCallrate");
 		double mixedGenotypesChrX = panel.getQcFilterByKey("mixedGenotypeschrX");
 		int strandFlips = (int) (panel.getQcFilterByKey("strandFlips"));
-		
+
 		task.setReferenceOverlap(referenceOverlap);
 		task.setMinSnps(minSnps);
 		task.setSampleCallrate(sampleCallrate);
 		task.setMixedGenotypeschrX(mixedGenotypesChrX);
-		
+
 		TaskResults results = runTask(context, task);
 
 		if (!results.isSuccess()) {
@@ -254,7 +256,7 @@ public class FastQualityControl extends WorkflowStep {
 
 			text.append("<br><b>Warning:</b> " + formatter.format(task.getRemovedChunksCallRate())
 
-					+ " Chunk(s) excluded: at least one sample has a call rate < "+ (sampleCallrate*100) + "% (see "
+					+ " Chunk(s) excluded: at least one sample has a call rate < " + (sampleCallrate * 100) + "% (see "
 					+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
 		}
 
@@ -262,7 +264,7 @@ public class FastQualityControl extends WorkflowStep {
 
 			text.append("<br><b>Warning:</b> " + formatter.format(task.getRemovedChunksOverlap())
 
-					+ " Chunk(s) excluded: reference overlap < "+ (referenceOverlap*100) +"% (see "
+					+ " Chunk(s) excluded: reference overlap < " + (referenceOverlap * 100) + "% (see "
 					+ context.createLinkToFile("statisticDir", "chunks-excluded.txt") + " for details).");
 		}
 
@@ -286,8 +288,8 @@ public class FastQualityControl extends WorkflowStep {
 		}
 		// strand flips (normal flip & allele switch + strand flip)
 		else if (task.getStrandFlipSimple() + task.getStrandFlipAndAlleleSwitch() > strandFlips) {
-			text.append(
-					"<br><b>Error:</b> More than " +strandFlips +" obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
+			text.append("<br><b>Error:</b> More than " + strandFlips
+					+ " obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
 			context.error(text.toString());
 
 			return false;
@@ -339,6 +341,16 @@ public class FastQualityControl extends WorkflowStep {
 				context.endTask(task.getName() + "\n" + results.getMessage(), WorkflowContext.ERROR);
 			}
 			return results;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			TaskResults result = new TaskResults();
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+			StringWriter s = new StringWriter();
+			e.printStackTrace(new PrintWriter(s));
+			context.println("Task '" + task.getName() + "' failed.\nException:" + s.toString());
+			context.endTask(e.getMessage(), WorkflowContext.ERROR);
+			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
 			TaskResults result = new TaskResults();

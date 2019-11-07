@@ -792,7 +792,7 @@ public class StatisticsTask implements ITask {
 
 		if (!new File(myLegendFile).exists()) {
 
-			throw new InterruptedException("Legendfile '" + myLegendFile + "' not found.");
+			throw new InterruptedException("This reference panel doesn't support chromosome " + _chromosome + ".");
 
 		}
 
