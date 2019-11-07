@@ -71,7 +71,6 @@ public class DefaultPreferenceStore {
 		defaults.setProperty("chunksize", "20000000");
 		defaults.setProperty("phasing.window", "5000000");
 		defaults.setProperty("minimac.window", "500000");
-		defaults.setProperty("minimac.rounds", "0");
 		defaults.setProperty("minimac.sendmail", "no");
 		defaults.setProperty("server.url", "https://imputationserver.sph.umich.edu");
 		defaults.setProperty("minimac.tmp", "/tmp");

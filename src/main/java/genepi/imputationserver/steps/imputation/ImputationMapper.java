@@ -141,7 +141,6 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
-		int rounds = Integer.parseInt(store.getString("minimac.rounds"));
 		int window = Integer.parseInt(store.getString("minimac.window"));
 
 		String minimacParams = store.getString("minimac.command");
@@ -153,7 +152,6 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		pipeline.setTabixCommand(tabixCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 		pipeline.setBuild(build);
-		pipeline.setRounds(rounds);
 		pipeline.setMinimacWindow(window);
 
 	}
