@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import genepi.imputationserver.steps.FastQualityControlTest;
+import genepi.imputationserver.steps.ImputationChrMT;
 import genepi.imputationserver.steps.ImputationTest;
 import genepi.imputationserver.steps.ImputationChrXTest;
 import genepi.imputationserver.steps.ImputationPipelineTest;
@@ -14,7 +15,7 @@ import genepi.imputationserver.steps.util.FileMergerTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({ InputValidationTest.class, VCFLineParserTest.class, ImputationTest.class, FileMergerTest.class,
-	FastQualityControlTest.class, ImputationPipelineTest.class, ImputationChrXTest.class})
+	FastQualityControlTest.class, ImputationPipelineTest.class, ImputationChrXTest.class, ImputationChrMT.class})
 public class AllTests {
 
 }
