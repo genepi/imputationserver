@@ -14,9 +14,7 @@ import genepi.hadoop.command.Command;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.io.FileUtil;
-import genepi.io.text.LineReader;
 import groovy.text.SimpleTemplateEngine;
-import htsjdk.samtools.util.BlockCompressedOutputStream;
 
 public class ImputationPipeline {
 
@@ -26,7 +24,6 @@ public class ImputationPipeline {
 	private String tabixCommand;
 	private int minimacWindow;
 	private int phasingWindow;
-	private int rounds;
 
 	private String refFilename;
 
@@ -199,7 +196,6 @@ public class ImputationPipeline {
 		binding.put("chr", chr);
 		binding.put("unphased", false);
 		binding.put("mapMinimac", mapMinimac);
-		binding.put("rounds", rounds);
 
 		SimpleTemplateEngine engine = new SimpleTemplateEngine();
 		String outputTemplate = "";
@@ -257,10 +253,6 @@ public class ImputationPipeline {
 
 	public void setPhasingWindow(int phasingWindow) {
 		this.phasingWindow = phasingWindow;
-	}
-
-	public void setRounds(int rounds) {
-		this.rounds = rounds;
 	}
 
 	public void setBuild(String build) {

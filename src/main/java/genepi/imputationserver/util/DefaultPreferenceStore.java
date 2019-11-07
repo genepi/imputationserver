@@ -71,12 +71,11 @@ public class DefaultPreferenceStore {
 		defaults.setProperty("chunksize", "20000000");
 		defaults.setProperty("phasing.window", "5000000");
 		defaults.setProperty("minimac.window", "500000");
-		defaults.setProperty("minimac.rounds", "0");
 		defaults.setProperty("minimac.sendmail", "no");
 		defaults.setProperty("server.url", "https://imputationserver.sph.umich.edu");
 		defaults.setProperty("minimac.tmp", "/tmp");
 		defaults.setProperty("minimac.command",
-				"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --cpus 1 --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
+				"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --cpus 1 --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${chr =='MT' ? '--myChromosome ' + chr : ''} ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
 		defaults.setProperty("ref.fasta", "v37");
 		defaults.setProperty("hg38Tohg19", "chains/hg38ToHg19.over.chain.gz");
 		defaults.setProperty("hg19Tohg38", "chains/hg19ToHg38.over.chain.gz");

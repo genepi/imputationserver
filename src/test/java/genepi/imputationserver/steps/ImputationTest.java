@@ -16,7 +16,6 @@ import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
-import genepi.imputationserver.util.TestSFTPServer;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;

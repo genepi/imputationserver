@@ -135,6 +135,10 @@ public class InputValidation extends WorkflowStep {
 
 				VcfFile vcfFile = VcfFileUtil.load(filename, chunkSize, true);
 
+				if (VcfFileUtil.isChrMT(vcfFile.getChromosome())) {
+					vcfFile.setPhased(true);
+				}
+
 				if (VcfFileUtil.isValidChromosome(vcfFile.getChromosome())) {
 
 					validVcfFiles.add(vcfFile);
@@ -240,8 +244,7 @@ public class InputValidation extends WorkflowStep {
 
 		} else {
 
-			context.endTask(
-					"The provided files are not VCF files  (see <a href=\"/start.html#!pages/help\">Help</a>). Chromosome X is currently in Beta.",
+			context.endTask("The provided files are not VCF files  (see <a href=\"/start.html#!pages/help\">Help</a>).",
 					WorkflowContext.ERROR);
 
 			return false;

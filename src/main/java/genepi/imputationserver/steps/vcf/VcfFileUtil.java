@@ -220,6 +220,7 @@ public class VcfFileUtil {
 		validChromosomes.add("22");
 		validChromosomes.add("23");
 		validChromosomes.add("X");
+		validChromosomes.add("MT");
 
 		validChromosomes.add("chr1");
 		validChromosomes.add("chr2");
@@ -244,7 +245,7 @@ public class VcfFileUtil {
 		validChromosomes.add("chr21");
 		validChromosomes.add("chr22");
 		validChromosomes.add("chr23");
-		validChromosomes.add("chrX");
+		validChromosomes.add("chrMT");
 
 	
 	}
@@ -256,6 +257,11 @@ public class VcfFileUtil {
 	public static boolean isChrX(String chromosome) {
 		return chromosome.equals("X") || chromosome.equals("23") || chromosome.equals("chrX") || chromosome.equals("chr23");
 	}
+	
+	public static boolean isChrMT(String chromosome) {
+		return chromosome.equals("MT") || chromosome.equals("chrMT");
+	}
+
 
 	public static void mergeGz(String local, String hdfs, String ext) throws FileNotFoundException, IOException {
 		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(local));

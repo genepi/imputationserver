@@ -132,6 +132,10 @@ public class StatisticsTask implements ITask {
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
 			String chromosome = myvcfFile.getChromosome();
+			
+			if (VcfFileUtil.isChrMT(chromosome)) {
+				myvcfFile.setPhased(true);
+			}
 
 			if (VcfFileUtil.isChrX(chromosome)) {
 
