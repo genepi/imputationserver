@@ -11,7 +11,7 @@ pages:
 - FAQ: faq.md
 - Developer Documentation:
   - API: api.md
-  - Docker: https://github.com/genepi/imputationserver-docker
+  - Docker: docker.md
   - Create Reference Panels: create-reference-panels.md
 - Contact: contact.md
 
