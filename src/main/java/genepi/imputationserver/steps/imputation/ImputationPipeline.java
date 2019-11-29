@@ -35,7 +35,7 @@ public class ImputationPipeline {
 	private String build = "hg19";
 	private boolean phasingOnly;
 
-	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.2.4";
+	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.2.5";
 	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
 	public static final String PHASING_VERSION = "eagle-2.4";
 
