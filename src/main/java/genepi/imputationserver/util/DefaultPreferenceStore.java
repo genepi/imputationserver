@@ -79,6 +79,8 @@ public class DefaultPreferenceStore {
 		defaults.setProperty("eagle.command",
 				"--vcfRef ${ref} --vcfTarget ${vcf} --geneticMapFile ${map} --outPrefix ${prefix} --bpStart ${start} --bpEnd ${end} --allowRefAltSwap --vcfOutFormat z --keepMissingPloidyX");
 		defaults.setProperty("ref.fasta", "v37");
+		defaults.setProperty("contact.name", "Christian Fuchsberger");
+		defaults.setProperty("contact.email", "cfuchsb@umich.edu");
 		defaults.setProperty("hg38Tohg19", "chains/hg38ToHg19.over.chain.gz");
 		defaults.setProperty("hg19Tohg38", "chains/hg19ToHg38.over.chain.gz");
 

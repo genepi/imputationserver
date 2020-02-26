@@ -173,9 +173,13 @@ public class InputValidation extends WorkflowStep {
 					}
 
 					if (noSamples > maxSamples && maxSamples != 0) {
-						context.endTask("The maximum number of samples is " + maxSamples
-								+ ". Please contact Christian Fuchsberger (<a href=\"mailto:cfuchsb@umich.edu\">cfuchsb@umich.edu</a>) to discuss this large imputation.",
-								WorkflowContext.ERROR);
+
+						String contactName = store.getString("contact.name");
+						String contactEmail = store.getString("contact.email");
+
+						context.endTask("The maximum number of samples is " + maxSamples + ". Please contact "
+								+ contactName + " (<a href=\"" + contactEmail + "\">" + contactEmail
+								+ "</a>) to discuss this large imputation.", WorkflowContext.ERROR);
 
 						return false;
 					}
