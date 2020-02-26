@@ -3,9 +3,7 @@ package genepi.imputationserver.steps.imputation;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.apache.commons.io.FileUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -18,11 +16,24 @@ import groovy.text.SimpleTemplateEngine;
 
 public class ImputationPipeline {
 
+	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.2.5";
+	
+	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
+
+	public static final String PHASING_VERSION = "eagle-2.4";
+	
 	private String minimacCommand;
+	
 	private String minimacParams;
+	
 	private String eagleCommand;
+	
+	private String eagleParams;
+	
 	private String tabixCommand;
+	
 	private int minimacWindow;
+	
 	private int phasingWindow;
 
 	private String refFilename;
@@ -30,16 +41,16 @@ public class ImputationPipeline {
 	private String mapMinimac;
 
 	private String mapEagleFilename = "";
+	
 	private String refEagleFilename = "";
 
 	private String build = "hg19";
+	
 	private boolean phasingOnly;
 
-	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.2.5";
-	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
-	public static final String PHASING_VERSION = "eagle-2.4";
-
 	private ImputationStatistic statistic = new ImputationStatistic();
+
+	private SimpleTemplateEngine engine = new SimpleTemplateEngine();
 
 	public boolean execute(VcfChunk chunk, VcfChunkOutput output) throws InterruptedException, IOException {
 
@@ -102,8 +113,8 @@ public class ImputationPipeline {
 
 		}
 
-		//Imputation
-		
+		// Imputation
+
 		long time = System.currentTimeMillis();
 		boolean successful = imputeVCF(output);
 		time = (System.currentTimeMillis() - time) / 1000;
@@ -122,41 +133,32 @@ public class ImputationPipeline {
 		}
 	}
 
-	public boolean phaseWithEagle(VcfChunk input, VcfChunkOutput output, String reference, String mapFilename) {
+	public boolean phaseWithEagle(VcfChunk input, VcfChunkOutput output, String reference, String mapFilename)
+			throws IOException {
 
-		// +/- 1 Mbases
+		// calculate phasing positions
 		int start = input.getStart() - phasingWindow;
 		if (start < 1) {
 			start = 1;
 		}
-
 		int end = input.getEnd() + phasingWindow;
-
-		// start eagle
-		Command eagle = new Command(eagleCommand);
-		eagle.setSilent(false);
 
 		String phasedPrefix = ".eagle.phased";
 
-		List<String> params = new Vector<String>();
-		params.add("--vcfRef");
-		params.add(reference);
-		params.add("--vcfTarget");
-		params.add(output.getVcfFilename());
-		params.add("--geneticMapFile");
-		params.add(mapFilename);
-		params.add("--outPrefix");
-		params.add(output.getPrefix() + phasedPrefix);
-		params.add("--bpStart");
-		params.add(start + "");
-		params.add("--bpEnd");
-		params.add(end + "");
-		params.add("--allowRefAltSwap");
-		params.add("--vcfOutFormat");
-		params.add("z");
-		// params.add("--outputUnphased");
-		params.add("--keepMissingPloidyX");
+		// set parameters
+		Map<String, Object> binding = new HashMap<String, Object>();
+		binding.put("ref", reference);
+		binding.put("vcf", output.getVcfFilename());
+		binding.put("map", mapFilename);
+		binding.put("prefix", output.getPrefix() + phasedPrefix);
+		binding.put("start", start);
+		binding.put("end", end);
 
+		String[] params = createParams(eagleParams, binding);
+
+		// eagle command
+		Command eagle = new Command(eagleCommand);
+		eagle.setSilent(false);
 		eagle.setParams(params);
 		eagle.saveStdOut(output.getPrefix() + ".eagle.out");
 		eagle.saveStdErr(output.getPrefix() + ".eagle.err");
@@ -175,10 +177,6 @@ public class ImputationPipeline {
 	public boolean imputeVCF(VcfChunkOutput output)
 			throws InterruptedException, IOException, CompilationFailedException {
 
-		// mini-mac
-		Command minimac = new Command(minimacCommand);
-		minimac.setSilent(false);
-
 		String chr = "";
 		if (build.equals("hg38")) {
 			chr = "chr" + output.getChromosome();
@@ -186,6 +184,7 @@ public class ImputationPipeline {
 			chr = output.getChromosome();
 		}
 
+		// set parameters
 		Map<String, Object> binding = new HashMap<String, Object>();
 		binding.put("ref", refFilename);
 		binding.put("vcf", output.getPhasedVcfFilename());
@@ -197,18 +196,12 @@ public class ImputationPipeline {
 		binding.put("unphased", false);
 		binding.put("mapMinimac", mapMinimac);
 
-		SimpleTemplateEngine engine = new SimpleTemplateEngine();
-		String outputTemplate = "";
-		try {
-			outputTemplate = engine.createTemplate(minimacParams).make(binding).toString();
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
+		String[] params = createParams(minimacParams, binding);
 
-		String[] outputTemplateParams = outputTemplate.split("\\s+");
-
-		minimac.setParams(outputTemplateParams);
-
+		// minimac command
+		Command minimac = new Command(minimacCommand);
+		minimac.setSilent(false);
+		minimac.setParams(params);
 		minimac.saveStdOut(output.getPrefix() + ".minimac.out");
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
 
@@ -247,8 +240,9 @@ public class ImputationPipeline {
 		this.minimacWindow = minimacWindow;
 	}
 
-	public void setEagleCommand(String eagleCommand) {
+	public void setEagleCommand(String eagleCommand, String eagleParams) {
 		this.eagleCommand = eagleCommand;
+		this.eagleParams = eagleParams;
 	}
 
 	public void setPhasingWindow(int phasingWindow) {
@@ -269,6 +263,18 @@ public class ImputationPipeline {
 
 	public ImputationStatistic getStatistic() {
 		return statistic;
+	}
+
+	protected String[] createParams(String template, Map<String, Object> bindings) throws IOException {
+		
+		try {
+			String outputTemplate = "";
+			outputTemplate = engine.createTemplate(template).make(bindings).toString();
+			return outputTemplate.split("\\s+");
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+
 	}
 
 }

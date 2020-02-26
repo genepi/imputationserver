@@ -144,11 +144,13 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		int window = Integer.parseInt(store.getString("minimac.window"));
 
 		String minimacParams = store.getString("minimac.command");
+		String eagleParams = store.getString("eagle.command");
 
+		
 		// config pipeline
 		pipeline = new ImputationPipeline();
 		pipeline.setMinimacCommand(minimacCommand, minimacParams);
-		pipeline.setEagleCommand(eagleCommand);
+		pipeline.setEagleCommand(eagleCommand, eagleParams);
 		pipeline.setTabixCommand(tabixCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 		pipeline.setBuild(build);

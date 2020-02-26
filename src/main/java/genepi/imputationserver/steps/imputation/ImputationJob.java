@@ -12,7 +12,6 @@ import genepi.hadoop.CacheStore;
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.log.LogCollector;
-import genepi.io.FileUtil;
 
 public class ImputationJob extends HadoopJob {
 

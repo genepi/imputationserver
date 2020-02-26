@@ -62,7 +62,7 @@ public class DefaultPreferenceStore {
 	}
 
 	public Set<Object> getKeys() {
-		return new HashSet<Object>(Collections.list( properties.propertyNames()));		
+		return new HashSet<Object>(Collections.list(properties.propertyNames()));
 	}
 
 	public static Properties defaults() {
@@ -76,6 +76,8 @@ public class DefaultPreferenceStore {
 		defaults.setProperty("minimac.tmp", "/tmp");
 		defaults.setProperty("minimac.command",
 				"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --cpus 1 --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${chr =='MT' ? '--myChromosome ' + chr : ''} ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
+		defaults.setProperty("eagle.command",
+				"--vcfRef ${ref} --vcfTarget ${vcf} --geneticMapFile ${map} --outPrefix ${prefix} --bpStart ${start} --bpEnd ${end} --allowRefAltSwap --vcfOutFormat z --keepMissingPloidyX");
 		defaults.setProperty("ref.fasta", "v37");
 		defaults.setProperty("hg38Tohg19", "chains/hg38ToHg19.over.chain.gz");
 		defaults.setProperty("hg19Tohg38", "chains/hg19ToHg38.over.chain.gz");
