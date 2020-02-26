@@ -98,7 +98,7 @@ done
 
 A legend file is a tab-delimited file consisting of 5 columns (`id`, `position`, `a0`, `a1`, `population.aaf`). It is used by Michigan Imputation Server to create QC Statistics. 
 `a0` and `a1` including the ref/alt alleles, `population.aaf` the alternate allele frequency. 
-Please note that `population` must be substituted by the actual population (e.g. eur). This population is then specified in the [minimac4.yaml file](https://github.com/genepi/imputationserver/blob/master/files/minimac4.yaml). 
+Please note that `population` must be substituted by the actual population (e.g. eur).
 A legend file for chr20 can be found [here](https://github.com/genepi/imputationserver/blob/master/test-data/configs/hapmap-chr20/ref-panels/hapmap_r22.chr20.CEU.hg19_impute.legend.gz?raw=true).
 
 Please execute the following commands (starting from vcf files) to create the legend files:
