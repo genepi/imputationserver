@@ -182,15 +182,14 @@ public class Imputation extends ParallelHadoopJobStep {
 					job.setMapEagleHdfs(panel.getMapEagle());
 					String refEagleFilenameChromosome = resolvePattern(panel.getRefEagle(), chr);
 					job.setRefEagleHdfs(refEagleFilenameChromosome);
-
-					if (mode != null && mode.equals("phasing")) {
-						job.setPhasingOnly("true");
-					} else {
-						job.setPhasingOnly("false");
-					}
-
 				} else {
 					context.println("Input data is phased.");
+				}
+
+				if (mode != null && mode.equals("phasing")) {
+					job.setPhasingOnly("true");
+				} else {
+					job.setPhasingOnly("false");
 				}
 
 				job.setInput(result.filename);
