@@ -8,8 +8,6 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.apache.jasper.tagplugins.jstl.core.Set;
-
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.fastqc.ITask;
@@ -181,7 +179,7 @@ public class FastQualityControl extends WorkflowStep {
 
 		if (ranges != null) {
 			HashSet<RangeEntry> rangeEntries = new HashSet<RangeEntry>();
-			
+
 			for (String range : panel.getRange().split(",")) {
 				String chromosome = range.split(":")[0].trim();
 				String region = range.split(":")[1].trim();
@@ -193,9 +191,11 @@ public class FastQualityControl extends WorkflowStep {
 				entry.setEnd(end);
 				rangeEntries.add(entry);
 			}
-			
+
 			task.setRanges(rangeEntries);
-			
+			context.log("Reference Panel Ranges: " + rangeEntries);
+		} else {
+			context.log("Reference Panel Ranges: genome-wide");
 		}
 
 		task.setReferenceOverlap(referenceOverlap);
@@ -228,6 +228,9 @@ public class FastQualityControl extends WorkflowStep {
 		StringBuffer text = new StringBuffer();
 
 		text.append("<b>Statistics:</b> <br>");
+		if (ranges != null) {
+			text.append("Ref. Panel Range: " + ranges + "<br>");
+		}
 		text.append(
 				"Alternative allele frequency > 0.5 sites: " + formatter.format(task.getAlternativeAlleles()) + "<br>");
 		text.append("Reference Overlap: "

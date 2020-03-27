@@ -2,17 +2,15 @@ package genepi.imputationserver.steps;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 
 import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.common.WorkflowStep;
 import genepi.hadoop.importer.IImporter;
 import genepi.hadoop.importer.ImporterFactory;
+import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
@@ -25,18 +23,11 @@ public class InputValidation extends WorkflowStep {
 	@Override
 	public boolean run(WorkflowContext context) {
 
-		try {
-			URL url = InputValidation.class.getClassLoader().getResource("META-INF/MANIFEST.MF");
-			Manifest manifest = new Manifest(url.openStream());
-			Attributes attr = manifest.getMainAttributes();
-			String buildVesion = attr.getValue("Version");
-			String buildTime = attr.getValue("Build-Time");
-			String builtBy = attr.getValue("Built-By");
-			context.println("Version: " + buildVesion + " (Built by " + builtBy + " on " + buildTime + ")");
+		context.log("Versions:");
+		context.log("  Pipeline: " + ImputationPipeline.PIPELINE_VERSION);
+		context.log("  Imputation-Engine: " + ImputationPipeline.IMPUTATION_VERSION);
+		context.log("  Phasing-Engine: " + ImputationPipeline.PHASING_VERSION);
 
-		} catch (IOException E) {
-			// handle
-		}
 		if (!checkParameters(context)) {
 			return false;
 		}
