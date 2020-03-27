@@ -173,6 +173,18 @@ public class FastQualityControl extends WorkflowStep {
 		double sampleCallrate = panel.getQcFilterByKey("sampleCallrate");
 		double mixedGenotypesChrX = panel.getQcFilterByKey("mixedGenotypeschrX");
 		int strandFlips = (int) (panel.getQcFilterByKey("strandFlips"));
+		String range = panel.getRange();
+
+		if (range != null) {
+			String chromosome = panel.getRange().split(":")[0];
+			String region = panel.getRange().split(":")[1];
+			int rangeStart = Integer.valueOf(region.split("-")[0]);
+			int rangeEnd = Integer.valueOf(region.split("-")[1]);
+
+			task.setRangeChromosome(chromosome);
+			task.setRangeStart(rangeStart);
+			task.setRangeEnd(rangeEnd);
+		}
 
 		task.setReferenceOverlap(referenceOverlap);
 		task.setMinSnps(minSnps);

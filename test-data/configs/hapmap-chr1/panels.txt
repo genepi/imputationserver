@@ -63,4 +63,18 @@ panels:
       sas: SAS
       eur: EUR
       mixed: Mixed
+      
+        
+  - id: hapmap2-region
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
+    mapEagle: ref-panels/genetic_map_hg19_chr1.txt
+    refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
+    samples:
+      eur: 60
+      mixed: -1
+    populations:
+      eur: EUR
+      mixed: Mixed
+    range: 1:565111-752566   
   

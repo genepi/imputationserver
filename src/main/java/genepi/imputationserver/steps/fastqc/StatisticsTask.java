@@ -58,6 +58,9 @@ public class StatisticsTask implements ITask {
 	private String legendFile;
 	private int refSamples;
 	private String build;
+	private String rangeChromosome;
+	private int rangeStart;
+	private int rangeEnd;
 
 	// overall stats
 	private int overallChunks;
@@ -132,7 +135,7 @@ public class StatisticsTask implements ITask {
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
 			String chromosome = myvcfFile.getChromosome();
-			
+
 			if (VcfFileUtil.isChrMT(chromosome)) {
 				myvcfFile.setPhased(true);
 			}
@@ -316,6 +319,12 @@ public class StatisticsTask implements ITask {
 	private void processLine(MinimalVariantContext snp, LegendEntry refSnp, int samples, BGzipLineWriter vcfWriter,
 			VcfChunk chunk, LineWriter mafWriter, LineWriter excludedSnpsWriter, LineWriter typedOnlyWriter)
 			throws IOException, InterruptedException {
+
+		if (rangeChromosome != null) {
+			if (snp.getContig().equals(rangeChromosome) && (snp.getStart() < rangeStart || snp.getStart() > rangeEnd)) {
+				return;
+			}
+		}
 
 		int extendedStart = Math.max(chunk.getStart() - phasingWindow, 1);
 		int extendedEnd = chunk.getEnd() + phasingWindow;
@@ -583,7 +592,7 @@ public class StatisticsTask implements ITask {
 				&& chunk.validSnpsChunk >= minSnps) {
 
 			// create index
-			//VcfFileUtil.createIndex(chunk.getVcfFilename());
+			// VcfFileUtil.createIndex(chunk.getVcfFilename());
 
 			// update chunk
 			chunk.setSnps(chunk.overallSnpsChunk);
@@ -963,15 +972,15 @@ public class StatisticsTask implements ITask {
 	public void setBuild(String build) {
 		this.build = build;
 	}
-	
+
 	public void setAlleleFrequencyCheck(boolean alleleFrequencyCheck) {
 		this.alleleFrequencyCheck = alleleFrequencyCheck;
 	}
-	
+
 	public boolean isAlleleFrequencyCheck() {
 		return alleleFrequencyCheck;
 	}
-	
+
 	public double getSampleCallrate() {
 		return sampleCallrate;
 	}
@@ -1002,6 +1011,34 @@ public class StatisticsTask implements ITask {
 
 	public void setMixedGenotypeschrX(double mixedGenotypeschrX) {
 		this.mixedGenotypeschrX = mixedGenotypeschrX;
+	}
+
+	public int getRangeStart() {
+		return rangeStart;
+	}
+
+	public void setRangeStart(int rangeStart) {
+		this.rangeStart = rangeStart;
+	}
+
+	public int getRangeEnd() {
+		return rangeEnd;
+	}
+
+	public void setRangeEnd(int rangeEnd) {
+		this.rangeEnd = rangeEnd;
+	}
+
+	public int getRefSamples() {
+		return refSamples;
+	}
+
+	public String getRangeChromosome() {
+		return rangeChromosome;
+	}
+
+	public void setRangeChromosome(String rangeChromosome) {
+		this.rangeChromosome = rangeChromosome;
 	}
 
 }

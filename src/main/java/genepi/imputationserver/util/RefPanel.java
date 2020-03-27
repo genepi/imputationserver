@@ -11,15 +11,13 @@ import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
 
-
 public class RefPanel {
-	
+
 	public static final String STRAMD_FLIPS = "100";
 	public static final String SAMPLE_CALL_RATE = "0.5";
 	public static final String MIN_SNPS = "3";
 	public static final String OVERLAP = "0.5";
 	public static final String CHR_X_MIXED_GENOTYPES = "0.1";
-	
 
 	private String id;
 
@@ -38,16 +36,18 @@ public class RefPanel {
 	private Map<String, String> samples;
 
 	private Map<String, String> populations;
-	
+
 	private Map<String, String> defaultQcFilter;
 
 	private Map<String, String> qcFilter;
+
+	private String range;
 
 	/**
 	 * 
 	 */
 	public RefPanel() {
-		defaultQcFilter = new HashMap<String,String>();
+		defaultQcFilter = new HashMap<String, String>();
 		defaultQcFilter.put("overlap", OVERLAP);
 		defaultQcFilter.put("minSnps", MIN_SNPS);
 		defaultQcFilter.put("sampleCallrate", SAMPLE_CALL_RATE);
@@ -204,5 +204,14 @@ public class RefPanel {
 	public void setQcFilter(Map<String, String> qcFilter) {
 		this.qcFilter = qcFilter;
 	}
+
+	public void setRange(String range) {
+		this.range = range;
+	}
+
+	public String getRange() {
+		return range;
+	}
+
 
 }
