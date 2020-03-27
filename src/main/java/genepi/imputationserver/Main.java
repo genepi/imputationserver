@@ -6,6 +6,7 @@ import genepi.base.Toolbox;
 import genepi.imputationserver.tools.LegendFileLiftOverTool;
 import genepi.imputationserver.tools.LegendFileTool;
 import genepi.imputationserver.tools.VcfLiftOverTool;
+import genepi.imputationserver.tools.VersionTool;
 
 public class Main extends Toolbox {
 
@@ -17,6 +18,7 @@ public class Main extends Toolbox {
 			NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
 		Main main = new Main("imputationserver.jar", args);
+		main.addTool("version", VersionTool.class);
 		main.addTool("legend", LegendFileTool.class);
 		main.addTool("legend-liftover", LegendFileLiftOverTool.class);
 		main.addTool("vcf-liftover", VcfLiftOverTool.class);
