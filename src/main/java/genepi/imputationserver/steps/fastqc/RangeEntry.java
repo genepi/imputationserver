@@ -29,4 +29,9 @@ public class RangeEntry {
 	public void setEnd(int end) {
 		this.end = end;
 	}
+	
+	public String toString() {
+		return chromosome + ":" + start + "-" + end;
+	}
+	
 }
