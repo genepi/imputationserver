@@ -2,9 +2,9 @@ package genepi.imputationserver.steps.fastqc;
 
 public class RangeEntry {
 
-	public String chromosome;
-	public int start;
-	public int end;
+	private String chromosome;
+	private int start;
+	private int end;
 
 	public String getChromosome() {
 		return chromosome;
