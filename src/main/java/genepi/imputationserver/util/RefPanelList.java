@@ -85,6 +85,12 @@ public class RefPanelList {
 				panel.setBuild(null);
 			}
 
+			if (map.get("range") != null) {
+				panel.setRange(map.get("range").toString());
+			} else {
+				panel.setRange(null);
+			}
+
 			if (map.get("mapMinimac") != null) {
 				panel.setMapMinimac(map.get("mapMinimac").toString());
 			} else {
