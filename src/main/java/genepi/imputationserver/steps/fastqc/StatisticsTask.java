@@ -58,6 +58,7 @@ public class StatisticsTask implements ITask {
 	private String legendFile;
 	private int refSamples;
 	private String build;
+	private HashSet<RangeEntry> ranges;
 
 	// overall stats
 	private int overallChunks;
@@ -132,7 +133,7 @@ public class StatisticsTask implements ITask {
 			VcfFile myvcfFile = VcfFileUtil.load(vcfFilename, chunkSize, true);
 
 			String chromosome = myvcfFile.getChromosome();
-			
+
 			if (VcfFileUtil.isChrMT(chromosome)) {
 				myvcfFile.setPhased(true);
 			}
@@ -316,6 +317,23 @@ public class StatisticsTask implements ITask {
 	private void processLine(MinimalVariantContext snp, LegendEntry refSnp, int samples, BGzipLineWriter vcfWriter,
 			VcfChunk chunk, LineWriter mafWriter, LineWriter excludedSnpsWriter, LineWriter typedOnlyWriter)
 			throws IOException, InterruptedException {
+
+		if (ranges != null) {
+			
+			boolean inRange = false;
+			
+			for (RangeEntry range : ranges) {
+
+				if (snp.getContig().equals(range.getChromosome()) && snp.getStart() >= range.getStart()
+						&& snp.getStart() <= range.getEnd()) {
+					inRange = true;
+				}
+			}
+
+			if (!inRange) {
+				return;
+			}
+		}
 
 		int extendedStart = Math.max(chunk.getStart() - phasingWindow, 1);
 		int extendedEnd = chunk.getEnd() + phasingWindow;
@@ -583,7 +601,7 @@ public class StatisticsTask implements ITask {
 				&& chunk.validSnpsChunk >= minSnps) {
 
 			// create index
-			//VcfFileUtil.createIndex(chunk.getVcfFilename());
+			// VcfFileUtil.createIndex(chunk.getVcfFilename());
 
 			// update chunk
 			chunk.setSnps(chunk.overallSnpsChunk);
@@ -963,15 +981,15 @@ public class StatisticsTask implements ITask {
 	public void setBuild(String build) {
 		this.build = build;
 	}
-	
+
 	public void setAlleleFrequencyCheck(boolean alleleFrequencyCheck) {
 		this.alleleFrequencyCheck = alleleFrequencyCheck;
 	}
-	
+
 	public boolean isAlleleFrequencyCheck() {
 		return alleleFrequencyCheck;
 	}
-	
+
 	public double getSampleCallrate() {
 		return sampleCallrate;
 	}
@@ -1002,6 +1020,18 @@ public class StatisticsTask implements ITask {
 
 	public void setMixedGenotypeschrX(double mixedGenotypeschrX) {
 		this.mixedGenotypeschrX = mixedGenotypeschrX;
+	}
+
+	public int getRefSamples() {
+		return refSamples;
+	}
+
+	public HashSet<RangeEntry> getRanges() {
+		return ranges;
+	}
+
+	public void setRanges(HashSet<RangeEntry> ranges) {
+		this.ranges = ranges;
 	}
 
 }

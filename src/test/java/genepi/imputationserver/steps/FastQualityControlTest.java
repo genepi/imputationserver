@@ -635,4 +635,42 @@ public class FastQualityControlTest extends TestCase {
 
 	}
 	
+	public void testRegionImputationSimple() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-region-simple");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("Remaining sites in total: 1"));
+
+	}
+	
+	public void testRegionImputationComplex() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-region-complex");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("Remaining sites in total: 2"));
+
+	}
+	
 }

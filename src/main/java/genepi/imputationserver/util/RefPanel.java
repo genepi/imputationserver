@@ -4,22 +4,22 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
-
+import genepi.imputationserver.steps.fastqc.RangeEntry;
 
 public class RefPanel {
-	
+
 	public static final String STRAMD_FLIPS = "100";
 	public static final String SAMPLE_CALL_RATE = "0.5";
 	public static final String MIN_SNPS = "3";
 	public static final String OVERLAP = "0.5";
 	public static final String CHR_X_MIXED_GENOTYPES = "0.1";
-	
 
 	private String id;
 
@@ -38,21 +38,33 @@ public class RefPanel {
 	private Map<String, String> samples;
 
 	private Map<String, String> populations;
-	
+
 	private Map<String, String> defaultQcFilter;
 
 	private Map<String, String> qcFilter;
+	
+	private Set<RangeEntry> range1;
+
+	private String range;
 
 	/**
 	 * 
 	 */
 	public RefPanel() {
-		defaultQcFilter = new HashMap<String,String>();
+		defaultQcFilter = new HashMap<String, String>();
 		defaultQcFilter.put("overlap", OVERLAP);
 		defaultQcFilter.put("minSnps", MIN_SNPS);
 		defaultQcFilter.put("sampleCallrate", SAMPLE_CALL_RATE);
 		defaultQcFilter.put("mixedGenotypeschrX", CHR_X_MIXED_GENOTYPES);
 		defaultQcFilter.put("strandFlips", STRAMD_FLIPS);
+	}
+
+	public Set<RangeEntry> getRange1() {
+		return range1;
+	}
+
+	public void setRange1(Set<RangeEntry> range1) {
+		this.range1 = range1;
 	}
 
 	public String getId() {
@@ -204,5 +216,14 @@ public class RefPanel {
 	public void setQcFilter(Map<String, String> qcFilter) {
 		this.qcFilter = qcFilter;
 	}
+
+	public void setRange(String range) {
+		this.range = range;
+	}
+
+	public String getRange() {
+		return range;
+	}
+
 
 }
