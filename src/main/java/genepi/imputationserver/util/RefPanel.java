@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import genepi.hadoop.HdfsUtil;
+import genepi.imputationserver.steps.fastqc.RangeEntry;
 
 public class RefPanel {
 
@@ -40,6 +42,8 @@ public class RefPanel {
 	private Map<String, String> defaultQcFilter;
 
 	private Map<String, String> qcFilter;
+	
+	private Set<RangeEntry> range1;
 
 	private String range;
 
@@ -53,6 +57,14 @@ public class RefPanel {
 		defaultQcFilter.put("sampleCallrate", SAMPLE_CALL_RATE);
 		defaultQcFilter.put("mixedGenotypeschrX", CHR_X_MIXED_GENOTYPES);
 		defaultQcFilter.put("strandFlips", STRAMD_FLIPS);
+	}
+
+	public Set<RangeEntry> getRange1() {
+		return range1;
+	}
+
+	public void setRange1(Set<RangeEntry> range1) {
+		this.range1 = range1;
 	}
 
 	public String getId() {

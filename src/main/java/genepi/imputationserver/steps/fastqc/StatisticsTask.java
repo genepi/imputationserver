@@ -58,9 +58,7 @@ public class StatisticsTask implements ITask {
 	private String legendFile;
 	private int refSamples;
 	private String build;
-	private String rangeChromosome;
-	private int rangeStart;
-	private int rangeEnd;
+	private HashSet<RangeEntry> ranges;
 
 	// overall stats
 	private int overallChunks;
@@ -320,8 +318,19 @@ public class StatisticsTask implements ITask {
 			VcfChunk chunk, LineWriter mafWriter, LineWriter excludedSnpsWriter, LineWriter typedOnlyWriter)
 			throws IOException, InterruptedException {
 
-		if (rangeChromosome != null) {
-			if (snp.getContig().equals(rangeChromosome) && (snp.getStart() < rangeStart || snp.getStart() > rangeEnd)) {
+		if (ranges != null) {
+			
+			boolean inRange = false;
+			
+			for (RangeEntry range : ranges) {
+
+				if (snp.getContig().equals(range.getChromosome()) && snp.getStart() >= range.getStart()
+						&& snp.getStart() <= range.getEnd()) {
+					inRange = true;
+				}
+			}
+
+			if (!inRange) {
 				return;
 			}
 		}
@@ -1013,32 +1022,16 @@ public class StatisticsTask implements ITask {
 		this.mixedGenotypeschrX = mixedGenotypeschrX;
 	}
 
-	public int getRangeStart() {
-		return rangeStart;
-	}
-
-	public void setRangeStart(int rangeStart) {
-		this.rangeStart = rangeStart;
-	}
-
-	public int getRangeEnd() {
-		return rangeEnd;
-	}
-
-	public void setRangeEnd(int rangeEnd) {
-		this.rangeEnd = rangeEnd;
-	}
-
 	public int getRefSamples() {
 		return refSamples;
 	}
 
-	public String getRangeChromosome() {
-		return rangeChromosome;
+	public HashSet<RangeEntry> getRanges() {
+		return ranges;
 	}
 
-	public void setRangeChromosome(String rangeChromosome) {
-		this.rangeChromosome = rangeChromosome;
+	public void setRanges(HashSet<RangeEntry> ranges) {
+		this.ranges = ranges;
 	}
 
 }
