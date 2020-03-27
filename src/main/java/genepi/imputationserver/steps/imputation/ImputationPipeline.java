@@ -16,7 +16,7 @@ import groovy.text.SimpleTemplateEngine;
 
 public class ImputationPipeline {
 
-	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.2.9";
+	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.3.0";
 	
 	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
 
