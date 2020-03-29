@@ -97,7 +97,7 @@
 				<version>2.4</version>
 				<executions>
 					<execution>
-						<id>create-assembly</id>
+						<id>create-assembly-imputationserver</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
@@ -106,10 +106,24 @@
 							<finalName>imputationserver</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
-								<descriptor>src/main/assembly/assembly.xml</descriptor>
+								<descriptor>src/main/assembly/imputationserver.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>
+					<execution>
+						<id>create-assembly-imputationserver-hla</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<finalName>imputationserver-hla</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/imputationserver-hla.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>					
 				</executions>
 			</plugin>
 
