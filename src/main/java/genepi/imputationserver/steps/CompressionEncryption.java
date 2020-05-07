@@ -234,7 +234,7 @@ public class CompressionEncryption extends WorkflowStep {
 				vcfFile.close();
 
 				if (sanityCheck.equals("yes") && lastChromosome) {
-					context.println("Run tabix on chromosome " + name + "...");
+					context.log("Run tabix on chromosome " + name + "...");
 					Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
 					tabix.setSilent(false);
 					tabix.setParams("-f", dosageOutput);
@@ -284,7 +284,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 					context.log("Start file upload: " + filePath);
 					
-					String url = externalWorkspace.upload("local/" + fileName, file.getFile());
+					String url = externalWorkspace.upload("local", file.getFile());
 
 					long end = (System.currentTimeMillis() - start) / 1000;
 
@@ -292,7 +292,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 					context.log("Add " + localOutput + " to custom download");
 
-					String size = FileUtils.byteCountToDisplaySize(file.getFileHeaders().size());
+					String size = FileUtils.byteCountToDisplaySize(file.getFile().length());
 					
 					context.addDownload("local", fileName, size, url);
 
