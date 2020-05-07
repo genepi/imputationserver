@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import cloudgene.sdk.internal.WorkflowContext;
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.common.ContextLog;
-import genepi.hadoop.common.WorkflowContext;
 import genepi.hadoop.io.HdfsLineWriter;
 import genepi.imputationserver.steps.imputation.ImputationJob;
 import genepi.imputationserver.steps.vcf.VcfChunk;
+import genepi.imputationserver.util.ContextLog;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
 import genepi.imputationserver.util.RefPanel;

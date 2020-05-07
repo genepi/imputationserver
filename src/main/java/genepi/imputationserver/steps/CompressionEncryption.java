@@ -14,15 +14,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import cloudgene.sdk.internal.IExternalWorkspace;
+import cloudgene.sdk.internal.WorkflowContext;
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.command.Command;
-import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ExportObject;
@@ -70,6 +72,11 @@ public class CompressionEncryption extends WorkflowStep {
 		String serverUrl = "https://imputationserver.sph.umich.edu";
 		if (store.getString("server.url") != null && !store.getString("server.url").isEmpty()) {
 			serverUrl = store.getString("server.url");
+		}
+		
+		String sanityCheck = "yes";
+		if (store.getString("sanitycheck") != null && !store.getString("sanitycheck").equals("")) {
+			sanityCheck = store.getString("sanitycheck");
 		}
 
 		if (password == null || (password != null && password.equals("auto"))) {
@@ -226,8 +233,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				vcfFile.close();
 
-				// run tabix on last file only
-				if (lastChromosome) {
+				if (sanityCheck.equals("yes") && lastChromosome) {
 					context.println("Run tabix on chromosome " + name + "...");
 					Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
 					tabix.setSilent(false);
@@ -236,7 +242,8 @@ public class CompressionEncryption extends WorkflowStep {
 						context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
 						return false;
 					}
-				}
+					context.log("Tabix done.");
+				} 
 
 				ZipParameters param = new ZipParameters();
 				param.setEncryptFiles(true);
@@ -259,12 +266,43 @@ public class CompressionEncryption extends WorkflowStep {
 					files.add(new File(infoOutput));
 				}
 
-				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput, "chr_" + name + ".zip")));
+				String fileName = "chr_" + name + ".zip";
+				String filePath = FileUtil.path(localOutput, fileName);
+				ZipFile file = new ZipFile(new File(filePath));
 				file.createZipFile(files, param);
 
 				// delete temp dir
 				FileUtil.deleteDirectory(temp);
 
+				IExternalWorkspace externalWorkspace = context.getExternalWorkspace();
+
+				if (externalWorkspace != null) {
+
+					long start = System.currentTimeMillis();
+
+					context.log("External Workspace '" + externalWorkspace.getName() + "' found");
+
+					context.log("Start file upload: " + filePath);
+					
+					String url = externalWorkspace.upload("local/" + fileName, file.getFile());
+
+					long end = (System.currentTimeMillis() - start) / 1000;
+
+					context.log("Upload finished in  " + end + " sec. File Location: " + url);
+
+					context.log("Add " + localOutput + " to custom download");
+
+					String size = FileUtils.byteCountToDisplaySize(file.getFileHeaders().size());
+					
+					context.addDownload("local", fileName, size, url);
+
+					FileUtil.deleteFile(filePath);
+
+					context.log("File deleted: " + filePath);
+
+				} else {
+					context.log("No external Workspace set.");
+				}
 			}
 
 			// delete temporary files

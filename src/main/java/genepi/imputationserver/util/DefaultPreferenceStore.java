@@ -83,6 +83,7 @@ public class DefaultPreferenceStore {
 		defaults.setProperty("contact.email", "cfuchsb@umich.edu");
 		defaults.setProperty("hg38Tohg19", "chains/hg38ToHg19.over.chain.gz");
 		defaults.setProperty("hg19Tohg38", "chains/hg19ToHg38.over.chain.gz");
+		defaults.setProperty("sanitycheck", "yes");
 
 		return defaults;
 	}

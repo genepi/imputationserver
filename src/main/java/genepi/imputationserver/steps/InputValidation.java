@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
-import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.common.WorkflowStep;
+import cloudgene.sdk.internal.WorkflowContext;
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.importer.IImporter;
 import genepi.hadoop.importer.ImporterFactory;
 import genepi.imputationserver.steps.imputation.ImputationPipeline;
