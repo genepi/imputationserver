@@ -10,17 +10,13 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.common.WorkflowStep;
-import genepi.imputationserver.steps.InputValidationTest.InputValidationMock;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
-import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFFileReader;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 

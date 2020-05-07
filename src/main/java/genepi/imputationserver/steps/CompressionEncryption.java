@@ -19,10 +19,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import cloudgene.sdk.internal.WorkflowContext;
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.command.Command;
-import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ExportObject;

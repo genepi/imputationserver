@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import genepi.hadoop.common.WorkflowStep;
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;

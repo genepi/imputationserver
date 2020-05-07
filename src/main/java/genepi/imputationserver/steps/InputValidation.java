@@ -9,8 +9,8 @@ import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.common.WorkflowStep;
+import cloudgene.sdk.internal.WorkflowContext;
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.importer.IImporter;
 import genepi.hadoop.importer.ImporterFactory;
 import genepi.imputationserver.steps.vcf.VcfFile;

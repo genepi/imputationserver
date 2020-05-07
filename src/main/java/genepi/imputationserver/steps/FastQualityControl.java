@@ -7,8 +7,8 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
-import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.common.WorkflowStep;
+import cloudgene.sdk.internal.WorkflowContext;
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.imputationserver.steps.fastqc.ITask;
 import genepi.imputationserver.steps.fastqc.ITaskProgressListener;
 import genepi.imputationserver.steps.fastqc.LiftOverTask;

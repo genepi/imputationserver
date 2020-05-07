@@ -11,8 +11,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
-import genepi.hadoop.common.WorkflowStep;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;

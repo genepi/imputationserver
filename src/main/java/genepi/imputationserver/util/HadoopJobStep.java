@@ -1,10 +1,10 @@
 package genepi.imputationserver.util;
 
-import genepi.hadoop.HadoopJob;
-import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.common.WorkflowStep;
-
 import java.io.IOException;
+
+import cloudgene.sdk.internal.WorkflowContext;
+import cloudgene.sdk.internal.WorkflowStep;
+import genepi.hadoop.HadoopJob;
 
 
 public abstract class HadoopJobStep extends WorkflowStep {
