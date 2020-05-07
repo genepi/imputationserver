@@ -266,6 +266,9 @@ public class CompressionEncryption extends WorkflowStep {
 				ZipFile file = new ZipFile(new File(filePath));
 				file.createZipFile(files, param);
 
+				// delete temp dir
+				FileUtil.deleteDirectory(temp);
+
 				IExternalWorkspace externalWorkspace = context.getExternalWorkspace();
 
 				if (externalWorkspace != null) {
@@ -275,8 +278,8 @@ public class CompressionEncryption extends WorkflowStep {
 					context.log("External Workspace '" + externalWorkspace.getName() + "' found");
 
 					context.log("Start file upload: " + filePath);
-
-					String url = externalWorkspace.upload(filePath, file.getFile());
+					
+					String url = externalWorkspace.upload("local/" + fileName, file.getFile());
 
 					long end = (System.currentTimeMillis() - start) / 1000;
 
@@ -284,20 +287,17 @@ public class CompressionEncryption extends WorkflowStep {
 
 					context.log("Add " + localOutput + " to custom download");
 
-					context.addDownload(localOutput, fileName,
-							FileUtils.byteCountToDisplaySize(file.getFileHeaders().size()), url);
+					String size = FileUtils.byteCountToDisplaySize(file.getFileHeaders().size());
+					
+					context.addDownload("local", fileName, size, url);
 
 					FileUtil.deleteFile(filePath);
-					
+
 					context.log("File deleted: " + filePath);
 
 				} else {
 					context.log("No external Workspace set.");
 				}
-
-				// delete temp dir
-				FileUtil.deleteDirectory(temp);
-
 			}
 
 			// delete temporary files
