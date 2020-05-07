@@ -73,6 +73,11 @@ public class CompressionEncryption extends WorkflowStep {
 		if (store.getString("server.url") != null && !store.getString("server.url").isEmpty()) {
 			serverUrl = store.getString("server.url");
 		}
+		
+		String sanityCheck = "yes";
+		if (store.getString("sanitycheck") != null && !store.getString("sanitycheck").equals("")) {
+			sanityCheck = store.getString("sanitycheck");
+		}
 
 		if (password == null || (password != null && password.equals("auto"))) {
 			password = PasswordCreator.createPassword();
@@ -228,8 +233,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				vcfFile.close();
 
-				// run tabix on last file only
-				if (lastChromosome) {
+				if (sanityCheck.equals("yes") && lastChromosome) {
 					context.println("Run tabix on chromosome " + name + "...");
 					Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
 					tabix.setSilent(false);
@@ -238,7 +242,8 @@ public class CompressionEncryption extends WorkflowStep {
 						context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
 						return false;
 					}
-				}
+					context.log("Tabix done.");
+				} 
 
 				ZipParameters param = new ZipParameters();
 				param.setEncryptFiles(true);
