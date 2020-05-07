@@ -14,11 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import cloudgene.sdk.internal.IExternalWorkspace;
 import cloudgene.sdk.internal.WorkflowContext;
 import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
@@ -259,8 +261,39 @@ public class CompressionEncryption extends WorkflowStep {
 					files.add(new File(infoOutput));
 				}
 
-				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput, "chr_" + name + ".zip")));
+				String fileName = "chr_" + name + ".zip";
+				String filePath = FileUtil.path(localOutput, fileName);
+				ZipFile file = new ZipFile(new File(filePath));
 				file.createZipFile(files, param);
+
+				IExternalWorkspace externalWorkspace = context.getExternalWorkspace();
+
+				if (externalWorkspace != null) {
+
+					long start = System.currentTimeMillis();
+
+					context.log("External Workspace '" + externalWorkspace.getName() + "' found");
+
+					context.log("Start file upload: " + filePath);
+
+					String url = externalWorkspace.upload(filePath, file.getFile());
+
+					long end = (System.currentTimeMillis() - start) / 1000;
+
+					context.log("Upload finished in  " + end + " sec. File Location: " + url);
+
+					context.log("Add " + localOutput + " to custom download");
+
+					context.addDownload(localOutput, fileName,
+							FileUtils.byteCountToDisplaySize(file.getFileHeaders().size()), url);
+
+					FileUtil.deleteFile(filePath);
+					
+					context.log("File deleted: " + filePath);
+
+				} else {
+					context.log("No external Workspace set.");
+				}
 
 				// delete temp dir
 				FileUtil.deleteDirectory(temp);
