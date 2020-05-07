@@ -10,7 +10,7 @@ before_install:
 script:
 - mvn -Dtest=AllTestsNoChrX test jacoco:report
 after_success:
-- mvn coveralls:report
+  - mvn clean test jacoco:report coveralls:report
 notifications:
   slack:
     on_success: always
