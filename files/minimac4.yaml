@@ -1,7 +1,7 @@
 id: imputationserver
 name: Genotype Imputation (Minimac4)
 description: This is the new Michigan Imputation Server Pipeline using <a href="https://github.com/statgen/Minimac4">Minimac4</a>. Documentation can be found <a href="http://imputationserver.readthedocs.io/en/latest/">here</a>.<br><br>If your input data is <b>GRCh37/hg19</b> please ensure chromosomes are encoded without prefix  (e.g. <b>20</b>).<br>If your input data is <b>GRCh38hg38</b> please ensure chromosomes are encoded with prefix 'chr' (e.g. <b>chr20</b>).
-version: 1.3.2
+version: 1.3.3
 website: https://imputationserver.readthedocs.io
 category:
 
