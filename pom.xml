@@ -123,7 +123,7 @@
 								<descriptor>src/main/assembly/imputationserver-hla.xml</descriptor>
 							</descriptors>
 						</configuration>
-					</execution>					
+					</execution>
 				</executions>
 			</plugin>
 
@@ -273,10 +273,8 @@
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
-			<version>3.0.3</version>
-			<type>pom</type>
+			<version>2.4.14</version>
 		</dependency>
-
 
 	</dependencies>
 </project>
