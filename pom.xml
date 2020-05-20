@@ -168,7 +168,7 @@
 		<dependency>
 			<groupId>com.esotericsoftware.yamlbeans</groupId>
 			<artifactId>yamlbeans</artifactId>
-			<version>1.09</version>
+			<version>1.14</version>
 		</dependency>
 
 		<dependency>
@@ -183,11 +183,13 @@
 			<version>mr1-1.4.1</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.github.samtools/htsjdk -->
 		<dependency>
 			<groupId>com.github.samtools</groupId>
 			<artifactId>htsjdk</artifactId>
-			<version>2.9.1</version>
+			<version>2.21.3</version>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -215,7 +217,7 @@
 			<version>2.6.0-cdh5.16.1</version>
 			<type>test-jar</type>
 			<scope>test</scope>
-						<exclusions>
+			<exclusions>
 				<exclusion>
 					<groupId>net.java.dev.jets3t</groupId>
 					<artifactId>jets3t</artifactId>
