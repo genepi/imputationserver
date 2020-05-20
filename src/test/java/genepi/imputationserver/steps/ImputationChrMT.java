@@ -21,7 +21,7 @@ import genepi.io.FileUtil;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
 public class ImputationChrMT {
@@ -84,10 +84,8 @@ public class ImputationChrMT {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_MT.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_MT.zip", PASSWORD.toCharArray());
+	
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrMT.dose.vcf.gz", 100000000, false);
