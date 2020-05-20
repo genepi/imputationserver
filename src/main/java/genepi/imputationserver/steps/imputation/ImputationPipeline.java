@@ -16,7 +16,7 @@ import groovy.text.SimpleTemplateEngine;
 
 public class ImputationPipeline {
 
-	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.2.7";
+	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.3.3";
 	
 	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
 
@@ -82,8 +82,9 @@ public class ImputationPipeline {
 		}
 
 		if (chunk.isPhased()) {
-
+			
 			FileUtils.moveFile(new File(output.getVcfFilename()), new File(output.getPhasedVcfFilename()));
+			System.out.println("Chunk already phased. Move file "+ output.getVcfFilename() + " to " + output.getPhasedVcfFilename()+ ".");
 
 		} else {
 
@@ -107,11 +108,13 @@ public class ImputationPipeline {
 				return false;
 			}
 
-			if (phasingOnly) {
-				return true;
-			}
-
 		}
+		
+		if (phasingOnly) {
+			System.out.println("Phasing-only mode, no imputation started.");
+			return true;
+		}
+
 
 		// Imputation
 

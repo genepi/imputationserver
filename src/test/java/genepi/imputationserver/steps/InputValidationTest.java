@@ -3,7 +3,7 @@ package genepi.imputationserver.steps;
 import java.io.File;
 import java.io.IOException;
 
-import genepi.hadoop.common.WorkflowStep;
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.WorkflowTestContext;
 import htsjdk.samtools.util.CloseableIterator;

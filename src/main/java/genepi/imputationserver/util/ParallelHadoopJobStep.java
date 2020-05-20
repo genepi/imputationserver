@@ -2,8 +2,7 @@ package genepi.imputationserver.util;
 
 import genepi.hadoop.HadoopJob;
 import genepi.hadoop.HadoopUtil;
-import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.common.WorkflowStep;
+
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,6 +16,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.RunningJob;
+
+import cloudgene.sdk.internal.WorkflowContext;
+import cloudgene.sdk.internal.WorkflowStep;
 
 public abstract class ParallelHadoopJobStep extends WorkflowStep {
 

@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import genepi.hadoop.common.WorkflowStep;
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
@@ -632,6 +632,44 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 8,973"));
 		assertTrue(context.hasInMemory("[MESSAGE] [WARN] Excluded sites in total: 18,076"));
 
+
+	}
+	
+	public void testRegionImputationSimple() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-region-simple");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("Remaining sites in total: 1"));
+
+	}
+	
+	public void testRegionImputationComplex() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-region-complex");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		run(context, qcStats);
+
+		// check statistics
+		assertTrue(context.hasInMemory("Remaining sites in total: 2"));
 
 	}
 	

@@ -6,12 +6,14 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.HashSet;
 
-import genepi.hadoop.common.WorkflowContext;
-import genepi.hadoop.common.WorkflowStep;
+import cloudgene.sdk.internal.WorkflowContext;
+import cloudgene.sdk.internal.WorkflowStep;
 import genepi.imputationserver.steps.fastqc.ITask;
 import genepi.imputationserver.steps.fastqc.ITaskProgressListener;
 import genepi.imputationserver.steps.fastqc.LiftOverTask;
+import genepi.imputationserver.steps.fastqc.RangeEntry;
 import genepi.imputationserver.steps.fastqc.StatisticsTask;
 import genepi.imputationserver.steps.fastqc.TaskResults;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
@@ -173,6 +175,28 @@ public class FastQualityControl extends WorkflowStep {
 		double sampleCallrate = panel.getQcFilterByKey("sampleCallrate");
 		double mixedGenotypesChrX = panel.getQcFilterByKey("mixedGenotypeschrX");
 		int strandFlips = (int) (panel.getQcFilterByKey("strandFlips"));
+		String ranges = panel.getRange();
+
+		if (ranges != null) {
+			HashSet<RangeEntry> rangeEntries = new HashSet<RangeEntry>();
+
+			for (String range : panel.getRange().split(",")) {
+				String chromosome = range.split(":")[0].trim();
+				String region = range.split(":")[1].trim();
+				int start = Integer.valueOf(region.split("-")[0].trim());
+				int end = Integer.valueOf(region.split("-")[1].trim());
+				RangeEntry entry = new RangeEntry();
+				entry.setChromosome(chromosome);
+				entry.setStart(start);
+				entry.setEnd(end);
+				rangeEntries.add(entry);
+			}
+
+			task.setRanges(rangeEntries);
+			context.log("Reference Panel Ranges: " + rangeEntries);
+		} else {
+			context.log("Reference Panel Ranges: genome-wide");
+		}
 
 		task.setReferenceOverlap(referenceOverlap);
 		task.setMinSnps(minSnps);
@@ -204,6 +228,9 @@ public class FastQualityControl extends WorkflowStep {
 		StringBuffer text = new StringBuffer();
 
 		text.append("<b>Statistics:</b> <br>");
+		if (ranges != null) {
+			text.append("Ref. Panel Range: " + ranges + "<br>");
+		}
 		text.append(
 				"Alternative allele frequency > 0.5 sites: " + formatter.format(task.getAlternativeAlleles()) + "<br>");
 		text.append("Reference Overlap: "
