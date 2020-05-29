@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mortbay.jetty.security.Password;
 
 import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
@@ -20,7 +21,7 @@ import genepi.io.FileUtil;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
 public class ImputationChrXTest {
@@ -88,10 +89,8 @@ public class ImputationChrXTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip", PASSWORD.toCharArray());
+
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
@@ -137,10 +136,7 @@ public class ImputationChrXTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
@@ -189,10 +185,7 @@ public class ImputationChrXTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
@@ -245,10 +238,7 @@ public class ImputationChrXTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
@@ -305,10 +295,7 @@ public class ImputationChrXTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
@@ -360,10 +347,7 @@ public class ImputationChrXTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.dose.vcf.gz", 100000000, false);
@@ -417,10 +401,7 @@ public class ImputationChrXTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_X.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile vcfFile = VcfFileUtil.load("test-data/tmp/chrX.phased.vcf.gz", 100000000, false);

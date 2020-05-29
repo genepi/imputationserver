@@ -1,6 +1,7 @@
 package genepi.imputationserver.util;
 
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -100,14 +101,16 @@ public class FileMerger {
 	}
 
 	public static class BgzipSplitOutputStream extends BlockCompressedOutputStream {
-
+		
+		public final static File emptyFile = null;
+		
 		public BgzipSplitOutputStream(OutputStream os) {
-			super(os, null);
+			super(os, (File) emptyFile);
 		}
 
 		@Override
 		public void close() throws IOException {
-			flush();
+			close(false);
 		}
 
 	}

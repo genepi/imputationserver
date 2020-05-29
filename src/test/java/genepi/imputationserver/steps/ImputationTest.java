@@ -19,7 +19,7 @@ import genepi.imputationserver.util.TestCluster;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
 public class ImputationTest {
@@ -27,9 +27,9 @@ public class ImputationTest {
 	public static final boolean VERBOSE = true;
 
 	public static final String BINARIES_HDFS = "binaries";
-	
+
 	public static final String PASSWORD = "random-pwd";
-	
+
 	public final int TOTAL_REFPANEL_CHR20_B37 = 63402;
 	public final int TOTAL_REFPANEL_CHR20_B38 = 63384;
 	public final int ONLY_IN_INPUT = 78;
@@ -78,10 +78,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
@@ -91,7 +88,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
-		//FileUtil.deleteDirectory("test-data/tmp");
+		// FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -156,10 +153,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
@@ -254,10 +248,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_1.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_1.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr1.dose.vcf.gz", 100000000, false);
@@ -269,143 +260,129 @@ public class ImputationTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
-/*	@Test
-	public void testPipelineWithS3() throws IOException, ZipException {
 
-		String configFolder = "test-data/configs/hapmap-chr1";
-		String inputFolder = "s3://imputationserver-aws-testdata/test-s3/hapmap300.chr1.recode.vcf.gz";
+	/*
+	 * @Test public void testPipelineWithS3() throws IOException, ZipException {
+	 * 
+	 * String configFolder = "test-data/configs/hapmap-chr1"; String inputFolder =
+	 * "s3://imputationserver-aws-testdata/test-s3/hapmap300.chr1.recode.vcf.gz";
+	 * 
+	 * // create workflow context WorkflowTestContext context =
+	 * buildContext(inputFolder, "hapmap2");
+	 * 
+	 * // create step instance InputValidation inputValidation = new
+	 * InputValidationMock(configFolder);
+	 * 
+	 * // run and test boolean result = run(context, inputValidation);
+	 * 
+	 * // check if step is failed assertEquals(true, result);
+	 * 
+	 * // run qc to create chunkfile QcStatisticsMock qcStats = new
+	 * QcStatisticsMock(configFolder); result = run(context, qcStats);
+	 * 
+	 * // add panel to hdfs importRefPanel(FileUtil.path(configFolder,
+	 * "ref-panels")); // importMinimacMap("test-data/B38_MAP_FILE.map");
+	 * importBinaries("files/bin");
+	 * 
+	 * // run imputation ImputationMinimac3Mock imputation = new
+	 * ImputationMinimac3Mock(configFolder); result = run(context, imputation);
+	 * assertTrue(result);
+	 * 
+	 * // run export CompressionEncryptionMock export = new
+	 * CompressionEncryptionMock("files"); result = run(context, export);
+	 * assertTrue(result);
+	 * 
+	 * ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_1.zip"); if
+	 * (zipFile.isEncrypted()) { zipFile.setPassword(PASSWORD); }
+	 * zipFile.extractAll("test-data/tmp");
+	 * 
+	 * VcfFile file = VcfFileUtil.load("test-data/tmp/chr1.dose.vcf.gz", 100000000,
+	 * false);
+	 * 
+	 * assertEquals("1", file.getChromosome()); assertEquals(60,
+	 * file.getNoSamples()); assertEquals(true, file.isPhased());
+	 * 
+	 * FileUtil.deleteDirectory("test-data/tmp");
+	 * 
+	 * }
+	 */
 
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is failed
-		assertEquals(true, result);
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		result = run(context, qcStats);
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_1.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile file = VcfFileUtil.load("test-data/tmp/chr1.dose.vcf.gz", 100000000, false);
-
-		assertEquals("1", file.getChromosome());
-		assertEquals(60, file.getNoSamples());
-		assertEquals(true, file.isPhased());
-
-		FileUtil.deleteDirectory("test-data/tmp");
-
-	}*/
-
-	/*@Test
-	public void testPipelineWithSFTP() throws IOException, ZipException, InterruptedException {
-
-		TestSFTPServer server = new TestSFTPServer("test-data/data");
-
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "sftp://localhost:8001/" + new File("test-data/data/chr20-phased").getAbsolutePath() + ";"
-				+ TestSFTPServer.USERNAME + ";" + TestSFTPServer.PASSWORD;
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is failed
-		assertEquals(true, result);
-
-		// run qc to create chunkfile
-		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		result = run(context, qcStats);
-
-		// add panel to hdfs
-		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
-		// importMinimacMap("test-data/B38_MAP_FILE.map");
-		importBinaries("files/bin");
-
-		// run imputation
-		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
-		result = run(context, imputation);
-		assertTrue(result);
-
-		// run export
-		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
-		result = run(context, export);
-		assertTrue(result);
-
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
-		zipFile.extractAll("test-data/tmp");
-
-		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
-
-		assertEquals("20", file.getChromosome());
-		assertEquals(51, file.getNoSamples());
-		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
-
-		FileUtil.deleteDirectory("test-data/tmp");
-
-		server.stop();
-
-	}
-
-	@Test
-	public void testPipelineWithWrongSFTPCredentials() throws IOException, ZipException, InterruptedException {
-
-		TestSFTPServer server = new TestSFTPServer("test-data/data");
-
-		String configFolder = "test-data/configs/hapmap-chr20";
-		String inputFolder = "sftp://localhost:8001/" + new File("data/chr20-phased").getAbsolutePath() + ";"
-				+ "WRONG_USERNAME" + ";" + TestSFTPServer.PASSWORD;
-
-		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-
-		// create step instance
-		InputValidation inputValidation = new InputValidationMock(configFolder);
-
-		// run and test
-		boolean result = run(context, inputValidation);
-
-		// check if step is failed
-		assertEquals(false, result);
-
-		server.stop();
-
-	}*/
+	/*
+	 * @Test public void testPipelineWithSFTP() throws IOException, ZipException,
+	 * InterruptedException {
+	 * 
+	 * TestSFTPServer server = new TestSFTPServer("test-data/data");
+	 * 
+	 * String configFolder = "test-data/configs/hapmap-chr20"; String inputFolder =
+	 * "sftp://localhost:8001/" + new
+	 * File("test-data/data/chr20-phased").getAbsolutePath() + ";" +
+	 * TestSFTPServer.USERNAME + ";" + TestSFTPServer.PASSWORD;
+	 * 
+	 * // create workflow context WorkflowTestContext context =
+	 * buildContext(inputFolder, "hapmap2");
+	 * 
+	 * // create step instance InputValidation inputValidation = new
+	 * InputValidationMock(configFolder);
+	 * 
+	 * // run and test boolean result = run(context, inputValidation);
+	 * 
+	 * // check if step is failed assertEquals(true, result);
+	 * 
+	 * // run qc to create chunkfile QcStatisticsMock qcStats = new
+	 * QcStatisticsMock(configFolder); result = run(context, qcStats);
+	 * 
+	 * // add panel to hdfs importRefPanel(FileUtil.path(configFolder,
+	 * "ref-panels")); // importMinimacMap("test-data/B38_MAP_FILE.map");
+	 * importBinaries("files/bin");
+	 * 
+	 * // run imputation ImputationMinimac3Mock imputation = new
+	 * ImputationMinimac3Mock(configFolder); result = run(context, imputation);
+	 * assertTrue(result);
+	 * 
+	 * // run export CompressionEncryptionMock export = new
+	 * CompressionEncryptionMock("files"); result = run(context, export);
+	 * assertTrue(result);
+	 * 
+	 * ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip"); if
+	 * (zipFile.isEncrypted()) { zipFile.setPassword(PASSWORD); }
+	 * zipFile.extractAll("test-data/tmp");
+	 * 
+	 * VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000,
+	 * false);
+	 * 
+	 * assertEquals("20", file.getChromosome()); assertEquals(51,
+	 * file.getNoSamples()); assertEquals(true, file.isPhased());
+	 * assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
+	 * 
+	 * FileUtil.deleteDirectory("test-data/tmp");
+	 * 
+	 * server.stop();
+	 * 
+	 * }
+	 * 
+	 * @Test public void testPipelineWithWrongSFTPCredentials() throws IOException,
+	 * ZipException, InterruptedException {
+	 * 
+	 * TestSFTPServer server = new TestSFTPServer("test-data/data");
+	 * 
+	 * String configFolder = "test-data/configs/hapmap-chr20"; String inputFolder =
+	 * "sftp://localhost:8001/" + new File("data/chr20-phased").getAbsolutePath() +
+	 * ";" + "WRONG_USERNAME" + ";" + TestSFTPServer.PASSWORD;
+	 * 
+	 * // create workflow context WorkflowTestContext context =
+	 * buildContext(inputFolder, "hapmap2");
+	 * 
+	 * // create step instance InputValidation inputValidation = new
+	 * InputValidationMock(configFolder);
+	 * 
+	 * // run and test boolean result = run(context, inputValidation);
+	 * 
+	 * // check if step is failed assertEquals(false, result);
+	 * 
+	 * server.stop();
+	 * 
+	 * }
+	 */
 
 	@Test
 	public void testPipelineWithEagle() throws IOException, ZipException {
@@ -438,10 +415,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
@@ -457,7 +431,7 @@ public class ImputationTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithEaglePhasingOnlyWithPhasedData() throws IOException, ZipException {
 
@@ -491,10 +465,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.phased.vcf.gz", 100000000, false);
@@ -516,7 +487,7 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-		
+
 		context.setInput("mode", "phasing");
 
 		// run qc to create chunkfile
@@ -541,10 +512,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.phased.vcf.gz", 100000000, false);
@@ -591,10 +559,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.phased.vcf.gz", 100000000, false);
@@ -640,10 +605,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
@@ -715,10 +677,10 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-		
+
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
-		
+
 		// run and test
 		boolean result = run(context, inputValidation);
 
@@ -756,16 +718,13 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
 
 		assertEquals(true, checkAmountOfColumns("test-data/tmp/chr20.info.gz", 13));
-		
+
 		assertEquals(true, checkSortPositionInfo("test-data/tmp/chr20.info.gz"));
 
 		assertEquals("20", file.getChromosome());
@@ -851,10 +810,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
@@ -899,10 +855,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
@@ -949,10 +902,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
@@ -999,10 +949,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
@@ -1048,10 +995,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip");
-		if (zipFile.isEncrypted()) {
-			zipFile.setPassword(PASSWORD);
-		}
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
@@ -1088,7 +1032,7 @@ public class ImputationTest {
 		context.setInput("mode", "imputation");
 		context.setInput("password", PASSWORD);
 		context.setConfig("binaries", BINARIES_HDFS);
-		
+
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/mafFile");
 
@@ -1141,7 +1085,7 @@ public class ImputationTest {
 		}
 	}
 
-	private void importBinaries(String folder) {		
+	private void importBinaries(String folder) {
 		System.out.println("Import Binaries to " + BINARIES_HDFS);
 		String[] files = FileUtil.getFiles(folder, "*.*");
 		for (String file : files) {
