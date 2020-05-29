@@ -20,7 +20,9 @@ public class ImputationPipeline {
 
 	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
 
-	public static final String PHASING_VERSION = "eagle-2.4";
+	public static final String BEAGLE_VERSION = "beagle.18May20.d20.jar";
+	
+	public static String PHASING_VERSION = "eagle-2.4";
 
 	private String minimacCommand;
 
@@ -109,6 +111,7 @@ public class ImputationPipeline {
 					return false;
 				}
 				successful = phaseWithBeagle(chunk, output, refBeagleFilename);
+				PHASING_VERSION = BEAGLE_VERSION;
 			} else {
 
 				if (!new File(refEagleFilename).exists()) {
@@ -121,7 +124,7 @@ public class ImputationPipeline {
 			time = (System.currentTimeMillis() - time) / 1000;
 
 			statistic.setPhasingTime(time);
-
+			
 			if (successful) {
 				System.out.println("  " + PHASING_VERSION + " finished successfully. [" + time + " sec]");
 			} else {

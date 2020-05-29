@@ -76,6 +76,8 @@ public class FileMerger {
 	public static void splitPhasedIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, VcfChunk chunk)
 			throws IOException {
 		LineReader reader = new LineReader(input);
+		boolean writeVersion = true;
+		
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
@@ -87,6 +89,13 @@ public class FileMerger {
 					outData.write("\n".getBytes());
 				}
 			} else {
+				
+				// write filter command before ID List starting with #CHROM
+				if (writeVersion && line.startsWith("##INFO")) {
+					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION+ "\n").getBytes());
+					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION+ "\n").getBytes());
+					writeVersion = false;
+				}
 
 				// remove eagle command (since paths are included)
 				if (!line.startsWith("##eagleCommand=eagle")) {
