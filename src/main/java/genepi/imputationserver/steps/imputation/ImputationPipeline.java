@@ -17,23 +17,27 @@ import groovy.text.SimpleTemplateEngine;
 public class ImputationPipeline {
 
 	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.3.3";
-	
+
 	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
 
 	public static final String PHASING_VERSION = "eagle-2.4";
-	
+
 	private String minimacCommand;
-	
+
 	private String minimacParams;
-	
+
 	private String eagleCommand;
-	
+
 	private String eagleParams;
-	
+
+	private String beagleCommand;
+
+	private String beagleParams;
+
 	private String tabixCommand;
-	
+
 	private int minimacWindow;
-	
+
 	private int phasingWindow;
 
 	private String refFilename;
@@ -41,12 +45,16 @@ public class ImputationPipeline {
 	private String mapMinimac;
 
 	private String mapEagleFilename = "";
-	
+
 	private String refEagleFilename = "";
 
+	private String refBeagleFilename = "";
+
 	private String build = "hg19";
-	
+
 	private boolean phasingOnly;
+
+	private String phasingEngine = "";
 
 	private ImputationStatistic statistic = new ImputationStatistic();
 
@@ -82,21 +90,34 @@ public class ImputationPipeline {
 		}
 
 		if (chunk.isPhased()) {
-			
+
 			FileUtils.moveFile(new File(output.getVcfFilename()), new File(output.getPhasedVcfFilename()));
-			System.out.println("Chunk already phased. Move file "+ output.getVcfFilename() + " to " + output.getPhasedVcfFilename()+ ".");
+			System.out.println("Chunk already phased. Move file " + output.getVcfFilename() + " to "
+					+ output.getPhasedVcfFilename() + ".");
 
 		} else {
 
-			// eagle
+			// phasing
 			long time = System.currentTimeMillis();
 
-			if (!new File(refEagleFilename).exists()) {
-				System.out.println("Eagle: Reference '" + refEagleFilename + "' not found.");
-				return false;
+			boolean successful = false;
+			
+			if (phasingEngine.equals("beagle")) {
+
+				if (!new File(refBeagleFilename).exists()) {
+					System.out.println("Beagle: Reference '" + refBeagleFilename + "' not found.");
+					return false;
+				}
+				successful = phaseWithBeagle(chunk, output, refBeagleFilename);
+			} else {
+
+				if (!new File(refEagleFilename).exists()) {
+					System.out.println("Eagle: Reference '" + refEagleFilename + "' not found.");
+					return false;
+				}
+				successful = phaseWithEagle(chunk, output, refEagleFilename, mapEagleFilename);
 			}
 
-			boolean successful = phaseWithEagle(chunk, output, refEagleFilename, mapEagleFilename);
 			time = (System.currentTimeMillis() - time) / 1000;
 
 			statistic.setPhasingTime(time);
@@ -109,12 +130,13 @@ public class ImputationPipeline {
 			}
 
 		}
-		
-		if (phasingOnly) {
+
+		if (phasingOnly)
+
+		{
 			System.out.println("Phasing-only mode, no imputation started.");
 			return true;
 		}
-
 
 		// Imputation
 
@@ -167,6 +189,47 @@ public class ImputationPipeline {
 		eagle.saveStdErr(output.getPrefix() + ".eagle.err");
 		System.out.println("Command: " + eagle.getExecutedCommand());
 		if (eagle.execute() != 0) {
+			return false;
+		}
+
+		// rename
+		new File(output.getPrefix() + phasedPrefix + ".vcf.gz").renameTo(new File(output.getPhasedVcfFilename()));
+
+		// haps to vcf
+		return true;
+	}
+
+	public boolean phaseWithBeagle(VcfChunk input, VcfChunkOutput output, String reference) throws IOException {
+
+		// calculate phasing positions
+		int start = input.getStart() - phasingWindow;
+		if (start < 1) {
+			start = 1;
+		}
+		int end = input.getEnd() + phasingWindow;
+
+		String phasedPrefix = ".beagle.phased";
+
+		// set parameters
+		Map<String, Object> binding = new HashMap<String, Object>();
+		binding.put("beagle", beagleCommand);
+		binding.put("ref", reference);
+		binding.put("vcf", output.getVcfFilename());
+		binding.put("prefix", output.getPrefix() + phasedPrefix);
+		binding.put("chr", input.getChromosome());
+		binding.put("start", start);
+		binding.put("end", end);
+
+		String[] params = createParams(beagleParams, binding);
+
+		// beagle command
+		Command beagle = new Command("/usr/bin/java");
+		beagle.setSilent(false);
+		beagle.setParams(params);
+		// beagle.saveStdOut(output.getPrefix() + ".beagle.out");
+		// beagle.saveStdErr(output.getPrefix() + ".beagle.err");
+		System.out.println("Command: " + beagle.getExecutedCommand());
+		if (beagle.execute() != 0) {
 			return false;
 		}
 
@@ -234,6 +297,10 @@ public class ImputationPipeline {
 		this.refEagleFilename = refEagleFilename;
 	}
 
+	public void setRefBeagleFilename(String refBeagleFilename) {
+		this.refBeagleFilename = refBeagleFilename;
+	}
+
 	public void setMinimacCommand(String minimacCommand, String minimacParams) {
 		this.minimacCommand = minimacCommand;
 		this.minimacParams = minimacParams;
@@ -246,6 +313,11 @@ public class ImputationPipeline {
 	public void setEagleCommand(String eagleCommand, String eagleParams) {
 		this.eagleCommand = eagleCommand;
 		this.eagleParams = eagleParams;
+	}
+
+	public void setBeagleCommand(String beagleCommand, String beagleParams) {
+		this.beagleCommand = beagleCommand;
+		this.beagleParams = beagleParams;
 	}
 
 	public void setPhasingWindow(int phasingWindow) {
@@ -264,12 +336,16 @@ public class ImputationPipeline {
 		this.phasingOnly = phasingOnly;
 	}
 
+	public void setPhasingEngine(String phasingEngine) {
+		this.phasingEngine = phasingEngine;
+	}
+
 	public ImputationStatistic getStatistic() {
 		return statistic;
 	}
 
 	protected String[] createParams(String template, Map<String, Object> bindings) throws IOException {
-		
+
 		try {
 			String outputTemplate = "";
 			outputTemplate = engine.createTemplate(template).make(bindings).toString();
