@@ -100,6 +100,7 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setInput("phasing", "");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -724,6 +725,8 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		
+		context.setInput("phasing", "");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
