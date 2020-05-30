@@ -195,7 +195,7 @@
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-io</artifactId>
-			<version>1.0.10</version>
+			<version>1.0.12</version>
 		</dependency>
 
 		<dependency>
