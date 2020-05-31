@@ -79,7 +79,7 @@ public class DefaultPreferenceStore {
 		defaults.setProperty("eagle.command",
 				"--vcfRef ${ref} --vcfTarget ${vcf} --geneticMapFile ${map} --outPrefix ${prefix} --bpStart ${start} --bpEnd ${end} --allowRefAltSwap --vcfOutFormat z --keepMissingPloidyX");
 		defaults.setProperty("beagle.command",
-				"-jar ${beagle} ref=${ref} gt=${vcf} out=${prefix} nthreads=1 chrom=${chr}:${start}-${end} impute=false");
+				"-jar ${beagle} ref=${ref} gt=${vcf} out=${prefix} nthreads=1 chrom=${chr}:${start}-${end} map=${map} impute=false");
 		defaults.setProperty("ref.fasta", "v37");
 		defaults.setProperty("contact.name", "Christian Fuchsberger");
 		defaults.setProperty("contact.email", "cfuchsb@umich.edu");

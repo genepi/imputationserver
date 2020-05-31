@@ -39,6 +39,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 	private String refEagleFilename = null;
 	
 	private String refBeagleFilename = null;
+	
+	private String mapBeagleFilename = "";
 
 	private String build = "hg19";
 
@@ -90,6 +92,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String hdfsPathMapEagle = parameters.get(ImputationJob.MAP_EAGLE_HDFS);
 		String hdfsRefEagle = parameters.get(ImputationJob.REF_PANEL_EAGLE_HDFS);
 		String hdfsRefBeagle = parameters.get(ImputationJob.REF_PANEL_BEAGLE_HDFS);
+		String hdfsPathMapBeagle = parameters.get(ImputationJob.MAP_BEAGLE_HDFS);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
@@ -117,6 +120,11 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		}
 		if (hdfsRefBeagle != null) {
 			refBeagleFilename = cache.getFile(FileUtil.getFilename(hdfsRefBeagle));
+		}
+		
+		if (hdfsPathMapBeagle != null) {
+			String mapBeagle = FileUtil.getFilename(hdfsPathMapBeagle);
+			mapBeagleFilename = cache.getFile(mapBeagle);
 		}
 
 		String minimacCommand = cache.getFile("Minimac4");
@@ -199,6 +207,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			pipeline.setMapEagleFilename(mapEagleFilename);
 			pipeline.setRefEagleFilename(refEagleFilename);
 			pipeline.setRefBeagleFilename(refBeagleFilename);
+			pipeline.setMapBeagleFilename(mapBeagleFilename);
 			pipeline.setPhasingEngine(phasingEngine);
 			pipeline.setPhasingOnly(phasingOnly);
 

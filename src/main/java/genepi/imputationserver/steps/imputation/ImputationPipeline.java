@@ -51,6 +51,8 @@ public class ImputationPipeline {
 	private String refEagleFilename = "";
 
 	private String refBeagleFilename = "";
+	
+	private String mapBeagleFilename = "";
 
 	private String build = "hg19";
 
@@ -110,7 +112,7 @@ public class ImputationPipeline {
 					System.out.println("Beagle: Reference '" + refBeagleFilename + "' not found.");
 					return false;
 				}
-				successful = phaseWithBeagle(chunk, output, refBeagleFilename);
+				successful = phaseWithBeagle(chunk, output, refBeagleFilename, mapBeagleFilename);
 				PHASING_VERSION = BEAGLE_VERSION;
 			} else {
 
@@ -202,7 +204,7 @@ public class ImputationPipeline {
 		return true;
 	}
 
-	public boolean phaseWithBeagle(VcfChunk input, VcfChunkOutput output, String reference) throws IOException {
+	public boolean phaseWithBeagle(VcfChunk input, VcfChunkOutput output, String reference, String mapFilename) throws IOException {
 
 		// calculate phasing positions
 		int start = input.getStart() - phasingWindow;
@@ -222,6 +224,7 @@ public class ImputationPipeline {
 		binding.put("chr", input.getChromosome());
 		binding.put("start", start);
 		binding.put("end", end);
+		binding.put("map", mapFilename);
 
 		String[] params = createParams(beagleParams, binding);
 
@@ -357,6 +360,14 @@ public class ImputationPipeline {
 			throw new IOException(e);
 		}
 
+	}
+
+	public String getMapBeagleFilename() {
+		return mapBeagleFilename;
+	}
+
+	public void setMapBeagleFilename(String mapBeagleFilename) {
+		this.mapBeagleFilename = mapBeagleFilename;
 	}
 
 }

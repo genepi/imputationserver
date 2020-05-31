@@ -24,6 +24,8 @@ public class ImputationJob extends HadoopJob {
 	public static final String REF_PANEL_BEAGLE_HDFS = "MINIMAC_REFPANEL_BEAGLE_HDFS";
 
 	public static final String MAP_EAGLE_HDFS = "MINIMAC_MAP_EAGLE_HDFS";
+	
+	public static final String MAP_BEAGLE_HDFS = "MAP_BEAGLE_HDFS";
 
 	public static final String MAP_MINIMAC = "MINIMAC_MAP";
 
@@ -48,6 +50,8 @@ public class ImputationJob extends HadoopJob {
 	private String refPanelEagleHDFS;
 
 	private String refPanelBeagleHDFS;
+	
+	private String mapBeagleHDFS;
 
 	private String binariesHDFS;
 
@@ -134,6 +138,17 @@ public class ImputationJob extends HadoopJob {
 			log.info("Add Eagle reference  index " + refPanelEagleHDFS + ".csi to distributed cache...");
 			cache.addFile(refPanelEagleHDFS + ".csi");
 		}
+		
+		
+		// add Eagle Map File to cache
+		if (mapBeagleHDFS != null) {
+			if (HdfsUtil.exists(mapBeagleHDFS)) {
+				log.info("Add Beagle map  " + mapBeagleHDFS + " to distributed cache...");
+				cache.addFile(mapBeagleHDFS);
+			} else {
+				throw new IOException("Map " + mapBeagleHDFS + " not found.");
+			}
+		}
 
 		// add Beagle Files to cache
 		if (refPanelBeagleHDFS != null) {
@@ -212,6 +227,11 @@ public class ImputationJob extends HadoopJob {
 	public void setRefBeagleHdfs(String refPanelHdfs) {
 		this.refPanelBeagleHDFS = refPanelHdfs;
 		set(REF_PANEL_BEAGLE_HDFS, refPanelHdfs);
+	}
+	
+	public void setMapBeagleHdfs(String mapBeagleHdfs) {
+		this.mapBeagleHDFS = mapBeagleHdfs;
+		set(MAP_BEAGLE_HDFS, mapBeagleHdfs);
 	}
 
 	public void setBuild(String build) {

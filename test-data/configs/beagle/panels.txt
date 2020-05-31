@@ -4,6 +4,7 @@ panels:
     hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
     legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     refBeagle: ref-panels/hapmap_r22.chr$chr.CEU.hg19.recode.bref3
+    mapBeagle: ref-panels/plink.chr$chr.GRCh37.map
     samples:
       eur: 60
     populations:

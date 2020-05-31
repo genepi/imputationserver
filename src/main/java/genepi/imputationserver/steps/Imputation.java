@@ -100,6 +100,7 @@ public class Imputation extends ParallelHadoopJobStep {
 		context.println("  Eagle Map: " + panel.getMapEagle());
 		context.println("  Eagle BCFs: " + panel.getRefEagle());
 		context.println("  Beagle Bref3: " + panel.getRefBeagle());
+		context.println("  Beagle Map: " + panel.getMapBeagle());
 		context.println("  Minimac Map: " + panel.getMapMinimac());
 		context.println("  Populations:");
 		for (Map.Entry<String, String> entry : panel.getPopulations().entrySet()) {
@@ -175,9 +176,11 @@ public class Imputation extends ParallelHadoopJobStep {
 					context.println("Input data is unphased.");
 
 					if (phasing.equals("beagle")) {
-						context.println("  Setting up beagle reference files...");
+						context.println("  Setting up beagle reference and map files...");
 						String refBeagleFilenameChromosome = resolvePattern(panel.getRefBeagle(), chr);
+						String mapBeagleFilenameChromosome = resolvePattern(panel.getMapBeagle(), chr);
 						job.setRefBeagleHdfs(refBeagleFilenameChromosome);
+						job.setMapBeagleHdfs(mapBeagleFilenameChromosome);
 					} else {
 
 						if (!panel.checkEagleMap()) {
