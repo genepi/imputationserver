@@ -8,9 +8,9 @@ before_install:
   tee /etc/hosts
 - cat /etc/hosts
 script:
-- mvn -Dtest=AllTestsNoChrX test jacoco:report
+- mvn -Dtest=AllTestsNoChrX test
 after_success:
-  - mvn clean test jacoco:report coveralls:report
+  - bash <(curl -s https://codecov.io/bash)
 notifications:
   slack:
     on_success: always
