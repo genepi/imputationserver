@@ -90,7 +90,6 @@ workflow:
        value: eagle
        values:
          eagle: Eagle v2.4 (phased output)
-         beagle: Beagle v5.1
          no_phasing: No phasing
   
      - id: population
