@@ -78,6 +78,8 @@ public class DefaultPreferenceStore {
 				"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --cpus 1 --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${chr =='MT' ? '--myChromosome ' + chr : ''} ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
 		defaults.setProperty("eagle.command",
 				"--vcfRef ${ref} --vcfTarget ${vcf} --geneticMapFile ${map} --outPrefix ${prefix} --bpStart ${start} --bpEnd ${end} --allowRefAltSwap --vcfOutFormat z --keepMissingPloidyX");
+		defaults.setProperty("beagle.command",
+				"-jar ${beagle} ref=${ref} gt=${vcf} out=${prefix} nthreads=1 chrom=${chr}:${start}-${end} map=${map} impute=false");
 		defaults.setProperty("ref.fasta", "v37");
 		defaults.setProperty("contact.name", "Christian Fuchsberger");
 		defaults.setProperty("contact.email", "cfuchsb@umich.edu");

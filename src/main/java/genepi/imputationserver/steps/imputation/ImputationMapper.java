@@ -37,12 +37,18 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 	private String mapEagleFilename = "";
 
 	private String refEagleFilename = null;
+	
+	private String refBeagleFilename = null;
+	
+	private String mapBeagleFilename = "";
 
 	private String build = "hg19";
 
 	private double minR2 = 0;
 
 	private boolean phasingOnly = false;
+	
+	private String phasingEngine = "";
 
 	private String refEagleIndexFilename;
 
@@ -78,11 +84,15 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		} else {
 			phasingOnly = Boolean.parseBoolean(phasingOnlyString);
 		}
+		
+		phasingEngine = parameters.get(ImputationJob.PHASING_ENGINE);
 
 		hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
 		String hdfsPathMinimacMap = parameters.get(ImputationJob.MAP_MINIMAC);
 		String hdfsPathMapEagle = parameters.get(ImputationJob.MAP_EAGLE_HDFS);
 		String hdfsRefEagle = parameters.get(ImputationJob.REF_PANEL_EAGLE_HDFS);
+		String hdfsRefBeagle = parameters.get(ImputationJob.REF_PANEL_BEAGLE_HDFS);
+		String hdfsPathMapBeagle = parameters.get(ImputationJob.MAP_BEAGLE_HDFS);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
@@ -108,9 +118,18 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			refEagleFilename = cache.getFile(FileUtil.getFilename(hdfsRefEagle));
 			refEagleIndexFilename = cache.getFile(FileUtil.getFilename(hdfsRefEagle + ".csi"));
 		}
+		if (hdfsRefBeagle != null) {
+			refBeagleFilename = cache.getFile(FileUtil.getFilename(hdfsRefBeagle));
+		}
+		
+		if (hdfsPathMapBeagle != null) {
+			String mapBeagle = FileUtil.getFilename(hdfsPathMapBeagle);
+			mapBeagleFilename = cache.getFile(mapBeagle);
+		}
 
 		String minimacCommand = cache.getFile("Minimac4");
 		String eagleCommand = cache.getFile("eagle");
+		String beagleCommand = cache.getFile("beagle.jar");
 		String tabixCommand = cache.getFile("tabix");
 
 		// create temp directory
@@ -145,12 +164,13 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 		String minimacParams = store.getString("minimac.command");
 		String eagleParams = store.getString("eagle.command");
-
+		String beagleParams = store.getString("beagle.command");
 		
 		// config pipeline
 		pipeline = new ImputationPipeline();
 		pipeline.setMinimacCommand(minimacCommand, minimacParams);
 		pipeline.setEagleCommand(eagleCommand, eagleParams);
+		pipeline.setBeagleCommand(beagleCommand, beagleParams);
 		pipeline.setTabixCommand(tabixCommand);
 		pipeline.setPhasingWindow(phasingWindow);
 		pipeline.setBuild(build);
@@ -186,6 +206,9 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			pipeline.setMapMinimac(mapMinimacFilename);
 			pipeline.setMapEagleFilename(mapEagleFilename);
 			pipeline.setRefEagleFilename(refEagleFilename);
+			pipeline.setRefBeagleFilename(refBeagleFilename);
+			pipeline.setMapBeagleFilename(mapBeagleFilename);
+			pipeline.setPhasingEngine(phasingEngine);
 			pipeline.setPhasingOnly(phasingOnly);
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);

@@ -32,6 +32,10 @@ public class RefPanel {
 	private String mapEagle;
 
 	private String refEagle;
+	
+	private String refBeagle;
+	
+	private String mapBeagle;
 
 	private Map<String, String> samples;
 
@@ -113,6 +117,14 @@ public class RefPanel {
 
 	public String getMapEagle() {
 		return mapEagle;
+	}
+	
+	public String getRefBeagle() {
+		return refBeagle;
+	}
+
+	public void setRefBeagle(String refBeagle) {
+		this.refBeagle = refBeagle;
 	}
 
 	public void setRefEagle(String refEagle) {
@@ -213,4 +225,11 @@ public class RefPanel {
 		return range;
 	}
 
+	public String getMapBeagle() {
+		return mapBeagle;
+	}
+
+	public void setMapBeagle(String mapBeagle) {
+		this.mapBeagle = mapBeagle;
+	}
 }

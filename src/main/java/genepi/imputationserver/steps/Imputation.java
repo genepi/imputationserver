@@ -58,6 +58,7 @@ public class Imputation extends ParallelHadoopJobStep {
 		String reference = context.get("refpanel");
 		String binariesHDFS = context.getConfig("binaries");
 		String mode = context.get("mode");
+		String phasing = context.get("phasing");
 
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
@@ -98,6 +99,8 @@ public class Imputation extends ParallelHadoopJobStep {
 		context.println("  Version: " + panel.getVersion());
 		context.println("  Eagle Map: " + panel.getMapEagle());
 		context.println("  Eagle BCFs: " + panel.getRefEagle());
+		context.println("  Beagle Bref3: " + panel.getRefBeagle());
+		context.println("  Beagle Map: " + panel.getMapBeagle());
 		context.println("  Minimac Map: " + panel.getMapMinimac());
 		context.println("  Populations:");
 		for (Map.Entry<String, String> entry : panel.getPopulations().entrySet()) {
@@ -172,16 +175,25 @@ public class Imputation extends ParallelHadoopJobStep {
 				if (result.needsPhasing) {
 					context.println("Input data is unphased.");
 
-					if (!panel.checkEagleMap()) {
-						context.error("Eagle map file not found.");
-						return false;
+					if (phasing.equals("beagle")) {
+						context.println("  Setting up beagle reference and map files...");
+						String refBeagleFilenameChromosome = resolvePattern(panel.getRefBeagle(), chr);
+						String mapBeagleFilenameChromosome = resolvePattern(panel.getMapBeagle(), chr);
+						job.setRefBeagleHdfs(refBeagleFilenameChromosome);
+						job.setMapBeagleHdfs(mapBeagleFilenameChromosome);
+					} else {
+
+						if (!panel.checkEagleMap()) {
+							context.error("Eagle map file not found.");
+							return false;
+						}
+
+						context.println("  Setting up eagle reference and map files...");
+						job.setMapEagleHdfs(panel.getMapEagle());
+						String refEagleFilenameChromosome = resolvePattern(panel.getRefEagle(), chr);
+						job.setRefEagleHdfs(refEagleFilenameChromosome);
 					}
 
-					// eagle
-					context.println("  Setting up eagle reference and map files...");
-					job.setMapEagleHdfs(panel.getMapEagle());
-					String refEagleFilenameChromosome = resolvePattern(panel.getRefEagle(), chr);
-					job.setRefEagleHdfs(refEagleFilenameChromosome);
 				} else {
 					context.println("Input data is phased.");
 				}
@@ -192,6 +204,7 @@ public class Imputation extends ParallelHadoopJobStep {
 					job.setPhasingOnly("false");
 				}
 
+				job.setPhasingEngine(phasing);
 				job.setInput(result.filename);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setRefPanel(reference);
