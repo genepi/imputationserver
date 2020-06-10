@@ -60,6 +60,14 @@ public class RefPanelList {
 			if (map.get("refEagle") != null) {
 				panel.setRefEagle(map.get("refEagle").toString());
 			}
+			
+			if (map.get("mapBeagle") != null) {
+				panel.setMapBeagle(map.get("mapBeagle").toString());
+			}
+
+			if (map.get("refBeagle") != null) {
+				panel.setRefBeagle(map.get("refBeagle").toString());
+			}
 
 			if (map.get("populations") != null) {
 				panel.setPopulations((Map<String, String>) map.get("populations"));
