@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
-	<id>imputationserver-hla</id>
+	<id>imputationserver-beagle</id>
 
 	<formats>
 		<format>zip</format>
@@ -42,7 +42,8 @@
 			<directory>files</directory>
 			<excludes>
 				<exclude>minimac4.yaml</exclude>
-				<exclude>imputationserver-beagle.yaml</exclude>
+				<exclude>imputationserver-hla.yaml</exclude>
+
 			</excludes>
 		</fileSet>
 	</fileSets>

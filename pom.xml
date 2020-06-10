@@ -121,6 +121,20 @@
 							</descriptors>
 						</configuration>
 					</execution>
+					<execution>
+						<id>create-assembly-imputationserver-beagle</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<finalName>imputationserver-beagle</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/imputationserver-beagle.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 

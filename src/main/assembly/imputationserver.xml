@@ -42,6 +42,7 @@
 			<directory>files</directory>
 			<excludes>
 				<exclude>imputationserver-hla.yaml</exclude>
+				<exclude>imputationserver-beagle.yaml</exclude>
 			</excludes>
 		</fileSet>
 	</fileSets>

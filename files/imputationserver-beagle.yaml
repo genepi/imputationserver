@@ -1,0 +1,210 @@
+id: imputationserver-beagle
+name: Genotype Imputation supporting Beagle (Minimac4)
+description: This is the new Michigan Imputation Server Pipeline using <a href="https://github.com/statgen/Minimac4">Minimac4</a>. Documentation can be found <a href="http://imputationserver.readthedocs.io/en/latest/">here</a>.<br><br>If your input data is <b>GRCh37/hg19</b> please ensure chromosomes are encoded without prefix  (e.g. <b>20</b>).<br>If your input data is <b>GRCh38hg38</b> please ensure chromosomes are encoded with prefix 'chr' (e.g. <b>chr20</b>).
+version: 1.4.1
+website: https://imputationserver.readthedocs.io
+category:
+
+installation:
+
+  - import:
+      source: ${app_local_folder}/bin
+      target: ${app_hdfs_folder}/bin
+ 
+workflow:
+
+  setups:
+    - name: Input Validation
+      jar: imputationserver.jar
+      classname: genepi.imputationserver.steps.InputValidation
+
+    - name: Quality Control
+      jar: imputationserver.jar
+      classname: genepi.imputationserver.steps.FastQualityControl
+      generates: $mafFile $chunkFileDir $statisticDir
+
+
+#if( $population != "mixed")
+
+    - name: Quality Control (Report)
+      rmd: qc-report.Rmd
+      params: $mafFile
+      output: ${qcreport}.html
+      generates: $qcreport
+      
+#end            
+
+  onFailure:
+    name: Send Notification on Failure
+    jar: imputationserver.jar
+    classname: genepi.imputationserver.steps.FailureNotification
+    
+  steps:
+
+#if($mode == "imputation" || $mode == "phasing")
+    - name: Pre-phasing and Imputation
+      jar: imputationserver.jar
+      classname: genepi.imputationserver.steps.Imputation
+      generates: $local $outputimputation $logfile $hadooplogs
+      binaries: ${app_hdfs_folder}/bin
+
+    - name: Data Compression and Encryption
+      jar: imputationserver.jar
+      classname: genepi.imputationserver.steps.CompressionEncryption
+#end
+
+  inputs:
+
+     - id: refpanel
+       description: Reference Panel (<a href="https://imputationserver.sph.umich.edu/start.html#!pages/refpanels" target="_blank">Details</a>)
+       type: app_list
+       category: RefPanel
+
+     - id: files
+       description: Input Files (<a href="http://www.1000genomes.org/wiki/Analysis/Variant%20Call%20Format/vcf-variant-call-format-version-41" target="_blank">VCF</a>)
+       type: local-folder
+
+     - id: build
+       description: Array Build
+       type: list
+       value: hg19
+       values:
+         hg19: GRCh37/hg19
+         hg38: GRCh38/hg38     
+       details: Please note that the final SNP coordinates always match the reference build.        
+
+     - id: r2Filter
+       description: rsq Filter
+       type: list
+       value: 0
+       values:
+         0: off
+         0.001: 0.001
+         0.1: 0.1
+         0.2: 0.2
+         0.3: 0.3
+
+     - id: phasing
+       description: Phasing
+       type: list
+       value: eagle
+       values:
+         eagle: Eagle v2.4 (phased output)
+         beagle: Beagle v5.1
+         no_phasing: No phasing
+  
+     - id: population
+       description: Population
+       type: list
+       values:
+          bind: refpanel
+          property: populations
+          category: RefPanel
+                
+     - id: mode
+       description: Mode
+       type: list
+       value: imputation
+       values:
+          qconly: Quality Control Only 
+          imputation: Quality Control & Imputation
+          phasing: Quality Control & Phasing Only
+
+
+     - id: aesEncryption
+       description: AES 256 encryption
+       details: Imputation Server encrypts all zip files by default. Please note that AES encryption does not work with standard unzip programs. Use 7z instead.
+       type: checkbox
+       value: no
+       values:
+         true: yes
+         false: no
+       visible: true
+
+     - id: myseparator
+       type: separator
+
+     - id: password
+       description: Password set by user.
+       value: auto
+       visible: false
+       type: text
+
+     - id: check1
+       description: I will not attempt to re-identify or contact research participants.
+       type: terms_checkbox
+       
+     - id: check2
+       description: I will report any inadvertent data release, security breach or other data management incident of which I become aware.
+       type: terms_checkbox   
+
+         
+  outputs:
+
+    - id: qcreport
+      description: Quality-Control Report
+      type: local-file
+      download: true
+      temp: false
+      autoExport: true
+
+    - id: mafFile
+      description: MAF Output
+      type: local-file
+      download: false
+      temp: true
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+       
+    - id: chunksDir
+      description: Actual chunk files
+      type: local-folder
+      download: false
+      temp: true
+
+    - id: chunkFileDir
+      description: Chunkfile directory
+      type: local-folder
+      download: false
+      temp: true
+      mergeOutput: false
+
+    - id: statisticDir
+      description: QC Statistics
+      type: local-folder
+      download: true
+      temp: false
+      mergeOutput: true
+      removeHeader: false
+      zip: false
+      autoExport: true
+
+    - id: outputimputation
+      description: Imputed Genotypes
+      type: hdfs-folder
+      download: false
+      temp: true
+      zip: false
+      removeHeader: false
+      mergeOutput: false
+
+    - id: local
+      description: Imputation Results
+      type: local-folder
+      download: true
+      temp: true
+             
+    - id: logfile
+      description: Logs
+      type: local-folder
+      download: true
+      temp: false
+           
+    - id: hadooplogs
+      description: Hadoop Task Logs
+      type: local-folder
+      download: true
+      temp: false
+      autoExport: true
+      adminOnly: true
