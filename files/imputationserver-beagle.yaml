@@ -87,9 +87,8 @@ workflow:
      - id: phasing
        description: Phasing
        type: list
-       value: eagle
+       value: beagle
        values:
-         eagle: Eagle v2.4 (phased output)
          beagle: Beagle v5.1
          no_phasing: No phasing
   
