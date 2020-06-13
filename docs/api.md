@@ -21,9 +21,12 @@ The following parameters can be set:
 | input-mode | qconly, imputation     | imputation   |
 | input-password | user-defined password      |  auto  |
 | input-files-source | file-upload, sftp, http     |  default: file-upload  |
-| input-refpanel     | apps@hapmap2, apps@phase1, apps@phase3, apps@hrc-r1.1 apps@caapa      | - |
-| input-phasing | eagle, hapiur, shapeit      |  eagle  |
+| input-refpanel     | apps@hapmap-2, apps@hrc-r1.1, apps@1000g-phase-1, apps@1000g-phase-3-v5, apps@genome-asia-panel@1.0.0, apps@cappa   | - |
+| input-phasing | eagle, no_phasing      |  eagle  |
 | input-population | eur, afr, asn, amr, sas, eas, AA, mixed      |  eur  |
+| input-build | hg19, hg38 | hg19  |
+| input-r2Filter | 0, 0.001, 0.1, 0.2, 0.3 | 0  |
+
 
 ### Examples
 
@@ -33,7 +36,7 @@ To submit a job please change `/path-to-file` to the actual path.
 
 
 ```sh
-curl -H "X-Auth-Token: <your-API-token>" -F "input-files=@/path-to-file" -F "input-refpanel=apps@phase3" -F "input-phasing=eagle" https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac4
+curl -H "X-Auth-Token: <your-API-token>" -F "input-files=@/path-to-file" -F "input-refpanel=apps@1000g-phase-3-v5" -F "input-phasing=eagle" https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac4
 ```
 ```json
 {
@@ -46,7 +49,7 @@ curl -H "X-Auth-Token: <your-API-token>" -F "input-files=@/path-to-file" -F "inp
 #### Submit multiple files using 1000 Genomes Phase 3
 
 ```sh
-curl -H "X-Auth-Token: <your-API-token>" -F "input-files-upload=@/path-to-file1" -F "input-files-upload=@/path-to-file2" -F "input-refpanel=apps@phase3" -F "input-phasing=eagle" https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac4
+curl -H "X-Auth-Token: <your-API-token>" -F "input-files-upload=@/path-to-file1" -F "input-files-upload=@/path-to-file2" -F "input-refpanel=apps@1000g-phase-3-v5" -F "input-phasing=eagle" https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac4
 ```
 
 #### Submit file from a HTTP(S) location using HRC (QC Only!)
