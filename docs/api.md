@@ -18,7 +18,7 @@ The following parameters can be set:
 | Parameter        | Values           | Default Value  |
 | ------------- |:-------------| :-----|
 | input-files      | /path/to/file |  |
-| input-mode | qconly, imputation     | imputation   |
+| input-mode | qconly, phasing, imputation     | imputation   |
 | input-password | user-defined password      |  auto  |
 | input-files-source | file-upload, sftp, http     |  default: file-upload  |
 | input-refpanel     | apps@hapmap-2, apps@hrc-r1.1, apps@1000g-phase-1, apps@1000g-phase-3-v5, apps@genome-asia-panel@1.0.0, apps@cappa   | - |
