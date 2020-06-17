@@ -23,7 +23,7 @@ The following parameters can be set:
 | input-files-source | file-upload, sftp, http     |  default: file-upload  |
 | input-refpanel     | apps@hapmap-2, apps@hrc-r1.1, apps@1000g-phase-1, apps@1000g-phase-3-v5, apps@genome-asia-panel@1.0.0, apps@cappa   | - |
 | input-phasing | eagle, no_phasing      |  eagle  |
-| input-population | eur, afr, asn, amr, sas, eas, AA, mixed      |  eur  |
+| input-population | eur, afr, asn, amr, sas, eas, AA, mixed      |  -  |
 | input-build | hg19, hg38 | hg19  |
 | input-r2Filter | 0, 0.001, 0.1, 0.2, 0.3 | 0  |
 
