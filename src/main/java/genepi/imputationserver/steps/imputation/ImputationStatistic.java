@@ -7,6 +7,8 @@ public class ImputationStatistic {
 	private long imputationTime = -1;
 
 	private long importTime = -1;
+	
+	private long pgsTime = -1;
 
 	public long getPhasingTime() {
 		return phasingTime;
@@ -31,5 +33,14 @@ public class ImputationStatistic {
 	public long getImportTime() {
 		return importTime;
 	}
+	
+	public long getPgsTime() {
+		return pgsTime;
+	}
+
+	public void setPgsTime(long pgsTime) {
+		this.pgsTime = pgsTime;
+	}
+
 
 }

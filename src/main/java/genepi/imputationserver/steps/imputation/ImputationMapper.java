@@ -24,6 +24,7 @@ import genepi.io.text.LineWriter;
 import genepi.riskscore.io.Chunk;
 import genepi.riskscore.io.OutputFile;
 import genepi.riskscore.tasks.ApplyScoreTask;
+import htsjdk.samtools.util.StopWatch;
 
 public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
@@ -231,6 +232,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			// Polygenetic Risk score calculation
 			if (scores != null && !scores.equals("no_score")) {
 				
+				StopWatch watch = new StopWatch();
+				watch.start();
 				String[] scoresList = scores.split(",");
 
 				try {
@@ -249,6 +252,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 					output.save(outputChunk.getScoreFilename());
 
 					HdfsUtil.put(outputChunk.getScoreFilename(), HdfsUtil.path(outputScores, chunk + ".scores.txt"));
+					watch.stop();
+					statistics.setPgsTime(watch.getElapsedTimeSecs());
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -309,7 +314,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 			log.info(context.getJobName() + "\t" + hdfsPath + "\t" + hostname + "\t" + chunk + "\t"
 					+ statistics.getPhasingTime() + "\t" + statistics.getImputationTime() + "\t"
-					+ statistics.getImportTime() + "\t" + timeTotal);
+					+ statistics.getImportTime() + "\t" + statistics.getPgsTime() + "\t" + timeTotal);
 
 		} catch (Exception e) {
 			if (!debugging) {
