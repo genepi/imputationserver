@@ -139,7 +139,8 @@ vcf = '/path/to/genome.vcf.gz';
 files = {'files' : open(vcf, 'rb')}
 r = requests.post(url + "/jobs/submit/minimac4", files=files, data=data, headers=headers)
 if r.status_code != 200:
-    raise Exception('POST /jobs/submit/minimac4 {}'.format(r.status_code))
+  print(r.json()['message'])
+  raise Exception('POST /jobs/submit/minimac4 {}'.format(r.status_code))
 
 # print response and job id
 print(r.json()['message'])
