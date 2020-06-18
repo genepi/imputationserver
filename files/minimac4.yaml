@@ -109,6 +109,13 @@ workflow:
           imputation: Quality Control & Imputation
           phasing: Quality Control & Phasing Only
 
+     - id: scores
+       description: PGS Calculation
+       type: list
+       value: no_score
+       values:
+          no_score: No PGS
+          PGS000018,PGS000019: PGS Catalog (PGS000018 & PGS000019)
 
      - id: aesEncryption
        description: AES 256 encryption
@@ -187,6 +194,16 @@ workflow:
       zip: false
       removeHeader: false
       mergeOutput: false
+      
+    - id: outputPgs
+      description: Score
+      type: hdfs-folder
+      download: false
+      temp: false
+      zip: zip
+      removeHeader: false
+      mergeOutput: true
+      
 
     - id: local
       description: Imputation Results

@@ -33,6 +33,8 @@ public class Imputation extends ParallelHadoopJobStep {
 
 	private String output;
 
+	private String outputScores;
+
 	private boolean ok = false;
 
 	public static int THREADS = 25;
@@ -59,6 +61,7 @@ public class Imputation extends ParallelHadoopJobStep {
 		String binariesHDFS = context.getConfig("binaries");
 		String mode = context.get("mode");
 		String phasing = context.get("phasing");
+		String scores = context.get("scores");
 
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
@@ -67,6 +70,9 @@ public class Imputation extends ParallelHadoopJobStep {
 
 		// outputs
 		output = context.get("outputimputation");
+		// output scores
+		outputScores = context.get("outputScores");
+		
 		String log = context.get("logfile");
 
 		if (!(new File(input)).exists()) {
@@ -207,6 +213,8 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setPhasingEngine(phasing);
 				job.setInput(result.filename);
 				job.setOutput(HdfsUtil.path(output, chr));
+				job.setOutputScores(outputScores);
+				job.setScores(scores);
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setJarByClass(ImputationJob.class);

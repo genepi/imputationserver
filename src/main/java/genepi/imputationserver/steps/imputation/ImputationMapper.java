@@ -21,6 +21,9 @@ import genepi.imputationserver.util.FileMerger.BgzipSplitOutputStream;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
+import genepi.riskscore.io.Chunk;
+import genepi.riskscore.io.OutputFile;
+import genepi.riskscore.tasks.ApplyScoreTask;
 
 public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
@@ -30,6 +33,10 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private String output;
 
+	private String outputScores;
+
+	private String scores;
+
 	private String refFilename = "";
 
 	private String mapMinimacFilename;
@@ -37,9 +44,9 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 	private String mapEagleFilename = "";
 
 	private String refEagleFilename = null;
-	
+
 	private String refBeagleFilename = null;
-	
+
 	private String mapBeagleFilename = "";
 
 	private String build = "hg19";
@@ -47,7 +54,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 	private double minR2 = 0;
 
 	private boolean phasingOnly = false;
-	
+
 	private String phasingEngine = "";
 
 	private String refEagleIndexFilename;
@@ -68,6 +75,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		ParameterStore parameters = new ParameterStore(context);
 
 		output = parameters.get(ImputationJob.OUTPUT);
+		outputScores = parameters.get(ImputationJob.OUTPUT_SCORES);
 		build = parameters.get(ImputationJob.BUILD);
 
 		String r2FilterString = parameters.get(ImputationJob.R2_FILTER);
@@ -84,8 +92,9 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		} else {
 			phasingOnly = Boolean.parseBoolean(phasingOnlyString);
 		}
-		
+
 		phasingEngine = parameters.get(ImputationJob.PHASING_ENGINE);
+		scores = parameters.get(ImputationJob.SCORES);
 
 		hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
 		String hdfsPathMinimacMap = parameters.get(ImputationJob.MAP_MINIMAC);
@@ -121,7 +130,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		if (hdfsRefBeagle != null) {
 			refBeagleFilename = cache.getFile(FileUtil.getFilename(hdfsRefBeagle));
 		}
-		
+
 		if (hdfsPathMapBeagle != null) {
 			String mapBeagle = FileUtil.getFilename(hdfsPathMapBeagle);
 			mapBeagleFilename = cache.getFile(mapBeagle);
@@ -165,7 +174,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String minimacParams = store.getString("minimac.command");
 		String eagleParams = store.getString("eagle.command");
 		String beagleParams = store.getString("beagle.command");
-		
+
 		// config pipeline
 		pipeline = new ImputationPipeline();
 		pipeline.setMinimacCommand(minimacCommand, minimacParams);
@@ -217,6 +226,33 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			if (!succesful) {
 				log.stop("Phasing/Imputation failed!", "");
 				return;
+			}
+
+			// Polygenetic Risk score calculation
+			if (scores != null && !scores.equals("no_score")) {
+				
+				String[] scoresList = scores.split(",");
+
+				try {
+					ApplyScoreTask task = new ApplyScoreTask();
+					task.setVcfFilenames(outputChunk.getImputedVcfFilename());
+					Chunk scoreChunk = new Chunk();
+					scoreChunk.setStart(outputChunk.getStart());
+					scoreChunk.setEnd(outputChunk.getEnd());
+					task.setChunk(scoreChunk);
+					task.setRiskScoreFilenames(scoresList);
+					task.run();
+
+					System.out.println(task.getSummaries()[0]);
+					System.out.println(task.getSummaries()[1]);
+					OutputFile output = new OutputFile(task.getRiskScores(), task.getSummaries());
+					output.save(outputChunk.getScoreFilename());
+
+					HdfsUtil.put(outputChunk.getScoreFilename(), HdfsUtil.path(outputScores, chunk + ".scores.txt"));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			if (phasingOnly) {

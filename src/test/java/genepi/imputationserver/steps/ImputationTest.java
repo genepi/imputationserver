@@ -18,6 +18,7 @@ import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
+import genepi.io.table.reader.CsvTableReader;
 import genepi.io.text.LineReader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -44,7 +45,7 @@ public class ImputationTest {
 
 	@AfterClass
 	public static void tearDown() throws Exception {
-		TestCluster.getInstance().stop();
+		// TestCluster.getInstance().stop();
 	}
 
 	@Test
@@ -432,7 +433,63 @@ public class ImputationTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
+	
+	@Test
+	public void testPipelineWithEagleAndScores() throws IOException, ZipException {
 
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
+
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		assertEquals(snpInInfo, file.getNoSnps());
+
+		CsvTableReader readerExpected = new CsvTableReader("test-data/data/chr20-unphased/scores.expected.txt",',');
+		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/local/scores.txt",',');
+		
+		while(readerExpected.next() && readerActual.next()) {
+			assertEquals(readerExpected.getDouble("score"),readerActual.getDouble("score"),0.00001);
+			assertEquals(readerExpected.getDouble("score_1"),readerActual.getDouble("score_1"),0.00001);
+		}
+		readerExpected.close();
+		readerActual.close();
+		FileUtil.deleteDirectory("test-data/tmp");
+	}
+	
 	@Test
 	public void testPipelineWithEaglePhasingOnlyWithPhasedData() throws IOException, ZipException {
 
@@ -441,7 +498,7 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-		
+
 		context.setInput("mode", "phasing");
 
 		// run qc to create chunkfile
@@ -479,7 +536,7 @@ public class ImputationTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithEaglePhasingOnly() throws IOException, ZipException {
 
@@ -526,7 +583,7 @@ public class ImputationTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithBeaglePhasingOnly() throws IOException, ZipException {
 
@@ -538,7 +595,7 @@ public class ImputationTest {
 
 		context.setInput("mode", "phasing");
 		context.setInput("phasing", "beagle");
-		
+
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 		boolean result = run(context, qcStats);
@@ -573,7 +630,7 @@ public class ImputationTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithEaglePhasingOnlyHg38() throws IOException, ZipException {
 
@@ -725,7 +782,7 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-		
+
 		context.setInput("phasing", "");
 
 		// create step instance
@@ -1081,6 +1138,7 @@ public class ImputationTest {
 		context.setInput("refpanel", refpanel);
 		context.setInput("mode", "imputation");
 		context.setInput("phasing", "eagle");
+		context.setInput("scores", "PGS000018,PGS000027");
 		context.setInput("password", PASSWORD);
 		context.setConfig("binaries", BINARIES_HDFS);
 
@@ -1106,6 +1164,7 @@ public class ImputationTest {
 		HdfsUtil.createDirectory(context.getHdfsTemp());
 
 		context.setOutput("outputimputation", "cloudgene-hdfs");
+		context.setOutput("outputScores", "cloudgene2-hdfs");
 
 		context.setOutput("hadooplogs", file.getAbsolutePath() + "/hadooplogs");
 		FileUtil.deleteDirectory(file.getAbsolutePath() + "/hadooplogs");

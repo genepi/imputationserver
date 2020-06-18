@@ -30,6 +30,8 @@ public class ImputationJob extends HadoopJob {
 	public static final String MAP_MINIMAC = "MINIMAC_MAP";
 
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
+	
+	public static final String OUTPUT_SCORES = "PGS_OUTPUT";
 
 	public static final String BUILD = "MINIMAC_BUILD";
 
@@ -38,6 +40,8 @@ public class ImputationJob extends HadoopJob {
 	public static final String PHASING_ONLY = "PHASING_ONLY";
 	
 	public static final String PHASING_ENGINE = "PHASING_ENGINE";
+	
+	public static final String SCORES = "SCORES";
 
 	private String refPanelHdfs;
 
@@ -195,6 +199,10 @@ public class ImputationJob extends HadoopJob {
 		super.setOutput(HdfsUtil.path(output, "temp"));
 		set(OUTPUT, output);
 	}
+	
+	public void setOutputScores(String outputScores) {
+		set(OUTPUT_SCORES, outputScores);
+	}
 
 	public void setRefPanel(String refPanel) {
 		set(REF_PANEL, refPanel);
@@ -248,6 +256,10 @@ public class ImputationJob extends HadoopJob {
 	
 	public void setPhasingEngine(String phasing) {
 		set(PHASING_ENGINE, phasing);
+	}
+	
+	public void setScores(String scores) {
+		set(SCORES, scores);
 	}
 
 	public void setBinariesHDFS(String binariesHDFS) {
