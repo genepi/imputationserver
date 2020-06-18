@@ -230,7 +230,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			}
 
 			// Polygenetic Risk score calculation
-			if (scores != null && !scores.equals("no_score")) {
+			if (scores != null && !scores.equals("no_score") && !phasingOnly) {
 				
 				StopWatch watch = new StopWatch();
 				watch.start();
@@ -246,8 +246,6 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 					task.setRiskScoreFilenames(scoresList);
 					task.run();
 
-					System.out.println(task.getSummaries()[0]);
-					System.out.println(task.getSummaries()[1]);
 					OutputFile output = new OutputFile(task.getRiskScores(), task.getSummaries());
 					output.save(outputChunk.getScoreFilename());
 
