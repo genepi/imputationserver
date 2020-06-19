@@ -433,7 +433,7 @@ public class ImputationTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithEagleAndScores() throws IOException, ZipException {
 
@@ -443,7 +443,7 @@ public class ImputationTest {
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("scores", "PGS000018,PGS000027");
-		
+
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 		boolean result = run(context, qcStats);
@@ -479,18 +479,18 @@ public class ImputationTest {
 		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
 		assertEquals(snpInInfo, file.getNoSnps());
 
-		CsvTableReader readerExpected = new CsvTableReader("test-data/data/chr20-unphased/scores.expected.txt",',');
-		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/local/scores.txt",',');
-		
-		while(readerExpected.next() && readerActual.next()) {
-			assertEquals(readerExpected.getDouble("PGS000018"),readerActual.getDouble("PGS000018"),0.00001);
-			assertEquals(readerExpected.getDouble("PGS000027"),readerActual.getDouble("PGS000027"),0.00001);
+		CsvTableReader readerExpected = new CsvTableReader("test-data/data/chr20-unphased/scores.expected.txt", ',');
+		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/local/scores.txt", ',');
+
+		while (readerExpected.next() && readerActual.next()) {
+			assertEquals(readerExpected.getDouble("PGS000018"), readerActual.getDouble("PGS000018"), 0.00001);
+			assertEquals(readerExpected.getDouble("PGS000027"), readerActual.getDouble("PGS000027"), 0.00001);
 		}
 		readerExpected.close();
 		readerActual.close();
-		//FileUtil.deleteDirectory("test-data/tmp");
+		// FileUtil.deleteDirectory("test-data/tmp");
 	}
-	
+
 	@Test
 	public void testPipelineWithEaglePhasingOnlyWithPhasedData() throws IOException, ZipException {
 
@@ -1141,6 +1141,7 @@ public class ImputationTest {
 		context.setInput("phasing", "eagle");
 		context.setInput("password", PASSWORD);
 		context.setConfig("binaries", BINARIES_HDFS);
+		context.setInput("scores", "no_score");
 
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/mafFile");
