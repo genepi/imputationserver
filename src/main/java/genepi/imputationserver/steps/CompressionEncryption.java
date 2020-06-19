@@ -337,7 +337,7 @@ public class CompressionEncryption extends WorkflowStep {
 				task.setOutput(FileUtil.path(localOutput, "scores.txt"));
 				task.run();
 				
-				//FileUtil.deleteDirectory(temp2);
+				FileUtil.deleteDirectory(temp2);
 			}
 			
 			context.endTask("Exported data.", WorkflowContext.OK);

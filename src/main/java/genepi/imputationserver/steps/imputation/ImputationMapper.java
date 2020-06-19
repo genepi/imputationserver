@@ -220,6 +220,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			pipeline.setMapBeagleFilename(mapBeagleFilename);
 			pipeline.setPhasingEngine(phasingEngine);
 			pipeline.setPhasingOnly(phasingOnly);
+			pipeline.setScores(scores);
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);
 			ImputationStatistic statistics = pipeline.getStatistic();
@@ -227,35 +228,6 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			if (!succesful) {
 				log.stop("Phasing/Imputation failed!", "");
 				return;
-			}
-
-			// Polygenetic Risk score calculation
-			if (scores != null && !scores.equals("no_score") && !phasingOnly) {
-				
-				StopWatch watch = new StopWatch();
-				watch.start();
-				String[] scoresList = scores.split(",");
-
-				try {
-					ApplyScoreTask task = new ApplyScoreTask();
-					task.setVcfFilenames(outputChunk.getImputedVcfFilename());
-					Chunk scoreChunk = new Chunk();
-					scoreChunk.setStart(outputChunk.getStart());
-					scoreChunk.setEnd(outputChunk.getEnd());
-					task.setChunk(scoreChunk);
-					task.setRiskScoreFilenames(scoresList);
-					task.run();
-
-					OutputFile output = new OutputFile(task.getRiskScores(), task.getSummaries());
-					output.save(outputChunk.getScoreFilename());
-
-					HdfsUtil.put(outputChunk.getScoreFilename(), HdfsUtil.path(outputScores, chunk + ".scores.txt"));
-					watch.stop();
-					statistics.setPgsTime(watch.getElapsedTimeSecs());
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 			}
 
 			if (phasingOnly) {
@@ -301,6 +273,12 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 				System.out.println("Time filter and put: " + (end - start) + " ms");
 
+			}
+			
+			if(scores != null && !scores.equals("no_score")) {
+				
+			  HdfsUtil.put(outputChunk.getScoreFilename(), HdfsUtil.path(outputScores, chunk + ".scores.txt"));
+			  
 			}
 
 			InetAddress addr = java.net.InetAddress.getLocalHost();

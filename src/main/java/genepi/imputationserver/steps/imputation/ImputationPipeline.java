@@ -8,11 +8,16 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 
+import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.command.Command;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.io.FileUtil;
+import genepi.riskscore.io.Chunk;
+import genepi.riskscore.io.OutputFile;
+import genepi.riskscore.tasks.ApplyScoreTask;
 import groovy.text.SimpleTemplateEngine;
+import htsjdk.samtools.util.StopWatch;
 
 public class ImputationPipeline {
 
@@ -21,7 +26,7 @@ public class ImputationPipeline {
 	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
 
 	public static final String BEAGLE_VERSION = "beagle.18May20.d20.jar";
-	
+
 	public static String PHASING_VERSION = "eagle-2.4";
 
 	private String minimacCommand;
@@ -51,7 +56,7 @@ public class ImputationPipeline {
 	private String refEagleFilename = "";
 
 	private String refBeagleFilename = "";
-	
+
 	private String mapBeagleFilename = "";
 
 	private String build = "hg19";
@@ -59,6 +64,8 @@ public class ImputationPipeline {
 	private boolean phasingOnly;
 
 	private String phasingEngine = "";
+
+	private String scores = "";
 
 	private ImputationStatistic statistic = new ImputationStatistic();
 
@@ -105,7 +112,7 @@ public class ImputationPipeline {
 			long time = System.currentTimeMillis();
 
 			boolean successful = false;
-			
+
 			if (phasingEngine.equals("beagle")) {
 
 				if (!new File(refBeagleFilename).exists()) {
@@ -126,7 +133,7 @@ public class ImputationPipeline {
 			time = (System.currentTimeMillis() - time) / 1000;
 
 			statistic.setPhasingTime(time);
-			
+
 			if (successful) {
 				System.out.println("  " + PHASING_VERSION + " finished successfully. [" + time + " sec]");
 			} else {
@@ -153,7 +160,6 @@ public class ImputationPipeline {
 
 		if (successful) {
 			System.out.println("  " + IMPUTATION_VERSION + " finished successfully. [" + time + " sec]");
-			return true;
 		} else {
 			String stdOut = FileUtil.readFileAsString(output.getPrefix() + ".minimac.out");
 			String stdErr = FileUtil.readFileAsString(output.getPrefix() + ".minimac.err");
@@ -161,6 +167,27 @@ public class ImputationPipeline {
 					+ "\nStdErr:\n" + stdErr);
 			return false;
 		}
+
+		if (scores != null && !scores.equals("no_score")) {
+			StopWatch watch = new StopWatch();
+			watch.start();
+			successful = runPgsCalc(output);
+			watch.stop();
+
+			if (successful) {
+				statistic.setPgsTime(watch.getElapsedTime());
+				System.out.println("  " + "PGS Calc finished successfully. [" + watch.getElapsedTimeSecs() + " sec]");
+				return true;
+			} else {
+				System.out.println("  " + "PGS Calc failed. [" + watch.getElapsedTimeSecs() + " sec]");
+				return false;
+			}
+
+		} else {
+			System.out.println("  PGS Calculaton not executed. ");
+			return true;
+		}
+
 	}
 
 	public boolean phaseWithEagle(VcfChunk input, VcfChunkOutput output, String reference, String mapFilename)
@@ -204,7 +231,8 @@ public class ImputationPipeline {
 		return true;
 	}
 
-	public boolean phaseWithBeagle(VcfChunk input, VcfChunkOutput output, String reference, String mapFilename) throws IOException {
+	public boolean phaseWithBeagle(VcfChunk input, VcfChunkOutput output, String reference, String mapFilename)
+			throws IOException {
 
 		// calculate phasing positions
 		int start = input.getStart() - phasingWindow;
@@ -283,6 +311,31 @@ public class ImputationPipeline {
 
 	}
 
+	// Risk score calculation
+	private boolean runPgsCalc(VcfChunkOutput output) {
+
+		String[] scoresList = scores.split(",");
+
+		try {
+			ApplyScoreTask task = new ApplyScoreTask();
+			task.setVcfFilenames(output.getImputedVcfFilename());
+			Chunk scoreChunk = new Chunk();
+			scoreChunk.setStart(output.getStart());
+			scoreChunk.setEnd(output.getEnd());
+			task.setChunk(scoreChunk);
+			task.setRiskScoreFilenames(scoresList);
+			task.run();
+
+			OutputFile outputFile = new OutputFile(task.getRiskScores(), task.getSummaries());
+			outputFile.save(output.getScoreFilename());
+			return true;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
 	public void setTabixCommand(String tabixCommand) {
 		this.tabixCommand = tabixCommand;
 	}
@@ -340,6 +393,10 @@ public class ImputationPipeline {
 
 	public void setPhasingOnly(boolean phasingOnly) {
 		this.phasingOnly = phasingOnly;
+	}
+
+	public void setScores(String scores) {
+		this.scores = scores;
 	}
 
 	public void setPhasingEngine(String phasingEngine) {
