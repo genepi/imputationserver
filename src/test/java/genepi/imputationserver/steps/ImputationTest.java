@@ -442,7 +442,9 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setInput("scores", "PGS000018,PGS000027");
 
+		
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
 		boolean result = run(context, qcStats);
@@ -1138,7 +1140,6 @@ public class ImputationTest {
 		context.setInput("refpanel", refpanel);
 		context.setInput("mode", "imputation");
 		context.setInput("phasing", "eagle");
-		context.setInput("scores", "PGS000018,PGS000027");
 		context.setInput("password", PASSWORD);
 		context.setConfig("binaries", BINARIES_HDFS);
 
