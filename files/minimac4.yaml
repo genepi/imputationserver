@@ -115,7 +115,7 @@ workflow:
        value: no_score
        values:
           no_score: No PGS
-          PGS000018,PGS000019: PGS Catalog (PGS000018 & PGS000019)
+          "PGS000018,PGS000027": PGS Catalog (PGS000018 & PGS000027)
 
      - id: aesEncryption
        description: AES 256 encryption
