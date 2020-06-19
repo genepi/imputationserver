@@ -20,8 +20,10 @@ import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import genepi.io.table.reader.CsvTableReader;
 import genepi.io.text.LineReader;
+import genepi.riskscore.commands.ApplyScoreCommand;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import picocli.CommandLine;
 
 public class ImputationTest {
 
@@ -433,7 +435,7 @@ public class ImputationTest {
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithEagleAndScores() throws IOException, ZipException {
 
@@ -442,6 +444,7 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setInput("scores", "PGS000018,PGS000027");
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -478,18 +481,23 @@ public class ImputationTest {
 		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
 		assertEquals(snpInInfo, file.getNoSnps());
 
-		CsvTableReader readerExpected = new CsvTableReader("test-data/data/chr20-unphased/scores.expected.txt",',');
-		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/local/scores.txt",',');
-		
-		while(readerExpected.next() && readerActual.next()) {
-			assertEquals(readerExpected.getDouble("score"),readerActual.getDouble("score"),0.00001);
-			assertEquals(readerExpected.getDouble("score_1"),readerActual.getDouble("score_1"),0.00001);
+		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", "PGS000018,PGS000027", "--out", "test-data/tmp/local/expected.txt" };
+		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
+		assertEquals(0, resultScore);
+
+		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/local/expected.txt", ',');
+		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/local/scores.txt", ',');
+
+		while (readerExpected.next() && readerActual.next()) {
+			assertEquals(readerExpected.getDouble("PGS000018"), readerActual.getDouble("PGS000018"), 0.00001);
+			assertEquals(readerExpected.getDouble("PGS000027"), readerActual.getDouble("PGS000027"), 0.00001);
 		}
 		readerExpected.close();
 		readerActual.close();
-		FileUtil.deleteDirectory("test-data/tmp");
+		// FileUtil.deleteDirectory("test-data/tmp");
+
 	}
-	
+
 	@Test
 	public void testPipelineWithEaglePhasingOnlyWithPhasedData() throws IOException, ZipException {
 
@@ -1138,9 +1146,9 @@ public class ImputationTest {
 		context.setInput("refpanel", refpanel);
 		context.setInput("mode", "imputation");
 		context.setInput("phasing", "eagle");
-		context.setInput("scores", "PGS000018,PGS000027");
 		context.setInput("password", PASSWORD);
 		context.setConfig("binaries", BINARIES_HDFS);
+		context.setInput("scores", "no_score");
 
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/mafFile");
