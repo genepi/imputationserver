@@ -443,7 +443,6 @@ public class ImputationTest {
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("scores", "PGS000018,PGS000027");
-
 		
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -484,8 +483,8 @@ public class ImputationTest {
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/local/scores.txt",',');
 		
 		while(readerExpected.next() && readerActual.next()) {
-			assertEquals(readerExpected.getDouble("score"),readerActual.getDouble("score"),0.00001);
-			assertEquals(readerExpected.getDouble("score_1"),readerActual.getDouble("score_1"),0.00001);
+			assertEquals(readerExpected.getDouble("PGS000018"),readerActual.getDouble("PGS000018"),0.00001);
+			assertEquals(readerExpected.getDouble("PGS000027"),readerActual.getDouble("PGS000027"),0.00001);
 		}
 		readerExpected.close();
 		readerActual.close();
