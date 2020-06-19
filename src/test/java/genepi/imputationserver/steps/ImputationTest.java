@@ -45,7 +45,7 @@ public class ImputationTest {
 
 	@AfterClass
 	public static void tearDown() throws Exception {
-		// TestCluster.getInstance().stop();
+	    TestCluster.getInstance().stop();
 	}
 
 	@Test
@@ -487,7 +487,7 @@ public class ImputationTest {
 		}
 		readerExpected.close();
 		readerActual.close();
-		//FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 	}
 	
 	@Test
