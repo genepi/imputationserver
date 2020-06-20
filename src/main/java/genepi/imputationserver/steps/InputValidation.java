@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
-import java.util.stream.Collectors;
 
 import cloudgene.sdk.internal.WorkflowContext;
 import cloudgene.sdk.internal.WorkflowStep;
@@ -16,6 +14,7 @@ import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
+import genepi.imputationserver.util.PgsPanel;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -56,15 +55,7 @@ public class InputValidation extends WorkflowStep {
 		String r2Filter = context.get("r2Filter");
 		String phasing = context.get("phasing");
 		String mode = context.get("mode");
-		String scores = null;
-		Object pgsPanel = context.getData("pgsPanel");
-		if (pgsPanel != null) {
-			Map<String, Object> map = (Map<String, Object>) pgsPanel;
-			if (map.get("scores") != null) {
-				List<String> list = (List<String>) map.get("scores");
-				scores = list.size() + "";
-			}
-		}
+		PgsPanel pgsPanel = PgsPanel.loadFromProperties(context.getData("pgsPanel"));
 
 		// load job.config
 		File jobConfig = new File(FileUtil.path(folder, "job.config"));
@@ -209,7 +200,8 @@ public class InputValidation extends WorkflowStep {
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
 							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
 							+ "Population: " + population + "\n" + "Phasing: eagle" + "\n" + "Mode: " + mode
-							+ (scores != null ? "\n" + "PGS-Calculation: " + scores + " scores" : "");
+							+ (pgsPanel != null ? "\n" + "PGS-Calculation: " + pgsPanel.getScores().size() + " scores"
+									: "");
 
 					if (r2Filter != null && !r2Filter.isEmpty() && !r2Filter.equals("0")) {
 						infos += "\nRsq filter: " + r2Filter;

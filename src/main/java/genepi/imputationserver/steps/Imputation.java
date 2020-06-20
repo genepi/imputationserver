@@ -2,12 +2,8 @@ package genepi.imputationserver.steps;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import cloudgene.sdk.internal.WorkflowContext;
 import genepi.hadoop.HadoopJob;
@@ -18,6 +14,7 @@ import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.util.ContextLog;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
+import genepi.imputationserver.util.PgsPanel;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -65,16 +62,12 @@ public class Imputation extends ParallelHadoopJobStep {
 		String binariesHDFS = context.getConfig("binaries");
 		String mode = context.get("mode");
 		String phasing = context.get("phasing");
+		PgsPanel pgsPanel = PgsPanel.loadFromProperties(context.getData("pgsPanel"));
 
 		// read from selected score collection
 		String scores = "no_score";
-		Object pgsPanel = context.getData("pgsPanel");
-		if (pgsPanel != null) {
-			Map<String, Object> map = (Map<String, Object>) pgsPanel;
-			if (map.get("scores") != null) {
-				List<String> list = (List<String>) map.get("scores");
-				scores = list.stream().collect(Collectors.joining(","));
-			}
+		if (pgsPanel != null && !pgsPanel.getScores().isEmpty()) {
+			scores = pgsPanel.getScoresAsString();
 		}
 
 		String r2Filter = context.get("r2Filter");

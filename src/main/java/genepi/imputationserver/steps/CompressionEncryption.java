@@ -30,6 +30,7 @@ import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ExportObject;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.PasswordCreator;
+import genepi.imputationserver.util.PgsPanel;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.riskscore.tasks.MergeScoreTask;
@@ -53,7 +54,8 @@ public class CompressionEncryption extends WorkflowStep {
 		String aesEncryption = context.get("aesEncryption");
 		String mode = context.get("mode");
 		String password = context.get("password");
-		String scores = context.get("scores");
+
+		PgsPanel pgsPanel = PgsPanel.loadFromProperties(context.getData("pgsPanel"));
 
 		boolean phasingOnly = false;
 		if (mode != null && mode.equals("phasing")) {
@@ -92,7 +94,7 @@ public class CompressionEncryption extends WorkflowStep {
 		try {
 
 			context.beginTask("Export data...");
-			
+
 			// get sorted directories
 			List<String> folders = HdfsUtil.getDirectories(output);
 
@@ -312,9 +314,10 @@ public class CompressionEncryption extends WorkflowStep {
 			// delete temporary files
 			HdfsUtil.delete(output);
 
-			
-			//Export calculated risk scores
-			if (scores != null && !scores.equals("no_score")) {
+			// Export calculated risk scores
+			if (pgsPanel != null) {
+
+				context.println("Exporting PGS scores...");
 
 				String temp2 = FileUtil.path(localOutput, "temp2");
 				FileUtil.createDirectory(temp2);
@@ -332,14 +335,18 @@ public class CompressionEncryption extends WorkflowStep {
 					i++;
 				}
 
+				String outputFile = FileUtil.path(localOutput, "scores.txt");
+
 				MergeScoreTask task = new MergeScoreTask();
 				task.setInputs(scoresArray);
-				task.setOutput(FileUtil.path(localOutput, "scores.txt"));
+				task.setOutput(outputFile);
 				task.run();
-				
+
+				context.println("Exported PGS scores to " + outputFile + ".");
+
 				FileUtil.deleteDirectory(temp2);
 			}
-			
+
 			context.endTask("Exported data.", WorkflowContext.OK);
 
 		} catch (Exception e) {
