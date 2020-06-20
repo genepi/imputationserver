@@ -15,6 +15,7 @@ import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.io.FileUtil;
 import genepi.riskscore.io.Chunk;
 import genepi.riskscore.io.OutputFile;
+import genepi.riskscore.io.PGSCatalog;
 import genepi.riskscore.tasks.ApplyScoreTask;
 import groovy.text.SimpleTemplateEngine;
 import htsjdk.samtools.util.StopWatch;
@@ -316,6 +317,9 @@ public class ImputationPipeline {
 
 		String[] scoresList = scores.split(",");
 
+		String cacheDir = new File(output.getScoreFilename()).getParent();
+		PGSCatalog.CACHE_DIR = cacheDir;
+		
 		try {
 			ApplyScoreTask task = new ApplyScoreTask();
 			task.setVcfFilenames(output.getImputedVcfFilename());
