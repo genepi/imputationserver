@@ -170,6 +170,9 @@ public class ImputationPipeline {
 		}
 
 		if (scores != null && !scores.equals("no_score")) {
+
+			System.out.println("  Starting PGS calculation '" + scores + "'...");
+
 			StopWatch watch = new StopWatch();
 			watch.start();
 			successful = runPgsCalc(output);
@@ -319,7 +322,7 @@ public class ImputationPipeline {
 
 		String cacheDir = new File(output.getScoreFilename()).getParent();
 		PGSCatalog.CACHE_DIR = cacheDir;
-		
+
 		try {
 			ApplyScoreTask task = new ApplyScoreTask();
 			task.setVcfFilenames(output.getImputedVcfFilename());
@@ -337,7 +340,11 @@ public class ImputationPipeline {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
+		} catch (Error e) {
+			e.printStackTrace();
+			return false;
 		}
+
 	}
 
 	public void setTabixCommand(String tabixCommand) {

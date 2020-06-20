@@ -109,14 +109,6 @@ workflow:
           imputation: Quality Control & Imputation
           phasing: Quality Control & Phasing Only
 
-     - id: scores
-       description: PGS Calculation
-       type: list
-       value: no_score
-       values:
-          no_score: No PGS
-          "PGS000018,PGS000027": PGS Catalog (PGS000018 & PGS000027)
-
      - id: aesEncryption
        description: AES 256 encryption
        details: Imputation Server encrypts all zip files by default. Please note that AES encryption does not work with standard unzip programs. Use 7z instead.
@@ -126,6 +118,16 @@ workflow:
          true: yes
          false: no
        visible: true
+
+     - id: myseparator0
+       type: separator
+
+     - id: pgsPanel
+       description: Polygenic Scores
+       details: Please select a collection of polygenic scores to enable on the fly PGS calculation.
+       type: app_list
+       required: false
+       category: PGSPanel
 
      - id: myseparator
        type: separator
@@ -195,7 +197,7 @@ workflow:
       removeHeader: false
       mergeOutput: false
       
-    - id: outputPgs
+    - id: outputScores
       description: Score
       type: hdfs-folder
       download: false

@@ -2,8 +2,12 @@ package genepi.imputationserver.steps;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import cloudgene.sdk.internal.WorkflowContext;
 import genepi.hadoop.HadoopJob;
@@ -61,7 +65,17 @@ public class Imputation extends ParallelHadoopJobStep {
 		String binariesHDFS = context.getConfig("binaries");
 		String mode = context.get("mode");
 		String phasing = context.get("phasing");
-		String scores = context.get("scores");
+
+		// read from selected score collection
+		String scores = "no_score";
+		Object pgsPanel = context.getData("pgsPanel");
+		if (pgsPanel != null) {
+			Map<String, Object> map = (Map<String, Object>) pgsPanel;
+			if (map.get("scores") != null) {
+				List<String> list = (List<String>) map.get("scores");
+				scores = list.stream().collect(Collectors.joining(","));
+			}
+		}
 
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
@@ -72,7 +86,7 @@ public class Imputation extends ParallelHadoopJobStep {
 		output = context.get("outputimputation");
 		// output scores
 		outputScores = context.get("outputScores");
-		
+
 		String log = context.get("logfile");
 
 		if (!(new File(input)).exists()) {
@@ -122,6 +136,7 @@ public class Imputation extends ParallelHadoopJobStep {
 				context.println("    " + entry.getKey() + "/" + entry.getValue());
 			}
 		}
+		context.println("  PGS: " + scores);
 
 		// execute one job per chromosome
 		try {

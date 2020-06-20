@@ -84,6 +84,8 @@
 									<include>org.xerial:xerial-core:*:*</include>
 									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
 									<include>org.codehaus.groovy:groovy-all:*:*</include>
+									<include>lukfor:pgs-calc:*:*</include>
+									<include>net.sf.opencsv:opencsv:*:*</include>
 								</includes>
 							</artifactSet>
 

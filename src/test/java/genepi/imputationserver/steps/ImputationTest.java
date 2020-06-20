@@ -6,6 +6,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -47,7 +51,7 @@ public class ImputationTest {
 
 	@AfterClass
 	public static void tearDown() throws Exception {
-	    TestCluster.getInstance().stop();
+		TestCluster.getInstance().stop();
 	}
 
 	@Test
@@ -444,7 +448,13 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-		context.setInput("scores", "PGS000018,PGS000027");
+		// 
+		Map<String, Object> pgsPanel = new HashMap<String, Object>();
+		List<String> scores = new Vector<String>();
+		scores.add("PGS000018");
+		scores.add("PGS000027");
+		pgsPanel.put("scores", scores);
+		context.setData("pgsPanel", pgsPanel);
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
@@ -481,7 +491,8 @@ public class ImputationTest {
 		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
 		assertEquals(snpInInfo, file.getNoSnps());
 
-		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", "PGS000018,PGS000027", "--out", "test-data/tmp/local/expected.txt" };
+		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", "PGS000018,PGS000027", "--out",
+				"test-data/tmp/local/expected.txt" };
 		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
 		assertEquals(0, resultScore);
 
@@ -1148,7 +1159,6 @@ public class ImputationTest {
 		context.setInput("phasing", "eagle");
 		context.setInput("password", PASSWORD);
 		context.setConfig("binaries", BINARIES_HDFS);
-		context.setInput("scores", "no_score");
 
 		context.setOutput("mafFile", file.getAbsolutePath() + "/mafFile/mafFile.txt");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/mafFile");
