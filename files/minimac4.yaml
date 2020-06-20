@@ -122,9 +122,13 @@ workflow:
      - id: myseparator0
        type: separator
 
+     - id: info2
+       type: info
+       description: <b>PGS Calculation</b> (optional)<br><small class="text-muted">Please select a collection of polygenic scores to enable on the fly PGS calculation.</small>
+
+
      - id: pgsPanel
-       description: Polygenic Scores
-       details: Please select a collection of polygenic scores to enable on the fly PGS calculation.
+       description: Scores
        type: app_list
        required: false
        category: PGSPanel
