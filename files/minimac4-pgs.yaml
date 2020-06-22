@@ -1,5 +1,5 @@
-id: imputationserver-beagle
-name: Genotype Imputation supporting Beagle (Minimac4)
+id: imputationserver
+name: Genotype Imputation (PGS Calc Integration)
 description: This is the new Michigan Imputation Server Pipeline using <a href="https://github.com/statgen/Minimac4">Minimac4</a>. Documentation can be found <a href="http://imputationserver.readthedocs.io/en/latest/">here</a>.<br><br>If your input data is <b>GRCh37/hg19</b> please ensure chromosomes are encoded without prefix  (e.g. <b>20</b>).<br>If your input data is <b>GRCh38hg38</b> please ensure chromosomes are encoded with prefix 'chr' (e.g. <b>chr20</b>).
 version: 1.5.0
 website: https://imputationserver.readthedocs.io
@@ -87,9 +87,9 @@ workflow:
      - id: phasing
        description: Phasing
        type: list
-       value: beagle
+       value: eagle
        values:
-         beagle: Beagle v5.1
+         eagle: Eagle v2.4 (phased output)
          no_phasing: No phasing
   
      - id: population
@@ -109,7 +109,6 @@ workflow:
           imputation: Quality Control & Imputation
           phasing: Quality Control & Phasing Only
 
-
      - id: aesEncryption
        description: AES 256 encryption
        details: Imputation Server encrypts all zip files by default. Please note that AES encryption does not work with standard unzip programs. Use 7z instead.
@@ -119,6 +118,20 @@ workflow:
          true: yes
          false: no
        visible: true
+
+     - id: myseparator0
+       type: separator
+
+     - id: info2
+       type: info
+       description: <b>PGS Calculation</b> (optional)<br><small class="text-muted">Please select a collection of polygenic scores to enable on the fly PGS calculation.</small>
+
+
+     - id: pgsPanel
+       description: Scores
+       type: app_list
+       required: false
+       category: PGSPanel
 
      - id: myseparator
        type: separator
@@ -187,6 +200,16 @@ workflow:
       zip: false
       removeHeader: false
       mergeOutput: false
+      
+    - id: outputScores
+      description: Score
+      type: hdfs-folder
+      download: false
+      temp: false
+      zip: zip
+      removeHeader: false
+      mergeOutput: true
+      
 
     - id: local
       description: Imputation Results
