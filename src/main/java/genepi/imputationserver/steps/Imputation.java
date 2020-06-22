@@ -14,6 +14,7 @@ import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.util.ContextLog;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
+import genepi.imputationserver.util.PgsPanel;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
@@ -32,6 +33,8 @@ public class Imputation extends ParallelHadoopJobStep {
 	private boolean running = true;
 
 	private String output;
+
+	private String outputScores;
 
 	private boolean ok = false;
 
@@ -59,6 +62,7 @@ public class Imputation extends ParallelHadoopJobStep {
 		String binariesHDFS = context.getConfig("binaries");
 		String mode = context.get("mode");
 		String phasing = context.get("phasing");
+		PgsPanel pgsPanel = PgsPanel.loadFromProperties(context.getData("pgsPanel"));
 
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
@@ -67,6 +71,9 @@ public class Imputation extends ParallelHadoopJobStep {
 
 		// outputs
 		output = context.get("outputimputation");
+		// output scores
+		outputScores = context.get("outputScores");
+
 		String log = context.get("logfile");
 
 		if (!(new File(input)).exists()) {
@@ -115,6 +122,11 @@ public class Imputation extends ParallelHadoopJobStep {
 			for (Map.Entry<String, String> entry : panel.getQcFilter().entrySet()) {
 				context.println("    " + entry.getKey() + "/" + entry.getValue());
 			}
+		}
+		if (pgsPanel != null) {
+			context.println("  PGS: " + pgsPanel.getScores().size() + " scores");
+		} else {
+			context.println("  PGS: no scores selected");
 		}
 
 		// execute one job per chromosome
@@ -207,6 +219,10 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setPhasingEngine(phasing);
 				job.setInput(result.filename);
 				job.setOutput(HdfsUtil.path(output, chr));
+				job.setOutputScores(outputScores);
+				if (pgsPanel != null) {
+					job.setScores(pgsPanel.getScores());
+				}
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setJarByClass(ImputationJob.class);

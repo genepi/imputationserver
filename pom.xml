@@ -27,6 +27,12 @@
 			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
 		</repository>
 
+		<repository>
+			<id>bintray-lukfor-maven</id>
+			<name>bintray</name>
+			<url>https://dl.bintray.com/lukfor/maven</url>
+		</repository>
+
 	</repositories>
 
 	<build>
@@ -78,6 +84,8 @@
 									<include>org.xerial:xerial-core:*:*</include>
 									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
 									<include>org.codehaus.groovy:groovy-all:*:*</include>
+									<include>lukfor:pgs-calc:*:*</include>
+									<include>net.sf.opencsv:opencsv:*:*</include>
 								</includes>
 							</artifactSet>
 
@@ -270,6 +278,12 @@
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
 			<version>2.4.14</version>
+		</dependency>
+
+		<dependency>
+			<groupId>lukfor</groupId>
+			<artifactId>pgs-calc</artifactId>
+			<version>0.8.5</version>
 		</dependency>
 
 	</dependencies>

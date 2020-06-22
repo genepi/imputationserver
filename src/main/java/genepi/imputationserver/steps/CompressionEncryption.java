@@ -30,8 +30,10 @@ import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ExportObject;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.PasswordCreator;
+import genepi.imputationserver.util.PgsPanel;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
+import genepi.riskscore.tasks.MergeScoreTask;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.AesKeyStrength;
@@ -47,10 +49,13 @@ public class CompressionEncryption extends WorkflowStep {
 		String workingDirectory = getFolder(CompressionEncryption.class);
 
 		String output = context.get("outputimputation");
+		String outputScores = context.get("outputScores");
 		String localOutput = context.get("local");
 		String aesEncryption = context.get("aesEncryption");
 		String mode = context.get("mode");
 		String password = context.get("password");
+
+		PgsPanel pgsPanel = PgsPanel.loadFromProperties(context.getData("pgsPanel"));
 
 		boolean phasingOnly = false;
 		if (mode != null && mode.equals("phasing")) {
@@ -76,7 +81,7 @@ public class CompressionEncryption extends WorkflowStep {
 		if (store.getString("server.url") != null && !store.getString("server.url").isEmpty()) {
 			serverUrl = store.getString("server.url");
 		}
-		
+
 		String sanityCheck = "yes";
 		if (store.getString("sanitycheck") != null && !store.getString("sanitycheck").equals("")) {
 			sanityCheck = store.getString("sanitycheck");
@@ -246,7 +251,7 @@ public class CompressionEncryption extends WorkflowStep {
 						return false;
 					}
 					context.log("Tabix done.");
-				} 
+				}
 
 				ZipParameters param = new ZipParameters();
 				param.setEncryptFiles(true);
@@ -284,7 +289,7 @@ public class CompressionEncryption extends WorkflowStep {
 					context.log("External Workspace '" + externalWorkspace.getName() + "' found");
 
 					context.log("Start file upload: " + filePath);
-					
+
 					String url = externalWorkspace.upload("local", file.getFile());
 
 					long end = (System.currentTimeMillis() - start) / 1000;
@@ -294,7 +299,7 @@ public class CompressionEncryption extends WorkflowStep {
 					context.log("Add " + localOutput + " to custom download");
 
 					String size = FileUtils.byteCountToDisplaySize(file.getFile().length());
-					
+
 					context.addDownload("local", fileName, size, url);
 
 					FileUtil.deleteFile(filePath);
@@ -309,11 +314,44 @@ public class CompressionEncryption extends WorkflowStep {
 			// delete temporary files
 			HdfsUtil.delete(output);
 
+			// Export calculated risk scores
+			if (pgsPanel != null) {
+
+				context.println("Exporting PGS scores...");
+
+				String temp2 = FileUtil.path(localOutput, "temp2");
+				FileUtil.createDirectory(temp2);
+
+				List<String> scoreList = HdfsUtil.getFiles(outputScores);
+
+				String[] scoresArray = new String[scoreList.size()];
+
+				int i = 0;
+				for (String score : scoreList) {
+					String scoreChunk = score.substring(score.lastIndexOf("/"));
+					String localPath = FileUtil.path(temp2, scoreChunk);
+					HdfsUtil.get(score, localPath);
+					scoresArray[i] = localPath;
+					i++;
+				}
+
+				String outputFile = FileUtil.path(localOutput, "scores.txt");
+
+				MergeScoreTask task = new MergeScoreTask();
+				task.setInputs(scoresArray);
+				task.setOutput(outputFile);
+				task.run();
+
+				context.println("Exported PGS scores to " + outputFile + ".");
+
+				FileUtil.deleteDirectory(temp2);
+			}
+
 			context.endTask("Exported data.", WorkflowContext.OK);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			context.endTask("Data compression failed: " + e.getMessage(), WorkflowContext.ERROR);
+			context.endTask("Data export failed: " + e.getMessage(), WorkflowContext.ERROR);
 			return false;
 		}
 

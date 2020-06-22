@@ -30,6 +30,10 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private String output;
 
+	private String outputScores;
+
+	private String[] scores;
+
 	private String refFilename = "";
 
 	private String mapMinimacFilename;
@@ -37,9 +41,9 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 	private String mapEagleFilename = "";
 
 	private String refEagleFilename = null;
-	
+
 	private String refBeagleFilename = null;
-	
+
 	private String mapBeagleFilename = "";
 
 	private String build = "hg19";
@@ -47,7 +51,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 	private double minR2 = 0;
 
 	private boolean phasingOnly = false;
-	
+
 	private String phasingEngine = "";
 
 	private String refEagleIndexFilename;
@@ -68,6 +72,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		ParameterStore parameters = new ParameterStore(context);
 
 		output = parameters.get(ImputationJob.OUTPUT);
+		outputScores = parameters.get(ImputationJob.OUTPUT_SCORES);
 		build = parameters.get(ImputationJob.BUILD);
 
 		String r2FilterString = parameters.get(ImputationJob.R2_FILTER);
@@ -84,7 +89,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		} else {
 			phasingOnly = Boolean.parseBoolean(phasingOnlyString);
 		}
-		
+
 		phasingEngine = parameters.get(ImputationJob.PHASING_ENGINE);
 
 		hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
@@ -121,7 +126,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		if (hdfsRefBeagle != null) {
 			refBeagleFilename = cache.getFile(FileUtil.getFilename(hdfsRefBeagle));
 		}
-		
+
 		if (hdfsPathMapBeagle != null) {
 			String mapBeagle = FileUtil.getFilename(hdfsPathMapBeagle);
 			mapBeagleFilename = cache.getFile(mapBeagle);
@@ -131,6 +136,23 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String eagleCommand = cache.getFile("eagle");
 		String beagleCommand = cache.getFile("beagle.jar");
 		String tabixCommand = cache.getFile("tabix");
+
+		// scores
+		String scoresFilenames = parameters.get(ImputationJob.SCORES);
+		if (scoresFilenames != null) {
+			String[] filenames = scoresFilenames.split(",");
+			scores = new String[filenames.length];
+			for (int i = 0; i < scores.length; i++) {
+				String filename = filenames[i];
+				String name = FileUtil.getFilename(filename);
+				String localFilename = cache.getFile(name);
+				scores[i] = localFilename;
+			}
+			System.out.println("Loaded " + scores.length + " score files from distributed cache");
+
+		} else {
+			System.out.println("No scores files et.");
+		}
 
 		// create temp directory
 		DefaultPreferenceStore store = new DefaultPreferenceStore(context.getConfiguration());
@@ -165,7 +187,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String minimacParams = store.getString("minimac.command");
 		String eagleParams = store.getString("eagle.command");
 		String beagleParams = store.getString("beagle.command");
-		
+
 		// config pipeline
 		pipeline = new ImputationPipeline();
 		pipeline.setMinimacCommand(minimacCommand, minimacParams);
@@ -209,7 +231,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			pipeline.setRefBeagleFilename(refBeagleFilename);
 			pipeline.setMapBeagleFilename(mapBeagleFilename);
 			pipeline.setPhasingEngine(phasingEngine);
-			pipeline.setPhasingOnly(phasingOnly);
+			pipeline.setPhasingOnly(phasingOnly);		
+			pipeline.setScores(scores);
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);
 			ImputationStatistic statistics = pipeline.getStatistic();
@@ -264,6 +287,12 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 			}
 
+			if (scores != null && !scores.equals("no_score")) {
+
+				HdfsUtil.put(outputChunk.getScoreFilename(), HdfsUtil.path(outputScores, chunk + ".scores.txt"));
+
+			}
+
 			InetAddress addr = java.net.InetAddress.getLocalHost();
 			String hostname = addr.getHostName();
 
@@ -273,7 +302,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 			log.info(context.getJobName() + "\t" + hdfsPath + "\t" + hostname + "\t" + chunk + "\t"
 					+ statistics.getPhasingTime() + "\t" + statistics.getImputationTime() + "\t"
-					+ statistics.getImportTime() + "\t" + timeTotal);
+					+ statistics.getImportTime() + "\t" + statistics.getPgsTime() + "\t" + timeTotal);
 
 		} catch (Exception e) {
 			if (!debugging) {

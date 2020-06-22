@@ -2,6 +2,7 @@ package genepi.imputationserver.steps.imputation;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.io.Text;
@@ -24,20 +25,24 @@ public class ImputationJob extends HadoopJob {
 	public static final String REF_PANEL_BEAGLE_HDFS = "MINIMAC_REFPANEL_BEAGLE_HDFS";
 
 	public static final String MAP_EAGLE_HDFS = "MINIMAC_MAP_EAGLE_HDFS";
-	
+
 	public static final String MAP_BEAGLE_HDFS = "MAP_BEAGLE_HDFS";
 
 	public static final String MAP_MINIMAC = "MINIMAC_MAP";
 
 	public static final String OUTPUT = "MINIMAC_OUTPUT";
 
+	public static final String OUTPUT_SCORES = "PGS_OUTPUT";
+
 	public static final String BUILD = "MINIMAC_BUILD";
 
 	public static final String R2_FILTER = "R2_FILTER";
 
 	public static final String PHASING_ONLY = "PHASING_ONLY";
-	
+
 	public static final String PHASING_ENGINE = "PHASING_ENGINE";
+
+	public static final String SCORES = "SCORES";
 
 	private String refPanelHdfs;
 
@@ -50,10 +55,12 @@ public class ImputationJob extends HadoopJob {
 	private String refPanelEagleHDFS;
 
 	private String refPanelBeagleHDFS;
-	
+
 	private String mapBeagleHDFS;
 
 	private String binariesHDFS;
+
+	private List<String> scores;
 
 	public ImputationJob(String name, Log log) {
 		super(name, log);
@@ -138,8 +145,7 @@ public class ImputationJob extends HadoopJob {
 			log.info("Add Eagle reference  index " + refPanelEagleHDFS + ".csi to distributed cache...");
 			cache.addFile(refPanelEagleHDFS + ".csi");
 		}
-		
-		
+
 		// add Eagle Map File to cache
 		if (mapBeagleHDFS != null) {
 			if (HdfsUtil.exists(mapBeagleHDFS)) {
@@ -156,7 +162,19 @@ public class ImputationJob extends HadoopJob {
 				log.info("Add Beagle reference " + refPanelBeagleHDFS + " to distributed cache...");
 				cache.addFile(refPanelBeagleHDFS);
 			} else {
-				throw new IOException("Beagle file reference" + refPanelBeagleHDFS + " not found.");
+				throw new IOException("Beagle file reference " + refPanelBeagleHDFS + " not found.");
+			}
+		}
+
+		// add scores to cache3
+		if (scores != null) {
+			log.info("Add " + scores.size() + " scores to distributed cache...");
+			for (String score : scores) {
+				if (HdfsUtil.exists(score)) {
+					cache.addFile(score);
+				} else {
+					throw new IOException("PGS score file '" + score + "' not found.");
+				}
 			}
 		}
 
@@ -196,6 +214,10 @@ public class ImputationJob extends HadoopJob {
 		set(OUTPUT, output);
 	}
 
+	public void setOutputScores(String outputScores) {
+		set(OUTPUT_SCORES, outputScores);
+	}
+
 	public void setRefPanel(String refPanel) {
 		set(REF_PANEL, refPanel);
 	}
@@ -228,7 +250,7 @@ public class ImputationJob extends HadoopJob {
 		this.refPanelBeagleHDFS = refPanelHdfs;
 		set(REF_PANEL_BEAGLE_HDFS, refPanelHdfs);
 	}
-	
+
 	public void setMapBeagleHdfs(String mapBeagleHdfs) {
 		this.mapBeagleHDFS = mapBeagleHdfs;
 		set(MAP_BEAGLE_HDFS, mapBeagleHdfs);
@@ -245,9 +267,16 @@ public class ImputationJob extends HadoopJob {
 	public void setPhasingOnly(String phasingOnly) {
 		set(PHASING_ONLY, phasingOnly);
 	}
-	
+
 	public void setPhasingEngine(String phasing) {
 		set(PHASING_ENGINE, phasing);
+	}
+
+	public void setScores(List<String> scores) {
+
+		String scoresNames = scores.stream().collect(Collectors.joining(","));
+		set(SCORES, scoresNames);
+		this.scores = scores;
 	}
 
 	public void setBinariesHDFS(String binariesHDFS) {

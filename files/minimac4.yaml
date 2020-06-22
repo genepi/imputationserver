@@ -109,7 +109,6 @@ workflow:
           imputation: Quality Control & Imputation
           phasing: Quality Control & Phasing Only
 
-
      - id: aesEncryption
        description: AES 256 encryption
        details: Imputation Server encrypts all zip files by default. Please note that AES encryption does not work with standard unzip programs. Use 7z instead.
@@ -119,6 +118,20 @@ workflow:
          true: yes
          false: no
        visible: true
+
+     - id: myseparator0
+       type: separator
+
+     - id: info2
+       type: info
+       description: <b>PGS Calculation</b> (optional)<br><small class="text-muted">Please select a collection of polygenic scores to enable on the fly PGS calculation.</small>
+
+
+     - id: pgsPanel
+       description: Scores
+       type: app_list
+       required: false
+       category: PGSPanel
 
      - id: myseparator
        type: separator
@@ -187,6 +200,16 @@ workflow:
       zip: false
       removeHeader: false
       mergeOutput: false
+      
+    - id: outputScores
+      description: Score
+      type: hdfs-folder
+      download: false
+      temp: false
+      zip: zip
+      removeHeader: false
+      mergeOutput: true
+      
 
     - id: local
       description: Imputation Results

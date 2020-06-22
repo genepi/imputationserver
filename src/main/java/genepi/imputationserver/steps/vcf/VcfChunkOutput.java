@@ -7,6 +7,7 @@ public class VcfChunkOutput extends VcfChunk {
 	private String prefix;
 	private String imputedVcfFilename;
 	private String phasedVcfFilename;
+	private String scoreFilename;
 
 	private String infoFilename;
 
@@ -16,6 +17,7 @@ public class VcfChunkOutput extends VcfChunk {
 		imputedVcfFilename = prefix + ".dose.vcf.gz";
 		infoFilename = prefix + ".info";
 		phasedVcfFilename = prefix + ".phased.vcf.gz";
+		scoreFilename = prefix + ".scores.csv";
 
 		setVcfFilename(prefix + ".vcf.gz");
 		setChromosome(chunk.getChromosome());
@@ -38,6 +40,10 @@ public class VcfChunkOutput extends VcfChunk {
 
 	public String getPhasedVcfFilename() {
 		return phasedVcfFilename;
+	}
+	
+	public String getScoreFilename() {
+		return scoreFilename;
 	}
 
 }
