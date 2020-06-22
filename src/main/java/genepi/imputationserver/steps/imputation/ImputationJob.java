@@ -166,6 +166,7 @@ public class ImputationJob extends HadoopJob {
 			}
 		}
 
+		// add scores to cache3
 		if (scores != null) {
 			log.info("Add " + scores.size() + " scores to distributed cache...");
 			for (String score : scores) {

@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Vector;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -34,7 +32,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private String outputScores;
 
-	private List<String> scores;
+	private String[] scores;
 
 	private String refFilename = "";
 
@@ -141,12 +139,19 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 		// scores
 		String scoresFilenames = parameters.get(ImputationJob.SCORES);
-		String[] filenames = scoresFilenames.split(",");
-		scores = new Vector<String>();
-		for (String filename : filenames) {
-			String name = FileUtil.getFilename(filename);
-			String localFilename = cache.getFile(name);
-			scores.add(localFilename);
+		if (scoresFilenames != null) {
+			String[] filenames = scoresFilenames.split(",");
+			scores = new String[filenames.length];
+			for (int i = 0; i < scores.length; i++) {
+				String filename = filenames[i];
+				String name = FileUtil.getFilename(filename);
+				String localFilename = cache.getFile(name);
+				scores[i] = localFilename;
+			}
+			System.out.println("Loaded " + scores.length + " score files from distributed cache");
+
+		} else {
+			System.out.println("No scores files et.");
 		}
 
 		// create temp directory
@@ -226,10 +231,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			pipeline.setRefBeagleFilename(refBeagleFilename);
 			pipeline.setMapBeagleFilename(mapBeagleFilename);
 			pipeline.setPhasingEngine(phasingEngine);
-			pipeline.setPhasingOnly(phasingOnly);
-
-			String[] scoresArray = new String[scores.size()];
-			pipeline.setScores(scores.toArray(scoresArray));
+			pipeline.setPhasingOnly(phasingOnly);		
+			pipeline.setScores(scores);
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);
 			ImputationStatistic statistics = pipeline.getStatistic();

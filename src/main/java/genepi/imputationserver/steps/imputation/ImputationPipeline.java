@@ -320,6 +320,11 @@ public class ImputationPipeline {
 		String cacheDir = new File(output.getScoreFilename()).getParent();
 		PGSCatalog.CACHE_DIR = cacheDir;
 
+		if (scores == null || scores.length == 0) {
+			System.out.println("PGS calcuation failed. No score files set. ");
+			return false;
+		}
+
 		try {
 			ApplyScoreTask task = new ApplyScoreTask();
 			task.setVcfFilenames(output.getImputedVcfFilename());

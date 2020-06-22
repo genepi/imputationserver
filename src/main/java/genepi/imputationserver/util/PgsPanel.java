@@ -3,7 +3,6 @@ package genepi.imputationserver.util;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import java.util.stream.Collectors;
 
 public class PgsPanel {
 
@@ -32,14 +31,6 @@ public class PgsPanel {
 
 	public List<String> getScores() {
 		return scores;
-	}
-
-	public String getScoresAsString() {
-		if (scores != null) {
-			return scores.stream().collect(Collectors.joining(","));
-		} else {
-			return "";
-		}
 	}
 
 }

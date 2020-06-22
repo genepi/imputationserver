@@ -220,7 +220,9 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setInput(result.filename);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setOutputScores(outputScores);
-				job.setScores(pgsPanel.getScores());
+				if (pgsPanel != null) {
+					job.setScores(pgsPanel.getScores());
+				}
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setJarByClass(ImputationJob.class);
