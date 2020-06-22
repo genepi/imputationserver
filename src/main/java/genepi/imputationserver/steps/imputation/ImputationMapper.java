@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Vector;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -21,10 +23,6 @@ import genepi.imputationserver.util.FileMerger.BgzipSplitOutputStream;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
-import genepi.riskscore.io.Chunk;
-import genepi.riskscore.io.OutputFile;
-import genepi.riskscore.tasks.ApplyScoreTask;
-import htsjdk.samtools.util.StopWatch;
 
 public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
@@ -36,7 +34,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private String outputScores;
 
-	private String scores;
+	private List<String> scores;
 
 	private String refFilename = "";
 
@@ -95,7 +93,6 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		}
 
 		phasingEngine = parameters.get(ImputationJob.PHASING_ENGINE);
-		scores = parameters.get(ImputationJob.SCORES);
 
 		hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
 		String hdfsPathMinimacMap = parameters.get(ImputationJob.MAP_MINIMAC);
@@ -141,6 +138,16 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String eagleCommand = cache.getFile("eagle");
 		String beagleCommand = cache.getFile("beagle.jar");
 		String tabixCommand = cache.getFile("tabix");
+
+		// scores
+		String scoresFilenames = parameters.get(ImputationJob.SCORES);
+		String[] filenames = scoresFilenames.split(",");
+		scores = new Vector<String>();
+		for (String filename : filenames) {
+			String name = FileUtil.getFilename(filename);
+			String localFilename = cache.getFile(name);
+			scores.add(localFilename);
+		}
 
 		// create temp directory
 		DefaultPreferenceStore store = new DefaultPreferenceStore(context.getConfiguration());
@@ -220,7 +227,9 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			pipeline.setMapBeagleFilename(mapBeagleFilename);
 			pipeline.setPhasingEngine(phasingEngine);
 			pipeline.setPhasingOnly(phasingOnly);
-			pipeline.setScores(scores);
+
+			String[] scoresArray = new String[scores.size()];
+			pipeline.setScores(scores.toArray(scoresArray));
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);
 			ImputationStatistic statistics = pipeline.getStatistic();
@@ -274,11 +283,11 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				System.out.println("Time filter and put: " + (end - start) + " ms");
 
 			}
-			
-			if(scores != null && !scores.equals("no_score")) {
-				
-			  HdfsUtil.put(outputChunk.getScoreFilename(), HdfsUtil.path(outputScores, chunk + ".scores.txt"));
-			  
+
+			if (scores != null && !scores.equals("no_score")) {
+
+				HdfsUtil.put(outputChunk.getScoreFilename(), HdfsUtil.path(outputScores, chunk + ".scores.txt"));
+
 			}
 
 			InetAddress addr = java.net.InetAddress.getLocalHost();

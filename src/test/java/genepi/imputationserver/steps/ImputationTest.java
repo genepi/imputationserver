@@ -25,6 +25,7 @@ import genepi.io.FileUtil;
 import genepi.io.table.reader.CsvTableReader;
 import genepi.io.text.LineReader;
 import genepi.riskscore.commands.ApplyScoreCommand;
+import genepi.riskscore.io.PGSCatalog;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import picocli.CommandLine;
@@ -446,13 +447,23 @@ public class ImputationTest {
 		String configFolder = "test-data/configs/hapmap-chr20";
 		String inputFolder = "test-data/data/chr20-unphased";
 
-		// create workflow context
+		// import scores into hdfs
+		String score1 = PGSCatalog.getFilenameById("PGS000018");
+		String score2 = PGSCatalog.getFilenameById("PGS000027");
+
+		String targetScore1 = HdfsUtil.path("scores-hdfs", "PGS000018.txt.gz");
+		HdfsUtil.put(score1, targetScore1);
+
+		String targetScore2 = HdfsUtil.path("scores-hdfs", "PGS000027.txt.gz");
+		HdfsUtil.put(score2, targetScore2);
+
+		// create workflow context and set scores
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
-		// 
+
 		Map<String, Object> pgsPanel = new HashMap<String, Object>();
 		List<String> scores = new Vector<String>();
-		scores.add("PGS000018");
-		scores.add("PGS000027");
+		scores.add(targetScore1);
+		scores.add(targetScore2);
 		pgsPanel.put("scores", scores);
 		context.setData("pgsPanel", pgsPanel);
 

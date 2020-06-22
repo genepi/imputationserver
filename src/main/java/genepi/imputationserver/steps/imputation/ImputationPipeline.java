@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 
-import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.command.Command;
 import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
@@ -66,7 +65,7 @@ public class ImputationPipeline {
 
 	private String phasingEngine = "";
 
-	private String scores = "";
+	private String[] scores;
 
 	private ImputationStatistic statistic = new ImputationStatistic();
 
@@ -318,8 +317,6 @@ public class ImputationPipeline {
 	// Risk score calculation
 	private boolean runPgsCalc(VcfChunkOutput output) {
 
-		String[] scoresList = scores.split(",");
-
 		String cacheDir = new File(output.getScoreFilename()).getParent();
 		PGSCatalog.CACHE_DIR = cacheDir;
 
@@ -330,7 +327,7 @@ public class ImputationPipeline {
 			scoreChunk.setStart(output.getStart());
 			scoreChunk.setEnd(output.getEnd());
 			task.setChunk(scoreChunk);
-			task.setRiskScoreFilenames(scoresList);
+			task.setRiskScoreFilenames(scores);
 			task.run();
 
 			OutputFile outputFile = new OutputFile(task.getRiskScores(), task.getSummaries());
@@ -406,7 +403,7 @@ public class ImputationPipeline {
 		this.phasingOnly = phasingOnly;
 	}
 
-	public void setScores(String scores) {
+	public void setScores(String[] scores) {
 		this.scores = scores;
 	}
 

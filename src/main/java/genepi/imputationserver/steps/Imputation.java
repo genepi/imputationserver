@@ -64,12 +64,6 @@ public class Imputation extends ParallelHadoopJobStep {
 		String phasing = context.get("phasing");
 		PgsPanel pgsPanel = PgsPanel.loadFromProperties(context.getData("pgsPanel"));
 
-		// read from selected score collection
-		String scores = "no_score";
-		if (pgsPanel != null && !pgsPanel.getScores().isEmpty()) {
-			scores = pgsPanel.getScoresAsString();
-		}
-
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
 			r2Filter = "0";
@@ -129,7 +123,11 @@ public class Imputation extends ParallelHadoopJobStep {
 				context.println("    " + entry.getKey() + "/" + entry.getValue());
 			}
 		}
-		context.println("  PGS: " + scores);
+		if (pgsPanel != null) {
+			context.println("  PGS: " + pgsPanel.getScores().size() + " scores");
+		} else {
+			context.println("  PGS: no scores selected");
+		}
 
 		// execute one job per chromosome
 		try {
@@ -222,7 +220,7 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setInput(result.filename);
 				job.setOutput(HdfsUtil.path(output, chr));
 				job.setOutputScores(outputScores);
-				job.setScores(scores);
+				job.setScores(pgsPanel.getScores());
 				job.setRefPanel(reference);
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setJarByClass(ImputationJob.class);
