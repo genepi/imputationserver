@@ -462,8 +462,9 @@ public class ImputationTest {
 
 		Map<String, Object> pgsPanel = new HashMap<String, Object>();
 		List<String> scores = new Vector<String>();
-		scores.add(targetScore1);
-		scores.add(targetScore2);
+		scores.add("PGS000018.txt.gz");
+		scores.add("PGS000027.txt.gz");
+		pgsPanel.put("location", "scores-hdfs");
 		pgsPanel.put("scores", scores);
 		context.setData("pgsPanel", pgsPanel);
 

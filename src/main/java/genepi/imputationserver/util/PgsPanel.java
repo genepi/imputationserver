@@ -4,7 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import genepi.hadoop.HdfsUtil;
+
 public class PgsPanel {
+
+	private String location = "";
 
 	private List<String> scores = new Vector<>();
 
@@ -15,9 +19,13 @@ public class PgsPanel {
 	public static PgsPanel loadFromProperties(Object properties) {
 		if (properties != null) {
 			Map<String, Object> map = (Map<String, Object>) properties;
-			if (map.get("scores") != null) {
+
+			PgsPanel panel = new PgsPanel();
+			if (map.containsKey("location")) {
+				panel.location = map.get("location").toString();
+			}
+			if (map.containsKey("scores")) {
 				List<String> list = (List<String>) map.get("scores");
-				PgsPanel panel = new PgsPanel();
 				panel.scores = list;
 				return panel;
 			} else {
@@ -30,7 +38,15 @@ public class PgsPanel {
 	}
 
 	public List<String> getScores() {
-		return scores;
+		List<String> scoresPath = new Vector<String>();
+		for (String score : scores) {
+			scoresPath.add(HdfsUtil.path(location, score));
+		}
+		return scoresPath;
+	}
+
+	public String getLocation() {
+		return location;
 	}
 
 }

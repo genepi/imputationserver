@@ -173,9 +173,11 @@ public class ImputationJob extends HadoopJob {
 				if (HdfsUtil.exists(score)) {
 					cache.addFile(score);
 				} else {
+					log.info("PGS score file '" + score + "' not found.");
 					throw new IOException("PGS score file '" + score + "' not found.");
 				}
 			}
+			log.info("All scores added to distributed cache.");
 		}
 
 	}
