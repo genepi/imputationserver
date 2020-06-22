@@ -43,6 +43,7 @@
 			<excludes>
 				<exclude>imputationserver-hla.yaml</exclude>
 				<exclude>imputationserver-beagle.yaml</exclude>
+				<exclude>imputationserver-pgs.yaml</exclude>
 			</excludes>
 		</fileSet>
 	</fileSets>

@@ -143,6 +143,21 @@
 							</descriptors>
 						</configuration>
 					</execution>
+					
+					<execution>
+						<id>create-assembly-imputationserver-pgs</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<finalName>imputationserver-pgs</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptors>
+								<descriptor>src/main/assembly/imputationserver-pgs.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>					
 				</executions>
 			</plugin>
 

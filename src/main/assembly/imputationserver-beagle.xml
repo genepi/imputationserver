@@ -43,7 +43,7 @@
 			<excludes>
 				<exclude>minimac4.yaml</exclude>
 				<exclude>imputationserver-hla.yaml</exclude>
-
+     			<exclude>imputationserver-pgs.yaml</exclude>
 			</excludes>
 		</fileSet>
 	</fileSets>
