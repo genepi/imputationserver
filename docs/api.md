@@ -31,7 +31,7 @@ The following parameters can be set:
 | r2Filter    | `0` <br> `0.001` <br> `0.1` <br> `0.2` <br> `0.3` | `0`  | |
 
 
-### Examples
+### Examples: curl
 
 #### Submit a single file
 
@@ -117,7 +117,9 @@ Response:
 ```
 
 
-#### Python
+### Examples: Python
+
+#### Submit single vcf file
 
 ```python
 import requests
@@ -147,18 +149,53 @@ print(r.json()['message'])
 print(r.json()['id'])
 ```
 
+#### Submit multiple vcf files
+
+```python
+import requests
+import json
+
+# imputation server url
+url = 'https://imputationserver.sph.umich.edu/api/v2'
+token = 'YOUR-API-TOKEN';
+
+# add token to header (see Authentication)
+headers = {'X-Auth-Token' : token }
+data = {
+  'refpanel': 'apps@1000g-phase-3-v5',
+  'population': 'eur'
+}
+
+# submit new job
+vcf = '/path/to/file1.vcf.gz';
+vcf1 = '/path/to/file2.vcf.gz';
+files = [('files', open(vcf, 'rb')), ('files', open(vcf1, 'rb'))]
+r = requests.post(url + "/jobs/submit/minimac4", files=files, data=data, headers=headers)
+if r.status_code != 200:
+  print(r.json()['message'])
+  raise Exception('POST /jobs/submit/minimac4 {}'.format(r.status_code))
+
+# print message
+print(r.json()['message'])
+print(r.json()['id'])
+```
+
+
 ## List all jobs
 All running jobs can be returned as JSON objects at once.
 ### GET /jobs
 
-### Examples
-#### curl
+### Examples: curl
+
+Command:
 
 ```sh
 TOKEN="YOUR-API-TOKEN";
 
 curl -H "X-Auth-Token: $TOKEN" https://imputationserver.sph.umich.edu/api/v2/jobs
 ```
+
+Response:
 
 ```json
 [
@@ -190,7 +227,7 @@ curl -H "X-Auth-Token: $TOKEN" https://imputationserver.sph.umich.edu/api/v2/job
 ]
 ```
 
-#### Python
+### Example: Python
 
 ```python
 import requests
@@ -217,14 +254,17 @@ for job in r.json():
 
 ### /jobs/{id}/status
 
-### Examples
-#### curl
+### Example: curl
+
+Command:
 
 ```sh
 TOKEN="YOUR-API-TOKEN";
 
 curl -H "X-Auth-Token: $TOKEN" https://imputationserver.sph.umich.edu/api/v2/jobs/job-20160504-155023/status
 ```
+
+Response:
 
 ```json
 {
@@ -249,9 +289,7 @@ curl -H "X-Auth-Token: $TOKEN" https://imputationserver.sph.umich.edu/api/v2/job
 
 ### /jobs/{id}
 
-### Examples
-
-#### curl
+### Example: curl
 
 ```sh
 TOKEN="YOUR-API-TOKEN";
