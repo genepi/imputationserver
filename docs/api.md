@@ -71,8 +71,8 @@ TOKEN="YOUR-API-TOKEN";
 
 curl https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac4 \
   -H "X-Auth-Token: $TOKEN" \
-  -F "files-upload=@/path-to/file1.vcf.gz" \
-  -F "files-upload=@/path-to/file2.vcf.gz" \
+  -F "files=@/path-to/file1.vcf.gz" \
+  -F "files=@/path-to/file2.vcf.gz" \
   -F "refpanel=apps@1000g-phase-3-v5" \
   -F "population=eur"
 ```
