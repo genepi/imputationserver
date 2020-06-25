@@ -178,7 +178,7 @@ public class ImputationPipeline {
 			watch.stop();
 
 			if (successful) {
-				statistic.setPgsTime(watch.getElapsedTime());
+				statistic.setPgsTime(watch.getElapsedTimeSecs());
 				System.out.println("  " + "PGS Calc finished successfully. [" + watch.getElapsedTimeSecs() + " sec]");
 				return true;
 			} else {

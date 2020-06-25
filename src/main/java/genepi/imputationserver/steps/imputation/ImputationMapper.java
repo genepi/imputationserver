@@ -301,8 +301,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			long timeTotal = (endTotal - startTotal) / 1000;
 
 			log.info(context.getJobName() + "\t" + hdfsPath + "\t" + hostname + "\t" + chunk + "\t"
-					+ statistics.getPhasingTime() + "\t" + statistics.getImputationTime() + "\t"
-					+ statistics.getImportTime() + "\t" + statistics.getPgsTime() + "\t" + timeTotal);
+					+ statistics.toString() + "\t" + timeTotal);
 
 		} catch (Exception e) {
 			if (!debugging) {
