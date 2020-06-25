@@ -504,12 +504,14 @@ public class ImputationTest {
 		assertEquals(snpInInfo, file.getNoSnps());
 
 		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", "PGS000018,PGS000027", "--out",
-				"test-data/tmp/local/expected.txt" };
+				"test-data/tmp/expected.txt" };
 		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
 		assertEquals(0, resultScore);
 
-		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/local/expected.txt", ',');
-		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/local/scores.txt", ',');
+		zipFile = new ZipFile("test-data/tmp/local/scores.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/expected.txt", ',');
+		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
 
 		while (readerExpected.next() && readerActual.next()) {
 			assertEquals(readerExpected.getDouble("PGS000018"), readerActual.getDouble("PGS000018"), 0.00001);

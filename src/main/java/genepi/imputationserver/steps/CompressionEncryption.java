@@ -150,6 +150,10 @@ public class CompressionEncryption extends WorkflowStep {
 			boolean lastChromosome = false;
 			int index = 0;
 
+			ZipParameters param = new ZipParameters();
+			param.setEncryptFiles(true);
+			param.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
+
 			for (String name : chromosomesSet) {
 
 				index++;
@@ -253,10 +257,6 @@ public class CompressionEncryption extends WorkflowStep {
 					context.log("Tabix done.");
 				}
 
-				ZipParameters param = new ZipParameters();
-				param.setEncryptFiles(true);
-				param.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
-
 				if (aesEncryption != null && aesEncryption.equals("yes")) {
 					param.setEncryptionMethod(EncryptionMethod.AES);
 					param.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
@@ -335,12 +335,20 @@ public class CompressionEncryption extends WorkflowStep {
 					i++;
 				}
 
-				String outputFile = FileUtil.path(localOutput, "scores.txt");
+				String outputFile = FileUtil.path(temp2, "scores.txt");
 
 				MergeScoreTask task = new MergeScoreTask();
 				task.setInputs(scoresArray);
 				task.setOutput(outputFile);
 				task.run();
+
+				String fileName = "scores.zip";
+				String filePath = FileUtil.path(localOutput, fileName);
+				ArrayList<File> files = new ArrayList<File>();
+				files.add(new File(outputFile));
+
+				ZipFile file = new ZipFile(new File(filePath), password.toCharArray());
+				file.addFiles(files, param);
 
 				context.println("Exported PGS scores to " + outputFile + ".");
 
