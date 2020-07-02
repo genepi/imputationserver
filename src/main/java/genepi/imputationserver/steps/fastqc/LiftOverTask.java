@@ -3,6 +3,7 @@ package genepi.imputationserver.steps.fastqc;
 import java.io.IOException;
 import java.util.Vector;
 
+import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.steps.vcf.VcfLiftOverFast;
 import genepi.io.FileUtil;
 import genepi.io.text.LineWriter;
@@ -39,6 +40,10 @@ public class LiftOverTask implements ITask {
 			String temp = FileUtil.path(chunksDir, "vcf.sorte");
 			FileUtil.createDirectory(temp);
 			Vector<String> errors = VcfLiftOverFast.liftOver(filename, output, chainFile, temp);
+			
+			// create tabix index
+			VcfFileUtil.createIndex(output, true);
+			
 			FileUtil.deleteDirectory(temp);
 			for (String error : errors) {
 				excludedSnpsWriter.write(error);
