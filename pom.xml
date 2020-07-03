@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -16,19 +17,21 @@
 
 	<repositories>
 		<repository>
-			<id>genepi-hadoop</id>
-			<url>https://raw.github.com/genepi/maven-repository/mvn-repo/</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
+			<id>bintray-genepi-maven</id>
+			<name>bintray</name>
+			<url>https://dl.bintray.com/genepi/maven</url>
 		</repository>
 
 		<repository>
-			<id>hadoop-bam-sourceforge</id>
-			<url>http://hadoop-bam.sourceforge.net/maven/</url>
+			<id>cloudera</id>
+			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
 		</repository>
 
+		<repository>
+			<id>bintray-lukfor-maven</id>
+			<name>bintray</name>
+			<url>https://dl.bintray.com/lukfor/maven</url>
+		</repository>
 
 	</repositories>
 
@@ -49,7 +52,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.3</version>
+				<version>2.4.3</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -61,7 +64,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>genepi.imputationserver.ImputationServer</mainClass>
+									<mainClass>genepi.imputationserver.Main</mainClass>
 								</transformer>
 							</transformers>
 
@@ -77,6 +80,12 @@
 									<include>commons-cli:commons-cli:*:*</include>
 									<include>commons-lang:commons-lang:*:*</include>
 									<include>com.esotericsoftware.yamlbeans:yamlbeans:*:*</include>
+									<include>org.xerial.snappy:snappy-java:*:*</include>
+									<include>org.xerial:xerial-core:*:*</include>
+									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
+									<include>org.codehaus.groovy:groovy-all:*:*</include>
+									<include>lukfor:pgs-calc:*:*</include>
+									<include>net.sf.opencsv:opencsv:*:*</include>
 								</includes>
 							</artifactSet>
 
@@ -85,7 +94,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -106,10 +114,40 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- Code Coverage -->
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.5</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>cloudgene</groupId>
+			<artifactId>cloudgene-java-sdk</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -120,40 +158,102 @@
 		<dependency>
 			<groupId>net.lingala.zip4j</groupId>
 			<artifactId>zip4j</artifactId>
-			<version>1.3.2</version>
+			<version>2.5.2</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>com.esotericsoftware.yamlbeans</groupId>
 			<artifactId>yamlbeans</artifactId>
-			<version>1.09</version>
+			<version>1.14</version>
 		</dependency>
 
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-io</artifactId>
-			<version>1.0.5</version>
+			<version>1.0.12</version>
 		</dependency>
 
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-hadoop</artifactId>
-			<version>mr1-1.2.0</version>
+			<version>mr1-1.4.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.github.samtools</groupId>
 			<artifactId>htsjdk</artifactId>
-			<version>2.9.1</version>
+			<version>2.21.3</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
-			<version>3.3</version>
+			<version>3.6.1</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-hdfs</artifactId>
+			<version>2.6.0-cdh5.16.1</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>net.java.dev.jets3t</groupId>
+					<artifactId>jets3t</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-common</artifactId>
+			<version>2.6.0-cdh5.16.1</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>net.java.dev.jets3t</groupId>
+					<artifactId>jets3t</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-test</artifactId>
+			<version>2.6.0-mr1-cdh5.16.1</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-httpclient</groupId>
+					<artifactId>commons-httpclient</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>net.java.dev.jets3t</groupId>
+					<artifactId>jets3t</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.sshd</groupId>
+			<artifactId>sshd-sftp</artifactId>
+			<version>0.9.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>2.4.14</version>
+		</dependency>
+
+		<dependency>
+			<groupId>lukfor</groupId>
+			<artifactId>pgs-calc</artifactId>
+			<version>0.8.6</version>
+		</dependency>
 
 	</dependencies>
 </project>

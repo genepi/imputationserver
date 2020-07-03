@@ -3,6 +3,7 @@ package genepi.imputationserver.util;
 import genepi.io.text.LineReader;
 import htsjdk.samtools.util.BlockCompressedOutputStream;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,8 +21,8 @@ import org.apache.hadoop.fs.Path;
 
 public class FileMerger {
 
-	public static void splitIntoHeaderAndData(String input,
-			OutputStream outHeader, OutputStream outData) throws IOException {
+	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData)
+			throws IOException {
 		LineReader reader = new LineReader(input);
 		while (reader.next()) {
 			String line = reader.get();
@@ -38,22 +39,22 @@ public class FileMerger {
 		reader.close();
 	}
 
-	public static class BgzipSplitOutputStream extends
-			BlockCompressedOutputStream {
+	public static class BgzipSplitOutputStream extends BlockCompressedOutputStream {
+
+		public final static File emptyFile = null;
 
 		public BgzipSplitOutputStream(OutputStream os) {
-			super(os, null);
+			super(os, (File) emptyFile);
 		}
 
 		@Override
 		public void close() throws IOException {
-			flush();
+			close(false);
 		}
 
 	}
 
-	public static int splitIntoHeaderAndData(String input, String outputPrefix)
-			throws IOException {
+	public static int splitIntoHeaderAndData(String input, String outputPrefix) throws IOException {
 		boolean firstHeader = true;
 		int snps = 0;
 
@@ -61,8 +62,7 @@ public class FileMerger {
 		GzipCompressorOutputStream outHeader = new GzipCompressorOutputStream(
 				new FileOutputStream(outputPrefix + ".header.vcf.gz"));
 		GzipCompressorOutputStream outData = new GzipCompressorOutputStream(
-				new FileOutputStream(outputPrefix + "_" + chunk
-						+ ".data.vcf.gz"));
+				new FileOutputStream(outputPrefix + "_" + chunk + ".data.vcf.gz"));
 
 		LineReader reader = new LineReader(input);
 		while (reader.next()) {
@@ -76,8 +76,7 @@ public class FileMerger {
 					outData.close();
 					chunk++;
 					outData = new GzipCompressorOutputStream(
-							new FileOutputStream(outputPrefix + "_" + chunk
-									+ ".data.vcf.gz"));
+							new FileOutputStream(outputPrefix + "_" + chunk + ".data.vcf.gz"));
 
 				}
 
@@ -96,8 +95,7 @@ public class FileMerger {
 		return chunk;
 	}
 
-	public static int splitIntoHeaderAndDataBgZip(String input,
-			String outputPrefix) throws IOException {
+	public static int splitIntoHeaderAndDataBgZip(String input, String outputPrefix) throws IOException {
 		boolean firstHeader = true;
 		int snps = 0;
 
@@ -105,8 +103,7 @@ public class FileMerger {
 		BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 				new FileOutputStream(outputPrefix + ".header.vcf.gz"));
 		BgzipSplitOutputStream outData = new BgzipSplitOutputStream(
-				new FileOutputStream(outputPrefix + "_" + chunk
-						+ ".data.vcf.gz"));
+				new FileOutputStream(outputPrefix + "_" + chunk + ".data.vcf.gz"));
 
 		LineReader reader = new LineReader(input);
 		while (reader.next()) {
@@ -119,8 +116,8 @@ public class FileMerger {
 				if (snps % 10000 == 0) {
 					outData.close();
 					chunk++;
-					outData = new BgzipSplitOutputStream(new FileOutputStream(
-							outputPrefix + "_" + chunk + ".data.vcf.gz"));
+					outData = new BgzipSplitOutputStream(
+							new FileOutputStream(outputPrefix + "_" + chunk + ".data.vcf.gz"));
 
 				}
 
@@ -139,8 +136,7 @@ public class FileMerger {
 		return chunk;
 	}
 
-	public static void mergeAndGz(String local, String hdfs,
-			boolean removeHeader, String ext) throws IOException {
+	public static void mergeAndGz(String local, String hdfs, boolean removeHeader, String ext) throws IOException {
 
 		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(local));
 
@@ -156,10 +152,8 @@ public class FileMerger {
 
 			// filters by extension and sorts by filename
 			for (FileStatus file : files) {
-				if (!file.isDir()
-						&& !file.getPath().getName().startsWith("_")
-						&& (ext == null || file.getPath().getName()
-								.endsWith(ext))) {
+				if (!file.isDir() && !file.getPath().getName().startsWith("_")
+						&& (ext == null || file.getPath().getName().endsWith(ext))) {
 					filenames.add(file.getPath().toString());
 				}
 			}
@@ -211,7 +205,7 @@ public class FileMerger {
 				in.close();
 
 			}
-			
+
 			out.close();
 		}
 

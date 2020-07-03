@@ -17,9 +17,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
+import net.lingala.zip4j.model.enums.AesKeyStrength;
+import net.lingala.zip4j.model.enums.CompressionLevel;
+import net.lingala.zip4j.model.enums.CompressionMethod;
+import net.lingala.zip4j.model.enums.EncryptionMethod;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -111,14 +114,13 @@ public class CompressionEncryption extends WorkflowStep {
 
 				ZipParameters param = new ZipParameters();
 				param.setEncryptFiles(true);
-				param.setPassword(password);
-				param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
+				param.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
 
 				if (aesEncryption != null && aesEncryption.equals("yes")) {
-					param.setEncryptionMethod(Zip4jConstants.ENC_METHOD_AES);
-					param.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
-					param.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
-					param.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_NORMAL);
+					param.setEncryptionMethod(EncryptionMethod.AES);
+					param.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
+					param.setCompressionMethod(CompressionMethod.DEFLATE);
+					param.setCompressionLevel(CompressionLevel.NORMAL);
 				}
 
 				// create zip file
@@ -127,9 +129,11 @@ public class CompressionEncryption extends WorkflowStep {
 				files.add(new File(vcfOutput + ".tbi"));
 				files.add(new File(doseOutput));
 
-				ZipFile file = new ZipFile(new File(FileUtil.path(localOutput, "chr_" + name + ".zip")));
-				file.createZipFile(files, param);
-
+				String fileName = "chr_" + name + ".zip";
+				String filePath = FileUtil.path(localOutput, fileName);
+				ZipFile file = new ZipFile(new File(filePath), password.toCharArray());
+				file.addFiles(files, param);
+				
 				// delete temp dir
 				FileUtil.deleteDirectory(temp);
 
