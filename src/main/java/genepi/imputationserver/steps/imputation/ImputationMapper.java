@@ -231,7 +231,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			pipeline.setRefBeagleFilename(refBeagleFilename);
 			pipeline.setMapBeagleFilename(mapBeagleFilename);
 			pipeline.setPhasingEngine(phasingEngine);
-			pipeline.setPhasingOnly(phasingOnly);		
+			pipeline.setPhasingOnly(phasingOnly);
 			pipeline.setScores(scores);
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);
@@ -287,9 +287,11 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 			}
 
-			if (scores != null && !scores.equals("no_score")) {
+			if (scores != null) {
 
 				HdfsUtil.put(outputChunk.getScoreFilename(), HdfsUtil.path(outputScores, chunk + ".scores.txt"));
+				HdfsUtil.put(outputChunk.getScoreFilename() + ".json",
+						HdfsUtil.path(outputScores, chunk + ".scores.json"));
 
 			}
 

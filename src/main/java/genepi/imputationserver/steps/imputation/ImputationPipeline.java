@@ -15,9 +15,12 @@ import genepi.io.FileUtil;
 import genepi.riskscore.io.Chunk;
 import genepi.riskscore.io.OutputFile;
 import genepi.riskscore.io.PGSCatalog;
+import genepi.riskscore.io.ReportFile;
 import genepi.riskscore.tasks.ApplyScoreTask;
 import groovy.text.SimpleTemplateEngine;
 import htsjdk.samtools.util.StopWatch;
+import lukfor.progress.TaskService;
+import lukfor.progress.tasks.monitors.TaskMonitorMock;
 
 public class ImputationPipeline {
 
@@ -326,17 +329,25 @@ public class ImputationPipeline {
 		}
 
 		try {
-			ApplyScoreTask task = new ApplyScoreTask();
-			task.setVcfFilenames(output.getImputedVcfFilename());
+
 			Chunk scoreChunk = new Chunk();
 			scoreChunk.setStart(output.getStart());
 			scoreChunk.setEnd(output.getEnd());
+
+			ApplyScoreTask task = new ApplyScoreTask();
+			task.setVcfFilename(output.getImputedVcfFilename());
 			task.setChunk(scoreChunk);
 			task.setRiskScoreFilenames(scores);
-			task.run();
+
+			TaskService.setAnsiSupport(false);
+			TaskService.run(task);
 
 			OutputFile outputFile = new OutputFile(task.getRiskScores(), task.getSummaries());
 			outputFile.save(output.getScoreFilename());
+
+			ReportFile reportFile = new ReportFile(task.getSummaries());
+			reportFile.save(output.getScoreFilename() + ".json");
+
 			return true;
 
 		} catch (Exception e) {

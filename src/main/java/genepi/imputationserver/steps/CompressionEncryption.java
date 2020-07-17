@@ -33,7 +33,11 @@ import genepi.imputationserver.util.PasswordCreator;
 import genepi.imputationserver.util.PgsPanel;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
+import genepi.riskscore.App;
+import genepi.riskscore.tasks.CreateHtmlReportTask;
+import genepi.riskscore.tasks.MergeReportTask;
 import genepi.riskscore.tasks.MergeScoreTask;
+import lukfor.progress.TaskService;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.AesKeyStrength;
@@ -324,33 +328,60 @@ public class CompressionEncryption extends WorkflowStep {
 
 				List<String> scoreList = HdfsUtil.getFiles(outputScores);
 
-				String[] scoresArray = new String[scoreList.size()];
+				String[] chunksScores = new String[scoreList.size() / 2];
+				String[] chunksReports = new String[scoreList.size() / 2];
 
-				int i = 0;
+				int chunksScoresCount = 0;
+				int chunksReportsCount = 0;
+				
 				for (String score : scoreList) {
-					String scoreChunk = score.substring(score.lastIndexOf("/"));
-					String localPath = FileUtil.path(temp2, scoreChunk);
+
+					String filename = FileUtil.getFilename(score);
+					String localPath = FileUtil.path(temp2, filename);
 					HdfsUtil.get(score, localPath);
-					scoresArray[i] = localPath;
-					i++;
+					
+					if (score.endsWith(".json")) {
+						chunksReports[chunksReportsCount] = localPath;
+						chunksReportsCount++;
+					} else {
+						chunksScores[chunksScoresCount] = localPath;
+						chunksScoresCount++;
+					}
+		
 				}
 
-				String outputFile = FileUtil.path(temp2, "scores.txt");
+				String outputFileScores = FileUtil.path(temp2, "scores.txt");
+				String outputFileReports = FileUtil.path(temp2, "report.json");
+				String outputFileHtml = FileUtil.path(localOutput, "report.html");
 
-				MergeScoreTask task = new MergeScoreTask();
-				task.setInputs(scoresArray);
-				task.setOutput(outputFile);
-				task.run();
+				//disable ansi
+				TaskService.setAnsiSupport(false);
+				
+				MergeScoreTask mergeScore = new MergeScoreTask();
+				mergeScore.setInputs(chunksScores);
+				mergeScore.setOutput(outputFileScores);
+				TaskService.run(mergeScore);
 
+				MergeReportTask mergeReport = new MergeReportTask();
+				mergeReport.setInputs(chunksReports);
+				mergeReport.setOutput(outputFileReports);
+				TaskService.run(mergeReport);
+				
+				CreateHtmlReportTask htmlReport = new CreateHtmlReportTask();
+				htmlReport.setReport(mergeReport.getResult());
+				htmlReport.setData(mergeScore.getResult());
+				htmlReport.setOutput(outputFileHtml);
+				TaskService.run(htmlReport);
+				
 				String fileName = "scores.zip";
 				String filePath = FileUtil.path(localOutput, fileName);
 				ArrayList<File> files = new ArrayList<File>();
-				files.add(new File(outputFile));
+				files.add(new File(outputFileScores));
 
 				ZipFile file = new ZipFile(new File(filePath), password.toCharArray());
 				file.addFiles(files, param);
 
-				context.println("Exported PGS scores to " + outputFile + ".");
+				context.println("Exported PGS scores to " + outputFileScores + ".");
 
 				FileUtil.deleteDirectory(temp2);
 			}
