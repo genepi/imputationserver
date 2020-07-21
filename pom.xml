@@ -85,6 +85,7 @@
 									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
 									<include>org.codehaus.groovy:groovy-all:*:*</include>
 									<include>lukfor:pgs-calc:*:*</include>
+									<include>lukfor:magic-progress:*:*</include>
 									<include>net.sf.opencsv:opencsv:*:*</include>
 								</includes>
 							</artifactSet>
