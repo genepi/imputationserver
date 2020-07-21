@@ -34,6 +34,8 @@ import genepi.imputationserver.util.PgsPanel;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.riskscore.App;
+import genepi.riskscore.io.MetaFile;
+import genepi.riskscore.io.ReportFile;
 import genepi.riskscore.tasks.CreateHtmlReportTask;
 import genepi.riskscore.tasks.MergeReportTask;
 import genepi.riskscore.tasks.MergeScoreTask;
@@ -367,8 +369,15 @@ public class CompressionEncryption extends WorkflowStep {
 				mergeReport.setOutput(outputFileReports);
 				TaskService.run(mergeReport);
 				
+				ReportFile report = mergeReport.getResult();
+				
+				String folder = getFolder(CompressionEncryption.class);
+				
+				MetaFile metaFile = MetaFile.load(FileUtil.path(folder, "pgs-catalog.json"));
+				report.mergeWithMeta(metaFile);
+				
 				CreateHtmlReportTask htmlReport = new CreateHtmlReportTask();
-				htmlReport.setReport(mergeReport.getResult());
+				htmlReport.setReport(report);
 				htmlReport.setData(mergeScore.getResult());
 				htmlReport.setOutput(outputFileHtml);
 				TaskService.run(htmlReport);
