@@ -5,7 +5,7 @@
 
 	<groupId>genepi</groupId>
 	<artifactId>imputationserver</artifactId>
-	<version>1.5.3</version>
+	<version>1.5.4</version>
 	<packaging>jar</packaging>
 
 	<name>University of Michigan Imputation Server</name>
