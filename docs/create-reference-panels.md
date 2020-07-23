@@ -40,13 +40,13 @@ Create a new folder and create a `cloudgene.yaml` file:
 
 ```
 name:  My Reference Panel name
+id: unique-id
 description: a short description
 category: RefPanel
 version: 1.0.0
 website: http://my-reference-panel.com
 
 properties:
-  id: hapmap
   hdfs: ${hdfs_app_folder}/m3vcfs/chr$chr.m3vcf.gz
   legend: ${local_app_folder}/legends/chr$chr.legend.gz
   mapEagle: ${hdfs_app_folder}/map/genetic_map_hg19_withX.txt.gz
@@ -76,10 +76,10 @@ installation:
 ## Create bcf files
 BCF files are required for phasing with [eagle](https://data.broadinstitute.org/alkesgroup/Eagle/).
 ```sh
-for CHR in `seq 1 22`
+for chr in `seq 1 22`
 do
-    bcftools view chr${CHR}.vcf.gz -O b -o chr${CHR}.bcf
-    bcftools index chr${CHR}.bcf
+    bcftools view chr${chr}.vcf.gz -O b -o chr${chr}.bcf
+    bcftools index chr${chr}.bcf
 done
 ```
 ## Create m3vcf files
@@ -87,28 +87,22 @@ done
 m3vcf files are used to store large reference panels in a compact way. Learn more about the file format [here](https://genome.sph.umich.edu/wiki/M3VCF_Files).
 
 ```sh
-for CHR in `seq 1 22`
+for chr in `seq 1 22`
 do
-    Minimac3 --refHaps chr${CHR}.vcf.gz --processReference --prefix m3vcfs/chr${CHR}
+    Minimac3 --refHaps chr${chr}.vcf.gz --processReference --prefix m3vcfs/chr${chr} --rsid
 done
 ```
 
 
 ## Create legend files
 
-A legend file is a tab-delimited file consisting of 5 columns (`id`, `position`, `a0`, `a1`, `population.aaf`). It is used by Michigan Imputation Server to create QC Statistics. 
-`a0` and `a1` including the ref/alt alleles, `population.aaf` the alternate allele frequency. 
-Please note that `population` must be substituted by the actual population (e.g. eur).
-A legend file for chr20 can be found [here](https://github.com/genepi/imputationserver/blob/master/test-data/configs/hapmap-chr20/ref-panels/hapmap_r22.chr20.CEU.hg19_impute.legend.gz?raw=true).
-
-Please execute the following commands (starting from vcf files) to create the legend files:
+A legend file is a tab-delimited file consisting of 5 columns (`id`, `position`, `a0`, `a1`, `all.aaf`).
 
 ```sh
-for CHR in `seq 1 22`
-do
-    vcftools --gzvcf chr${CHR}.vcf.gz --freq --out chr$i
-    sed 's/:/\t/g' chr$i.frq | sed 1d | awk '{print $1":"$2" "$2" "$5" "$7" "$8}' > chr$i.legend
-    cat <header.txt> chr$i.legend | bgzip > chr$i.legend.gz
+for chr in `seq 1 22` X
+    do
+    echo "id position a0 a1 all.aaf" > header
+    bcftools query -f '%CHROM %POS %REF %ALT %AC %AN\n' chr${chr}.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $1":"$2 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > chr${chr}.legend.gz &
 done
 ```
 
