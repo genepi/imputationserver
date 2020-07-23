@@ -36,7 +36,7 @@ my-ref-panel
 
 ## Init
 
-Create a new folder and create a `cloudgene.yaml` file:
+Create a new folder and create a `cloudgene.yaml` file. 
 
 ```
 name:  My Reference Panel name
@@ -53,9 +53,11 @@ properties:
   refEagle: ${hdfs_app_folder}/bcfs/chr$chr.bcf
   build: hg19
   samples:
-    eur: 2504
+    all: 2504
+    mixed: -1
   populations:
-    eur: EUR
+    all: ALL
+    mixed: Other/Mixed
     
 installation:
 
@@ -71,7 +73,7 @@ installation:
       source: ${local_app_folder}/map
       target: ${hdfs_app_folder}/map
 ```
-
+For hg38 also set ``mapMinimac: ${app_hdfs_folder}/map/geneticMapFile.b38.map.txt`` and  ``mapEagle: ${app_hdfs_folder}/map/genetic_map_hg38_withX.txt.gz``.
 
 ## Create bcf files
 BCF files are required for phasing with [eagle](https://data.broadinstitute.org/alkesgroup/Eagle/).
@@ -109,7 +111,7 @@ done
 
 ## Reference genetic maps
 
-The genetic maps for eagle (in our case hg19) can be found [here](https://data.broadinstitute.org/alkesgroup/Eagle/downloads/tables/genetic_map_hg19_withX.txt.gz).
+The genetic maps for eagle (hg19/hg38) can be found [here](https://data.broadinstitute.org/alkesgroup/Eagle/downloads/tables).
 
 ## Integrate your new reference panel
 The created folder structure must be compressed to a zip archive and can now be integrated into Michigan Imputation Server. Please go to [this page](http://imputationserver.readthedocs.io/en/latest/docker/#install-1000g-phase-3-reference-panel) for further instructions. A full working zip archive for Hapmap can be found [here](https://imputationserver.sph.umich.edu/static/downloads/releases/hapmap2-1.0.0.zip).
