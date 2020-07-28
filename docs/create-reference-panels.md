@@ -86,18 +86,21 @@ Michigan Imputaiton Server requires each chromosome in a seperated file. Chromos
 
  `bcftools view <vcf-input> -r <region> -o <vcf-out> -O z`
 
-### Chromosome X regions hg37
+### Chromosome X regions GRCh37/hg19
 Use the following regions for the `-r` option:
 
+```
 X:60001-2699520 (chrX.PAR1)
 X:2699521-154931043 (chrX.nonPAR)
 X:154931044-155260560 (chrX.PAR2)
+```
+### Chromosome X regions GRCh38/hg38
 
-### Chromosome X regions hg38
+```
 chrX:10001-2781479 (chrX.PAR1)
 chrX:2781480-155701382 (chrX.nonPAR)
 chrX:155701383-156030895 (chrX.PAR2)
-
+```
 
 ## Create bcf files
 BCF files are required for phasing with [eagle](https://data.broadinstitute.org/alkesgroup/Eagle/).
@@ -111,7 +114,7 @@ done
 ```
 ## Create m3vcf files
 
-m3vcf files are used to store large reference panels in a compact way. Learn more about the file format [here](https://genome.sph.umich.edu/wiki/M3VCF_Files). For hg 38, `--mychromosome` must be added, since chromosomes are coded as chr1 to chr22.  
+m3vcf files are used to store large reference panels in a compact way. Learn more about the file format [here](https://genome.sph.umich.edu/wiki/M3VCF_Files). For GRCh38/hg38, `--mychromosome` must be added, since chromosomes are coded as `chr1` - `chr22`.  
 
 ```sh
 for chr in `seq 1 22` X.nonPAR X.PAR1 X.PAR2
@@ -140,8 +143,8 @@ for chr in `seq 1 22`
 do
     vcftools --gzvcf chr${chr}.vcf.gz --freq --out chr${chr} &
     sed 's/:/\t/g' chr${chr}.frq | sed 1d | awk '{print $1":"$2" "$2" "$5" "$7" "$8}' > chr${chr}.legend
-    cat header chr${CHR}.legend | bgzip > chr${CHR}.legend.gz
-    rm chr${CHR}.legend
+    cat header chr${chr}.legend | bgzip > chr${chr}.legend.gz
+    rm chr${chr}.legend
 done
 ```
 
@@ -150,6 +153,6 @@ done
 The genetic maps for eagle (hg19/hg38) can be found [here](https://data.broadinstitute.org/alkesgroup/Eagle/downloads/tables).
 
 ## Integrate your new reference panel
-The created folder structure must be compressed to a zip archive and can now be integrated into Michigan Imputation Server. Please go to [this page](http://imputationserver.readthedocs.io/en/latest/docker/#install-1000g-phase-3-reference-panel) for further instructions. A full working zip archive for Hapmap can be found [here](https://imputationserver.sph.umich.edu/static/downloads/releases/hapmap2-1.0.0.zip).
+The created folder structure must be compressed to a zip archive and can now be integrated into Michigan Imputation Server. Please see [here](http://imputationserver.readthedocs.io/en/latest/docker/#install-1000g-phase-3-reference-panel) to start a Docker container and integrate the panel. A full working zip archive for Hapmap can be found [here](https://imputationserver.sph.umich.edu/static/downloads/releases/hapmap2-1.0.0.zip).
 
 
