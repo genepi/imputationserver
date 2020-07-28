@@ -75,10 +75,10 @@ installation:
 ```
 ### Adaptions for build GRCh38/hg38
 
-For a reference panel build 38, the following options must be adapted in the properties section in the `cloudgene.yaml` file:
+For a reference panel build 38, the following options must be added to `properties` in the `cloudgene.yaml` file:
 ```
-    mapMinimac: ${app_hdfs_folder}/map/geneticMapFile.b38.map.txt``   
-    mapEagle: ${app_hdfs_folder}/map/genetic_map_hg38_withX.txt.gz``
+    mapMinimac: ${app_hdfs_folder}/map/geneticMapFile.b38.map.txt   
+    mapEagle: ${app_hdfs_folder}/map/genetic_map_hg38_withX.txt.gz
     build: hg38
 ```
 ## Prepare VCF files
