@@ -3,17 +3,6 @@
 Our server offers imputation from the following reference panels:
 
 
-## TOPMed (TOPMed Freeze5 on GRCh38, in preperation)
-
-The TOPmed panel consists of currently 125,568 haplotypes.
-
-| ||
-| | |
-| Number of Samples | 62784 |
-| Sites (chr1-22) | - |
-| Chromosomes | 1-22, X|
-| Website: | [https://www.nhlbiwgs.org/](https://www.nhlbiwgs.org/) |
-
 ## HRC (Version r1.1 2016)
 
 The HRC panel consists of 64,940 haplotypes of predominantly European ancestry.
