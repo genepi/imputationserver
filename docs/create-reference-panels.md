@@ -129,10 +129,10 @@ done
 A legend file is a tab-delimited file consisting of 5 columns (`id`, `position`, `a0`, `a1`, `all.aaf`).
 
 ```sh
-for chr in `seq 1 22` X
+echo "id position a0 a1 all.aaf" > header
+    for chr in `seq 1 22` X
     do
-    echo "id position a0 a1 all.aaf" > header
-    bcftools query -f '%CHROM %POS %REF %ALT %AC %AN\n' chr${chr}.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $1":"$2 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > chr${chr}.legend.gz &
+    bcftools query -f '%CHROM %POS %REF %ALT %AC %AN\n' chr${chr}.bcf |  awk -F" " 'BEGIN { OFS = " " } {print $1":"$2 " " $2 " " $3 " "$4  " "  $5/$6}' | cat header - | bgzip > chr${chr}.legend.gz 
 done
 ```
 or in case AC / AN is not defined:
@@ -141,7 +141,7 @@ or in case AC / AN is not defined:
 echo "id position a0 a1 all.aaf" > header
 for chr in `seq 1 22`
 do
-    vcftools --gzvcf chr${chr}.vcf.gz --freq --out chr${chr} &
+    vcftools --gzvcf chr${chr}.vcf.gz --freq --out chr${chr}
     sed 's/:/\t/g' chr${chr}.frq | sed 1d | awk '{print $1":"$2" "$2" "$5" "$7" "$8}' > chr${chr}.legend
     cat header chr${chr}.legend | bgzip > chr${chr}.legend.gz
     rm chr${chr}.legend
