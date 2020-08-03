@@ -219,7 +219,11 @@ public class Imputation extends ParallelHadoopJobStep {
 				job.setPhasingEngine(phasing);
 				job.setInput(result.filename);
 				job.setOutput(HdfsUtil.path(output, chr));
-				job.setOutputScores(outputScores);
+
+				if (outputScores != null) {
+					job.setOutputScores(outputScores);
+				}
+
 				if (pgsPanel != null) {
 					job.setScores(pgsPanel.getScores());
 				}
@@ -254,6 +258,7 @@ public class Imputation extends ParallelHadoopJobStep {
 			// canceled by user
 			if (isCanceled()) {
 				context.println("Canceled by user.");
+
 				updateProgress();
 
 				String text = updateMessage();

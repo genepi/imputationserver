@@ -401,6 +401,7 @@ public class ImputationTest {
 
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setOutput("outputScores", null);
 
 		// run qc to create chunkfile
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
