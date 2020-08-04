@@ -1,4 +1,4 @@
-# Contributing to Michigan Imputatation Server
+# Contributing to Michigan Imputation Server
 Project contributions are more than welcome! We want to make contributing to this project as easy and transparent as possible. When you submit code changes, your submissions are understood to be under the same license that covers the project. Feel free to contact the maintainers if that's a concern.
 
 ## Reporting a bug
