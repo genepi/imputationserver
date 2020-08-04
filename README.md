@@ -35,4 +35,4 @@ Feel free to contact [us](https://imputationserver.sph.umich.edu/index.html#!pag
 - Christian Fuchsberger
 
 ## Contributing
-Project contribution are more than welcome! See our [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
+Project contributions are more than welcome! See our [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
