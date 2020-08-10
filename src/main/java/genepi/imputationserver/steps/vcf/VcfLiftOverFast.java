@@ -29,13 +29,22 @@ public class VcfLiftOverFast {
 	public static Vector<String> liftOver(String input, String output, String chainFile, String tempDir)
 			throws IOException {
 
+		System.out.println("Processing file '" + input + "'...");
+
 		LineReader reader = new LineReader(input);
 
 		LiftOver liftOver = new LiftOver(new File(chainFile));
+		liftOver.setShouldLogFailedIntervalsBelowThreshold(false);
 
 		Vector<String> errors = new Vector<String>();
 
 		SortingCollection<VcfLine> sorter = VcfLineSortingCollection.newInstance(MAX_RECORDS_IN_RAM, tempDir);
+
+		int count = 0;
+		int successful = 0;
+		int failed = 0;
+		int diffChromosome = 0;
+		int indels = 0;
 
 		BGzipLineWriter writer = new BGzipLineWriter(output);
 		while (reader.next()) {
@@ -44,6 +53,8 @@ public class VcfLiftOverFast {
 			if (line.startsWith("#")) {
 				writer.write(line);
 			} else {
+
+				count++;
 
 				VcfLine vcfLine = new VcfLine(line);
 				String contig = "";
@@ -79,9 +90,9 @@ public class VcfLiftOverFast {
 
 						if (length != target.length()) {
 
-							errors.add(vcfLine.getContig() + ":" + vcfLine.getPosition() + "\t" + "LiftOver" + "\t"
+							errors.add(vcfLine.getId() + "\t" + "LiftOver" + "\t"
 									+ "INDEL_STRADDLES_TWO_INTERVALS. SNP removed.");
-
+							failed++;
 						} else {
 
 							if (target.isNegativeStrand()) {
@@ -93,13 +104,17 @@ public class VcfLiftOverFast {
 
 							if (vcfLine.getReference() != null && vcfLine.getAlternate() != null) {
 
+								successful++;
+
 								vcfLine.setContig(newContig);
 								vcfLine.setPosition(target.getStart());
 								sorter.add(vcfLine);
 
 							} else {
 
-								errors.add(vcfLine.getContig() + ":" + vcfLine.getPosition() + "\t" + "LiftOver" + "\t"
+								indels++;
+
+								errors.add(vcfLine.getId() + "\t" + "LiftOver" + "\t"
 										+ "Indel on negative strand. SNP removed.");
 
 							}
@@ -107,15 +122,14 @@ public class VcfLiftOverFast {
 
 					} else {
 
-						errors.add(vcfLine.getContig() + ":" + vcfLine.getPosition() + "\t" + "LiftOver" + "\t"
+						errors.add(vcfLine.getId() + "\t" + "LiftOver" + "\t"
 								+ "On different chromosome after LiftOver. SNP removed.");
-
+						diffChromosome++;
 					}
 				} else {
 
-					errors.add(vcfLine.getContig() + ":" + vcfLine.getPosition() + "\t" + "LiftOver" + "\t"
-							+ "LiftOver failed. SNP removed.");
-
+					errors.add(vcfLine.getId() + "\t" + "LiftOver" + "\t" + "LiftOver failed. SNP removed.");
+					failed++;
 				}
 			}
 
@@ -133,6 +147,14 @@ public class VcfLiftOverFast {
 		}
 		writer.close();
 		sorter.cleanup();
+
+		System.out.println("");
+		System.out.println("Processed " + count + " variants");
+		System.out.println(failed + " variants failed to liftover");
+		System.out.println(indels + " variants removed (indels on negative strand)");
+		System.out.println(diffChromosome + " variants removed (different chromosome)");
+		System.out.println(successful + " variants lifted over");
+		System.out.println("");
 
 		return errors;
 	}
