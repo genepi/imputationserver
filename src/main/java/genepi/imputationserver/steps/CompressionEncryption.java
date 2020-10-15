@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import genepi.imputationserver.util.*;
+import genepi.io.text.LineWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -26,11 +28,6 @@ import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.command.Command;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
-import genepi.imputationserver.util.DefaultPreferenceStore;
-import genepi.imputationserver.util.ExportObject;
-import genepi.imputationserver.util.FileMerger;
-import genepi.imputationserver.util.PasswordCreator;
-import genepi.imputationserver.util.PgsPanel;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.riskscore.App;
@@ -160,6 +157,9 @@ public class CompressionEncryption extends WorkflowStep {
 			param.setEncryptFiles(true);
 			param.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
 
+			String checksumFilename = FileUtil.path(localOutput, "results.md5");
+			LineWriter writer = new LineWriter(checksumFilename);
+
 			for (String name : chromosomesSet) {
 
 				index++;
@@ -283,6 +283,9 @@ public class CompressionEncryption extends WorkflowStep {
 				ZipFile file = new ZipFile(new File(filePath), password.toCharArray());
 				file.addFiles(files, param);
 
+				String checksum = FileChecksum.HashFile(new File(filePath), FileChecksum.Algorithm.MD5);
+				writer.write(checksum + " " + fileName);
+
 				// delete temp dir
 				FileUtil.deleteDirectory(temp);
 
@@ -316,6 +319,8 @@ public class CompressionEncryption extends WorkflowStep {
 					context.log("No external Workspace set.");
 				}
 			}
+
+			writer.close();
 
 			// delete temporary files
 			HdfsUtil.delete(output);
