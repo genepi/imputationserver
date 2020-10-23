@@ -14,9 +14,15 @@ pages:
   - Docker: docker.md
   - Create Reference Panels: create-reference-panels.md
 - Workshops:
-  - ASHG2020: workshops/ASHG2020.md
-  - ASHG2020 Job Submission: workshops/ASHG2020_Job_Submission.md
-  - ASHG2020 Imputation Bot: workshops/ASHG2020_Imputation_Bot.md
+  - ASHG2020:
+    - Overview: workshops/ASHG2020.md
+    - "1: Imputation and the Server": workshops/ASHG2020/Session1.md
+    - "2: Run a job": workshops/ASHG2020/Session2.md
+    - "3: Tracking runs and downloading data": workshops/ASHG2020/Session3.md
+    - "4: Performing GWAS using imputed data": workshops/ASHG2020/Session4.md
+    - "5: Imputation bot": workshops/ASHG2020/Session5.md
+    - "6: TOPMed Imputation Server": workshops/ASHG2020/Session6.md
+    - "7: Imputation panels": workshops/ASHG2020/Session7.md
 - Contact: contact.md
 
 

@@ -1,4 +1,13 @@
-# Workshop ASHG2020: Imputation Bot
+**Workshop ASHG2020**
+
+# Session 5: Imputation Bot
+
+Learn how to use Imputation bot to automate job submission and interactions with imputation servers.
+
+[Slides](https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_5_MIS%20workshop%202020.pdf)
+
+
+# Tutorial
 
 ## Requirements
 
@@ -31,19 +40,19 @@ Enable API access from your Profile page.
 
 1. Login and click on your **username** and then **profile**:
 
-![Image1](/workshops/ASHG2020/token1.png)
+![Image1](/workshops/ASHG2020/images/token1.png)
 
 2. Click on **Create API Token**
 
-![Image1](/workshops/ASHG2020/token2.png)
+![Image1](/workshops/ASHG2020/images/token2.png)
 
 3. Copy your API Token and paste it when `imputationbot add-instance` ask for it.
 
-![Image1](/workshops/ASHG2020/token3.png)
+![Image1](/workshops/ASHG2020/images/token3.png)
 
 Api Tokens are valid for 30 days. You can check the status in the web interface or with `imputationbot instances`
 
-![Image1](/workshops/ASHG2020/token4.png)
+![Image1](/workshops/ASHG2020/images/token4.png)
 
 4. Next, configure imputationbot with the following command:
 
