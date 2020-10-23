@@ -1,10 +1,10 @@
-**Workshop ASHG2020**
+**Workshop ASHG2020 > Session 5: Imputation Bot**
 
-# Session 5: Imputation Bot
+# Slides
 
 Learn how to use Imputation bot to automate job submission and interactions with imputation servers.
 
-[Slides](https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_5_MIS%20workshop%202020.pdf)
+[Download (pdf)](https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_5_MIS%20workshop%202020.pdf)
 
 
 # Tutorial

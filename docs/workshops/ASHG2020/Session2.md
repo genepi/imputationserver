@@ -1,10 +1,10 @@
-**Workshop ASHG2020**
+**Workshop ASHG2020 > Session 2: Run a job, Quality Control and Data Preparation**
 
-# Session 2: Run a job
+# Slides
 
 Learn how to submit a job on Michigan Imputation Server and how to prepare your input data that they are passing our QC step.
 
-[Slides](https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_2_MIS%20workshop%202020.pdf)
+[Download (pdf)](https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_2_MIS%20workshop%202020.pdf)
 
 # Tutorial
 

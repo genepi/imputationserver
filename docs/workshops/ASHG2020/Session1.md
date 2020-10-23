@@ -1,5 +1,5 @@
-**Workshop ASHG2020**
+**Workshop ASHG2020  > Session 1: Imputation and the Server**
 
-# Session 1: Imputation and the Server
+# Slides
 
-[Slides](https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_1_MIS%20workshop%202020.pdf)
+[Download (pdf)](https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_1_MIS%20workshop%202020.pdf)

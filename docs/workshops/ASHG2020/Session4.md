@@ -1,5 +1,5 @@
-**Workshop ASHG2020**
+**Workshop ASHG2020 > Session 4: Performing GWAS using imputed data**
 
-# Session 4: Performing GWAS using imputed data
+# Slides
 
-[Slides](https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_4_MIS%20workshop%202020.pdf)
+[Download (pdf)](https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_4_MIS%20workshop%202020.pdf)
