@@ -12,10 +12,7 @@ If you want to access the slides from our workshop please click here: [Session 2
 ## Getting Started Video Demo
 As a quick start, the following video includes all required steps to submit and monitor a job using the graphical web interface.
 
-<video width="100%" controls>
-  <source src="https://github.com/lukfor/imputationserver-ashg20/raw/main/slides/Section_2.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video>
+<iframe width="100%" height="350" src="https://www.youtube.com/embed/hxGz1VkxfeM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 ## Run a job on your own
