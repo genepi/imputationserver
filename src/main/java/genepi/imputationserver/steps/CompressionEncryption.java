@@ -283,8 +283,12 @@ public class CompressionEncryption extends WorkflowStep {
 				ZipFile file = new ZipFile(new File(filePath), password.toCharArray());
 				file.addFiles(files, param);
 
+				context.log("Creating file checksum for " + filePath);
+				long checksumStart = System.currentTimeMillis();
 				String checksum = FileChecksum.HashFile(new File(filePath), FileChecksum.Algorithm.MD5);
 				writer.write(checksum + " " + fileName);
+				long checksumEnd = (System.currentTimeMillis() - checksumStart) / 1000;
+				context.log("File checksum for " + filePath + " created in " + checksumEnd + " seconds.");
 
 				// delete temp dir
 				FileUtil.deleteDirectory(temp);
@@ -340,13 +344,13 @@ public class CompressionEncryption extends WorkflowStep {
 
 				int chunksScoresCount = 0;
 				int chunksReportsCount = 0;
-				
+
 				for (String score : scoreList) {
 
 					String filename = FileUtil.getFilename(score);
 					String localPath = FileUtil.path(temp2, filename);
 					HdfsUtil.get(score, localPath);
-					
+
 					if (score.endsWith(".json")) {
 						chunksReports[chunksReportsCount] = localPath;
 						chunksReportsCount++;
@@ -354,16 +358,16 @@ public class CompressionEncryption extends WorkflowStep {
 						chunksScores[chunksScoresCount] = localPath;
 						chunksScoresCount++;
 					}
-		
+
 				}
 
 				String outputFileScores = FileUtil.path(temp2, "scores.txt");
 				String outputFileReports = FileUtil.path(temp2, "report.json");
 				String outputFileHtml = FileUtil.path(localOutput, "report.html");
 
-				//disable ansi
+				// disable ansi
 				TaskService.setAnsiSupport(false);
-				
+
 				MergeScoreTask mergeScore = new MergeScoreTask();
 				mergeScore.setInputs(chunksScores);
 				mergeScore.setOutput(outputFileScores);
@@ -373,20 +377,20 @@ public class CompressionEncryption extends WorkflowStep {
 				mergeReport.setInputs(chunksReports);
 				mergeReport.setOutput(outputFileReports);
 				TaskService.run(mergeReport);
-				
+
 				ReportFile report = mergeReport.getResult();
-				
+
 				String folder = getFolder(CompressionEncryption.class);
-				
+
 				MetaFile metaFile = MetaFile.load(FileUtil.path(folder, "pgs-catalog.json"));
 				report.mergeWithMeta(metaFile);
-				
+
 				CreateHtmlReportTask htmlReport = new CreateHtmlReportTask();
 				htmlReport.setReport(report);
 				htmlReport.setData(mergeScore.getResult());
 				htmlReport.setOutput(outputFileHtml);
 				TaskService.run(htmlReport);
-				
+
 				String fileName = "scores.zip";
 				String filePath = FileUtil.path(localOutput, fileName);
 				ArrayList<File> files = new ArrayList<File>();
