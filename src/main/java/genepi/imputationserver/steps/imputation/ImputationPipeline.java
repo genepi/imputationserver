@@ -226,7 +226,11 @@ public class ImputationPipeline {
 		eagle.saveStdOut(output.getPrefix() + ".eagle.out");
 		eagle.saveStdErr(output.getPrefix() + ".eagle.err");
 		System.out.println("Command: " + eagle.getExecutedCommand());
-		if (eagle.execute() != 0) {
+
+		int status = eagle.execute();
+
+		if (status != 0) {
+			System.out.println("Eagle return status: " + status);
 			return false;
 		}
 
@@ -312,8 +316,10 @@ public class ImputationPipeline {
 		minimac.saveStdErr(output.getPrefix() + ".minimac.err");
 
 		System.out.println(minimac.getExecutedCommand());
+		int status = minimac.execute();
+		System.out.println("Minimac return status: " + status);
 
-		return (minimac.execute() == 0);
+		return (status == 0);
 
 	}
 

@@ -308,6 +308,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		} catch (Exception e) {
 			if (!debugging) {
 				System.out.println("Mapper Task failed.");
+				e.printStackTrace(System.out);
 				e.printStackTrace();
 				cleanup(context);
 			}
