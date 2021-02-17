@@ -1,6 +1,6 @@
 package genepi.imputationserver.steps.fastqc;
 
-public class TaskResults {
+public class TaskResult {
 
 	private boolean success;
 

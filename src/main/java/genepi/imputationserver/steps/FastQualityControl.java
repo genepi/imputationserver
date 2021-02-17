@@ -15,7 +15,7 @@ import genepi.imputationserver.steps.fastqc.ITaskProgressListener;
 import genepi.imputationserver.steps.fastqc.LiftOverTask;
 import genepi.imputationserver.steps.fastqc.RangeEntry;
 import genepi.imputationserver.steps.fastqc.StatisticsTask;
-import genepi.imputationserver.steps.fastqc.TaskResults;
+import genepi.imputationserver.steps.fastqc.TaskResult;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.RefPanel;
@@ -118,7 +118,7 @@ public class FastQualityControl extends WorkflowStep {
 			task.setChunksDir(chunksDir);
 			task.setExcludedSnpsWriter(excludedSnpsWriter);
 
-			TaskResults results = runTask(context, task);
+			TaskResult results = runTask(context, task);
 
 			if (results.isSuccess()) {
 				vcfFilenames = task.getNewVcfFilenames();
@@ -201,9 +201,9 @@ public class FastQualityControl extends WorkflowStep {
 		task.setReferenceOverlap(referenceOverlap);
 		task.setMinSnps(minSnps);
 		task.setSampleCallrate(sampleCallrate);
-		task.setMixedGenotypeschrX(mixedGenotypesChrX);
+		task.setMixedGenotypesChrX(mixedGenotypesChrX);
 
-		TaskResults results = runTask(context, task);
+		TaskResult results = runTask(context, task);
 
 		if (!results.isSuccess()) {
 			return false;
@@ -349,9 +349,9 @@ public class FastQualityControl extends WorkflowStep {
 
 	}
 
-	protected TaskResults runTask(final WorkflowContext context, ITask task) {
+	protected TaskResult runTask(final WorkflowContext context, ITask task) {
 		context.beginTask("Running " + task.getName() + "...");
-		TaskResults results;
+		TaskResult results;
 		try {
 			results = task.run(new ITaskProgressListener() {
 
@@ -370,7 +370,7 @@ public class FastQualityControl extends WorkflowStep {
 			return results;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			TaskResults result = new TaskResults();
+			TaskResult result = new TaskResult();
 			result.setSuccess(false);
 			result.setMessage(e.getMessage());
 			StringWriter s = new StringWriter();
@@ -380,7 +380,7 @@ public class FastQualityControl extends WorkflowStep {
 			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
-			TaskResults result = new TaskResults();
+			TaskResult result = new TaskResult();
 			result.setSuccess(false);
 			result.setMessage(e.getMessage());
 			StringWriter s = new StringWriter();
@@ -390,7 +390,7 @@ public class FastQualityControl extends WorkflowStep {
 			return result;
 		} catch (Error e) {
 			e.printStackTrace();
-			TaskResults result = new TaskResults();
+			TaskResult result = new TaskResult();
 			result.setSuccess(false);
 			result.setMessage(e.getMessage());
 			StringWriter s = new StringWriter();

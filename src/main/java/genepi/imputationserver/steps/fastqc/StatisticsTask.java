@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,24 +42,26 @@ public class StatisticsTask implements ITask {
 	private double sampleCallrate;
 	private double minSnps;
 	private double referenceOverlap;
-	private double mixedGenotypeschrX;
+	private double mixedGenotypesChrX;
 
-	private String chunkFileDir = "tmp";
-	private String chunksDir = "tmp";
-	private String statDir = "tmp";
-	private String mafFile = "tmp/maf.txt";
+	// output
+	private String chunkFileDir = null;
+	private String chunksDir = null;
+	private String statDir = null;
+	private String mafFile = null;
 
 	// input variables
-	private String population;
+	private String population = null;
 	private boolean alleleFrequencyCheck = true;
-	private int chunkSize;
-	private int phasingWindow;
-	private String[] vcfFilenames;
-	private LineWriter excludedSnpsWriter;
-	private String legendFile;
-	private int refSamples;
-	private String build;
-	private HashSet<RangeEntry> ranges;
+	private int chunkSize = 0;
+	private int phasingWindow = 0;
+	private String[] vcfFilenames = null;
+	private LineWriter excludedSnpsWriter = null;
+	private String legendFile = null;
+	private int refSamples = 0;
+	private String build = null; //TODO: make enum
+
+	private HashSet<RangeEntry> ranges = null;
 
 	// overall stats
 	private int overallChunks;
@@ -94,11 +97,30 @@ public class StatisticsTask implements ITask {
 		return "Calculating QC Statistics";
 	}
 
-	public TaskResults run(ITaskProgressListener progressListener) throws IOException, InterruptedException {
+	public TaskResult run(ITaskProgressListener progressListener) throws IOException, InterruptedException {
 
-		TaskResults qcObject = new TaskResults();
+		Objects.requireNonNull(chunkFileDir, "chunkFileDir required");
+		Objects.requireNonNull(chunksDir, "chunksDir required");
+		Objects.requireNonNull(statDir, "statDir required");
+		Objects.requireNonNull(mafFile, "mafFile required");
+		Objects.requireNonNull(population, "population required");
+		Objects.requireNonNull(excludedSnpsWriter, "excludedSnpsWriter required");
+		Objects.requireNonNull(vcfFilenames, "vcfFilenames required");
+		Objects.requireNonNull(legendFile, "legendFile required");
+		Objects.requireNonNull(build, "build required");
+		if (chunkSize <= 0) {
+			throw new IllegalArgumentException("chunkSize hast to be > 0");
+		}
 
-		qcObject.setMessage("");
+		if (phasingWindow <= 0) {
+			throw new IllegalArgumentException("phasingWindow hast to be > 0");
+		}
+		if (refSamples <= 0) {
+			throw new IllegalArgumentException("refSamples hast to be > 0");
+		}
+
+		TaskResult result = new TaskResult();
+		result.setMessage("");
 
 		// MAF file for QC report
 		LineWriter mafWriter = new LineWriter(mafFile);
@@ -179,9 +201,9 @@ public class StatisticsTask implements ITask {
 			FileUtil.deleteFile(typedOnleFile);
 		}
 
-		qcObject.setSuccess(true);
+		result.setSuccess(true);
 
-		return qcObject;
+		return result;
 
 	}
 
@@ -319,9 +341,9 @@ public class StatisticsTask implements ITask {
 			throws IOException, InterruptedException {
 
 		if (ranges != null) {
-			
+
 			boolean inRange = false;
-			
+
 			for (RangeEntry range : ranges) {
 
 				if (snp.getContig().equals(range.getChromosome()) && snp.getStart() >= range.getStart()
@@ -629,20 +651,14 @@ public class StatisticsTask implements ITask {
 			HashSet<String> hapSamples) throws IOException {
 
 		List<String> paths = new Vector<String>();
-		String nonPar = FileUtil.path(chunksDir, X_NON_PAR + ".vcf.gz");
-		VariantContextWriter vcfChunkWriterNonPar = new VariantContextWriterBuilder().setOutputFile(nonPar)
-				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
+		String filenameNonPar = FileUtil.path(chunksDir, X_NON_PAR + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterNonPar = buildVariantContextWriter(filenameNonPar);
 
-		String par1 = FileUtil.path(chunksDir, X_PAR1 + ".vcf.gz");
-		VariantContextWriter vcfChunkWriterPar1 = new VariantContextWriterBuilder().setOutputFile(par1)
-				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
+		String filenamePar1 = FileUtil.path(chunksDir, X_PAR1 + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterPar1 = buildVariantContextWriter(filenamePar1);
 
-		String par2 = FileUtil.path(chunksDir, X_PAR2 + ".vcf.gz");
-		VariantContextWriter vcfChunkWriterPar2 = new VariantContextWriterBuilder().setOutputFile(par2)
-				.setOption(Options.INDEX_ON_THE_FLY).setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER)
-				.setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF).build();
+		String filenamePar2 = FileUtil.path(chunksDir, X_PAR2 + ".vcf.gz");
+		VariantContextWriter vcfChunkWriterPar2 = buildVariantContextWriter(filenamePar2);
 
 		VCFFileReader vcfReader = new VCFFileReader(new File(filename), true);
 
@@ -689,9 +705,7 @@ public class StatisticsTask implements ITask {
 
 				if (line.getContig().equals("23")) {
 					line = new VariantContextBuilder(line).chr("X").make();
-				}
-
-				else if (line.getContig().equals("chr23")) {
+				} else if (line.getContig().equals("chr23")) {
 					line = new VariantContextBuilder(line).chr("chrX").make();
 				}
 
@@ -699,13 +713,11 @@ public class StatisticsTask implements ITask {
 
 					vcfChunkWriterPar1.add(line);
 
-					if (!paths.contains(par1)) {
-						paths.add(par1);
+					if (!paths.contains(filenamePar1)) {
+						paths.add(filenamePar1);
 					}
 
-				}
-
-				else if (line.getStart() >= nonParStart && line.getStart() <= nonParEnd) {
+				} else if (line.getStart() >= nonParStart && line.getStart() <= nonParEnd) {
 
 					count++;
 
@@ -715,18 +727,16 @@ public class StatisticsTask implements ITask {
 
 					vcfChunkWriterNonPar.add(line);
 
-					if (!paths.contains(nonPar)) {
-						paths.add(nonPar);
+					if (!paths.contains(filenameNonPar)) {
+						paths.add(filenameNonPar);
 					}
 
-				}
-
-				else {
+				} else {
 
 					vcfChunkWriterPar2.add(line);
 
-					if (!paths.contains(par2)) {
-						paths.add(par2);
+					if (!paths.contains(filenamePar2)) {
+						paths.add(filenamePar2);
 					}
 
 				}
@@ -738,7 +748,7 @@ public class StatisticsTask implements ITask {
 		if (mixedGenotypes != null) {
 			for (int i = 0; i < mixedGenotypes.length; i++) {
 				double missingRate = mixedGenotypes[i] / (double) count;
-				if (missingRate > mixedGenotypeschrX) {
+				if (missingRate > mixedGenotypesChrX) {
 					this.chrXMissingRate = true;
 					break;
 				}
@@ -754,6 +764,12 @@ public class StatisticsTask implements ITask {
 		vcfChunkWriterNonPar.close();
 
 		return paths;
+	}
+
+	private VariantContextWriter buildVariantContextWriter(String nonPar) {
+		return new VariantContextWriterBuilder().setOutputFile(nonPar).setOption(Options.INDEX_ON_THE_FLY)
+				.setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER).setOutputFileType(OutputType.BLOCK_COMPRESSED_VCF)
+				.build();
 	}
 
 	// mixed genotype: ./1; 1/.;
@@ -858,7 +874,7 @@ public class StatisticsTask implements ITask {
 		this.refSamples = refSamples;
 	}
 
-	public void setVcfFilenames(String[] vcfFilenames) {
+	public void setVcfFilenames(String ... vcfFilenames) {
 		this.vcfFilenames = vcfFilenames;
 	}
 
@@ -904,10 +920,6 @@ public class StatisticsTask implements ITask {
 
 	public int getLowCallRate() {
 		return lowCallRate;
-	}
-
-	public void setLowCallRate(int lowCallRate) {
-		this.lowCallRate = lowCallRate;
 	}
 
 	public int getFiltered() {
@@ -962,20 +974,8 @@ public class StatisticsTask implements ITask {
 		return chrXMissingRate;
 	}
 
-	public void setChrXMissingRate(boolean chrXMissingRate) {
-		this.chrXMissingRate = chrXMissingRate;
-	}
-
 	public boolean isChrXPloidyError() {
 		return chrXPloidyError;
-	}
-
-	public void setChrXPloidyError(boolean chrXPloidyError) {
-		this.chrXPloidyError = chrXPloidyError;
-	}
-
-	public String getBuild() {
-		return build;
 	}
 
 	public void setBuild(String build) {
@@ -986,48 +986,20 @@ public class StatisticsTask implements ITask {
 		this.alleleFrequencyCheck = alleleFrequencyCheck;
 	}
 
-	public boolean isAlleleFrequencyCheck() {
-		return alleleFrequencyCheck;
-	}
-
-	public double getSampleCallrate() {
-		return sampleCallrate;
-	}
-
 	public void setSampleCallrate(double sampleCallrate) {
 		this.sampleCallrate = sampleCallrate;
-	}
-
-	public double getMinSnps() {
-		return minSnps;
 	}
 
 	public void setMinSnps(double minSnps) {
 		this.minSnps = minSnps;
 	}
 
-	public double getReferenceOverlap() {
-		return referenceOverlap;
-	}
-
 	public void setReferenceOverlap(double referenceOverlap) {
 		this.referenceOverlap = referenceOverlap;
 	}
 
-	public double getMixedGenotypeschrX() {
-		return mixedGenotypeschrX;
-	}
-
-	public void setMixedGenotypeschrX(double mixedGenotypeschrX) {
-		this.mixedGenotypeschrX = mixedGenotypeschrX;
-	}
-
-	public int getRefSamples() {
-		return refSamples;
-	}
-
-	public HashSet<RangeEntry> getRanges() {
-		return ranges;
+	public void setMixedGenotypesChrX(double mixedGenotypesChrX) {
+		this.mixedGenotypesChrX = mixedGenotypesChrX;
 	}
 
 	public void setRanges(HashSet<RangeEntry> ranges) {

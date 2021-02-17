@@ -26,24 +26,24 @@ public class LiftOverTask implements ITask {
 		return "Lift Over";
 	}
 
-	public TaskResults run(ITaskProgressListener progressListener) throws IOException {
+	public TaskResult run(ITaskProgressListener progressListener) throws IOException {
 
 		newVcfFilenames = new String[vcfFilenames.length];
 		for (int i = 0; i < vcfFilenames.length; i++) {
 			String filename = vcfFilenames[i];
 			if (progressListener != null) {
-				progressListener.progress(getName() + " [" + (i+1) + "/" + vcfFilenames.length + "]\n\n" + "Analyze file "
-						+ FileUtil.getFilename(filename) + "...");
+				progressListener.progress(getName() + " [" + (i + 1) + "/" + vcfFilenames.length + "]\n\n"
+						+ "Analyze file " + FileUtil.getFilename(filename) + "...");
 			}
 			String name = FileUtil.getFilename(filename);
 			String output = FileUtil.path(chunksDir, name + ".lifted.vcf.gz");
 			String temp = FileUtil.path(chunksDir, "vcf.sorte");
 			FileUtil.createDirectory(temp);
 			Vector<String> errors = VcfLiftOverFast.liftOver(filename, output, chainFile, temp);
-			
+
 			// create tabix index
 			VcfFileUtil.createIndex(output, true);
-			
+
 			FileUtil.deleteDirectory(temp);
 			for (String error : errors) {
 				excludedSnpsWriter.write(error);
@@ -51,7 +51,7 @@ public class LiftOverTask implements ITask {
 			newVcfFilenames[i] = output;
 		}
 
-		TaskResults result = new TaskResults();
+		TaskResult result = new TaskResult();
 		result.setMessage("");
 		result.setSuccess(true);
 
