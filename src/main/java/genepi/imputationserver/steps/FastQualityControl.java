@@ -200,7 +200,7 @@ public class FastQualityControl extends WorkflowStep {
 
 		task.setReferenceOverlap(referenceOverlap);
 		task.setMinSnps(minSnps);
-		task.setSampleCallrate(sampleCallrate);
+		task.setMinSampleCallRate(sampleCallrate);
 		task.setMixedGenotypesChrX(mixedGenotypesChrX);
 
 		TaskResult results = runTask(context, task);

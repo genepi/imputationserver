@@ -9,7 +9,7 @@ public class VcfChunk {
 	private String vcfFilename;
 
 	private boolean phased = true;
-	
+
 	private int start;
 
 	private int end;
@@ -19,7 +19,23 @@ public class VcfChunk {
 	private int snps = 0;
 
 	private int inReference = 0;;
-	
+
+	public int overallSnpsChunk = 0;
+
+	public int validSnpsChunk = 0;
+
+	public int foundInLegendChunk = 0;
+
+	public int notFoundInLegendChunk = 0;
+
+	public int[] snpsPerSampleCount = null;
+
+	public BGzipLineWriter vcfChunkWriter;
+
+	public int lastPos = 0;
+
+	public boolean empty = true;
+
 	public VcfChunk() {
 
 	}
@@ -99,28 +115,14 @@ public class VcfChunk {
 		this.inReference = inReference;
 	}
 
-
 	public String serialize() {
-		return chromosome + "\t" + start + "\t" + end + "\t"
-				+ (phased ? "VCF-PHASED" : "VCF-UNPHASED") + "\t" + vcfFilename
-				+ "\t" + snps + "\t" + inReference;
+		return chromosome + "\t" + start + "\t" + end + "\t" + (phased ? "VCF-PHASED" : "VCF-UNPHASED") + "\t"
+				+ vcfFilename + "\t" + snps + "\t" + inReference;
 	}
 
 	public String getId() {
-		return "chunk_" + chromosome + "_" + nf.format(start) + "_"
-				+ nf.format(end);
+		return "chunk_" + chromosome + "_" + nf.format(start) + "_" + nf.format(end);
 
 	}
-	
-	// chunk specific
-	public int overallSnpsChunk = 0;
-	public int validSnpsChunk = 0;
-	public int foundInLegendChunk = 0;
-	public int notFoundInLegendChunk = 0;
-	public int[] snpsPerSampleCount = null;
-	public BGzipLineWriter vcfChunkWriter;
-	public 	int lastPos = 0;
-	public boolean empty=true;
-	
 
 }

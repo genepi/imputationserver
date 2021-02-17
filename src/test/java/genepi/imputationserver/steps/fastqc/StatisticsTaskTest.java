@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import com.google.common.io.Files;
 
+import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.util.RefPanel;
 import genepi.io.text.LineWriter;
 import junit.framework.TestCase;
@@ -34,7 +35,7 @@ public class StatisticsTaskTest extends TestCase {
 		task.setPopulation("mixed");
 		task.setReferenceOverlap(Double.parseDouble(RefPanel.OVERLAP));
 		task.setRefSamples(60);
-		task.setSampleCallrate(Double.parseDouble(RefPanel.SAMPLE_CALL_RATE));
+		task.setMinSampleCallRate(Double.parseDouble(RefPanel.SAMPLE_CALL_RATE));
 		task.setStatDir(myTempDir.getAbsolutePath());
 		task.setAlleleFrequencyCheck(true);
 
@@ -47,6 +48,10 @@ public class StatisticsTaskTest extends TestCase {
 		assertEquals(96, task.getOverallSnps());
 		assertEquals(185, task.getAlternativeAlleles());
 		assertEquals(331, task.getMonomorphic());
+
+		assertEquals(1, task.getChunks().size());
+		VcfChunk chunk = task.getChunks().get(0);
+		assertEquals(96, chunk.overallSnpsChunk);
 
 	}
 

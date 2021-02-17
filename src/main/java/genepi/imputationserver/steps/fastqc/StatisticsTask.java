@@ -39,7 +39,7 @@ public class StatisticsTask implements ITask {
 	public static final String X_PAR2 = "X.PAR2";
 	public static final String X_NON_PAR = "X.nonPAR";
 
-	private double sampleCallrate;
+	private double minSampleCallRate;
 	private double minSnps;
 	private double referenceOverlap;
 	private double mixedGenotypesChrX;
@@ -83,6 +83,8 @@ public class StatisticsTask implements ITask {
 	private int filterFlag;
 	private int invalidAlleles;
 	private int multiallelicSites;
+	
+	private List<VcfChunk> chunks = new Vector<>();
 
 	private boolean chrXMissingRate = false;
 	private boolean chrXPloidyError = false;
@@ -115,7 +117,7 @@ public class StatisticsTask implements ITask {
 		if (phasingWindow <= 0) {
 			throw new IllegalArgumentException("phasingWindow hast to be > 0");
 		}
-		if (refSamples <= 0) {
+		if (refSamples <= 0 && alleleFrequencyCheck == true) {
 			throw new IllegalArgumentException("refSamples hast to be > 0");
 		}
 
@@ -606,7 +608,7 @@ public class StatisticsTask implements ITask {
 			int snps = chunk.snpsPerSampleCount[i];
 			double sampleCallRate = snps / (double) chunk.overallSnpsChunk;
 
-			if (sampleCallRate < sampleCallrate) {
+			if (sampleCallRate < minSampleCallRate) {
 				lowSampleCallRate = true;
 				countLowSamples++;
 			}
@@ -644,6 +646,8 @@ public class StatisticsTask implements ITask {
 			}
 
 		}
+		
+		this.chunks.add(chunk);
 
 	}
 
@@ -977,6 +981,10 @@ public class StatisticsTask implements ITask {
 	public boolean isChrXPloidyError() {
 		return chrXPloidyError;
 	}
+	
+	public List<VcfChunk> getChunks() {
+		return chunks;
+	}
 
 	public void setBuild(String build) {
 		this.build = build;
@@ -986,8 +994,8 @@ public class StatisticsTask implements ITask {
 		this.alleleFrequencyCheck = alleleFrequencyCheck;
 	}
 
-	public void setSampleCallrate(double sampleCallrate) {
-		this.sampleCallrate = sampleCallrate;
+	public void setMinSampleCallRate(double minSampleCallRate) {
+		this.minSampleCallRate = minSampleCallRate;
 	}
 
 	public void setMinSnps(double minSnps) {
