@@ -1,23 +1,24 @@
 package genepi.imputationserver.steps;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
 
-import cloudgene.sdk.internal.WorkflowStep;
-import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import com.esotericsoftware.yamlbeans.YamlException;
+
+import genepi.imputationserver.BaseTestCase;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
-import junit.framework.TestCase;
 import net.lingala.zip4j.exception.ZipException;
 
-public class FastQualityControlTest extends TestCase {
+public class FastQualityControlTest extends BaseTestCase {
 
 	// baseline for all tests was execution of running pipeline on Impuation
 	// Server and compared to checkVCF
@@ -30,7 +31,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -47,14 +48,14 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Monomorphic sites: 331"));
 
 	}
-	
+
 	public void testQcStatisticAllChunksExcluded() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -74,7 +75,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/simulated-chip-3chr-qc";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -98,7 +99,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/simulated-chip-3chr-qc";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		String out = context.getOutput("statisticDir");
 
@@ -135,7 +136,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -155,7 +156,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		String out = context.getOutput("chunksDir");
 
@@ -196,7 +197,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		String out = context.getOutput("chunksDir");
 
@@ -229,7 +230,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// get output directory
 		String out = context.getOutput("chunkFileDir");
@@ -257,7 +258,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// get output directory
 		String out = context.getOutput("chunksDir");
@@ -289,7 +290,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder1 = "test-data/data/chr20-phased-1sample";
 		String inputFolder50 = "test-data/data/chr20-phased";
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder1, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder1, configFolder, "hapmap2");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -299,7 +300,7 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(result);
 		assertTrue(context.hasInMemory("Monomorphic sites: 0"));
 
-		context = buildContext(inputFolder50, "hapmap2");
+		context = buildContext(inputFolder50, configFolder, "hapmap2");
 		result = run(context, qcStats);
 		assertTrue(result);
 		assertTrue(context.hasInMemory("Monomorphic sites: 11"));
@@ -313,7 +314,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/chrX-unphased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "phase1");
 
 		// run qc to create chunkfile
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -332,7 +333,6 @@ public class FastQualityControlTest extends TestCase {
 
 	}
 
-	
 	@Test
 	public void testChrXInvalidAlleles() throws IOException, ZipException {
 
@@ -340,7 +340,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/chrX-phased-invalid";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "phase1");
 
 		// run qc to create chunkfile
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -348,9 +348,9 @@ public class FastQualityControlTest extends TestCase {
 
 		assertTrue(result);
 		assertTrue(context.hasInMemory("Invalid alleles: 190"));
-		
+
 	}
-	
+
 	@Test
 	public void testChrXMixedGenotypes() throws IOException, ZipException {
 
@@ -358,7 +358,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/chrX-unphased-mixed";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "phase1");
 
 		// run qc to create chunkfile
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -368,7 +368,7 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Chromosome X nonPAR region includes > 10 % mixed genotypes."));
 
 	}
-	
+
 	@Test
 	public void testChrXPloidyError() throws IOException, ZipException {
 
@@ -376,7 +376,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/chrX-unphased-ploidy";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase1");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "phase1");
 
 		// run qc to create chunkfile
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -386,15 +386,14 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("ChrX nonPAR region includes ambiguous samples"));
 
 	}
-	
-	
+
 	@Test
-	public void testAlleleFrequencyCheckWithWrongPopulation() {
+	public void testAlleleFrequencyCheckWithWrongPopulation() throws YamlException, FileNotFoundException {
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 		context.setInput("population", "afr");
 
 		// create step instance
@@ -408,16 +407,15 @@ public class FastQualityControlTest extends TestCase {
 		// check statistics
 		assertTrue(context.hasInMemory("Population 'afr' is not supported by reference panel 'hapmap2'."));
 	}
-	
+
 	@Test
-	public void testAlleleFrequencyCheckWithNoSamplesForPopulation() {
-		
-		
+	public void testAlleleFrequencyCheckWithNoSamplesForPopulation() throws YamlException, FileNotFoundException {
+
 		String configFolder = "test-data/configs/hapmap-3chr";
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 		context.setInput("population", "mixed");
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -430,64 +428,14 @@ public class FastQualityControlTest extends TestCase {
 		// check statistics
 		assertTrue(context.hasInMemory("[WARN] Skip allele frequency check."));
 	}
-	
-	class FastQualityControlMock extends FastQualityControl {
 
-		private String folder;
-
-		public FastQualityControlMock(String folder) {
-			super();
-			this.folder = folder;
-		}
-
-		@Override
-		public String getFolder(Class clazz) {
-			// override folder with static folder instead of jar location
-			return folder;
-		}
-
-		@Override
-		protected void setupTabix(String folder) {
-			VcfFileUtil.setTabixBinary("files/bin/tabix");
-		}
-
-	}
-
-	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
-		step.setup(context);
-		return step.run(context);
-	}
-
-	protected WorkflowTestContext buildContext(String folder, String refpanel) {
-		WorkflowTestContext context = new WorkflowTestContext();
-
-		File file = new File("test-data/tmp");
-		if (file.exists()) {
-			FileUtil.deleteDirectory(file);
-		}
-		file.mkdirs();
-
-		context.setVerbose(VERBOSE);
-		context.setInput("files", folder);
-		context.setInput("population", "eur");
-		context.setInput("refpanel", refpanel);
-		context.setOutput("mafFile", file.getAbsolutePath() + "/maffile.txt");
-		context.setOutput("chunkFileDir", file.getAbsolutePath());
-		context.setOutput("statisticDir", file.getAbsolutePath());
-		context.setOutput("chunksDir", file.getAbsolutePath());
-		context.setConfig("binaries",ImputationTest. BINARIES_HDFS);
-
-		return context;
-
-	}
-	
 	public void testQcStatisticsAllowStrandFlips() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -500,14 +448,14 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Remaining sites in total: 117,498"));
 
 	}
-	
+
 	public void testQcStatisticsDontAllowStrandFlips() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter-strandflips");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2-qcfilter-strandflips");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -518,17 +466,18 @@ public class FastQualityControlTest extends TestCase {
 		// check statistics
 		assertTrue(context.hasInMemory("Excluded sites in total: 3,058"));
 		assertTrue(context.hasInMemory("Remaining sites in total: 117,498"));
-		assertTrue(context.hasInMemory("<b>Error:</b> More than -1 obvious strand flips have been detected. Please check strand. Imputation cannot be started!"));
+		assertTrue(context.hasInMemory(
+				"<b>Error:</b> More than -1 obvious strand flips have been detected. Please check strand. Imputation cannot be started!"));
 
 	}
-	
+
 	public void testQcStatisticsFilterOverlap() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter-ref-overlap");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2-qcfilter-ref-overlap");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -537,17 +486,18 @@ public class FastQualityControlTest extends TestCase {
 		run(context, qcStats);
 
 		// check statistics
-		assertTrue(context.hasInMemory("<b>Warning:</b> 36 Chunk(s) excluded: reference overlap < 99.0% (see [NOT AVAILABLE] for details)"));
+		assertTrue(context.hasInMemory(
+				"<b>Warning:</b> 36 Chunk(s) excluded: reference overlap < 99.0% (see [NOT AVAILABLE] for details)"));
 
 	}
-	
+
 	public void testQcStatisticsFilterMinSnps() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter-min-snps");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2-qcfilter-min-snps");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -556,7 +506,8 @@ public class FastQualityControlTest extends TestCase {
 		run(context, qcStats);
 
 		// check statistics
-		assertTrue(context.hasInMemory("<b>Warning:</b> 2 Chunk(s) excluded: < 1000 SNPs (see [NOT AVAILABLE]  for details)."));
+		assertTrue(context
+				.hasInMemory("<b>Warning:</b> 2 Chunk(s) excluded: < 1000 SNPs (see [NOT AVAILABLE]  for details)."));
 
 	}
 
@@ -566,7 +517,7 @@ public class FastQualityControlTest extends TestCase {
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter-low-callrate");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2-qcfilter-low-callrate");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -575,10 +526,11 @@ public class FastQualityControlTest extends TestCase {
 		run(context, qcStats);
 
 		// check statistics
-		assertTrue(context.hasInMemory("<b>Warning:</b> 36 Chunk(s) excluded: at least one sample has a call rate < 101.0% (see [NOT AVAILABLE] for details)"));
+		assertTrue(context.hasInMemory(
+				"<b>Warning:</b> 36 Chunk(s) excluded: at least one sample has a call rate < 101.0% (see [NOT AVAILABLE] for details)"));
 
 	}
-	
+
 	@Test
 	public void testChr23PipelineLifting() throws IOException, ZipException {
 
@@ -594,7 +546,7 @@ public class FastQualityControlTest extends TestCase {
 		}
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -604,9 +556,8 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 8,973"));
 		assertTrue(context.hasInMemory("[MESSAGE] [WARN] Excluded sites in total: 18,076"));
 
-
 	}
-	
+
 	@Test
 	public void testChrXPipelineLifting() throws IOException, ZipException {
 
@@ -622,7 +573,7 @@ public class FastQualityControlTest extends TestCase {
 		}
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// run qc to create chunkfile
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -632,16 +583,15 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 8,973"));
 		assertTrue(context.hasInMemory("[MESSAGE] [WARN] Excluded sites in total: 18,076"));
 
-
 	}
-	
+
 	public void testRegionImputationSimple() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-region-simple");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2-region-simple");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -653,14 +603,14 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Remaining sites in total: 1"));
 
 	}
-	
+
 	public void testRegionImputationComplex() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/simulated-chip-1chr-imputation";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-region-complex");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2-region-complex");
 
 		// create step instance
 		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
@@ -672,5 +622,5 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Remaining sites in total: 2"));
 
 	}
-	
+
 }

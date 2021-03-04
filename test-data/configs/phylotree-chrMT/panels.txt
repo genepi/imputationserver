@@ -1,4 +1,3 @@
-panels:
   - id: phylotree
     hdfs: ref-panels/chrMT.phylotree17.m3vcf.gz
     legend: ref-panels/chrMT.phylotree17.legend.gz

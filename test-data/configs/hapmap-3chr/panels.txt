@@ -1,5 +1,3 @@
-panels:
-   
   - id: hapmap2
     hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
     legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz

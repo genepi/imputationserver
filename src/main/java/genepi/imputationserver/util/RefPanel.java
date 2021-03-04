@@ -236,4 +236,80 @@ public class RefPanel {
 	public void setMapBeagle(String mapBeagle) {
 		this.mapBeagle = mapBeagle;
 	}
+
+	public static RefPanel loadFromProperties(Object properties) throws IOException {
+		if (properties != null) {
+			RefPanel panel = new RefPanel();
+			Map<String, Object> map = (Map<String, Object>) properties;
+
+			if (map.get("hdfs") != null) {
+				panel.setHdfs(map.get("hdfs").toString());
+			} else {
+				throw new IOException("Property 'hdfs' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("id") != null) {
+				panel.setId(map.get("id").toString());
+			} else {
+				throw new IOException("Property 'id' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("legend") != null) {
+				panel.setLegend(map.get("legend").toString());
+			} else {
+				throw new IOException("Property 'legend' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("mapEagle") != null) {
+				panel.setMapEagle(map.get("mapEagle").toString());
+			}
+
+			if (map.get("refEagle") != null) {
+				panel.setRefEagle(map.get("refEagle").toString());
+			}
+
+			if (map.get("mapBeagle") != null) {
+				panel.setMapBeagle(map.get("mapBeagle").toString());
+			}
+
+			if (map.get("refBeagle") != null) {
+				panel.setRefBeagle(map.get("refBeagle").toString());
+			}
+
+			if (map.get("populations") != null) {
+				panel.setPopulations((Map<String, String>) map.get("populations"));
+			} else {
+				throw new IOException("Property 'populations' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("samples") != null) {
+				panel.setSamples((Map<String, String>) map.get("samples"));
+			} else {
+				throw new IOException("Property 'samples' not found in cloudgene.yaml.");
+			}
+
+			if (map.get("qcFilter") != null) {
+				panel.setQcFilter((Map<String, String>) map.get("qcFilter"));
+			}
+
+			// optional parameters
+			if (map.get("build") != null) {
+				panel.setBuild(map.get("build").toString());
+			}
+				
+			if (map.get("range") != null) {
+				panel.setRange(map.get("range").toString());
+			}
+
+			if (map.get("mapMinimac") != null) {
+				panel.setMapMinimac(map.get("mapMinimac").toString());
+			}
+
+			return panel;
+
+		} else {
+
+			return null;
+		}
+	}
 }

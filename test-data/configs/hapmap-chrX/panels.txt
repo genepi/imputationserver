@@ -1,5 +1,3 @@
-panels:
-   
   - id: phase1
     hdfs: ref-panels/$chr.1000g.Phase1.v3.With.Parameter.Estimates.m3vcf.gz
     legend: ref-panels/1000g_chr$chr_impute.legend.gz

@@ -3,19 +3,14 @@ package genepi.imputationserver.steps;
 import java.io.File;
 import java.io.IOException;
 
-import cloudgene.sdk.internal.WorkflowStep;
-import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.BaseTestCase;
 import genepi.imputationserver.util.WorkflowTestContext;
 import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
-import htsjdk.variant.vcf.VCFUtils;
-import junit.framework.TestCase;
 
-public class InputValidationTest extends TestCase {
-
-	public static final boolean VERBOSE = true;
+public class InputValidationTest extends BaseTestCase {
 
 	public void testWithWrongReferencePanel() throws IOException {
 
@@ -23,7 +18,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "missing-reference-panel");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "missing-reference-panel");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -46,7 +41,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/three";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 		context.setInput("build", "hg38");
 		
 		// create step instance
@@ -73,7 +68,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/chr20-unphased-hg38";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 		context.setInput("build", "hg19");
 		
 		// create step instance
@@ -104,7 +99,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/wrong_files";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -127,7 +122,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/wrong_vcf";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -149,7 +144,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hrc-fake");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hrc-fake");
 		
 		context.setInput("phasing", "eagle");
 		context.setInput("population", "mixed");
@@ -171,7 +166,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hrc-fake");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hrc-fake");
 		
 		context.setInput("phasing", "eagle");
 		context.setInput("population", "eur");
@@ -193,7 +188,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hrc-fake");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hrc-fake");
 		
 		context.setInput("phasing", "eagle");
 		context.setInput("population", "aas");
@@ -217,7 +212,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "phase3-fake");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "phase3-fake");
 		
 		context.setInput("phasing", "eagle");
 		context.setInput("population", "asn");
@@ -241,7 +236,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "TOPMedfreeze6-fake");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "TOPMedfreeze6-fake");
 		
 		context.setInput("phasing", "eagle");
 		context.setInput("population", "asn");
@@ -266,7 +261,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/unorderd";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -289,7 +284,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/wrong_chrs";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -314,7 +309,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 		
 		context.setInput("phasing", "eagle");
 
@@ -347,7 +342,7 @@ public class InputValidationTest extends TestCase {
 		String configFolder = "test-data/configs/hapmap-chr1";
 		String inputFolder = "test-data/data/three";
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 		context.setInput("phasing", "eagle");
 
 		// create step instance
@@ -385,7 +380,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/chr20-phased";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 
 		// create step instance
 		InputValidation inputValidation = new InputValidationMock(configFolder);
@@ -423,7 +418,7 @@ public class InputValidationTest extends TestCase {
 		String inputFolder = "test-data/data/single";
 
 		// create workflow context
-		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		WorkflowTestContext context = buildContext(inputFolder, configFolder, "hapmap2");
 		context.setInput("phasing", "eagle");
 
 		// create step instance
@@ -455,42 +450,5 @@ public class InputValidationTest extends TestCase {
 
 	}
 
-	class InputValidationMock extends InputValidation {
-
-		private String folder;
-
-		public InputValidationMock(String folder) {
-			super();
-			this.folder = folder;
-		}
-
-		@Override
-		public String getFolder(Class clazz) {
-			// override folder with static folder instead of jar location
-			return folder;
-		}
-		
-		
-		@Override
-		protected void setupTabix(String folder) {
-			VcfFileUtil.setTabixBinary("files/bin/tabix");
-		}
-
-	}
-
-	protected boolean run(WorkflowTestContext context, WorkflowStep step) {
-		step.setup(context);
-		return step.run(context);
-	}
-
-	protected WorkflowTestContext buildContext(String folder, String referencePanel) {
-		WorkflowTestContext context = new WorkflowTestContext();
-		context.setVerbose(VERBOSE);
-		context.setInput("files", folder);
-		context.setInput("refpanel", referencePanel);
-		context.setInput("population", "eur");
-		return context;
-
-	}
-
+	
 }
