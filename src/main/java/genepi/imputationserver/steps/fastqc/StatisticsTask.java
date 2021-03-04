@@ -17,6 +17,7 @@ import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.GenomicTools;
+import genepi.imputationserver.util.RefPanel;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
@@ -42,6 +43,7 @@ public class StatisticsTask implements ITask {
 	private double minSnps;
 	private double referenceOverlap;
 	private double mixedGenotypeschrX;
+	private double minSamplesMonomorphic = RefPanel.MIN_SAMPLES_MONOMORPHIC;
 
 	private String chunkFileDir = "tmp";
 	private String chunksDir = "tmp";
@@ -319,9 +321,9 @@ public class StatisticsTask implements ITask {
 			throws IOException, InterruptedException {
 
 		if (ranges != null) {
-			
+
 			boolean inRange = false;
-			
+
 			for (RangeEntry range : ranges) {
 
 				if (snp.getContig().equals(range.getChromosome()) && snp.getStart() >= range.getStart()
@@ -422,7 +424,7 @@ public class StatisticsTask implements ITask {
 		}
 
 		// monomorphic only excludes 0/0;
-		if (samples > 1 && snp.isMonomorphicInSamples()) {
+		if (samples >= minSamplesMonomorphic && snp.isMonomorphicInSamples()) {
 			if (insideChunk) {
 				excludedSnpsWriter.write(snp + "\t" + "Monomorphic");
 				monomorphic++;
@@ -1020,6 +1022,10 @@ public class StatisticsTask implements ITask {
 
 	public void setMixedGenotypeschrX(double mixedGenotypeschrX) {
 		this.mixedGenotypeschrX = mixedGenotypeschrX;
+	}
+
+	public void setMinSamplesMonomorphic(double minSamplesMonomorphic) {
+		this.minSamplesMonomorphic = minSamplesMonomorphic;
 	}
 
 	public int getRefSamples() {

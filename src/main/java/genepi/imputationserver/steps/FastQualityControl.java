@@ -166,6 +166,7 @@ public class FastQualityControl extends WorkflowStep {
 		int minSnps = (int) panel.getQcFilterByKey("minSnps");
 		double sampleCallrate = panel.getQcFilterByKey("sampleCallrate");
 		double mixedGenotypesChrX = panel.getQcFilterByKey("mixedGenotypeschrX");
+		double minSamplesMonomorphic = panel.getQcFilterByKey("minSamplesMonomorphic");
 		int strandFlips = (int) (panel.getQcFilterByKey("strandFlips"));
 		String ranges = panel.getRange();
 
@@ -194,6 +195,7 @@ public class FastQualityControl extends WorkflowStep {
 		task.setMinSnps(minSnps);
 		task.setSampleCallrate(sampleCallrate);
 		task.setMixedGenotypeschrX(mixedGenotypesChrX);
+		task.setMinSamplesMonomorphic(minSamplesMonomorphic);
 
 		TaskResults results = runTask(context, task);
 

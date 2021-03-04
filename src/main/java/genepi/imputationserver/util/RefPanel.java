@@ -23,6 +23,8 @@ public class RefPanel {
 
 	public static final double CHR_X_MIXED_GENOTYPES = 0.1;
 
+	public static final double MIN_SAMPLES_MONOMORPHIC = 2;
+
 	private String id;
 
 	private String hdfs;
@@ -61,6 +63,7 @@ public class RefPanel {
 		defaultQcFilter.put("sampleCallrate", MIN_SAMPLE_CALL_RATE + "");
 		defaultQcFilter.put("mixedGenotypeschrX", CHR_X_MIXED_GENOTYPES + "");
 		defaultQcFilter.put("strandFlips", MAX_STRAND_FLIPS + "");
+		defaultQcFilter.put("minSamplesMonomorphic", MIN_SAMPLES_MONOMORPHIC + "");
 	}
 
 	public String getId() {
@@ -296,7 +299,7 @@ public class RefPanel {
 			if (map.get("build") != null) {
 				panel.setBuild(map.get("build").toString());
 			}
-				
+
 			if (map.get("range") != null) {
 				panel.setRange(map.get("range").toString());
 			}

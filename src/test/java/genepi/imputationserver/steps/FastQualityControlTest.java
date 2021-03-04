@@ -288,7 +288,7 @@ public class FastQualityControlTest extends BaseTestCase {
 
 		String configFolder = "test-data/configs/hapmap-chr20";
 		String inputFolder1 = "test-data/data/chr20-phased-1sample";
-		String inputFolder50 = "test-data/data/chr20-phased";
+		String inputFolder51 = "test-data/data/chr20-phased";
 		// create workflow context
 		WorkflowTestContext context = buildContext(inputFolder1, configFolder, "hapmap2");
 
@@ -300,13 +300,39 @@ public class FastQualityControlTest extends BaseTestCase {
 		assertTrue(result);
 		assertTrue(context.hasInMemory("Monomorphic sites: 0"));
 
-		context = buildContext(inputFolder50, configFolder, "hapmap2");
+		context = buildContext(inputFolder51, configFolder, "hapmap2");
 		result = run(context, qcStats);
 		assertTrue(result);
 		assertTrue(context.hasInMemory("Monomorphic sites: 11"));
 
 	}
 
+		
+	@Test
+	public void testMonomorphicSnpsAndFilter() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder51 = "test-data/data/chr20-phased";
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder51, configFolder, "hapmap2-monomorphic-filter-51");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Monomorphic sites: 11"));
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		context = buildContext(inputFolder51, configFolder, "hapmap2-monomorphic-filter-52");
+		result = run(context, qcStats);
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Monomorphic sites: 0"));
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,746"));
+
+	}
+	
 	@Test
 	public void testChrXSplits() throws IOException, ZipException {
 
