@@ -424,7 +424,7 @@ public class StatisticsTask implements ITask {
 		}
 
 		// monomorphic only excludes 0/0;
-		if (samples >= minSamplesMonomorphic && snp.isMonomorphicInSamples()) {
+		if (minSamplesMonomorphic != -1 && samples >= minSamplesMonomorphic && snp.isMonomorphicInSamples()) {
 			if (insideChunk) {
 				excludedSnpsWriter.write(snp + "\t" + "Monomorphic");
 				monomorphic++;
