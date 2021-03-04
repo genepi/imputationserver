@@ -13,11 +13,15 @@ import genepi.hadoop.HdfsUtil;
 
 public class RefPanel {
 
-	public static final String STRAMD_FLIPS = "100";
-	public static final String SAMPLE_CALL_RATE = "0.5";
-	public static final String MIN_SNPS = "3";
-	public static final String OVERLAP = "0.5";
-	public static final String CHR_X_MIXED_GENOTYPES = "0.1";
+	public static final int MAX_STRAND_FLIPS = 100;
+
+	public static final double MIN_SAMPLE_CALL_RATE = 0.5;
+
+	public static final int MIN_SNPS = 3;
+
+	public static final double MIN_OVERLAP = 0.5;
+
+	public static final double CHR_X_MIXED_GENOTYPES = 0.1;
 
 	private String id;
 
@@ -32,9 +36,9 @@ public class RefPanel {
 	private String mapEagle;
 
 	private String refEagle;
-	
+
 	private String refBeagle;
-	
+
 	private String mapBeagle;
 
 	private Map<String, String> samples;
@@ -52,11 +56,11 @@ public class RefPanel {
 	 */
 	public RefPanel() {
 		defaultQcFilter = new HashMap<String, String>();
-		defaultQcFilter.put("overlap", OVERLAP);
-		defaultQcFilter.put("minSnps", MIN_SNPS);
-		defaultQcFilter.put("sampleCallrate", SAMPLE_CALL_RATE);
-		defaultQcFilter.put("mixedGenotypeschrX", CHR_X_MIXED_GENOTYPES);
-		defaultQcFilter.put("strandFlips", STRAMD_FLIPS);
+		defaultQcFilter.put("overlap", MIN_OVERLAP + "");
+		defaultQcFilter.put("minSnps", MIN_SNPS + "");
+		defaultQcFilter.put("sampleCallrate", MIN_SAMPLE_CALL_RATE + "");
+		defaultQcFilter.put("mixedGenotypeschrX", CHR_X_MIXED_GENOTYPES + "");
+		defaultQcFilter.put("strandFlips", MAX_STRAND_FLIPS + "");
 	}
 
 	public String getId() {
@@ -118,7 +122,7 @@ public class RefPanel {
 	public String getMapEagle() {
 		return mapEagle;
 	}
-	
+
 	public String getRefBeagle() {
 		return refBeagle;
 	}
