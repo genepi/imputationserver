@@ -40,29 +40,26 @@ public class TestCluster {
 
 	public void start() throws IOException {
 
-		File testCluster = new File(WORKING_DIRECTORY);
-		if (testCluster.exists()) {
-			FileUtil.deleteDirectory(testCluster);
-		}
-		testCluster.mkdirs();
-		
-		File testClusterData = new File(WORKING_DIRECTORY + "/data");
-		File testClusterLog = new File(WORKING_DIRECTORY + "/logs");
-
-		
 		if (cluster == null) {
 
-			conf = new HdfsConfiguration();		
-			conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR,
-					testClusterData.getAbsolutePath());
+			File testCluster = new File(WORKING_DIRECTORY);
+			if (testCluster.exists()) {
+				FileUtil.deleteDirectory(testCluster);
+			}
+			testCluster.mkdirs();
+
+			File testClusterData = new File(WORKING_DIRECTORY + "/data");
+			File testClusterLog = new File(WORKING_DIRECTORY + "/logs");
+
+			conf = new HdfsConfiguration();
+			conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, testClusterData.getAbsolutePath());
 			cluster = new MiniDFSCluster.Builder(conf).build();
 			fs = cluster.getFileSystem();
 
 			// set mincluster as default config
 			HdfsUtil.setDefaultConfiguration(conf);
 			System.setProperty("hadoop.log.dir", testClusterLog.getAbsolutePath());
-			MiniMRCluster mrCluster = new MiniMRCluster(1, fs.getUri()
-					.toString(), 1, null, null, new JobConf(conf));
+			MiniMRCluster mrCluster = new MiniMRCluster(1, fs.getUri().toString(), 1, null, null, new JobConf(conf));
 			JobConf mrClusterConf = mrCluster.createJobConf();
 			HdfsUtil.setDefaultConfiguration(new Configuration(mrClusterConf));
 
@@ -73,13 +70,14 @@ public class TestCluster {
 			System.out.println(status.getActiveTrackerNames());
 		}
 	}
-	
-	public void stop(){
+
+	public void stop() {
 		cluster.shutdown(true);
 		File testCluster = new File(WORKING_DIRECTORY);
 		if (testCluster.exists()) {
 			FileUtil.deleteDirectory(testCluster);
 		}
+		cluster = null;
 	}
 
 }

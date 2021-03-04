@@ -16,7 +16,6 @@ import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.ParallelHadoopJobStep;
 import genepi.imputationserver.util.PgsPanel;
 import genepi.imputationserver.util.RefPanel;
-import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 
@@ -58,7 +57,7 @@ public class Imputation extends ParallelHadoopJobStep {
 
 		// inputs
 		String input = context.get("chunkFileDir");
-		String reference = context.get("refpanel");
+		Object reference = context.getData("refpanel");
 		String binariesHDFS = context.getConfig("binaries");
 		String mode = context.get("mode");
 		String phasing = context.get("phasing");
@@ -81,24 +80,21 @@ public class Imputation extends ParallelHadoopJobStep {
 			return false;
 		}
 
-		// load reference panels
-
-		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
-
+		// load reference panel
 		RefPanel panel = null;
 		try {
-			panel = panels.getById(reference, context.getData("refpanel"));
+			panel = RefPanel.loadFromProperties(reference);
 			if (panel == null) {
-				context.error("reference panel '" + reference + "' not found.");
+				context.error("reference panel not found.");
 				return false;
 			}
 		} catch (Exception e) {
-			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
+			context.error("Unable to parse reference panel: " + e.getMessage());
 			return false;
 		}
 
 		context.println("Reference Panel: ");
-		context.println("  Name: " + reference);
+		context.println("  Name: " + panel.getId());
 		context.println("  ID: " + panel.getId());
 		context.println("  Build: " + panel.getBuild());
 		context.println("  Location: " + panel.getHdfs());
@@ -227,7 +223,7 @@ public class Imputation extends ParallelHadoopJobStep {
 				if (pgsPanel != null) {
 					job.setScores(pgsPanel.getScores());
 				}
-				job.setRefPanel(reference);
+				job.setRefPanel(panel.getId());
 				job.setLogFilename(FileUtil.path(log, "chr_" + chr + ".log"));
 				job.setJarByClass(ImputationJob.class);
 

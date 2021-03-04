@@ -19,7 +19,6 @@ import genepi.imputationserver.steps.fastqc.TaskResult;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.RefPanel;
-import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 import genepi.io.text.LineWriter;
 
@@ -35,7 +34,7 @@ public class FastQualityControl extends WorkflowStep {
 		String folder = getFolder(FastQualityControl.class);
 		setupTabix(folder);
 		String inputFiles = context.get("files");
-		String reference = context.get("refpanel");
+		Object reference = context.getData("refpanel");
 		String population = context.get("population");
 
 		String mafFile = context.get("mafFile");
@@ -60,24 +59,16 @@ public class FastQualityControl extends WorkflowStep {
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 		int chunkSize = Integer.parseInt(store.getString("chunksize"));
 
-		// load reference panels
-		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
-
-		// check reference panel
+		// load reference panel
 		RefPanel panel = null;
 		try {
-			panel = panels.getById(reference, context.getData("refpanel"));
+			panel = RefPanel.loadFromProperties(reference);
 			if (panel == null) {
-				context.error("Reference '" + reference + "' not found.");
-				context.error("Available references:");
-				for (RefPanel p : panels.getPanels()) {
-					context.error(p.getId());
-				}
-
+				context.error("Reference not found.");
 				return false;
 			}
 		} catch (Exception e) {
-			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
+			context.error("Unable to parse reference panel: " + e.getMessage());
 			return false;
 		}
 
@@ -145,7 +136,8 @@ public class FastQualityControl extends WorkflowStep {
 
 		if (!panel.supportsPopulation(population)) {
 			StringBuilder report = new StringBuilder();
-			report.append("Population '" + population + "' is not supported by reference panel '" + reference + "'.\n");
+			report.append(
+					"Population '" + population + "' is not supported by reference panel '" + panel.getId() + "'.\n");
 			if (panel.getPopulations() != null) {
 				report.append("Available populations:");
 				for (String pop : panel.getPopulations().values()) {
@@ -174,6 +166,7 @@ public class FastQualityControl extends WorkflowStep {
 		int minSnps = (int) panel.getQcFilterByKey("minSnps");
 		double sampleCallrate = panel.getQcFilterByKey("sampleCallrate");
 		double mixedGenotypesChrX = panel.getQcFilterByKey("mixedGenotypeschrX");
+		double minSamplesMonomorphic = panel.getQcFilterByKey("minSamplesMonomorphic");
 		int strandFlips = (int) (panel.getQcFilterByKey("strandFlips"));
 		String ranges = panel.getRange();
 
@@ -202,6 +195,7 @@ public class FastQualityControl extends WorkflowStep {
 		task.setMinSnps(minSnps);
 		task.setMinSampleCallRate(sampleCallrate);
 		task.setMixedGenotypesChrX(mixedGenotypesChrX);
+		task.setMinSamplesMonomorphic(minSamplesMonomorphic);
 
 		TaskResult results = runTask(context, task);
 

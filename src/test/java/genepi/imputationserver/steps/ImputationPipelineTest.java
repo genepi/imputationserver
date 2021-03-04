@@ -11,8 +11,6 @@ import junit.framework.TestCase;
 
 public class ImputationPipelineTest extends TestCase {
 
-	public static final boolean VERBOSE = true;
-
 	public void testWithWrongReferencePanel() throws IOException, CompilationFailedException, ClassNotFoundException {
 
 		String template = "--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}";

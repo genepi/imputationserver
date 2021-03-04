@@ -16,7 +16,6 @@ import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.PgsPanel;
 import genepi.imputationserver.util.RefPanel;
-import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 
 public class InputValidation extends WorkflowStep {
@@ -49,7 +48,7 @@ public class InputValidation extends WorkflowStep {
 		String folder = getFolder(InputValidation.class);
 		setupTabix(folder);
 		String files = context.get("files");
-		String reference = context.get("refpanel");
+		Object reference = context.getData("refpanel");
 		String population = context.get("population");
 		String build = context.get("build");
 		String r2Filter = context.get("r2Filter");
@@ -99,17 +98,15 @@ public class InputValidation extends WorkflowStep {
 
 		String infos = null;
 
-		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
-
 		RefPanel panel = null;
 		try {
-			panel = panels.getById(reference, context.getData("refpanel"));
+			panel = RefPanel.loadFromProperties(reference);
 			if (panel == null) {
-				context.endTask("Reference '" + reference + "' not found.", WorkflowContext.ERROR);
+				context.endTask("Reference not found.", WorkflowContext.ERROR);
 				return false;
 			}
 		} catch (Exception e) {
-			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
+			context.error("Unable to parse reference panel: " + e.getMessage());
 			return false;
 		}
 
@@ -198,7 +195,7 @@ public class InputValidation extends WorkflowStep {
 					infos = "Samples: " + noSamples + "\n" + "Chromosomes:" + chromosomeString + "\n" + "SNPs: "
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
-							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
+							+ "\n" + "Reference Panel: " + panel.getId() + " (" + panel.getBuild() + ")" + "\n"
 							+ "Population: " + population + "\n" + "Phasing: eagle" + "\n" + "Mode: " + mode
 							+ (pgsPanel != null ? "\n" + "PGS-Calculation: " + pgsPanel.getScores().size() + " scores"
 									: "");
@@ -236,7 +233,7 @@ public class InputValidation extends WorkflowStep {
 			context.incCounter("genotypes", noSamples * noSnps);
 			context.incCounter("chromosomes", noSamples * chromosomes.size());
 			context.incCounter("runs", 1);
-			context.incCounter("refpanel_" + reference, 1);
+			context.incCounter("refpanel_" + panel.getId(), 1);
 			context.incCounter("phasing_" + "eagle", 1);
 
 			return true;
@@ -254,21 +251,15 @@ public class InputValidation extends WorkflowStep {
 
 		String folder = getFolder(InputValidation.class);
 		setupTabix(folder);
-		String reference = context.get("refpanel");
+		Object reference = context.getData("refpanel");
 		String population = context.get("population");
-
-		RefPanelList panels = RefPanelList.loadFromFile(FileUtil.path(folder, RefPanelList.FILENAME));
 
 		try {
 
-			RefPanel panel = panels.getById(reference, context.getData("refpanel"));
+			RefPanel panel = RefPanel.loadFromProperties(reference);
 			if (panel == null) {
 				StringBuilder report = new StringBuilder();
-				report.append("Reference '" + reference + "' not found.\n");
-				report.append("Available reference IDs:");
-				for (RefPanel p : panels.getPanels()) {
-					report.append("\n - " + p.getId());
-				}
+				report.append("Reference not found.\n");				
 				context.error(report.toString());
 				return false;
 			}
@@ -276,7 +267,7 @@ public class InputValidation extends WorkflowStep {
 			if (!panel.supportsPopulation(population)) {
 				StringBuilder report = new StringBuilder();
 				report.append(
-						"Population '" + population + "' is not supported by reference panel '" + reference + "'.\n");
+						"Population '" + population + "' is not supported by reference panel '" + panel.getId() + "'.\n");
 				if (panel.getPopulations() != null) {
 					report.append("Available populations:");
 					for (String pop : panel.getPopulations().values()) {
@@ -288,7 +279,7 @@ public class InputValidation extends WorkflowStep {
 			}
 
 		} catch (Exception e) {
-			context.error("Unable to parse reference panel '" + reference + "': " + e.getMessage());
+			context.error("Unable to parse reference panel: " + e.getMessage());
 			return false;
 		}
 

@@ -30,12 +30,13 @@ public class StatisticsTaskTest extends TestCase {
 		task.setExcludedSnpsWriter(excludedSnpsWriter);
 		task.setLegendFile("test-data/configs/hapmap-chr1/ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz");
 		task.setMafFile(myTempDir.getAbsolutePath() + "/maf-file.txt");
-		task.setMinSnps(Integer.parseInt(RefPanel.MIN_SNPS));
-		task.setMixedGenotypesChrX(Double.parseDouble(RefPanel.CHR_X_MIXED_GENOTYPES));
+		task.setMinSnps((int)RefPanel.MIN_SNPS);
+		task.setMixedGenotypesChrX(RefPanel.CHR_X_MIXED_GENOTYPES);
 		task.setPopulation("mixed");
-		task.setReferenceOverlap(Double.parseDouble(RefPanel.OVERLAP));
+		task.setReferenceOverlap(RefPanel.MIN_OVERLAP);
 		task.setRefSamples(60);
-		task.setMinSampleCallRate(Double.parseDouble(RefPanel.SAMPLE_CALL_RATE));
+		task.setMinSampleCallRate(RefPanel.MIN_SAMPLE_CALL_RATE);
+		task.setMinSamplesMonomorphic(RefPanel.MIN_SAMPLES_MONOMORPHIC);
 		task.setStatDir(myTempDir.getAbsolutePath());
 		task.setAlleleFrequencyCheck(true);
 
