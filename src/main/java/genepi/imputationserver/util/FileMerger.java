@@ -8,12 +8,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-
 import genepi.hadoop.HdfsUtil;
 import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.VcfChunk;
@@ -24,17 +18,18 @@ public class FileMerger {
 
 	public static final String R2_FLAG = "R2";
 
-	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, double minR2,
-			String referencName) throws IOException {
+	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData,
+			ImputationParameters parameters) throws IOException {
 		LineReader reader = new LineReader(input);
+
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
-				if (minR2 > 0) {
+				if (parameters.getMinR2() > 0) {
 					// rsq set. parse line and check rsq
 					String info = parseInfo(line);
 					if (info != null) {
-						boolean keep = keepVcfLineByInfo(info, R2_FLAG, minR2);
+						boolean keep = keepVcfLineByInfo(info, R2_FLAG, parameters.getMinR2());
 						if (keep) {
 							outData.write(line.getBytes());
 							outData.write("\n".getBytes());
@@ -55,9 +50,9 @@ public class FileMerger {
 				if (line.startsWith("#CHROM")) {
 					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION + "\n").getBytes());
 					outHeader.write(("##imputation=" + ImputationPipeline.IMPUTATION_VERSION + "\n").getBytes());
-					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION + "\n").getBytes());
-					outHeader.write(("##panel=" + referencName + "\n").getBytes());
-					outHeader.write(("##r2Filter=" + minR2 + "\n").getBytes());
+					outHeader.write(("##phasing=" + parameters.getPhasingMethod() + "\n").getBytes());
+					outHeader.write(("##panel=" + parameters.getReferencePanelName() + "\n").getBytes());
+					outHeader.write(("##r2Filter=" + parameters.getMinR2() + "\n").getBytes());
 				}
 
 				// write all headers except minimac4 command
@@ -73,7 +68,7 @@ public class FileMerger {
 	}
 
 	public static void splitPhasedIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData,
-			VcfChunk chunk, String referencName) throws IOException {
+			VcfChunk chunk, ImputationParameters parameters) throws IOException {
 		LineReader reader = new LineReader(input);
 
 		while (reader.next()) {
@@ -91,8 +86,8 @@ public class FileMerger {
 				// write filter command before ID List starting with #CHROM
 				if (line.startsWith("#CHROM")) {
 					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION + "\n").getBytes());
-					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION + "\n").getBytes());
-					outHeader.write(("##panel=" + referencName + "\n").getBytes());
+					outHeader.write(("##phasing=" + parameters.getPhasingMethod() + "\n").getBytes());
+					outHeader.write(("##panel=" + parameters.getReferencePanelName() + "\n").getBytes());
 				}
 
 				// write all headers except eagle command
