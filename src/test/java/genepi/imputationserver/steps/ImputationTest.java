@@ -620,7 +620,7 @@ public class ImputationTest {
 		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
 		VCFHeader header = reader.getFileHeader();
 		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
-		assertEquals("no_phasing", header.getOtherHeaderLine("phasing").getValue());
+		assertEquals("n/a", header.getOtherHeaderLine("phasing").getValue());
 		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
 
 		// FileUtil.deleteDirectory("test-data/tmp");

@@ -185,6 +185,7 @@ public class Imputation extends ParallelHadoopJobStep {
 				}
 
 				if (result.needsPhasing) {
+					job.setPhasingRequired("true");
 					context.println("Input data is unphased.");
 
 					if (phasing.equals("beagle")) {
@@ -208,6 +209,7 @@ public class Imputation extends ParallelHadoopJobStep {
 
 				} else {
 					context.println("Input data is phased.");
+					job.setPhasingRequired("false");
 				}
 
 				if (mode != null && mode.equals("phasing")) {

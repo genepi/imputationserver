@@ -53,6 +53,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private boolean phasingOnly = false;
 
+	private boolean phasingRequired = true;
+
 	private String phasingEngine = "";
 
 	private String refEagleIndexFilename;
@@ -93,6 +95,14 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			phasingOnly = Boolean.parseBoolean(phasingOnlyString);
 		}
 
+		String phasingRequiredString = parameters.get(ImputationJob.PHASING_REQUIRED);
+
+		if (phasingRequiredString == null) {
+			phasingRequired = true;
+		} else {
+			phasingRequired = Boolean.parseBoolean(phasingRequiredString);
+		}
+
 		phasingEngine = parameters.get(ImputationJob.PHASING_ENGINE);
 
 		hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
@@ -108,6 +118,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		imputationParameters.setPhasing(phasingEngine);
 		imputationParameters.setReferencePanelName(referenceName);
 		imputationParameters.setMinR2(minR2);
+		imputationParameters.setPhasingRequired(phasingRequired);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());

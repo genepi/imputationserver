@@ -10,6 +10,8 @@ public class ImputationParameters {
 
 	private String phasing;
 
+	private boolean phasingRequired;
+
 	public String getReferencePanelName() {
 		return referencePanelName;
 	}
@@ -34,13 +36,20 @@ public class ImputationParameters {
 		this.phasing = phasing;
 	}
 
+	public void setPhasingRequired(boolean phasingRequired) {
+		this.phasingRequired = phasingRequired;
+	}
+
 	public String getPhasingMethod() {
-		if (phasing.equals("eagle")) {
-			return ImputationPipeline.EAGLE_VERSION;
-		} else if (phasing.equals("beagle")) {
-			return ImputationPipeline.BEAGLE_VERSION;
-		} else if (phasing.equals("no_phasing")) {
-			return phasing;
+		
+		if (phasingRequired) {
+			if (phasing.equals("eagle")) {
+				return ImputationPipeline.EAGLE_VERSION;
+			} else if (phasing.equals("beagle")) {
+				return ImputationPipeline.BEAGLE_VERSION;
+			}
+		} else {
+			return "n/a";
 		}
 		return "";
 
