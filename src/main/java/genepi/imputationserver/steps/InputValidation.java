@@ -33,7 +33,9 @@ public class InputValidation extends WorkflowStep {
 		context.log("Versions:");
 		context.log("  Pipeline: " + ImputationPipeline.PIPELINE_VERSION);
 		context.log("  Imputation-Engine: " + ImputationPipeline.IMPUTATION_VERSION);
+		if(phasingEngine != null) {
 		context.log("  Phasing-Engine: " + imputationParameters.getPhasingMethod());
+		}
 
 		if (!checkParameters(context)) {
 			return false;
