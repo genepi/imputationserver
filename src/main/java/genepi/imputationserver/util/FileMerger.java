@@ -24,7 +24,7 @@ public class FileMerger {
 
 	public static final String R2_FLAG = "R2";
 
-	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, double minR2)
+	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, double minR2, String referencName)
 			throws IOException {
 		LineReader reader = new LineReader(input);
 		boolean writeVersion = true;
@@ -57,6 +57,7 @@ public class FileMerger {
 					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION+ "\n").getBytes());
 					outHeader.write(("##imputation=" + ImputationPipeline.IMPUTATION_VERSION+ "\n").getBytes());
 					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION+ "\n").getBytes());
+					outHeader.write(("##panel=" + referencName + "\n").getBytes());
 					outHeader.write(("##r2Filter=" + minR2 + "\n").getBytes());
 					writeVersion = false;
 				}

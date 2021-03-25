@@ -26,6 +26,8 @@ import genepi.io.table.reader.CsvTableReader;
 import genepi.io.text.LineReader;
 import genepi.riskscore.commands.ApplyScoreCommand;
 import genepi.riskscore.io.PGSCatalog;
+import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import picocli.CommandLine;
@@ -436,6 +438,51 @@ public class ImputationTest {
 
 		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
 		assertEquals(snpInInfo, file.getNoSnps());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+	
+	@Test
+	public void testValidatePanelInVCFHeader() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+		
+		//create index
+		//VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, true);
+		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"),false);
+		VCFHeader header = reader.getFileHeader();
+		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
+		
 
 		FileUtil.deleteDirectory("test-data/tmp");
 

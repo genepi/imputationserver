@@ -45,6 +45,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 	private String refBeagleFilename = null;
 
 	private String mapBeagleFilename = "";
+	
+	private String referenceName = "";
 
 	private String build = "hg19";
 
@@ -98,6 +100,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String hdfsRefEagle = parameters.get(ImputationJob.REF_PANEL_EAGLE_HDFS);
 		String hdfsRefBeagle = parameters.get(ImputationJob.REF_PANEL_BEAGLE_HDFS);
 		String hdfsPathMapBeagle = parameters.get(ImputationJob.MAP_BEAGLE_HDFS);
+		
+		referenceName  = parameters.get(ImputationJob.REF_PANEL);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
@@ -278,7 +282,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 						HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
 
-				FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData, minR2);
+				FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData, minR2, referenceName);
 				long end = System.currentTimeMillis();
 
 				statistics.setImportTime((end - start) / 1000);
