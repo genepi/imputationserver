@@ -24,10 +24,9 @@ public class FileMerger {
 
 	public static final String R2_FLAG = "R2";
 
-	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, double minR2, String referencName)
-			throws IOException {
+	public static void splitIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, double minR2,
+			String referencName) throws IOException {
 		LineReader reader = new LineReader(input);
-		boolean writeVersion = true;
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
@@ -53,16 +52,15 @@ public class FileMerger {
 			} else {
 
 				// write filter command before ID List starting with #CHROM
-				if (writeVersion && line.startsWith("##INFO")) {
-					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION+ "\n").getBytes());
-					outHeader.write(("##imputation=" + ImputationPipeline.IMPUTATION_VERSION+ "\n").getBytes());
-					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION+ "\n").getBytes());
+				if (line.startsWith("#CHROM")) {
+					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION + "\n").getBytes());
+					outHeader.write(("##imputation=" + ImputationPipeline.IMPUTATION_VERSION + "\n").getBytes());
+					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION + "\n").getBytes());
 					outHeader.write(("##panel=" + referencName + "\n").getBytes());
 					outHeader.write(("##r2Filter=" + minR2 + "\n").getBytes());
-					writeVersion = false;
 				}
 
-				// remove minimac4 command
+				// write all headers except minimac4 command
 				if (!line.startsWith("##minimac4_Command") && !line.startsWith("##source")) {
 					outHeader.write(line.getBytes());
 					outHeader.write("\n".getBytes());
@@ -74,31 +72,30 @@ public class FileMerger {
 		reader.close();
 	}
 
-	public static void splitPhasedIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData, VcfChunk chunk)
-			throws IOException {
+	public static void splitPhasedIntoHeaderAndData(String input, OutputStream outHeader, OutputStream outData,
+			VcfChunk chunk, String referencName) throws IOException {
 		LineReader reader = new LineReader(input);
-		boolean writeVersion = true;
-		
+
 		while (reader.next()) {
 			String line = reader.get();
 			if (!line.startsWith("#")) {
-				//phased files also include phasingWindow
-				int pos = Integer.valueOf(line.split("\t",3)[1]);
+				// phased files also include phasingWindow
+				int pos = Integer.valueOf(line.split("\t", 3)[1]);
 				// no rsq set. keep all lines without parsing
-				if(pos >= chunk.getStart() && pos <= chunk.getEnd()) {
+				if (pos >= chunk.getStart() && pos <= chunk.getEnd()) {
 					outData.write(line.getBytes());
 					outData.write("\n".getBytes());
 				}
 			} else {
-				
+
 				// write filter command before ID List starting with #CHROM
-				if (writeVersion && line.startsWith("##INFO")) {
-					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION+ "\n").getBytes());
-					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION+ "\n").getBytes());
-					writeVersion = false;
+				if (line.startsWith("#CHROM")) {
+					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION + "\n").getBytes());
+					outHeader.write(("##phasing=" + ImputationPipeline.PHASING_VERSION + "\n").getBytes());
+					outHeader.write(("##panel=" + referencName + "\n").getBytes());
 				}
 
-				// remove eagle command (since paths are included)
+				// write all headers except eagle command
 				if (!line.startsWith("##eagleCommand=eagle")) {
 					outHeader.write(line.getBytes());
 					outHeader.write("\n".getBytes());
@@ -111,9 +108,9 @@ public class FileMerger {
 	}
 
 	public static class BgzipSplitOutputStream extends BlockCompressedOutputStream {
-		
+
 		public final static File emptyFile = null;
-		
+
 		public BgzipSplitOutputStream(OutputStream os) {
 			super(os, (File) emptyFile);
 		}

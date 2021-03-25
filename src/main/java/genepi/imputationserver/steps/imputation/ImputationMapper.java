@@ -257,7 +257,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 						HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
 
-				FileMerger.splitPhasedIntoHeaderAndData(outputChunk.getPhasedVcfFilename(), outHeader, outData, chunk);
+				FileMerger.splitPhasedIntoHeaderAndData(outputChunk.getPhasedVcfFilename(), outHeader, outData, chunk, referenceName);
 				long end = System.currentTimeMillis();
 
 				statistics.setImportTime((end - start) / 1000);
