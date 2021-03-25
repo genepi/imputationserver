@@ -26,7 +26,6 @@ The multi-ethnic HLA panel consists of 36,586 haplotypes of five global populati
 | Chromosomes | 6:28,000,000-34,000,000 |
 | Website | [https://github.com/immunogenomics/HLA-TAPAS/](https://github.com/immunogenomics/HLA-TAPAS/) |
 
-<br> 
 Please cite this manuscript if you would like to include imputed results from the panel in  your work:
 
 Luo, Y., Kanai, M., Choi, W., Li, X., Yamamoto, K., Ogawa, K., Gutierrez-Arcelus, M., Gregersen, P. K., Stuart, P. E., Elder, J. T., Fellay, J., Carrington, M., Haas, D. W., Guo, X., Palmer, N. D., Chen, Y.-D. I., Rotter, J. I., Taylor, K. D., Rich, S., … Raychaudhuri, S. (2020). A high-resolution HLA reference panel capturing global population diversity enables multi-ethnic fine-mapping in HIV host response. https://doi.org/10.1101/2020.07.16.20155606
