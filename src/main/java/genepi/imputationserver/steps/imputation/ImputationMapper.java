@@ -18,6 +18,7 @@ import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.FileMerger;
 import genepi.imputationserver.util.FileMerger.BgzipSplitOutputStream;
+import genepi.imputationserver.util.ImputationParameters;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
 import genepi.io.text.LineWriter;
@@ -46,11 +47,13 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private String mapBeagleFilename = "";
 
+	private ImputationParameters imputationParameters = null;
+
 	private String build = "hg19";
 
-	private double minR2 = 0;
-
 	private boolean phasingOnly = false;
+
+	private boolean phasingRequired = true;
 
 	private String phasingEngine = "";
 
@@ -76,6 +79,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		build = parameters.get(ImputationJob.BUILD);
 
 		String r2FilterString = parameters.get(ImputationJob.R2_FILTER);
+
+		double minR2;
 		if (r2FilterString == null) {
 			minR2 = 0;
 		} else {
@@ -90,6 +95,14 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			phasingOnly = Boolean.parseBoolean(phasingOnlyString);
 		}
 
+		String phasingRequiredString = parameters.get(ImputationJob.PHASING_REQUIRED);
+
+		if (phasingRequiredString == null) {
+			phasingRequired = true;
+		} else {
+			phasingRequired = Boolean.parseBoolean(phasingRequiredString);
+		}
+
 		phasingEngine = parameters.get(ImputationJob.PHASING_ENGINE);
 
 		hdfsPath = parameters.get(ImputationJob.REF_PANEL_HDFS);
@@ -98,6 +111,14 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String hdfsRefEagle = parameters.get(ImputationJob.REF_PANEL_EAGLE_HDFS);
 		String hdfsRefBeagle = parameters.get(ImputationJob.REF_PANEL_BEAGLE_HDFS);
 		String hdfsPathMapBeagle = parameters.get(ImputationJob.MAP_BEAGLE_HDFS);
+
+		// set object
+		imputationParameters = new ImputationParameters();
+		String referenceName = parameters.get(ImputationJob.REF_PANEL);
+		imputationParameters.setPhasing(phasingEngine);
+		imputationParameters.setReferencePanelName(referenceName);
+		imputationParameters.setMinR2(minR2);
+		imputationParameters.setPhasingRequired(phasingRequired);
 
 		// get cached files
 		CacheStore cache = new CacheStore(context.getConfiguration());
@@ -253,16 +274,18 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 						HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
 
-				FileMerger.splitPhasedIntoHeaderAndData(outputChunk.getPhasedVcfFilename(), outHeader, outData, chunk);
+				FileMerger.splitPhasedIntoHeaderAndData(outputChunk.getPhasedVcfFilename(), outHeader, outData, chunk,
+						imputationParameters);
 				long end = System.currentTimeMillis();
 
 				statistics.setImportTime((end - start) / 1000);
 
 			} else {
-				if (minR2 > 0) {
+				if (imputationParameters.getMinR2() > 0) {
 					// filter by r2
 					String filteredInfoFilename = outputChunk.getInfoFilename() + "_filtered";
-					filterInfoFileByR2(outputChunk.getInfoFilename(), filteredInfoFilename, minR2);
+					filterInfoFileByR2(outputChunk.getInfoFilename(), filteredInfoFilename,
+							imputationParameters.getMinR2());
 					HdfsUtil.put(filteredInfoFilename, HdfsUtil.path(output, chunk + ".info"));
 
 				} else {
@@ -278,7 +301,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				BgzipSplitOutputStream outHeader = new BgzipSplitOutputStream(
 						HdfsUtil.create(HdfsUtil.path(output, chunk + ".header.dose.vcf.gz")));
 
-				FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData, minR2);
+				FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData,
+						imputationParameters);
 				long end = System.currentTimeMillis();
 
 				statistics.setImportTime((end - start) / 1000);

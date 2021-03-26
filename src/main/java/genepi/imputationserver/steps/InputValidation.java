@@ -14,6 +14,7 @@ import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
+import genepi.imputationserver.util.ImputationParameters;
 import genepi.imputationserver.util.PgsPanel;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -23,11 +24,18 @@ public class InputValidation extends WorkflowStep {
 
 	@Override
 	public boolean run(WorkflowContext context) {
+		String phasingEngine = context.get("phasing");
+
+		ImputationParameters imputationParameters = new ImputationParameters();
+
+		imputationParameters.setPhasing(phasingEngine);
 
 		context.log("Versions:");
 		context.log("  Pipeline: " + ImputationPipeline.PIPELINE_VERSION);
 		context.log("  Imputation-Engine: " + ImputationPipeline.IMPUTATION_VERSION);
-		context.log("  Phasing-Engine: " + ImputationPipeline.PHASING_VERSION);
+		if(phasingEngine != null) {
+		context.log("  Phasing-Engine: " + imputationParameters.getPhasingMethod());
+		}
 
 		if (!checkParameters(context)) {
 			return false;

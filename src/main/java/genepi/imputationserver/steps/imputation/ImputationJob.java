@@ -39,6 +39,8 @@ public class ImputationJob extends HadoopJob {
 	public static final String R2_FILTER = "R2_FILTER";
 
 	public static final String PHASING_ONLY = "PHASING_ONLY";
+	
+	public static final String PHASING_REQUIRED = "PHASING_REQUIRED";
 
 	public static final String PHASING_ENGINE = "PHASING_ENGINE";
 
@@ -264,6 +266,10 @@ public class ImputationJob extends HadoopJob {
 
 	public void setR2Filter(String r2Filter) {
 		set(R2_FILTER, r2Filter);
+	}
+	
+	public void setPhasingRequired(String phasingRequired) {
+		set(PHASING_REQUIRED, phasingRequired);
 	}
 
 	public void setPhasingOnly(String phasingOnly) {

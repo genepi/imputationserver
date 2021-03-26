@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
+import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.TestCluster;
@@ -26,6 +27,8 @@ import genepi.io.table.reader.CsvTableReader;
 import genepi.io.text.LineReader;
 import genepi.riskscore.commands.ApplyScoreCommand;
 import genepi.riskscore.io.PGSCatalog;
+import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import picocli.CommandLine;
@@ -442,6 +445,189 @@ public class ImputationTest {
 	}
 
 	@Test
+	public void testValidatePanelWithEagle() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+
+		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
+		VCFHeader header = reader.getFileHeader();
+		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
+		assertEquals(ImputationPipeline.EAGLE_VERSION, header.getOtherHeaderLine("phasing").getValue());
+		assertEquals(ImputationPipeline.IMPUTATION_VERSION, header.getOtherHeaderLine("imputation").getValue());
+		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
+	public void testValidatePanelWithBeagle() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/beagle";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		context.setInput("phasing", "beagle");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+
+		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
+		VCFHeader header = reader.getFileHeader();
+		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
+		assertEquals(ImputationPipeline.BEAGLE_VERSION, header.getOtherHeaderLine("phasing").getValue());
+		assertEquals(ImputationPipeline.IMPUTATION_VERSION, header.getOtherHeaderLine("imputation").getValue());
+		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
+	public void testValidatePanelPhasingOnly() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		context.setInput("mode", "phasing");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+
+		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.phased.vcf.gz"), false);
+		VCFHeader header = reader.getFileHeader();
+		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
+		assertEquals(ImputationPipeline.EAGLE_VERSION, header.getOtherHeaderLine("phasing").getValue());
+		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
+	public void testValidatePanelPhasedInput() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-phased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		context.setInput("phasing", "no_phasing");
+
+		// run qc to create chunkfile
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+
+		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
+		VCFHeader header = reader.getFileHeader();
+		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
+		assertEquals("n/a", header.getOtherHeaderLine("phasing").getValue());
+		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
+
+		// FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
 	public void testPipelineWithEagleAndScores() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chr20";
@@ -567,7 +753,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_SNPS_INPUT - SNPS_MONOMORPHIC, file.getNoSnps());
 
-		FileUtil.deleteDirectory("test-data/tmp");
+		// FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 

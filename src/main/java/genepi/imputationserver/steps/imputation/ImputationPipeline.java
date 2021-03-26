@@ -20,7 +20,6 @@ import genepi.riskscore.tasks.ApplyScoreTask;
 import groovy.text.SimpleTemplateEngine;
 import htsjdk.samtools.util.StopWatch;
 import lukfor.progress.TaskService;
-import lukfor.progress.tasks.monitors.TaskMonitorMock;
 
 public class ImputationPipeline {
 
@@ -30,7 +29,7 @@ public class ImputationPipeline {
 
 	public static final String BEAGLE_VERSION = "beagle.18May20.d20.jar";
 
-	public static String PHASING_VERSION = "eagle-2.4";
+	public static final String EAGLE_VERSION = "eagle-2.4";
 
 	private String minimacCommand;
 
@@ -115,7 +114,7 @@ public class ImputationPipeline {
 			long time = System.currentTimeMillis();
 
 			boolean successful = false;
-
+			String phasingVersion;
 			if (phasingEngine.equals("beagle")) {
 
 				if (!new File(refBeagleFilename).exists()) {
@@ -123,7 +122,7 @@ public class ImputationPipeline {
 					return false;
 				}
 				successful = phaseWithBeagle(chunk, output, refBeagleFilename, mapBeagleFilename);
-				PHASING_VERSION = BEAGLE_VERSION;
+				phasingVersion = BEAGLE_VERSION;
 			} else {
 
 				if (!new File(refEagleFilename).exists()) {
@@ -131,6 +130,7 @@ public class ImputationPipeline {
 					return false;
 				}
 				successful = phaseWithEagle(chunk, output, refEagleFilename, mapEagleFilename);
+				phasingVersion = EAGLE_VERSION;
 			}
 
 			time = (System.currentTimeMillis() - time) / 1000;
@@ -138,9 +138,9 @@ public class ImputationPipeline {
 			statistic.setPhasingTime(time);
 
 			if (successful) {
-				System.out.println("  " + PHASING_VERSION + " finished successfully. [" + time + " sec]");
+				System.out.println("  " + phasingVersion + " finished successfully. [" + time + " sec]");
 			} else {
-				System.out.println("  " + PHASING_VERSION + " failed. [" + time + " sec]");
+				System.out.println("  " + phasingVersion + " failed. [" + time + " sec]");
 				return false;
 			}
 
