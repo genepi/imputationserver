@@ -26,7 +26,7 @@ The following parameters can be set:
 | files-source  | `file-upload`<br> `sftp`<br> `http`     |  `file-upload`  | |
 | refpanel      | `hrc-r1.1` <br> `1000g-phase-3-v5` <br>  `genome-asia-panel`  <br> `multiethnic-hla-panel-Ggroup` <br>  `multiethnic-hla-panel-4digit` <br> `1000g-phase-1` <br> `cappa` <br> `hapmap-2` | - | **x** |
 | phasing     | `eagle`<br> `no_phasing`      |  `eagle`  | |
-| population  | `eur`<br> `afr`<br> `asn`<br> `amr`<br> `sas`<br> `eas`<br> `AA`<br> `mixed`      |  -  | **x** |
+| population  | `eur`<br> `afr`<br> `asn`<br> `amr`<br> `sas`<br> `eas`<br> `AA`<br> `mixed` <br> `all` (e.g. for HLA)    |  -  | **x** |
 | build       | `hg19`<br> `hg38` | `hg19`  | |
 | r2Filter    | `0` <br> `0.001` <br> `0.1` <br> `0.2` <br> `0.3` | `0`  | |
 
