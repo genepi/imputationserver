@@ -24,7 +24,7 @@ The following parameters can be set:
 | mode          | `qconly`<br> `phasing` <br> `imputation`     | `imputation`   | |
 | password      | user-defined password      |  auto generated and send by mail  | |
 | files-source  | `file-upload`<br> `sftp`<br> `http`     |  `file-upload`  | |
-| refpanel      | `apps@hapmap-2`<br> `apps@hrc-r1.1`<br> `apps@1000g-phase-1`<br> `apps@1000g-phase-3-v5` <br> `apps@genome-asia-panel@1.0.0` <br> `apps@cappa` | - | **x** |
+| refpanel      | `hrc-r1.1` <br> `1000g-phase-3-v5` <br>  `genome-asia-panel`  <br> `multiethnic-hla-panel-Ggroup` <br>  `multiethnic-hla-panel-4digit` <br> `1000g-phase-1` <br> `cappa` <br> `hapmap-2` | - | **x** |
 | phasing     | `eagle`<br> `no_phasing`      |  `eagle`  | |
 | population  | `eur`<br> `afr`<br> `asn`<br> `amr`<br> `sas`<br> `eas`<br> `AA`<br> `mixed`      |  -  | **x** |
 | build       | `hg19`<br> `hg38` | `hg19`  | |
@@ -46,7 +46,7 @@ TOKEN="YOUR-API-TOKEN";
 curl https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac4 \
   -H "X-Auth-Token: $TOKEN" \
   -F "files=@/path-to/file.vcf.gz" \
-  -F "refpanel=apps@1000g-phase-3-v5" \
+  -F "refpanel=1000g-phase-3-v5" \
   -F "population=eur"
 ```
 
@@ -73,7 +73,7 @@ curl https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac4 \
   -H "X-Auth-Token: $TOKEN" \
   -F "files=@/path-to/file1.vcf.gz" \
   -F "files=@/path-to/file2.vcf.gz" \
-  -F "refpanel=apps@1000g-phase-3-v5" \
+  -F "refpanel=1000g-phase-3-v5" \
   -F "population=eur"
 ```
 
@@ -101,7 +101,7 @@ curl  https://imputationserver.sph.umich.edu/api/v2/jobs/submit/minimac4 \
   -H "X-Auth-Token: $TOKEN" \
   -F "files=https://imputationserver.sph.umich.edu/static/downloads/hapmap300.chr1.recode.vcf.gz" \
   -F "files-source=http" \
-  -F "refpanel=apps@hrc-r1.1" \
+  -F "refpanel=hrc-r1.1" \
   -F "population=eur" \
   -F "mode=qconly"
 ```
@@ -132,7 +132,7 @@ token = 'YOUR-API-TOKEN';
 # add token to header (see Authentication)
 headers = {'X-Auth-Token' : token }
 data = {
-  'refpanel': 'apps@1000g-phase-3-v5',
+  'refpanel': '1000g-phase-3-v5',
   'population': 'eur'
 }
 
@@ -162,7 +162,7 @@ token = 'YOUR-API-TOKEN';
 # add token to header (see Authentication)
 headers = {'X-Auth-Token' : token }
 data = {
-  'refpanel': 'apps@1000g-phase-3-v5',
+  'refpanel': '1000g-phase-3-v5',
   'population': 'eur'
 }
 
@@ -268,7 +268,7 @@ Response:
 
 ```json
 {
-  "application":"Michigan Imputation Server (Minimac4) 1.1.4",
+  "application":"Michigan Imputation Server (Minimac4) 1.5.8",
   "applicationId":"minimac4",
   "deletedOn":-1,
   "endTime":1462369824173,
