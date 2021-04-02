@@ -11,8 +11,8 @@ Michigan Imputation Server uses a token-based authentication. The token is requi
 For security reasons, Api Tokens are valid for 30 days. You can check the status in the web interface.
 
 
-## Job Submission
-The API allows to submit imputation jobs and to set several parameters.
+## Job Submission for Whole Genome Imputation
+The API allows to submit imputation jobs and to set several parameters. For HLA imputation, please see below. 
 
 ### POST /jobs/submit/minimac4
 
@@ -24,9 +24,27 @@ The following parameters can be set:
 | mode          | `qconly`<br> `phasing` <br> `imputation`     | `imputation`   | |
 | password      | user-defined password      |  auto generated and send by mail  | |
 | files-source  | `file-upload`<br> `sftp`<br> `http`     |  `file-upload`  | |
-| refpanel      | `hrc-r1.1` <br> `1000g-phase-3-v5` <br>  `genome-asia-panel`  <br> `multiethnic-hla-panel-Ggroup` <br>  `multiethnic-hla-panel-4digit` <br> `1000g-phase-1` <br> `cappa` <br> `hapmap-2` | - | **x** |
+| refpanel      | `hrc-r1.1` <br> `1000g-phase-3-v5` <br>  `genome-asia-panel`  <br> `1000g-phase-1` <br> `cappa` <br> `hapmap-2` | - | **x** |
 | phasing     | `eagle`<br> `no_phasing`      |  `eagle`  | |
-| population  | `eur`<br> `afr`<br> `asn`<br> `amr`<br> `sas`<br> `eas`<br> `AA`<br> `mixed` <br> `all` (e.g. for HLA)    |  -  | **x** |
+| population  | `eur`<br> `afr`<br> `asn`<br> `amr`<br> `sas`<br> `eas`<br> `AA`<br> `mixed` <br> `all`   |  -  | **x** |
+| build       | `hg19`<br> `hg38` | `hg19`  | |
+| r2Filter    | `0` <br> `0.001` <br> `0.1` <br> `0.2` <br> `0.3` | `0`  | |
+
+## Job Submission for HLA Imputation
+The API also allows to submit imputation jobs using the HLA application. Please note, that the population parameter can be skipped here. 
+
+### POST /jobs/submit/imputationserver-hla
+
+The following parameters can be set:
+
+| Parameter        | Values           | Default Value  |  Required  |
+| ------------- |:-------------| :-----|---|
+| files         | /path/to/file |  | **x** |
+| mode          | `qconly`<br> `phasing` <br> `imputation`     | `imputation`   | |
+| password      | user-defined password      |  auto generated and send by mail  | |
+| files-source  | `file-upload`<br> `sftp`<br> `http`     |  `file-upload`  | |
+| refpanel      | `multiethnic-hla-panel-Ggroup` <br>  `multiethnic-hla-panel-4digit` | - | **x** |
+| phasing     | `eagle`<br> `no_phasing`      |  `eagle`  | |
 | build       | `hg19`<br> `hg38` | `hg19`  | |
 | r2Filter    | `0` <br> `0.001` <br> `0.1` <br> `0.2` <br> `0.3` | `0`  | |
 
