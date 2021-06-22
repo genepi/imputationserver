@@ -439,7 +439,7 @@ public class Imputation extends ParallelHadoopJobStep {
 			// if chr X --> delete results
 			if (id.startsWith("X.")) {
 				String outputFolder = HdfsUtil.path(output, id);
-				context.println("Delete outpufolder for " + id + ": " + outputFolder);
+				context.println("Delete output folder for " + id + ": " + outputFolder);
 				HdfsUtil.delete(outputFolder);
 			}
 
