@@ -39,6 +39,15 @@ Luo, Y., Kanai, M., Choi, W., Li, X., Yamamoto, K., Ogawa, K., Gutierrez-Arcelus
 | Chromosomes | 1-22 |
 | Publication | [https://www.nature.com/articles/s41586-019-1793-z](https://www.nature.com/articles/s41586-019-1793-z) |
 
+## Genome Asia v2 - GAsP
+
+| ||
+| | |
+| Number of Samples | 6,461 |
+| Sites (chr1-22) | - |
+| Chromosomes | 1-22 |
+| Publication | [https://www.nature.com/articles/s41586-019-1793-z](https://www.nature.com/articles/s41586-019-1793-z) |
+
 
 
 
