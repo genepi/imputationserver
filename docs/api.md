@@ -24,7 +24,7 @@ The following parameters can be set:
 | mode          | `qconly`<br> `phasing` <br> `imputation`     | `imputation`   | |
 | password      | user-defined password      |  auto generated and send by mail  | |
 | files-source  | `file-upload`<br> `sftp`<br> `http`     |  `file-upload`  | |
-| refpanel      | `hrc-r1.1` <br> `1000g-phase-3-v5` <br>  `genome-asia-panel`  <br> `1000g-phase-1` <br> `cappa` <br> `hapmap-2` | - | **x** |
+| refpanel      | `hrc-r1.1` <br> `1000g-phase-3-v5` <br>  `gasp-v2` <br>  `genome-asia-panel`  <br> `1000g-phase-1` <br> `cappa` <br> `hapmap-2` | - | **x** |
 | phasing     | `eagle`<br> `no_phasing`      |  `eagle`  | |
 | population  | `eur`<br> `afr`<br> `asn`<br> `amr`<br> `sas`<br> `eas`<br> `AA`<br> `mixed` <br> `all`   |  -  | **x** |
 | build       | `hg19`<br> `hg38` | `hg19`  | |
