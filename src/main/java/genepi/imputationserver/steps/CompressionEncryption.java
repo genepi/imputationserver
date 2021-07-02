@@ -55,6 +55,7 @@ public class CompressionEncryption extends WorkflowStep {
 		String outputScores = context.get("outputScores");
 		String localOutput = context.get("local");
 		String aesEncryption = context.get("aesEncryption");
+		String meta = context.get("meta");
 		String mode = context.get("mode");
 		String password = context.get("password");
 
@@ -112,14 +113,18 @@ public class CompressionEncryption extends WorkflowStep {
 				List<String> data = new Vector<String>();
 				List<String> header = new Vector<String>();
 				List<String> info = new Vector<String>();
+				List<String> dataMeta = new Vector<String>();
+				List<String> headerMeta = new Vector<String>();
 
 				header = findFiles(folder, ".header.dose.vcf.gz");
+				headerMeta = findFiles(folder, ".header.empiricalDose.vcf.gz");
 
 				if (phasingOnly) {
 					data = findFiles(folder, ".phased.vcf.gz");
 				} else {
 					data = findFiles(folder, ".data.dose.vcf.gz");
 					info = findFiles(folder, ".info");
+					dataMeta = findFiles(folder, ".data.empiricalDose.vcf.gz");
 				}
 
 				// combine all X. to one folder
@@ -144,6 +149,14 @@ public class CompressionEncryption extends WorkflowStep {
 				ArrayList<String> currentInfoList = export.getInfoFiles();
 				currentInfoList.addAll(info);
 				export.setInfoFiles(currentInfoList);
+
+				ArrayList<String> currentHeaderMetaList = export.getHeaderMetaFiles();
+				currentHeaderMetaList.addAll(headerMeta);
+				export.setHeaderMetaFiles(currentHeaderMetaList);
+
+				ArrayList<String> currentDataMetaList = export.getDataMetaFiles();
+				currentDataMetaList.addAll(dataMeta);
+				export.setDataMetaFiles(currentDataMetaList);
 
 				chromosomes.put(name, export);
 
@@ -174,6 +187,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				// resort for chrX only
 				if (name.equals("X")) {
+					Collections.sort(entry.getDataMetaFiles(), new ChrXComparator());
 					Collections.sort(entry.getDataFiles(), new ChrXComparator());
 					Collections.sort(entry.getInfoFiles(), new ChrXComparator());
 				}
@@ -184,12 +198,16 @@ public class CompressionEncryption extends WorkflowStep {
 
 				// output files
 				String dosageOutput;
+				String dosageMetaOutput = null;
+				MergedVcfFile vcfFileMeta = null;
 				String infoOutput = "";
 
 				if (phasingOnly) {
 					dosageOutput = FileUtil.path(temp, "chr" + name + ".phased.vcf.gz");
 				} else {
 					dosageOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
+					dosageMetaOutput = FileUtil.path(temp, "chr" + name + ".empiricalDose.vcf.gz");
+					vcfFileMeta = new MergedVcfFile(dosageMetaOutput);
 					infoOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
 					FileMerger.mergeAndGzInfo(entry.getInfoFiles(), infoOutput);
 				}
@@ -249,6 +267,22 @@ public class CompressionEncryption extends WorkflowStep {
 					HdfsUtil.delete(file);
 				}
 
+				//combine meta files
+				if (meta != null && meta.equals("yes")) {
+				String headerMetaFile = entry.getHeaderMetaFiles().get(0);
+				vcfFileMeta.addFile(HdfsUtil.open(headerMetaFile));
+
+				// add meta data files
+				if (vcfFileMeta != null) {
+					for (String file : entry.getDataMetaFiles()) {
+						context.println("Read file " + file);
+						vcfFileMeta.addFile(HdfsUtil.open(file));
+						HdfsUtil.delete(file);
+					}
+					vcfFileMeta.close();
+				}
+				}
+
 				vcfFile.close();
 
 				if (sanityCheck.equals("yes") && lastChromosome) {
@@ -273,6 +307,10 @@ public class CompressionEncryption extends WorkflowStep {
 				// create zip file
 				ArrayList<File> files = new ArrayList<File>();
 				files.add(new File(dosageOutput));
+				
+				if (meta != null && meta.equals("yes")) {
+				files.add(new File(dosageMetaOutput));
+				}
 
 				if (!phasingOnly) {
 					files.add(new File(infoOutput));
