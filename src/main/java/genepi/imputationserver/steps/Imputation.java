@@ -218,7 +218,9 @@ public class Imputation extends ParallelHadoopJobStep {
 					job.setPhasingOnly("false");
 				}
 
-				job.setPhasingEngine(phasing);
+				if (phasing != null) {
+					job.setPhasingEngine(phasing);
+				}
 				job.setInput(result.filename);
 				job.setOutput(HdfsUtil.path(output, chr));
 
