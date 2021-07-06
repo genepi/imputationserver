@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 import genepi.hadoop.HdfsUtil;
@@ -117,7 +117,7 @@ public class FileMerger {
 
 	}
 
-	public static void mergeAndGzInfo(ArrayList<String> hdfs, String local) throws IOException {
+	public static void mergeAndGzInfo(List<String> hdfs, String local) throws IOException {
 
 		GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(local));
 
