@@ -1,7 +1,7 @@
 ![Imputationserver Logo](logo.png)
 
 [![Publication](https://img.shields.io/badge/Published-Nature%20Genetics-26af64.svg?colorB=26af64&style=popout)](https://www.nature.com/articles/ng.3656)
-[![Build Status](https://travis-ci.org/genepi/imputationserver.svg?branch=master)](https://travis-ci.org/genepi/imputationserver)
+[![Build Status](https://github.com/genepi/imputationserver/actions/workflows/maven.yml/badge.svg)](https://github.com/genepi/imputationserver/actions/workflows/maven.yml)
 [![codecov](https://codecov.io/gh/genepi/imputationserver/branch/master/graph/badge.svg)](https://codecov.io/gh/genepi/imputationserver)
  <a href="https://twitter.com/intent/follow?screen_name=umimpute"> <img src="https://img.shields.io/twitter/follow/umimpute.svg?style=social" alt="follow on Twitter"></a>
 
