@@ -23,3 +23,5 @@ jobs:
         distribution: 'adopt'
     - name: Build MIS
       run: mvn -Dtest=AllTestsNoChrX test
+    - name: Upload coverage report to Codecov
+      uses: codecov/codecov-action@v2 
