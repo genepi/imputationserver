@@ -42,7 +42,7 @@ Our pipeline performs the following steps:
 ````sh
 ./eagle --vcfRef HRC.r1-1.GRCh37.chr20.shapeit3.mac5.aa.genotypes.bcf
 --vcfTarget chunk_20_0000000001_0020000000.vcf.gz  --geneticMapFile genetic_map_chr20_combined_b37.txt
---outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 -allowRefAltSwap
+--outPrefix chunk_20_0000000001_0020000000.phased --bpStart 1 --bpEnd 25000000 --allowRefAltSwap
 --vcfOutFormat z
 ````
     
