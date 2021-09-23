@@ -344,15 +344,11 @@ public class ImputationPipeline {
 			task.setVcfFilename(output.getImputedVcfFilename());
 			task.setChunk(scoreChunk);
 			task.setRiskScoreFilenames(scores);
+			task.setOutputReportFilename(output.getScoreFilename() + ".json");
+			task.setOutput(output.getScoreFilename());
 
 			TaskService.setAnsiSupport(false);
 			TaskService.run(task);
-
-			OutputFile outputFile = new OutputFile(task.getRiskScores(), task.getSummaries());
-			outputFile.save(output.getScoreFilename());
-
-			ReportFile reportFile = new ReportFile(task.getSummaries());
-			reportFile.save(output.getScoreFilename() + ".json");
 
 			return true;
 

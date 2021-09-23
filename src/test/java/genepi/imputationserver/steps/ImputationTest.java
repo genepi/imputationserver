@@ -757,7 +757,7 @@ public class ImputationTest {
 		}
 		readerExpected.close();
 		readerActual.close();
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
