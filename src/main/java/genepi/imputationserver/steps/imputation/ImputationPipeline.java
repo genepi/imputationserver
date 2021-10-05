@@ -3,6 +3,7 @@ package genepi.imputationserver.steps.imputation;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -13,13 +14,12 @@ import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.io.FileUtil;
 import genepi.riskscore.io.Chunk;
-import genepi.riskscore.io.OutputFile;
 import genepi.riskscore.io.PGSCatalog;
-import genepi.riskscore.io.ReportFile;
 import genepi.riskscore.tasks.ApplyScoreTask;
 import groovy.text.SimpleTemplateEngine;
 import htsjdk.samtools.util.StopWatch;
 import lukfor.progress.TaskService;
+import lukfor.progress.tasks.Task;
 
 public class ImputationPipeline {
 
@@ -171,7 +171,7 @@ public class ImputationPipeline {
 			return false;
 		}
 
-		if (scores != null && !scores.equals("no_score")) {
+		if (scores != null && scores.length >= 0) {
 
 			System.out.println("  Starting PGS calculation '" + scores + "'...");
 
@@ -348,7 +348,15 @@ public class ImputationPipeline {
 			task.setOutput(output.getScoreFilename());
 
 			TaskService.setAnsiSupport(false);
-			TaskService.run(task);
+			List<Task> runningTasks = TaskService.run(task);
+
+			for (Task runningTask : runningTasks) {
+				if (!runningTask.getStatus().isSuccess()) {
+					System.out.println("PGS-Calc failed: " + runningTask.getStatus().getThrowable());
+					runningTask.getStatus().getThrowable().printStackTrace();
+					return false;
+				}
+			}
 
 			return true;
 
