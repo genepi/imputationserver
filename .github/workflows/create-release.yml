@@ -20,5 +20,6 @@ jobs:
       run: mvn -Dtest=AllTestsNoChrX test
     - uses: ncipollo/release-action@v1
       with:
+        allowUpdates: true
         artifacts: "target/imputationserver.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
