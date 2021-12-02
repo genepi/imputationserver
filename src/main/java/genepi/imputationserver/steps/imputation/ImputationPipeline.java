@@ -287,6 +287,16 @@ public class ImputationPipeline {
 	public boolean imputeVCF(VcfChunkOutput output)
 			throws InterruptedException, IOException, CompilationFailedException {
 
+		// create tabix index
+		Command tabix = new Command(tabixCommand);
+		tabix.setSilent(false);
+		tabix.setParams(output.getPhasedVcfFilename());
+		System.out.println("Command: " + tabix.getExecutedCommand());
+		if (tabix.execute() != 0) {
+			System.out.println("Error during index creation: " + tabix.getStdOut());
+			return false;
+		}
+
 		String chr = "";
 		if (build.equals("hg38")) {
 			chr = "chr" + output.getChromosome();
