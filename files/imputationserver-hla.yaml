@@ -120,6 +120,15 @@ workflow:
          false: no
        visible: true
 
+     - id: meta
+       description: Generate Meta-imputation file
+       type: checkbox
+       value: no
+       values:
+         true: yes
+         false: no
+       visible: true   
+
      - id: myseparator
        type: separator
 
