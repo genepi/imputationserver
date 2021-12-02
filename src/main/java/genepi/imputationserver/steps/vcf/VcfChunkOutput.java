@@ -6,6 +6,7 @@ public class VcfChunkOutput extends VcfChunk {
 
 	private String prefix;
 	private String imputedVcfFilename;
+	private String metaVcfFilename;
 	private String phasedVcfFilename;
 	private String scoreFilename;
 
@@ -15,6 +16,7 @@ public class VcfChunkOutput extends VcfChunk {
 
 		prefix = FileUtil.path(outputFolder, chunk.getId());
 		imputedVcfFilename = prefix + ".dose.vcf.gz";
+		metaVcfFilename = prefix + ".empiricalDose.vcf.gz";
 		infoFilename = prefix + ".info";
 		phasedVcfFilename = prefix + ".phased.vcf.gz";
 		scoreFilename = prefix + ".scores.csv";
@@ -24,6 +26,14 @@ public class VcfChunkOutput extends VcfChunk {
 		setStart(chunk.getStart());
 		setEnd(chunk.getEnd());
 		setPhased(chunk.isPhased());
+	}
+
+	public String getMetaVcfFilename() {
+		return metaVcfFilename;
+	}
+
+	public void setMetaVcfFilename(String metaVcfFilename) {
+		this.metaVcfFilename = metaVcfFilename;
 	}
 
 	public String getPrefix() {

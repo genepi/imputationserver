@@ -26,16 +26,10 @@ public class InputValidation extends WorkflowStep {
 	public boolean run(WorkflowContext context) {
 		String phasingEngine = context.get("phasing");
 
-		ImputationParameters imputationParameters = new ImputationParameters();
-
-		imputationParameters.setPhasing(phasingEngine);
-
 		context.log("Versions:");
 		context.log("  Pipeline: " + ImputationPipeline.PIPELINE_VERSION);
 		context.log("  Imputation-Engine: " + ImputationPipeline.IMPUTATION_VERSION);
-		if(phasingEngine != null) {
-		context.log("  Phasing-Engine: " + imputationParameters.getPhasingMethod());
-		}
+		context.log("  Phasing-Engine: " + ImputationPipeline.EAGLE_VERSION);
 
 		if (!checkParameters(context)) {
 			return false;
@@ -155,7 +149,7 @@ public class InputValidation extends WorkflowStep {
 						context.endTask(
 								"Please double check, if all uploaded VCF files include the same amount of samples ("
 										+ vcfFile.getNoSamples() + " vs " + noSamples + ")",
-								WorkflowContext.ERROR);
+										WorkflowContext.ERROR);
 						return false;
 					}
 
@@ -191,15 +185,15 @@ public class InputValidation extends WorkflowStep {
 
 					if (build.equals("hg19") && vcfFile.hasChrPrefix()) {
 						context.endTask("Your upload data contains chromosome '" + vcfFile.getRawChromosome()
-								+ "'. This is not a valid hg19 encoding. Please ensure that your input data is build hg19 and chromosome is encoded as '"
-								+ vcfFile.getChromosome() + "'.", WorkflowContext.ERROR);
+						+ "'. This is not a valid hg19 encoding. Please ensure that your input data is build hg19 and chromosome is encoded as '"
+						+ vcfFile.getChromosome() + "'.", WorkflowContext.ERROR);
 						return false;
 					}
 
 					if (build.equals("hg38") && !vcfFile.hasChrPrefix()) {
 						context.endTask("Your upload data contains chromosome '" + vcfFile.getRawChromosome()
-								+ "'. This is not a valid hg38 encoding. Please ensure that your input data is build hg38 and chromosome is encoded as 'chr"
-								+ vcfFile.getChromosome() + "'.", WorkflowContext.ERROR);
+						+ "'. This is not a valid hg38 encoding. Please ensure that your input data is build hg38 and chromosome is encoded as 'chr"
+						+ vcfFile.getChromosome() + "'.", WorkflowContext.ERROR);
 						return false;
 					}
 

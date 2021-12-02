@@ -1,26 +1,13 @@
 package genepi.imputationserver.steps;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import genepi.imputationserver.util.*;
-import genepi.io.text.LineWriter;
 import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
 import cloudgene.sdk.internal.IExternalWorkspace;
 import cloudgene.sdk.internal.WorkflowContext;
@@ -28,9 +15,15 @@ import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.command.Command;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
+import genepi.imputationserver.util.DefaultPreferenceStore;
+import genepi.imputationserver.util.FileChecksum;
+import genepi.imputationserver.util.FileMerger;
+import genepi.imputationserver.util.ImputationResults;
+import genepi.imputationserver.util.ImputedChromosome;
+import genepi.imputationserver.util.PasswordCreator;
+import genepi.imputationserver.util.PgsPanel;
 import genepi.io.FileUtil;
-import genepi.io.text.LineReader;
-import genepi.riskscore.App;
+import genepi.io.text.LineWriter;
 import genepi.riskscore.io.MetaFile;
 import genepi.riskscore.io.ReportFile;
 import genepi.riskscore.tasks.CreateHtmlReportTask;
@@ -38,6 +31,7 @@ import genepi.riskscore.tasks.MergeReportTask;
 import genepi.riskscore.tasks.MergeScoreTask;
 import lukfor.progress.TaskService;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.AesKeyStrength;
 import net.lingala.zip4j.model.enums.CompressionLevel;
@@ -54,7 +48,8 @@ public class CompressionEncryption extends WorkflowStep {
 		String output = context.get("outputimputation");
 		String outputScores = context.get("outputScores");
 		String localOutput = context.get("local");
-		String aesEncryption = context.get("aesEncryption");
+		String aesEncryptionValue = context.get("aesEncryption");
+		String meta = context.get("meta");
 		String mode = context.get("mode");
 		String password = context.get("password");
 
@@ -64,6 +59,10 @@ public class CompressionEncryption extends WorkflowStep {
 		if (mode != null && mode.equals("phasing")) {
 			phasingOnly = true;
 		}
+
+		boolean mergeMetaFiles = !phasingOnly && (meta != null && meta.equals("yes"));
+
+		boolean aesEncryption = (aesEncryptionValue != null && aesEncryptionValue.equals("yes"));
 
 		// read config if mails should be sent
 		String folderConfig = getFolder(CompressionEncryption.class);
@@ -101,155 +100,88 @@ public class CompressionEncryption extends WorkflowStep {
 			// get sorted directories
 			List<String> folders = HdfsUtil.getDirectories(output);
 
-			Map<String, ExportObject> chromosomes = new HashMap<String, ExportObject>();
+			ImputationResults imputationResults = new ImputationResults(folders, phasingOnly);
+			Map<String, ImputedChromosome> imputedChromosomes = imputationResults.getChromosomes();
 
-			for (String folder : folders) {
-
-				String name = FileUtil.getFilename(folder);
-
-				context.println("Prepare files for chromosome " + name);
-
-				List<String> data = new Vector<String>();
-				List<String> header = new Vector<String>();
-				List<String> info = new Vector<String>();
-
-				header = findFiles(folder, ".header.dose.vcf.gz");
-
-				if (phasingOnly) {
-					data = findFiles(folder, ".phased.vcf.gz");
-				} else {
-					data = findFiles(folder, ".data.dose.vcf.gz");
-					info = findFiles(folder, ".info");
-				}
-
-				// combine all X. to one folder
-				if (name.startsWith("X.")) {
-					name = "X";
-				}
-
-				ExportObject export = chromosomes.get(name);
-
-				if (export == null) {
-					export = new ExportObject();
-				}
-
-				ArrayList<String> currentDataList = export.getDataFiles();
-				currentDataList.addAll(data);
-				export.setDataFiles(currentDataList);
-
-				ArrayList<String> currentHeaderList = export.getHeaderFiles();
-				currentHeaderList.addAll(header);
-				export.setHeaderFiles(currentHeaderList);
-
-				ArrayList<String> currentInfoList = export.getInfoFiles();
-				currentInfoList.addAll(info);
-				export.setInfoFiles(currentInfoList);
-
-				chromosomes.put(name, export);
-
-			}
-
-			Set<String> chromosomesSet = chromosomes.keySet();
+			Set<String> chromosomes = imputedChromosomes.keySet();
 			boolean lastChromosome = false;
 			int index = 0;
-
-			ZipParameters param = new ZipParameters();
-			param.setEncryptFiles(true);
-			param.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
 
 			String checksumFilename = FileUtil.path(localOutput, "results.md5");
 			LineWriter writer = new LineWriter(checksumFilename);
 
-			for (String name : chromosomesSet) {
+			for (String name : chromosomes) {
 
 				index++;
 
-				if (index == chromosomesSet.size()) {
+				if (index == chromosomes.size()) {
 					lastChromosome = true;
 				}
 
-				ExportObject entry = chromosomes.get(name);
+				ImputedChromosome imputedChromosome = imputedChromosomes.get(name);
 
 				context.println("Export and merge chromosome " + name);
 
-				// resort for chrX only
-				if (name.equals("X")) {
-					Collections.sort(entry.getDataFiles(), new ChrXComparator());
-					Collections.sort(entry.getInfoFiles(), new ChrXComparator());
-				}
-
-				// create temp fir
+				// create temp dir
 				String temp = FileUtil.path(localOutput, "temp");
 				FileUtil.createDirectory(temp);
 
 				// output files
-				String dosageOutput;
-				String infoOutput = "";
 
+				ArrayList<File> files = new ArrayList<File>();
+
+				// merge info files
+				if (!phasingOnly) {
+					String infoOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
+					FileMerger.mergeAndGzInfo(imputedChromosome.getInfoFiles(), infoOutput);
+					files.add(new File(infoOutput));
+				}
+
+				// merge all dosage files
+
+				String dosageOutput;
 				if (phasingOnly) {
 					dosageOutput = FileUtil.path(temp, "chr" + name + ".phased.vcf.gz");
 				} else {
 					dosageOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
-					infoOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
-					FileMerger.mergeAndGzInfo(entry.getInfoFiles(), infoOutput);
 				}
+				files.add(new File(dosageOutput));
 
 				MergedVcfFile vcfFile = new MergedVcfFile(dosageOutput);
+				vcfFile.addHeader(context, imputedChromosome.getHeaderFiles());
 
-				// simple header check
-				String headerLine = null;
-				for (String file : entry.getHeaderFiles()) {
-
-					context.println("Read header file " + file);
-					LineReader reader = null;
-					try {
-						reader = new LineReader(HdfsUtil.open(file));
-						while (reader.next()) {
-							String line = reader.get();
-							if (line.startsWith("#CHROM")) {
-								if (headerLine != null) {
-									if (headerLine.equals(line)) {
-										context.println("  Header is the same as header of first file.");
-									} else {
-										context.println("  ERROR: Header is different as header of first file.");
-										context.println(headerLine);
-										context.println(line);
-										throw new Exception("Different sample order in chunks.");
-									}
-								} else {
-									headerLine = line;
-									vcfFile.addFile(HdfsUtil.open(file));
-									context.println("  Keep this header as first header.");
-								}
-							}
-
-						}
-						if (reader != null) {
-							reader.close();
-						}
-						HdfsUtil.delete(file);
-					} catch (Exception e) {
-						if (reader != null) {
-							reader.close();
-						}
-						StringWriter errors = new StringWriter();
-						e.printStackTrace(new PrintWriter(errors));
-						context.println("Error reading header file: " + errors.toString());
-					}
-				}
-
-				if (headerLine == null || headerLine.trim().isEmpty()) {
-					throw new Exception("No valid header file found");
-				}
-
-				// add data files
-				for (String file : entry.getDataFiles()) {
+				for (String file : imputedChromosome.getDataFiles()) {
 					context.println("Read file " + file);
 					vcfFile.addFile(HdfsUtil.open(file));
 					HdfsUtil.delete(file);
 				}
 
 				vcfFile.close();
+
+				// merge all meta files
+				if (mergeMetaFiles) {
+
+					context.println("Merging meta files...");
+
+					String dosageMetaOutput = FileUtil.path(temp, "chr" + name + ".empiricalDose.vcf.gz");
+					MergedVcfFile vcfFileMeta = new MergedVcfFile(dosageMetaOutput);
+
+					String headerMetaFile = imputedChromosome.getHeaderMetaFiles().get(0);
+					context.println("Use header from file " + headerMetaFile);
+
+					vcfFileMeta.addFile(HdfsUtil.open(headerMetaFile));
+
+					for (String file : imputedChromosome.getDataMetaFiles()) {
+						context.println("Read file " + file);
+						vcfFileMeta.addFile(HdfsUtil.open(file));
+						HdfsUtil.delete(file);
+					}
+					vcfFileMeta.close();
+
+					context.println("Meta files merged.");
+
+					files.add(new File(dosageMetaOutput));
+				}
 
 				if (sanityCheck.equals("yes") && lastChromosome) {
 					context.log("Run tabix on chromosome " + name + "...");
@@ -263,26 +195,13 @@ public class CompressionEncryption extends WorkflowStep {
 					context.log("Tabix done.");
 				}
 
-				if (aesEncryption != null && aesEncryption.equals("yes")) {
-					param.setEncryptionMethod(EncryptionMethod.AES);
-					param.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
-					param.setCompressionMethod(CompressionMethod.DEFLATE);
-					param.setCompressionLevel(CompressionLevel.NORMAL);
-				}
-
 				// create zip file
-				ArrayList<File> files = new ArrayList<File>();
-				files.add(new File(dosageOutput));
-
-				if (!phasingOnly) {
-					files.add(new File(infoOutput));
-				}
-
 				String fileName = "chr_" + name + ".zip";
 				String filePath = FileUtil.path(localOutput, fileName);
-				ZipFile file = new ZipFile(new File(filePath), password.toCharArray());
-				file.addFiles(files, param);
+				File file = new File(filePath);
+				createEncryptedZipFile(file, files, password, aesEncryption);
 
+				// add checksum to hash file
 				context.log("Creating file checksum for " + filePath);
 				long checksumStart = System.currentTimeMillis();
 				String checksum = FileChecksum.HashFile(new File(filePath), FileChecksum.Algorithm.MD5);
@@ -303,7 +222,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 					context.log("Start file upload: " + filePath);
 
-					String url = externalWorkspace.upload("local", file.getFile());
+					String url = externalWorkspace.upload("local", file);
 
 					long end = (System.currentTimeMillis() - start) / 1000;
 
@@ -311,7 +230,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 					context.log("Add " + localOutput + " to custom download");
 
-					String size = FileUtils.byteCountToDisplaySize(file.getFile().length());
+					String size = FileUtils.byteCountToDisplaySize(file.length());
 
 					context.addDownload("local", fileName, size, url);
 
@@ -393,13 +312,10 @@ public class CompressionEncryption extends WorkflowStep {
 
 				String fileName = "scores.zip";
 				String filePath = FileUtil.path(localOutput, fileName);
-				ArrayList<File> files = new ArrayList<File>();
-				files.add(new File(outputFileScores));
+				File file = new File(filePath);
+				createEncryptedZipFile(file, new File(outputFileScores), password, aesEncryption);
 
-				ZipFile file = new ZipFile(new File(filePath), password.toCharArray());
-				file.addFiles(files, param);
-
-				context.println("Exported PGS scores to " + outputFileScores + ".");
+				context.println("Exported PGS scores to " + fileName + ".");
 
 				FileUtil.deleteDirectory(temp2);
 			}
@@ -459,40 +375,29 @@ public class CompressionEncryption extends WorkflowStep {
 
 	}
 
-	private List<String> findFiles(String folder, String pattern) throws IOException {
+	public void createEncryptedZipFile(File file, List<File> files, String password, boolean aesEncryption)
+			throws ZipException {
+		ZipParameters param = new ZipParameters();
+		param.setEncryptFiles(true);
+		param.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
 
-		Configuration conf = HdfsUtil.getConfiguration();
-
-		FileSystem fileSystem = FileSystem.get(conf);
-		Path pathFolder = new Path(folder);
-		FileStatus[] files = fileSystem.listStatus(pathFolder);
-
-		List<String> dataFiles = new Vector<String>();
-		for (FileStatus file : files) {
-			if (!file.isDir() && !file.getPath().getName().startsWith("_")
-					&& file.getPath().getName().endsWith(pattern)) {
-				dataFiles.add(file.getPath().toString());
-			}
+		if (aesEncryption) {
+			param.setEncryptionMethod(EncryptionMethod.AES);
+			param.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
+			param.setCompressionMethod(CompressionMethod.DEFLATE);
+			param.setCompressionLevel(CompressionLevel.NORMAL);
 		}
-		Collections.sort(dataFiles);
-		return dataFiles;
+
+		ZipFile zipFile = new ZipFile(file, password.toCharArray());
+		zipFile.addFiles(files, param);
+
 	}
 
-	class ChrXComparator implements Comparator<String> {
-
-		List<String> definedOrder = Arrays.asList("X.PAR1", "X.nonPAR", "X.PAR2");
-
-		@Override
-		public int compare(String o1, String o2) {
-
-			String region = o1.substring(o1.lastIndexOf("/") + 1).split("_")[1];
-
-			String region2 = o2.substring(o2.lastIndexOf("/") + 1).split("_")[1];
-
-			return Integer.valueOf(definedOrder.indexOf(region))
-					.compareTo(Integer.valueOf(definedOrder.indexOf(region2)));
-		}
-
+	public void createEncryptedZipFile(File file, File source, String password, boolean aesEncryption)
+			throws ZipException {
+		List<File> files = new Vector<File>();
+		files.add(source);
+		createEncryptedZipFile(file, files, password, aesEncryption);
 	}
 
 }
