@@ -18,6 +18,6 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
     - name: Build MIS
-      run: mvn -Dtest=AllTestsNoChrX test
+      run: mvn test
     - name: Upload coverage report to Codecov
       uses: codecov/codecov-action@v2 
