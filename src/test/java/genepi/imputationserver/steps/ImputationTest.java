@@ -102,7 +102,7 @@ public class ImputationTest {
 		// FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithPhasedAndMetaOption() throws IOException, ZipException {
 
@@ -110,7 +110,7 @@ public class ImputationTest {
 		String inputFolder = "test-data/data/chr20-phased";
 
 		// create workflow context
-		
+
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("meta", "yes");
 
@@ -125,7 +125,7 @@ public class ImputationTest {
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/bin");
-	
+
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
 		result = run(context, imputation);
@@ -140,10 +140,10 @@ public class ImputationTest {
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
-		
+
 		VcfFile fileMeta = VcfFileUtil.load("test-data/tmp/chr20.empiricalDose.vcf.gz", 100000000, false);
-		
-		//count GENOTYPED from info file
+
+		// count GENOTYPED from info file
 		assertEquals(7735, fileMeta.getNoSnps());
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
@@ -488,7 +488,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
 
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
 		assertEquals(snpInInfo, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
@@ -532,7 +532,7 @@ public class ImputationTest {
 		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
 		VCFHeader header = reader.getFileHeader();
 		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
-		//TODO: new header line "phasing" defined in minimac4-rewrite. change property?
+		// TODO: new header line "phasing" defined in minimac4-rewrite. change property?
 		assertEquals(ImputationPipeline.EAGLE_VERSION, header.getOtherHeaderLine("phasing").getValue());
 		assertEquals(ImputationPipeline.IMPUTATION_VERSION, header.getOtherHeaderLine("imputation").getValue());
 		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
@@ -579,7 +579,7 @@ public class ImputationTest {
 		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
 		VCFHeader header = reader.getFileHeader();
 		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
-		//TODO: new header line "phasing" defined in minimac4-rewrite. change property?
+		// TODO: new header line "phasing" defined in minimac4-rewrite. change property?
 		assertEquals(ImputationPipeline.BEAGLE_VERSION, header.getOtherHeaderLine("phasing").getValue());
 		assertEquals(ImputationPipeline.IMPUTATION_VERSION, header.getOtherHeaderLine("imputation").getValue());
 		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
@@ -673,7 +673,7 @@ public class ImputationTest {
 		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
 		VCFHeader header = reader.getFileHeader();
 		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
-		//TODO: new header line "phasing" defined in minimac4-rewrite. change property?
+		// TODO: new header line "phasing" defined in minimac4-rewrite. change property?
 		assertEquals("n/a", header.getOtherHeaderLine("phasing").getValue());
 		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
 
@@ -741,7 +741,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
 
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
 		assertEquals(snpInInfo, file.getNoSnps());
 
 		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", "PGS000018,PGS000027", "--out",
@@ -1007,7 +1007,12 @@ public class ImputationTest {
 		LineReader reader = new LineReader(filename);
 		int lines = 0;
 		while (reader.next()) {
-			lines++;
+
+			String line = reader.get();
+			{
+				if (!line.startsWith("#"))
+					lines++;
+			}
 		}
 		return lines;
 	}
@@ -1035,12 +1040,12 @@ public class ImputationTest {
 
 			String line = reader.get();
 
-			if (!line.startsWith("SNP")) {
-				String snp = line.split("\t")[0];
-				if (Integer.valueOf(snp.split(":")[1]) <= pos) {
+			if (!line.startsWith("#")) {
+				String snp = line.split("\\s+")[1];
+				if (Integer.valueOf(snp) <= pos) {
 					return false;
 				}
-				pos = Integer.valueOf(snp.split(":")[1]);
+				pos = Integer.valueOf(snp);
 			}
 
 		}
@@ -1115,7 +1120,7 @@ public class ImputationTest {
 
 		// subtract header
 		int infoCount = getLineCount("test-data/tmp/chr20.info.gz");
-		assertEquals(infoCount - 1, file.getNoSnps());
+		assertEquals(infoCount, file.getNoSnps());
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}

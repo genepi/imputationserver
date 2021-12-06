@@ -129,24 +129,30 @@ public class FileMerger {
 
 			LineReader reader = new LineReader(in);
 
-			boolean header = true;
+			boolean lineBreak = false;
 
 			while (reader.next()) {
 
 				String line = reader.get();
 
-				if (header) {
+				if (line.startsWith("#")) {
+
 					if (firstFile) {
+
+						if (lineBreak) {
+							out.write('\n');
+						}
 						out.write(line.toString().getBytes());
-						firstFile = false;
+						lineBreak = true;
 					}
-					header = false;
 				} else {
 					out.write('\n');
 					out.write(line.toString().getBytes());
 				}
 			}
-
+			
+			firstFile = false;
+			
 			in.close();
 
 		}

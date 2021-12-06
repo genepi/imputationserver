@@ -75,7 +75,7 @@ public class DefaultPreferenceStore {
 		defaults.setProperty("server.url", "https://imputationserver.sph.umich.edu");
 		defaults.setProperty("minimac.tmp", "/tmp");
 		defaults.setProperty("minimac.command",
-				"--region ${chr}:${start}-${end} --overlap ${window} --output ${prefix}.dose.vcf.gz --output-format vcf.gz --format GT,DS,GP --all-typed-sites --empirical-output ${prefix}.empiricalDose.vcf.gz --min-ratio 0.00001  ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''} ${ref} ${vcf}");
+				"--region ${chr}:${start}-${end} --overlap ${window} --output ${prefix}.dose.vcf.gz --output-format vcf.gz --format GT,DS,GP --min-ratio 0.00001 --all-typed-sites --sites ${prefix}.info --empirical-output ${prefix}.empiricalDose.vcf.gz ${mapMinimac != null ? '--map ' + mapMinimac : ''} ${ref} ${vcf}");
 		//defaults.setProperty("minimac.command",
 		//		"--refHaps ${ref} --haps ${vcf} --start ${start} --end ${end} --window ${window} --prefix ${prefix} --chr ${chr} --cpus 1 --noPhoneHome --format GT,DS,GP --allTypedSites --meta --minRatio 0.00001 ${chr =='MT' ? '--myChromosome ' + chr : ''} ${unphased ? '--unphasedOutput' : ''} ${mapMinimac != null ? '--referenceEstimates --map ' + mapMinimac : ''}");
 		defaults.setProperty("eagle.command",
