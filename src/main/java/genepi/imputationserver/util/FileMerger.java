@@ -24,26 +24,10 @@ public class FileMerger {
 
 		while (reader.next()) {
 			String line = reader.get();
+			
 			if (!line.startsWith("#")) {
-				if (parameters.getMinR2() > 0) {
-					// rsq set. parse line and check rsq
-					String info = parseInfo(line);
-					if (info != null) {
-						boolean keep = keepVcfLineByInfo(info, R2_FLAG, parameters.getMinR2());
-						if (keep) {
-							outData.write(line.getBytes());
-							outData.write("\n".getBytes());
-						}
-					} else {
-						// no valid vcf line. keep line
-						outData.write(line.getBytes());
-						outData.write("\n".getBytes());
-					}
-				} else {
-					// no rsq set. keep all lines without parsing
-					outData.write(line.getBytes());
-					outData.write("\n".getBytes());
-				}
+				outData.write(line.getBytes());
+				outData.write("\n".getBytes());
 			} else {
 
 				// write filter command before ID List starting with #CHROM
@@ -52,7 +36,6 @@ public class FileMerger {
 					outHeader.write(("##imputation=" + ImputationPipeline.IMPUTATION_VERSION + "\n").getBytes());
 					outHeader.write(("##phasing=" + parameters.getPhasingMethod() + "\n").getBytes());
 					outHeader.write(("##panel=" + parameters.getReferencePanelName() + "\n").getBytes());
-					outHeader.write(("##r2Filter=" + parameters.getMinR2() + "\n").getBytes());
 				}
 
 				// write all headers except minimac4 command
@@ -150,9 +133,9 @@ public class FileMerger {
 					out.write(line.toString().getBytes());
 				}
 			}
-			
+
 			firstFile = false;
-			
+
 			in.close();
 
 		}

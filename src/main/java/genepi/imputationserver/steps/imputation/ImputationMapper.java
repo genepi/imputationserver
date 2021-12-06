@@ -117,7 +117,6 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String referenceName = parameters.get(ImputationJob.REF_PANEL);
 		imputationParameters.setPhasing(phasingEngine);
 		imputationParameters.setReferencePanelName(referenceName);
-		imputationParameters.setMinR2(minR2);
 		imputationParameters.setPhasingRequired(phasingRequired);
 
 		// get cached files
@@ -218,6 +217,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		pipeline.setPhasingWindow(phasingWindow);
 		pipeline.setBuild(build);
 		pipeline.setMinimacWindow(window);
+		pipeline.setMinR2(minR2);
 
 	}
 
@@ -281,16 +281,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				statistics.setImportTime((end - start) / 1000);
 
 			} else {
-				if (imputationParameters.getMinR2() > 0) {
-					// filter by r2
-					String filteredInfoFilename = outputChunk.getInfoFilename() + "_filtered";
-					filterInfoFileByR2(outputChunk.getInfoFilename(), filteredInfoFilename,
-							imputationParameters.getMinR2());
-					HdfsUtil.put(filteredInfoFilename, HdfsUtil.path(output, chunk + ".info"));
-
-				} else {
-					HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
-				}
+				
+				HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
 
 				long start = System.currentTimeMillis();
 
@@ -303,7 +295,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 				FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData,
 						imputationParameters);
-				
+
 				// store vcf file (remove header)
 				BgzipSplitOutputStream outDataMeta = new BgzipSplitOutputStream(
 						HdfsUtil.create(HdfsUtil.path(output, chunk + ".data.empiricalDose.vcf.gz")));
@@ -313,8 +305,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 				FileMerger.splitIntoHeaderAndData(outputChunk.getMetaVcfFilename(), outHeaderMeta, outDataMeta,
 						imputationParameters);
-				
-				
+
 				long end = System.currentTimeMillis();
 
 				statistics.setImportTime((end - start) / 1000);

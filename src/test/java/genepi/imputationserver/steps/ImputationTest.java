@@ -996,7 +996,7 @@ public class ImputationTest {
 		// TODO: update SNPS_WITH_R2_BELOW_05
 		assertTrue(TOTAL_REFPANEL_CHR20_B37 > file.getNoSnps());
 
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
 		assertEquals(snpInInfo, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
