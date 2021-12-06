@@ -32,10 +32,10 @@ public class FileMerger {
 
 				// write filter command before ID List starting with #CHROM
 				if (line.startsWith("#CHROM")) {
-					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION + "\n").getBytes());
-					outHeader.write(("##imputation=" + ImputationPipeline.IMPUTATION_VERSION + "\n").getBytes());
-					outHeader.write(("##phasing=" + parameters.getPhasingMethod() + "\n").getBytes());
-					outHeader.write(("##panel=" + parameters.getReferencePanelName() + "\n").getBytes());
+					outHeader.write(("##mis_pipeline=" + ImputationPipeline.PIPELINE_VERSION + "\n").getBytes());
+					outHeader.write(("##mis_imputation=" + ImputationPipeline.IMPUTATION_VERSION + "\n").getBytes());
+					outHeader.write(("##mis_phasing=" + parameters.getPhasingMethod() + "\n").getBytes());
+					outHeader.write(("##mis_panel=" + parameters.getReferencePanelName() + "\n").getBytes());
 				}
 
 				// write all headers except minimac4 command
@@ -68,9 +68,9 @@ public class FileMerger {
 
 				// write filter command before ID List starting with #CHROM
 				if (line.startsWith("#CHROM")) {
-					outHeader.write(("##pipeline=" + ImputationPipeline.PIPELINE_VERSION + "\n").getBytes());
-					outHeader.write(("##phasing=" + parameters.getPhasingMethod() + "\n").getBytes());
-					outHeader.write(("##panel=" + parameters.getReferencePanelName() + "\n").getBytes());
+					outHeader.write(("##mis_pipeline=" + ImputationPipeline.PIPELINE_VERSION + "\n").getBytes());
+					outHeader.write(("##mis_phasing=" + parameters.getPhasingMethod() + "\n").getBytes());
+					outHeader.write(("##mis_panel=" + parameters.getReferencePanelName() + "\n").getBytes());
 				}
 
 				// write all headers except eagle command
