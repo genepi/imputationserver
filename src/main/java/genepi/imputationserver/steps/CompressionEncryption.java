@@ -304,12 +304,6 @@ public class CompressionEncryption extends WorkflowStep {
 				MetaFile metaFile = MetaFile.load(FileUtil.path(folder, "pgs-catalog.json"));
 				report.mergeWithMeta(metaFile);
 
-				CreateHtmlReportTask htmlReport = new CreateHtmlReportTask();
-				htmlReport.setReport(report);
-				htmlReport.setData(mergeScore.getResult());
-				htmlReport.setOutput(outputFileHtml);
-				TaskService.run(htmlReport);
-
 				String fileName = "scores.zip";
 				String filePath = FileUtil.path(localOutput, fileName);
 				File file = new File(filePath);
