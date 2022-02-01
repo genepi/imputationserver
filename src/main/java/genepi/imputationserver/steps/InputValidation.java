@@ -24,18 +24,11 @@ public class InputValidation extends WorkflowStep {
 
 	@Override
 	public boolean run(WorkflowContext context) {
-		String phasingEngine = context.get("phasing");
-
-		ImputationParameters imputationParameters = new ImputationParameters();
-
-		imputationParameters.setPhasing(phasingEngine);
 
 		context.log("Versions:");
 		context.log("  Pipeline: " + ImputationPipeline.PIPELINE_VERSION);
 		context.log("  Imputation-Engine: " + ImputationPipeline.IMPUTATION_VERSION);
-		if(phasingEngine != null) {
-		context.log("  Phasing-Engine: " + imputationParameters.getPhasingMethod());
-		}
+		context.log("  Phasing-Engine: " + ImputationPipeline.EAGLE_VERSION);
 
 		if (!checkParameters(context)) {
 			return false;
@@ -207,7 +200,7 @@ public class InputValidation extends WorkflowStep {
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
 							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
-							+ "Population: " + population + "\n" + "Phasing: eagle" + "\n" + "Mode: " + mode
+							+ "Population: " + population + "\n" + "Phasing: " + phasing + "\n" + "Mode: " + mode
 							+ (pgsPanel != null ? "\n" + "PGS-Calculation: " + pgsPanel.getScores().size() + " scores"
 									: "");
 
