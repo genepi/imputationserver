@@ -3,6 +3,7 @@ package genepi.imputationserver.steps.imputation;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -13,17 +14,16 @@ import genepi.imputationserver.steps.vcf.VcfChunk;
 import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.io.FileUtil;
 import genepi.riskscore.io.Chunk;
-import genepi.riskscore.io.OutputFile;
 import genepi.riskscore.io.PGSCatalog;
-import genepi.riskscore.io.ReportFile;
 import genepi.riskscore.tasks.ApplyScoreTask;
 import groovy.text.SimpleTemplateEngine;
 import htsjdk.samtools.util.StopWatch;
 import lukfor.progress.TaskService;
+import lukfor.progress.tasks.Task;
 
 public class ImputationPipeline {
 
-	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.6.1";
+	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.6.2-rc1";
 
 	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
 
@@ -171,7 +171,7 @@ public class ImputationPipeline {
 			return false;
 		}
 
-		if (scores != null && !scores.equals("no_score")) {
+		if (scores != null && scores.length >= 0) {
 
 			System.out.println("  Starting PGS calculation '" + scores + "'...");
 
@@ -344,15 +344,19 @@ public class ImputationPipeline {
 			task.setVcfFilename(output.getImputedVcfFilename());
 			task.setChunk(scoreChunk);
 			task.setRiskScoreFilenames(scores);
+			task.setOutputReportFilename(output.getScoreFilename() + ".json");
+			task.setOutput(output.getScoreFilename());
 
 			TaskService.setAnsiSupport(false);
-			TaskService.run(task);
+			List<Task> runningTasks = TaskService.run(task);
 
-			OutputFile outputFile = new OutputFile(task.getRiskScores(), task.getSummaries());
-			outputFile.save(output.getScoreFilename());
-
-			ReportFile reportFile = new ReportFile(task.getSummaries());
-			reportFile.save(output.getScoreFilename() + ".json");
+			for (Task runningTask : runningTasks) {
+				if (!runningTask.getStatus().isSuccess()) {
+					System.out.println("PGS-Calc failed: " + runningTask.getStatus().getThrowable());
+					runningTask.getStatus().getThrowable().printStackTrace();
+					return false;
+				}
+			}
 
 			return true;
 

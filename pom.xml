@@ -5,7 +5,9 @@
 
 	<groupId>genepi</groupId>
 	<artifactId>imputationserver</artifactId>
-	<version>1.6.1</version>
+
+	<version>1.6.2-rc1</version>
+
 	<packaging>jar</packaging>
 
 	<name>University of Michigan Imputation Server</name>
@@ -79,7 +81,8 @@
 									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
 									<include>org.codehaus.groovy:groovy-all:*:*</include>
 									<include>lukfor:pgs-calc:*:*</include>
-									<include>lukfor:magic-progress:*:*</include>
+									<include>com.github.lukfor:magic-progress:*:*</include>
+									<include>com.github.lukfor:magic-reports:*:*</include>
 									<include>com.samskivert:jmustache:*:*</include>
 									<include>com.google.code.gson:gson:*:*</include>
 									<include>com.github.tommyettinger:blazingchain:*:*</include>
@@ -296,7 +299,7 @@
 		<dependency>
 			<groupId>lukfor</groupId>
 			<artifactId>pgs-calc</artifactId>
-			<version>0.9.2</version>
+			<version>0.9.12</version>
 		</dependency>
 
 	</dependencies>
