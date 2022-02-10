@@ -214,9 +214,9 @@
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-io</artifactId>
-			<version>1.0.12</version>
+			<version>1.2.0</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-hadoop</artifactId>
