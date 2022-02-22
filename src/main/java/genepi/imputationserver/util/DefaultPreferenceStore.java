@@ -75,7 +75,7 @@ public class DefaultPreferenceStore {
 		defaults.setProperty("server.url", "https://imputationserver.sph.umich.edu");
 		defaults.setProperty("minimac.tmp", "/tmp");
 		defaults.setProperty("minimac.command",
-				"--region ${chr}:${start}-${end} --overlap ${window} --output ${prefix}.dose.vcf.gz --output-format vcf.gz --format GT,DS,GP,HTS --min-ratio 0.00001 --all-typed-sites --sites ${prefix}.info --empirical-output ${prefix}.empiricalDose.vcf.gz ${minR2 != 0 ? '--min-r2 ' + minR2 : ''}  ${mapMinimac != null ? '--map ' + mapMinimac : ''} ${ref} ${vcf}");
+				"--region ${chr}:${start}-${end} --overlap ${window} --output ${prefix}.dose.vcf.gz --output-format vcf.gz --format GT,DS,GP,HDS --min-ratio 0.00001 --all-typed-sites --sites ${prefix}.info --empirical-output ${prefix}.empiricalDose.vcf.gz ${minR2 != 0 ? '--min-r2 ' + minR2 : ''}  ${mapMinimac != null ? '--map ' + mapMinimac : ''} ${ref} ${vcf}");
 		defaults.setProperty("eagle.command",
 				"--vcfRef ${ref} --vcfTarget ${vcf} --geneticMapFile ${map} --outPrefix ${prefix} --bpStart ${start} --bpEnd ${end} --allowRefAltSwap --vcfOutFormat z --keepMissingPloidyX");
 		defaults.setProperty("beagle.command",
