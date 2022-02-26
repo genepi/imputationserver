@@ -79,6 +79,7 @@
 									<include>org.xerial.snappy:snappy-java:*:*</include>
 									<include>org.xerial:xerial-core:*:*</include>
 									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
+									<include>org.codehaus.groovy:groovy:*:*</include>
 									<include>org.codehaus.groovy:groovy-templates:*:*</include>
 									<include>lukfor:pgs-calc:*:*</include>
 									<include>com.github.lukfor:magic-progress:*:*</include>
@@ -144,7 +145,7 @@
 							</descriptors>
 						</configuration>
 					</execution>
-					
+
 					<execution>
 						<id>create-assembly-imputationserver-pgs</id>
 						<phase>package</phase>
@@ -158,7 +159,7 @@
 								<descriptor>src/main/assembly/imputationserver-pgs.xml</descriptor>
 							</descriptors>
 						</configuration>
-					</execution>					
+					</execution>
 				</executions>
 			</plugin>
 
@@ -219,7 +220,7 @@
 			<artifactId>genepi-io</artifactId>
 			<version>1.2.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-hadoop</artifactId>
@@ -292,10 +293,16 @@
 
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy</artifactId>
+			<version>3.0.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-templates</artifactId>
 			<version>3.0.9</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>lukfor</groupId>
 			<artifactId>pgs-calc</artifactId>
