@@ -79,7 +79,7 @@
 									<include>org.xerial.snappy:snappy-java:*:*</include>
 									<include>org.xerial:xerial-core:*:*</include>
 									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
-									<include>org.codehaus.groovy:groovy-all:*:*</include>
+									<include>org.codehaus.groovy:groovy-templates:*:*</include>
 									<include>lukfor:pgs-calc:*:*</include>
 									<include>com.github.lukfor:magic-progress:*:*</include>
 									<include>com.github.lukfor:magic-reports:*:*</include>
