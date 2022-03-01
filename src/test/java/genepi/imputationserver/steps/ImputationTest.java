@@ -102,7 +102,7 @@ public class ImputationTest {
 		// FileUtil.deleteDirectory("test-data/tmp");
 
 	}
-	
+
 	@Test
 	public void testPipelineWithPhasedAndMetaOption() throws IOException, ZipException {
 
@@ -110,7 +110,7 @@ public class ImputationTest {
 		String inputFolder = "test-data/data/chr20-phased";
 
 		// create workflow context
-		
+
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setInput("meta", "yes");
 
@@ -125,7 +125,7 @@ public class ImputationTest {
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
 		// importMinimacMap("test-data/B38_MAP_FILE.map");
 		importBinaries("files/bin");
-	
+
 		// run imputation
 		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
 		result = run(context, imputation);
@@ -140,10 +140,10 @@ public class ImputationTest {
 		zipFile.extractAll("test-data/tmp");
 
 		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
-		
+
 		VcfFile fileMeta = VcfFileUtil.load("test-data/tmp/chr20.empiricalDose.vcf.gz", 100000000, false);
-		
-		//count GENOTYPED from info file
+
+		// count GENOTYPED from info file
 		assertEquals(7735, fileMeta.getNoSnps());
 		assertEquals("20", file.getChromosome());
 		assertEquals(51, file.getNoSamples());
@@ -679,6 +679,45 @@ public class ImputationTest {
 	}
 
 	@Test
+	public void testPipelineWithInvalidPgsBuild() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// import scores into hdfs
+		String score1 = PGSCatalog.getFilenameById("PGS000018");
+		String score2 = PGSCatalog.getFilenameById("PGS000027");
+
+		String targetScore1 = HdfsUtil.path("scores-hdfs", "PGS000018.txt.gz");
+		HdfsUtil.put(score1, targetScore1);
+
+		String targetScore2 = HdfsUtil.path("scores-hdfs", "PGS000027.txt.gz");
+		HdfsUtil.put(score2, targetScore2);
+
+		// create workflow context and set scores
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setOutput("outputScores", "cloudgene2-hdfs");
+
+		Map<String, Object> pgsPanel = new HashMap<String, Object>();
+		List<String> scores = new Vector<String>();
+		scores.add("PGS000018.txt.gz");
+		scores.add("PGS000027.txt.gz");
+		pgsPanel.put("location", "scores-hdfs");
+		pgsPanel.put("scores", scores);
+		pgsPanel.put("build", "hg38");
+		context.setData("pgsPanel", pgsPanel);
+
+		// run qc to create chunkfile
+
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+		// run and test
+		boolean result = run(context, inputValidation);
+		// check if step is failed
+		assertEquals(false, result);
+
+	}
+
+	@Test
 	public void testPipelineWithEagleAndScores() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chr20";
@@ -704,11 +743,18 @@ public class ImputationTest {
 		scores.add("PGS000027.txt.gz");
 		pgsPanel.put("location", "scores-hdfs");
 		pgsPanel.put("scores", scores);
+		pgsPanel.put("build", "hg19");
 		context.setData("pgsPanel", pgsPanel);
 
 		// run qc to create chunkfile
+
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+		// run and test
+		boolean result = run(context, inputValidation);
+		assertTrue(result);
+
 		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
-		boolean result = run(context, qcStats);
+		result = run(context, qcStats);
 
 		assertTrue(result);
 		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));

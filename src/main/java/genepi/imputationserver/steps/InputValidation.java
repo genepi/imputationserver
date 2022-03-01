@@ -196,6 +196,15 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
+					if (pgsPanel != null) {
+						if (!panel.getBuild().equals(pgsPanel.getBuild())) {
+							context.endTask(
+									"The build version of the selected reference panel (" + panel.getBuild()  +  ") and scores (" + pgsPanel.getBuild() + ") does not match.",
+									WorkflowContext.ERROR);
+							return false;
+						}
+					}
+
 					infos = "Samples: " + noSamples + "\n" + "Chromosomes:" + chromosomeString + "\n" + "SNPs: "
 							+ noSnps + "\n" + "Chunks: " + chunks + "\n" + "Datatype: "
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
