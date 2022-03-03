@@ -14,6 +14,7 @@ import cloudgene.sdk.internal.WorkflowContext;
 import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
 import genepi.hadoop.command.Command;
+import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.MergedVcfFile;
 import genepi.imputationserver.util.DefaultPreferenceStore;
 import genepi.imputationserver.util.FileChecksum;
@@ -25,6 +26,7 @@ import genepi.imputationserver.util.PgsPanel;
 import genepi.io.FileUtil;
 import genepi.io.text.LineWriter;
 import genepi.riskscore.io.MetaFile;
+import genepi.riskscore.io.OutputFile;
 import genepi.riskscore.io.ReportFile;
 import genepi.riskscore.tasks.CreateHtmlReportTask;
 import genepi.riskscore.tasks.MergeReportTask;
@@ -282,7 +284,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				String outputFileScores = FileUtil.path(temp2, "scores.txt");
 				String outputFileReports = FileUtil.path(temp2, "report.json");
-				String outputFileHtml = FileUtil.path(localOutput, "report.html");
+				String outputFileHtml = FileUtil.path(localOutput, "scores.html");
 
 				// disable ansi
 				TaskService.setAnsiSupport(false);
@@ -303,6 +305,16 @@ public class CompressionEncryption extends WorkflowStep {
 
 				MetaFile metaFile = MetaFile.load(FileUtil.path(folder, "pgs-catalog.json"));
 				report.mergeWithMeta(metaFile);
+
+				CreateHtmlReportTask htmlReportTask = new CreateHtmlReportTask();
+				htmlReportTask.setApplicationName("PGS Server");
+				htmlReportTask.setVersion(ImputationPipeline.PIPELINE_VERSION + " - BETA");
+				htmlReportTask.setShowCommand(false);
+				htmlReportTask.setReport(report);
+				htmlReportTask.setOutput(outputFileHtml);
+				TaskService.run(htmlReportTask);
+
+				context.println("Created html report " + outputFileHtml + ".");
 
 				String fileName = "scores.zip";
 				String filePath = FileUtil.path(localOutput, fileName);
