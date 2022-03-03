@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 
 import cloudgene.sdk.internal.WorkflowContext;
 import cloudgene.sdk.internal.WorkflowStep;
@@ -222,8 +224,8 @@ public class FastQualityControl extends WorkflowStep {
 			e.printStackTrace();
 		}
 
-		DecimalFormat df = new DecimalFormat("#.00");
-		DecimalFormat formatter = new DecimalFormat("###,###.###");
+		DecimalFormat df = new DecimalFormat("#.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+		DecimalFormat formatter = new DecimalFormat("###,###.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
 		StringBuffer text = new StringBuffer();
 
