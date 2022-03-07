@@ -803,6 +803,10 @@ public class ImputationTest {
 		}
 		readerExpected.close();
 		readerActual.close();
+		
+		//check if html report file exisits
+		new File("test-data/tmp/local/scores.html").exists();
+		
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
