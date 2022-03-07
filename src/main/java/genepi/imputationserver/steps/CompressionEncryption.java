@@ -307,8 +307,8 @@ public class CompressionEncryption extends WorkflowStep {
 				report.mergeWithMeta(metaFile);
 
 				CreateHtmlReportTask htmlReportTask = new CreateHtmlReportTask();
-				htmlReportTask.setApplicationName("PGS Server");
-				htmlReportTask.setVersion(ImputationPipeline.PIPELINE_VERSION + " - BETA");
+				htmlReportTask.setApplicationName("");
+				htmlReportTask.setVersion("PGS Server Beta <small>(" +  ImputationPipeline.PIPELINE_VERSION + ")</small>");
 				htmlReportTask.setShowCommand(false);
 				htmlReportTask.setReport(report);
 				htmlReportTask.setOutput(outputFileHtml);
