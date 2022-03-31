@@ -14,7 +14,6 @@ import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
-import genepi.imputationserver.util.ImputationParameters;
 import genepi.imputationserver.util.PgsPanel;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -72,6 +71,11 @@ public class InputValidation extends WorkflowStep {
 			chunkSize = Integer.parseInt(store.getString("chunksize"));
 		}
 
+		int minSamples = 0;
+		if (store.getString("samples.min") != null) {
+			minSamples = Integer.parseInt(store.getString("samples.min"));
+		}
+		
 		int maxSamples = 0;
 		if (store.getString("samples.max") != null) {
 			maxSamples = Integer.parseInt(store.getString("samples.max"));
@@ -163,6 +167,11 @@ public class InputValidation extends WorkflowStep {
 						context.endTask(
 								"File should be phased, but also includes unphased and/or missing genotypes! Please double-check!",
 								WorkflowContext.ERROR);
+						return false;
+					}
+					
+					if (noSamples < minSamples && minSamples != 0) {
+						context.endTask("At least " + minSamples + " samples must be uploaded.", WorkflowContext.ERROR);
 						return false;
 					}
 
