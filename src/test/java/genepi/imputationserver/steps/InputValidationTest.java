@@ -1,5 +1,6 @@
 package genepi.imputationserver.steps;
 
+
 import java.io.File;
 import java.io.IOException;
 
@@ -10,7 +11,6 @@ import htsjdk.samtools.util.CloseableIterator;
 import htsjdk.tribble.util.TabixUtils;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
-import htsjdk.variant.vcf.VCFUtils;
 import junit.framework.TestCase;
 
 public class InputValidationTest extends TestCase {
@@ -341,6 +341,31 @@ public class InputValidationTest extends TestCase {
 		assertTrue(context.hasInMemory("Phasing: eagle"));
 
 	}
+	
+	public void testSamplesMinParameter() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-min-samples";
+		String inputFolder = "test-data/data/single";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		
+		context.setInput("phasing", "eagle");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+
+		// check analyze task and results
+		assertTrue(context.hasInMemory("At least 100 samples must be uploaded."));
+	
+	}
+
 
 	public void testThreeUnphasedVcfWithEagle() throws IOException {
 
