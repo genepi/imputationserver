@@ -66,7 +66,7 @@ Luo, Y., Kanai, M., Choi, W., Li, X., Yamamoto, K., Ogawa, K., Gutierrez-Arcelus
 | ||
 | | |
 | Number of Samples | 20,349 |
-| Sites (chr6) |  |
+| Sites (chr6) | 22,733 (570 HLA alleles; 3,449 HLA amino acids; 4,023 SNPs within HLA; 14,691 scaffold SNPs) |
 | Chromosomes | 6:27,970,031-33,965,553 |
 | Website | [https://github.com/immunogenomics/HLA-TAPAS/](https://github.com/immunogenomics/HLA-TAPAS/) |
 
