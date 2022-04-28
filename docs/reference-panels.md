@@ -46,14 +46,14 @@ Phase 3 of the 1000 Genomes Project consists of 5,008 haplotypes from 26 populat
 | Publication | [https://www.nature.com/articles/s41586-019-1793-z](https://www.nature.com/articles/s41586-019-1793-z) |
 
 
-## Multi-ethnic HLA v1 (2021)
+## Four-digit Multi-ethnic HLA v1 (2021)
 
 The multi-ethnic HLA panel consists of 36,586 haplotypes of five global populations. We have released the panel at both two-field (four-digit) and G-group resolution.
 
 | ||
 | | |
 | Number of Samples | 18,293 |
-| Sites (chr6) | 55,615 (two-field); 54,474(G-group) |
+| Sites (chr6) | 56,310 (1,781 HLA alleles; 4,513 HLA amino acids; 10,924 SNPs within HLA; 39,092 scaffold SNPs) |
 | Chromosomes | 6:28,000,000-34,000,000 |
 | Website | [https://github.com/immunogenomics/HLA-TAPAS/](https://github.com/immunogenomics/HLA-TAPAS/) |
 
@@ -61,7 +61,7 @@ Please cite this manuscript if you would like to include imputed results from th
 
 Luo, Y., Kanai, M., Choi, W., Li, X., Yamamoto, K., Ogawa, K., Gutierrez-Arcelus, M., Gregersen, P. K., Stuart, P. E., Elder, J. T., Fellay, J., Carrington, M., Haas, D. W., Guo, X., Palmer, N. D., Chen, Y.-D. I., Rotter, J. I., Taylor, K. D., Rich, S., … Raychaudhuri, S. (2020). A high-resolution HLA reference panel capturing global population diversity enables multi-ethnic fine-mapping in HIV host response. https://doi.org/10.1101/2020.07.16.20155606
 
-## Multi-ethnic HLA v2 (2022)
+## Four-digit Multi-ethnic HLA v2 (2022)
 
 | ||
 | | |
