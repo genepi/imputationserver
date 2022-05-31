@@ -215,7 +215,7 @@ public class InputValidation extends WorkflowStep {
 						}
 					}
 
-					if (phasing.equals("beagle") && panel.getRefBeagle() == null) {
+					if (phasing != null && phasing.equals("beagle") && panel.getRefBeagle() == null) {
 						context.endTask("Beagle is currently not supported for reference panel '" + reference + "'",
 								WorkflowContext.ERROR);
 						return false;
