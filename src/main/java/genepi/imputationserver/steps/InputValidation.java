@@ -75,7 +75,7 @@ public class InputValidation extends WorkflowStep {
 		if (store.getString("samples.min") != null) {
 			minSamples = Integer.parseInt(store.getString("samples.min"));
 		}
-		
+
 		int maxSamples = 0;
 		if (store.getString("samples.max") != null) {
 			maxSamples = Integer.parseInt(store.getString("samples.max"));
@@ -169,7 +169,7 @@ public class InputValidation extends WorkflowStep {
 								WorkflowContext.ERROR);
 						return false;
 					}
-					
+
 					if (noSamples < minSamples && minSamples != 0) {
 						context.endTask("At least " + minSamples + " samples must be uploaded.", WorkflowContext.ERROR);
 						return false;
@@ -208,10 +208,17 @@ public class InputValidation extends WorkflowStep {
 					if (pgsPanel != null) {
 						if (!panel.getBuild().equals(pgsPanel.getBuild())) {
 							context.endTask(
-									"The build version of the selected reference panel (" + panel.getBuild()  +  ") and scores (" + pgsPanel.getBuild() + ") does not match.",
+									"The build version of the selected reference panel (" + panel.getBuild()
+											+ ") and scores (" + pgsPanel.getBuild() + ") does not match.",
 									WorkflowContext.ERROR);
 							return false;
 						}
+					}
+
+					if (phasing.equals("beagle") && panel.getRefBeagle() == null) {
+						context.endTask("Beagle is currently not supported for reference panel '" + reference + "'",
+								WorkflowContext.ERROR);
+						return false;
 					}
 
 					infos = "Samples: " + noSamples + "\n" + "Chromosomes:" + chromosomeString + "\n" + "SNPs: "

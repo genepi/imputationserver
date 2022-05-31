@@ -479,6 +479,50 @@ public class InputValidationTest extends TestCase {
 		assertEquals(905, count);
 
 	}
+	
+	public void testUnsupportedPhasingEngine() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-chr1";
+		String inputFolder = "test-data/data/single";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "phase3-fake");
+		
+		context.setInput("phasing", "beagle");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(false, result);
+		
+		assertTrue(context.hasInMemory("[ERROR] Beagle is currently not supported for reference panel 'phase3-fake'"));
+
+	}
+	
+	public void testSupportedPhasingEngine() throws IOException {
+
+		String configFolder = "test-data/configs/beagle";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		
+		context.setInput("phasing", "beagle");
+
+		// create step instance
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+
+		// run and test
+		boolean result = run(context, inputValidation);
+
+		// check if step is failed
+		assertEquals(true, result);
+
+	}
 
 	class InputValidationMock extends InputValidation {
 
