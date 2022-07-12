@@ -1,9 +1,10 @@
-<div class="jumbotron jumbotron-fluid text-white text-center" style="background: #4f5d73; margin-bottom: 0px; ">
+<div class="jumbotron jumbotron-fluid text-white text-center" style="background: #9100d4; margin-bottom: 0px; ">
 	<div class="container">
-		<h1 class="jumbotron-heading">Michigan Imputation Server</h1>
+		<h1 class="jumbotron-heading">Munich Imputation Server</h1>
 		<p class="lead text-center">
 			Free Next-Generation Genotype Imputation Service
 		</p>
+		{{!--
 		<% if(!loggedIn) {%>
 			<p>
 				<br>
@@ -11,12 +12,13 @@
 				<a class="btn btn-lg btn-outline-light" href="/#!pages/login">Login</a>
 			</p>
 			<% } %>
-
+		--}}
 	</div>
 </div>
 
 <!-- dark:  #303846 -->
 <!-- light: #71829d -->
+{{!--
 <div class="text-white" style="background: #71829d;">
 	<div class="container pt-3">
 		<div class="row justify-content-center text-center ">
@@ -80,7 +82,6 @@
 						<div class="col-md-4">
 
 							<a class="twitter-timeline" href="https://twitter.com/umimpute" data-widget-id="593759360838414337">Tweets by @umimpute</a>
-							<% !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs"); %>
 
 
 						</div>
@@ -91,6 +92,7 @@
 		</div>
 	</div>
 </div>
+--}}
 
 <div class="bg-light py-5" style="margin-top: 0px;">
 	<div class="container  ">
