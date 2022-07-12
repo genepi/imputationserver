@@ -1,7 +1,7 @@
-# Michigan Imputation Server
+# Munich Imputation Server
 
 
-[Michigan Imputation Server](https://imputationserver.sph.umich.edu) provides a free genotype imputation service using [Minimac4](http://genome.sph.umich.edu/wiki/Minimac4). You can upload phased or unphased GWAS genotypes and receive phased and imputed genomes in return. Our server offers imputation from 1000 Genomes (Phase 1 and 3), CAAPA, [HRC](http://www.haplotype-reference-consortium.org/) and the [TOPMed](http://nhlbiwgs.org/) reference panel. For all uploaded datasets an extensive QC is performed.
+[Munich Imputation Server](https://imputationserver.sph.umich.edu) provides a free genotype imputation service using [Minimac4](http://genome.sph.umich.edu/wiki/Minimac4). You can upload phased or unphased GWAS genotypes and receive phased and imputed genomes in return. Our server offers imputation from 1000 Genomes (Phase 1 and 3), CAAPA, [HRC](http://www.haplotype-reference-consortium.org/) and the [TOPMed](http://nhlbiwgs.org/) reference panel. For all uploaded datasets an extensive QC is performed.
 
 ![](images/index.png)
 
