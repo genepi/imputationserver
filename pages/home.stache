@@ -2,7 +2,8 @@
 	<div class="container">
 		<h1 class="jumbotron-heading">Munich Imputation Server</h1>
 		<p class="lead text-center">
-			Free Next-Generation Genotype Imputation Service
+			Free Next-Generation Genotype Imputation Service<br>
+			Empowered by Helmholtz Munich
 		</p>
 		{{!--
 		<% if(!loggedIn) {%>
@@ -106,7 +107,7 @@
 			<div class="card box-shadow">
 				<div class="card-body">
 					<p><img src="/static/images/up-cloud.png" width="105px"></p>
-					<b>Upload your genotypes</b> to our server located in Michigan.<br> All interactions with the server are <b>secured</b>.
+					<b>Upload your genotypes</b> to our server located in Munich.<br> All interactions with the server are <b>secured</b>.
 				</div>
 			</div>
 			<div class="card box-shadow">
@@ -128,45 +129,24 @@
 
 <div class="py-5 bg-light">
 	<div class="container">
+		<h2 class="text-center pb-5">Up to date and <b><u>accurate</u></b> reference panels</h2>
+		<div class="card-deck  text-center">
 
-		<h2 class="text-center pb-5 ">Up to date and <b><u>accurate</u></b> reference panels</h2>
-
-		<div class="card-deck  text-center ">
 			<div class="card " style="border-top-color: #76c2af; border-top-width: 5px;">
 				<div class="card-body">
-
 					HapMap<br>Release 2
-
 				</div>
 			</div>
 
-			<div class="card " style="border-top-color: #e0995e; border-top-width: 5px;">
-				<div class="card-body">
-
-					1000 Genomes<br>Phase 1
-
-				</div>
-			</div>
 			<div class="card " style="border-top-color: #4f5d73; border-top-width: 5px;">
 				<div class="card-body">
-
 					1000 Genomes<br>Phase 3
-
 				</div>
 			</div>
 
 			<div class="card " style="border-top-color: #4f5d73; border-top-width: 5px;">
 				<div class="card-body">
-
-					CAAPA<br>African American
-
-				</div>
-			</div>
-			<div class="card " style="border-top-color: #4f5d73; border-top-width: 5px;">
-				<div class="card-body">
-
 					Haplotype Reference<br>Consortium
-
 				</div>
 			</div>
 		</div>
@@ -178,7 +158,6 @@
 
 <div class="py-5 bg-light">
 	<div class="container">
-
 		<h2 class="text-center pb-5">Build your own Imputation Server</h2>
 
 		<div class="card-deck mb-3 text-center ">
@@ -187,9 +166,7 @@
 					<p style="text-align: center">
 						<img src="/static/images/hosting.png" style="width: 105px;">
 					</p>
-
 					Imputation Server is <b>open source</b> and easy to install on your own <b>Hadoop cluster</b>.
-
 				</div>
 			</div>
 			<div class="card box-shadow">
@@ -197,9 +174,7 @@
 					<p style="text-align: center">
 						<img src="/static/images/secure.png" style="width: 105px;">
 					</p>
-
 					Host your own confidential reference panels in a <b>secure</b> and <b>private</b> environment.
-
 				</div>
 			</div>
 			<div class="card box-shadow">
@@ -207,12 +182,9 @@
 					<p style="text-align: center">
 						<img src="/static/images/control.png" style="width: 105px;">
 					</p>
-
-					You have <b>full control</b> about the service. <a href="mailto:cfuchsb@umich.edu"> Write us</a> to get more information.
-
+					You have <b>full control</b> about the service. <a href="mailto:itg.analytics@helmholtz-muenchen.de"> Write us</a> to get more information.
 				</div>
 			</div>
 		</div>
-
 	</div>
 </div>

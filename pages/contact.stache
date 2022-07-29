@@ -1,6 +1,15 @@
 <h2>Contact</h2>
 <br>
 
+<h4>Munich Imputation Server</h4>
+<ul>
+   <li><a href="mailto:william.rayner@helmholtz-muenchen.de">Dr. William Rayner</a></li>
+   <li><a href="mailto:young-chan.park@helmholtz-muenchen.de">Young-Chan Park</a></li>
+   <li><a href="mailto:hariharan.sethuraman@helmholtz-muenchen.de">Hariharan Sethuraman</a></li>
+   <li><a href="mailto:andrei.barysenka@helmholtz-muenchen.de">Andrei Barysenka</a></li>
+</ul>
+
+<br>
 <h4>Michigan Imputation Server</h4>
 <ul>
 	<li><a href="mailto:cfuchsb@umich.edu">Christian Fuchsberger</a></li>
@@ -8,16 +17,16 @@
 	<li><a href="mailto:sebastian.schoenherr@i-med.ac.at">Sebastian Schoenherr</a></li>
 	<li><a href="mailto:sayantan@umich.edu">Sayantan Das</a></li>
 	<li><a href="mailto:goncalo@umich.edu">Gonçalo Abecasis</a></li>
-
 </ul>
+
 <br>
 <h4>Imputation engine: <a href="http://genome.sph.umich.edu/wiki/Minimac3">Minimac3</a></h4>
 <ul>
 	<li><a href="mailto:sayantan@umich.edu">Sayantan Das</a></li>
 	<li><a href="mailto:cfuchsb@umich.edu">Christian Fuchsberger</a></li>
 	<li><a href="mailto:goncalo@umich.edu">Gonçalo Abecasis</a></li>
-
 </ul>
+
 <br>
 <h4>Cloud framework: <a href="http://cloudgene.uibk.ac.at/">Cloudgene</a></h4>
 <ul>
@@ -27,7 +36,6 @@
 
 <br>
 <h4>Pre-phasing</h4>
-
 <ul>
 	<li> <a href="https://code.google.com/p/hapi-ur/">HAPI-UR</a>
 		<ul>
