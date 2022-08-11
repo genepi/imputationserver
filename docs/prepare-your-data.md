@@ -1,6 +1,6 @@
 # Data preparation
 
-Michigan Imputation Server accepts VCF files compressed with [bgzip](http://samtools.sourceforge.net/tabix.shtml). Please make sure the following requirements are met:
+Munich Imputation Server accepts VCF files compressed with [bgzip](http://samtools.sourceforge.net/tabix.shtml). Please make sure the following requirements are met:
 
 - Create a separate vcf.gz file for each chromosome.
 - Variations must be sorted by genomic position.

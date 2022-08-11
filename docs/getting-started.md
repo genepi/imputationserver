@@ -1,11 +1,11 @@
 # Getting started
 
-To use Michigan Imputation Server, a [registration](https://imputationserver.sph.umich.edu/index.html#!pages/register) is required.
+To use Munich Imputation Server, a [registration](https://imputationserver.sph.umich.edu/index.html#!pages/register) is required.
 We send an activation mail to the provided address. Please follow the instructions in the email to activate your account. If it doesn't arrive, ensure you have entered the correct email address and check your spam folder.
 
 **After the email address has been verified, the service can be used without any costs.**
 
-Please cite this paper if you use Michigan Imputation Server in your GWAS study:
+Please cite this paper if you use Munich Imputation Server in your GWAS study:
 
 > Das S, Forer L, Schönherr S, Sidore C, Locke AE, Kwong A, Vrieze S, Chew EY, Levy S, McGue M, Schlessinger D, Stambolian D, Loh PR, Iacono WG, Swaroop A, Scott LJ, Cucca F, Kronenberg F, Boehnke M, Abecasis GR, Fuchsberger C. [Next-generation genotype imputation service and methods](https://www.ncbi.nlm.nih.gov/pubmed/27571263). Nature Genetics 48, 1284–1287 (2016).
 
@@ -39,7 +39,7 @@ VCF files can be uploaded either from your local disk or by specifying a remote 
 
 #### Upload VCF files from your computer
 
-When using the file upload, data is uploaded from your local file system to Michigan Imputation Server. By clicking on **Select Files** an open dialog appears where you can select your VCF files:
+When using the file upload, data is uploaded from your local file system to Munich Imputation Server. By clicking on **Select Files** an open dialog appears where you can select your VCF files:
 
 ![](images/upload-data01.png)
 
@@ -70,10 +70,10 @@ After clicking on the **Add URLs** button, a new dialog appears where you can ad
 ![](images/upload-data04.png)		
 
 ### Build
-Please select the build of your data. Currently the options **hg19** and **hg38** are supported. Michigan Imputation Server automatically updates the genome positions (liftOver) of your data. All reference panels except TOPMed are based on hg19 coordinates.
+Please select the build of your data. Currently the options **hg19** and **hg38** are supported. Munich Imputation Server automatically updates the genome positions (liftOver) of your data. All reference panels except TOPMed are based on hg19 coordinates.
 
 ### rsq Filter
-To minimize the file size, Michigan Imputation Server includes a r<sup>2</sup> filter option, excluding all imputed SNPs with a r<sup>2</sup>-value (= imputation quality) smaller then the specified value.
+To minimize the file size, Munich Imputation Server includes a r<sup>2</sup> filter option, excluding all imputed SNPs with a r<sup>2</sup>-value (= imputation quality) smaller then the specified value.
 
 ### Phasing
 

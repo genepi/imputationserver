@@ -1,7 +1,7 @@
-site_name: Michigan Imputation Server
+site_name: Munich Imputation Server
 theme: readthedocs
 
-pages:
+nav:
 - Home: index.md
 - Getting Started: getting-started.md
 - Data Preparation: prepare-your-data.md
@@ -13,30 +13,18 @@ pages:
   - API: api.md
   - Docker: docker.md
   - Create Reference Panels: create-reference-panels.md
-- Workshops:
-  - ASHG2020:
-    - Overview: workshops/ASHG2020.md
-    - "Session 1: Imputation and the Server": workshops/ASHG2020/Session1.md
-    - "Session 2: Run a job, Quality Control and Data Preparation": workshops/ASHG2020/Session2.md
-    - "Session 3: Tracking runs and downloading data": workshops/ASHG2020/Session3.md
-    - "Session 4: Performing GWAS using imputed data": workshops/ASHG2020/Session4.md
-    - "Session 5: Imputation bot": workshops/ASHG2020/Session5.md
-    - "Session 6: TOPMed Imputation Server": workshops/ASHG2020/Session6.md
-    - "Session 7: Imputation panels": workshops/ASHG2020/Session7.md
 - Contact: contact.md
 
 
 
-repo_name: genepi/imputationserver
-repo_url: https://github.com/genepi/imputationserver
+repo_name: hmgu-itg/imputationserver
+repo_url: https://github.com/hmgu-itg/imputationserver
 edit_uri: edit/master/docs
 
 extra:
   social:
     - type: github-alt
-      link: https://github.com/genepi/imputationserver
-    - type: twitter
-      link: https://twitter.com/umimpute
+      link: https://github.com/hmgu-itg/imputationserver
 
 markdown_extensions:
     - toc:

@@ -1,12 +1,12 @@
 # Contact
 
-The complete Michigan Imputation Server source code is available on [GitHub](https://github.com/genepi/imputationserver). Feel free to create issues and pull requests. Before contacting us, please have a look at the [FAQ page](/faq) first. 
+The complete Munich Imputation Server source code is available on [GitHub](https://github.com/genepi/imputationserver). Feel free to create issues and pull requests. Before contacting us, please have a look at the [FAQ page](/faq) first. 
 
 Please contact [Christian Fuchsberger](mailto:cfuchsb@umich.edu) in case of other problems.
 
-## Michigan Imputation Server Team
+## Munich Imputation Server Team
 
-Michigan Imputation Server provides a free genotype imputation service using Minimac4. You can upload phased or unphased GWAS genotypes and receive phased and imputed genomes in return. For all uploaded data sets an extensive QC is performed.
+Munich Imputation Server provides a free genotype imputation service using Minimac4. You can upload phased or unphased GWAS genotypes and receive phased and imputed genomes in return. For all uploaded data sets an extensive QC is performed.
 
 * [Christian Fuchsberger](mailto:cfuchsb@umich.edu)
 * [Lukas Forer](mailto:lukas.forer@i-med.ac.at)
@@ -25,7 +25,7 @@ Minimac4 is a lower memory and more computationally efficient implementation of 
 
 ## Cloud framework: [Cloudgene](http://cloudgene.uibk.ac.at/)
 
-Cloudgene is a framework to build Software As A Service (SaaS) platforms for data analysis pipelines. By connecting command-line programs, scripts or Hadoop applications to Cloudgene, a powerful web application can be created within minutes. Cloudgene supports the complete workflow including data transfer, program execution and data export. Cloudgene is developed at the Division of Genetic Epidemiology Innsbruck in cooperation with the Center for Statistical Genetics, University of Michigan.
+Cloudgene is a framework to build Software As A Service (SaaS) platforms for data analysis pipelines. By connecting command-line programs, scripts or Hadoop applications to Cloudgene, a powerful web application can be created within minutes. Cloudgene supports the complete workflow including data transfer, program execution and data export. Cloudgene is developed at the Division of Genetic Epidemiology Innsbruck in cooperation with the Center for Statistical Genetics, University of Munich.
 
 * [Lukas Forer](mailto:lukas.forer@i-med.ac.at)
 * [Sebastian Schönherr](mailto:sebastian.schoenherr@i-med.ac.at)

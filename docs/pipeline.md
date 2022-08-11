@@ -102,5 +102,5 @@ Additionally to the standard QC, the following per-sample checks are executed fo
 * Ploidy Check: Verifies if all variants in the nonPAR region are either haploid or diploid.
 * Mixed Genotypes Check: Verifies if the amount of mixed genotypes (e.g. 1/.) is < 10 %.
 
-For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are then automatically merged by Michigan Imputation Server and are returned as one complete chromosome X file. Only Eagle is supported.
+For phasing and imputation, chrX is split into three independent chunks (PAR1, nonPAR, PAR2). These splits are then automatically merged by Munich Imputation Server and are returned as one complete chromosome X file. Only Eagle is supported.
 
