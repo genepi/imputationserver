@@ -175,9 +175,11 @@ public abstract class ParallelHadoopJobStep extends WorkflowStep {
 				String hadoopJobId = job.getJobId();
 
 				if (hadoopJobId != null) {
-
-					RunningJob hadoopJob = HadoopUtil.getInstance().getJob(
-							hadoopJobId);
+				    
+				    log.info("CALLING getJob with hadoopJobId="+hadoopJobId);
+					RunningJob hadoopJob = HadoopUtil.getInstance().getJob(hadoopJobId);
+					log.info("GOT "+hadoopJob);
+					
 					try {
 
 						if (hadoopJob != null) {

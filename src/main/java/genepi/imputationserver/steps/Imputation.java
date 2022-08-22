@@ -422,7 +422,7 @@ public class Imputation extends ParallelHadoopJobStep {
 
 			// everything fine
 			ok = true;
-			context.println("Job chr_" + id + " (" + job.getJobId() + ") executed sucessful.");
+			context.println("Job chr_" + id + " (" + job.getJobId() + ") executed sucessfully.");
 		} else {
 
 			// one job failed
