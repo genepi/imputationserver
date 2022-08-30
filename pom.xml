@@ -306,7 +306,7 @@
 		<dependency>
 			<groupId>lukfor</groupId>
 			<artifactId>pgs-calc</artifactId>
-			<version>0.9.17</version>
+			<version>1.4.0-beta7</version>
 		</dependency>
 
 	</dependencies>
