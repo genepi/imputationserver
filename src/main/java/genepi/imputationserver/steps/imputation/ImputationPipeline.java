@@ -239,7 +239,7 @@ public class ImputationPipeline {
 
 		// eagle command
 		Command eagle = new Command(eagleCommand);
-		eagle.setLog(log);
+		//eagle.setLog(log);
 		eagle.setSilent(false);
 		eagle.setParams(params);
 		eagle.saveStdOut(output.getPrefix() + ".eagle.out");
