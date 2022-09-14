@@ -27,6 +27,7 @@ workflow:
 #if( $population != "mixed")
 
     - name: Quality Control (Report)
+      type: rmd_docker
       rmd: qc-report.Rmd
       params: $mafFile
       output: ${qcreport}.html
