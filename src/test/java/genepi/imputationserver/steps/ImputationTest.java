@@ -803,10 +803,102 @@ public class ImputationTest {
 		}
 		readerExpected.close();
 		readerActual.close();
-		
-		//check if html report file exisits
+
+		// check if html report file exisits
 		new File("test-data/tmp/local/scores.html").exists();
-		
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
+	@Test
+	public void testPipelineWithEagleAndScoresAndFormat() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// import scores into hdfs
+		String score1 = "test-data/data/prsweb/PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt";
+		String format1 = "test-data/data/prsweb/PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt.format";
+
+		String targetScore1 = HdfsUtil.path("scores-hdfs", "PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt");
+		HdfsUtil.put(score1, targetScore1);
+
+		String targetFormat1 = HdfsUtil.path("scores-hdfs",
+				"PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt.format");
+		HdfsUtil.put(format1, targetFormat1);
+
+		// create workflow context and set scores
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setOutput("outputScores", "cloudgene2-hdfs");
+
+		Map<String, Object> pgsPanel = new HashMap<String, Object>();
+		List<String> scores = new Vector<String>();
+		scores.add("PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt");
+		pgsPanel.put("location", "scores-hdfs");
+		pgsPanel.put("scores", scores);
+		pgsPanel.put("build", "hg19");
+		context.setData("pgsPanel", pgsPanel);
+
+		// run qc to create chunkfile
+
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+		// run and test
+		boolean result = run(context, inputValidation);
+		assertTrue(result);
+
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		result = run(context, qcStats);
+
+		assertTrue(result);
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+
+		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
+
+		assertEquals("20", file.getChromosome());
+		assertEquals(51, file.getNoSamples());
+		assertEquals(true, file.isPhased());
+		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
+
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		assertEquals(snpInInfo, file.getNoSnps());
+
+		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", score1, "--out", "test-data/tmp/expected.txt" };
+		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
+		assertEquals(0, resultScore);
+
+		zipFile = new ZipFile("test-data/tmp/local/scores.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/expected.txt", ',');
+		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
+
+		while (readerExpected.next() && readerActual.next()) {
+			assertEquals(readerExpected.getDouble("PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS"),
+					readerActual.getDouble("PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS"), 0.00001);
+		}
+		readerExpected.close();
+		readerActual.close();
+
+		// check if html report file exisits
+		new File("test-data/tmp/local/scores.html").exists();
+
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}

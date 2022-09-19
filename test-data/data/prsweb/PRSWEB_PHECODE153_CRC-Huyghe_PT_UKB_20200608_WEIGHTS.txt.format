@@ -1,0 +1,7 @@
+{
+  "chromosome": "CHROM",
+  "position": "POS",
+  "effect_weight": "WEIGHT",
+  "otherAllele": "OA",
+  "effectAllele": "EA"
+}

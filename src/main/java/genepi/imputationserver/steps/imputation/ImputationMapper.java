@@ -168,6 +168,13 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				String name = FileUtil.getFilename(filename);
 				String localFilename = cache.getFile(name);
 				scores[i] = localFilename;
+				// check if score file has format file
+				String formatFile = cache.getFile(name + ".format");
+				if (formatFile != null) {
+					// create symbolic link to format file. they have to be in the same folder
+					Files.createSymbolicLink(Paths.get(localFilename), Paths.get(formatFile));
+
+				}
 			}
 			System.out.println("Loaded " + scores.length + " score files from distributed cache");
 
@@ -303,7 +310,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 				FileMerger.splitIntoHeaderAndData(outputChunk.getImputedVcfFilename(), outHeader, outData,
 						imputationParameters);
-				
+
 				// store vcf file (remove header)
 				BgzipSplitOutputStream outDataMeta = new BgzipSplitOutputStream(
 						HdfsUtil.create(HdfsUtil.path(output, chunk + ".data.empiricalDose.vcf.gz")));
@@ -313,8 +320,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 				FileMerger.splitIntoHeaderAndData(outputChunk.getMetaVcfFilename(), outHeaderMeta, outDataMeta,
 						imputationParameters);
-				
-				
+
 				long end = System.currentTimeMillis();
 
 				statistics.setImportTime((end - start) / 1000);

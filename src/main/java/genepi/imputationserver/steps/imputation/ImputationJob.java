@@ -39,7 +39,7 @@ public class ImputationJob extends HadoopJob {
 	public static final String R2_FILTER = "R2_FILTER";
 
 	public static final String PHASING_ONLY = "PHASING_ONLY";
-	
+
 	public static final String PHASING_REQUIRED = "PHASING_REQUIRED";
 
 	public static final String PHASING_ENGINE = "PHASING_ENGINE";
@@ -174,6 +174,9 @@ public class ImputationJob extends HadoopJob {
 			for (String score : scores) {
 				if (HdfsUtil.exists(score)) {
 					cache.addFile(score);
+					if (HdfsUtil.exists(score + ".format")) {
+						cache.addFile(score + ".format");
+					}
 				} else {
 					log.info("PGS score file '" + score + "' not found.");
 					throw new IOException("PGS score file '" + score + "' not found.");
@@ -267,7 +270,7 @@ public class ImputationJob extends HadoopJob {
 	public void setR2Filter(String r2Filter) {
 		set(R2_FILTER, r2Filter);
 	}
-	
+
 	public void setPhasingRequired(String phasingRequired) {
 		set(PHASING_REQUIRED, phasingRequired);
 	}
