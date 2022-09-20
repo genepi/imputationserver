@@ -26,7 +26,6 @@ import genepi.imputationserver.util.PgsPanel;
 import genepi.io.FileUtil;
 import genepi.io.text.LineWriter;
 import genepi.riskscore.io.MetaFile;
-import genepi.riskscore.io.OutputFile;
 import genepi.riskscore.io.ReportFile;
 import genepi.riskscore.tasks.CreateHtmlReportTask;
 import genepi.riskscore.tasks.MergeReportTask;
@@ -303,12 +302,18 @@ public class CompressionEncryption extends WorkflowStep {
 
 				String folder = getFolder(CompressionEncryption.class);
 
-				MetaFile metaFile = MetaFile.load(FileUtil.path(folder, "pgs-catalog.json"));
-				report.mergeWithMeta(metaFile);
+				String metaFilename = pgsPanel.getMeta() != null ? pgsPanel.getMeta()
+						: FileUtil.path(folder, "pgs-catalog.json");
+
+				if (new File(metaFilename).exists()) {
+					MetaFile metaFile = MetaFile.load(FileUtil.path(folder, pgsPanel.getMeta()));
+					report.mergeWithMeta(metaFile);
+				}
 
 				CreateHtmlReportTask htmlReportTask = new CreateHtmlReportTask();
 				htmlReportTask.setApplicationName("");
-				htmlReportTask.setVersion("PGS Server Beta <small>(" +  ImputationPipeline.PIPELINE_VERSION + ")</small>");
+				htmlReportTask
+						.setVersion("PGS Server Beta <small>(" + ImputationPipeline.PIPELINE_VERSION + ")</small>");
 				htmlReportTask.setShowCommand(false);
 				htmlReportTask.setReport(report);
 				htmlReportTask.setOutput(outputFileHtml);
