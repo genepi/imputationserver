@@ -306,7 +306,7 @@ public class CompressionEncryption extends WorkflowStep {
 						: FileUtil.path(folder, "pgs-catalog.json");
 
 				if (new File(metaFilename).exists()) {
-					MetaFile metaFile = MetaFile.load(FileUtil.path(folder, pgsPanel.getMeta()));
+					MetaFile metaFile = MetaFile.load(metaFilename);
 					report.mergeWithMeta(metaFile);
 				}
 
