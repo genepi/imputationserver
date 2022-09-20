@@ -12,6 +12,8 @@ public class PgsPanel {
 
 	private String build = "";
 
+	private String meta = null;
+
 	private List<String> scores = new Vector<>();
 
 	private PgsPanel() {
@@ -56,6 +58,14 @@ public class PgsPanel {
 
 	public String getBuild() {
 		return build;
+	}
+
+	public String getMeta() {
+		return meta;
+	}
+
+	public void setMeta(String meta) {
+		this.meta = meta;
 	}
 
 }
