@@ -157,6 +157,16 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String eagleCommand = cache.getFile("eagle");
 		String beagleCommand = cache.getFile("beagle.jar");
 		String tabixCommand = cache.getFile("tabix");
+		
+		// create temp directory
+		DefaultPreferenceStore store = new DefaultPreferenceStore(context.getConfiguration());
+		folder = store.getString("minimac.tmp");
+		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
+		boolean created = FileUtil.createDirectory(folder);
+
+		if (!created) {
+			throw new IOException(folder + " is not writable!");
+		}
 
 		// scores
 		String scoresFilenames = parameters.get(ImputationJob.SCORES);
@@ -172,24 +182,15 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				String formatFile = cache.getFile(name + ".format");
 				if (formatFile != null) {
 					// create symbolic link to format file. they have to be in the same folder
-					Files.createSymbolicLink(Paths.get(localFilename), Paths.get(formatFile));
-
+					Files.createSymbolicLink(Paths.get(FileUtil.path(folder,name)), Paths.get(localFilename));
+					Files.createSymbolicLink(Paths.get(FileUtil.path(folder,name+".format")), Paths.get(formatFile));
+					scores[i] = FileUtil.path(folder,name);
 				}
 			}
 			System.out.println("Loaded " + scores.length + " score files from distributed cache");
 
 		} else {
 			System.out.println("No scores files et.");
-		}
-
-		// create temp directory
-		DefaultPreferenceStore store = new DefaultPreferenceStore(context.getConfiguration());
-		folder = store.getString("minimac.tmp");
-		folder = FileUtil.path(folder, context.getTaskAttemptID().toString());
-		boolean created = FileUtil.createDirectory(folder);
-
-		if (!created) {
-			throw new IOException(folder + " is not writable!");
 		}
 
 		// create symbolic link --> index file is in the same folder as data

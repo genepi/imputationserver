@@ -15,6 +15,7 @@ import genepi.imputationserver.steps.vcf.VcfChunkOutput;
 import genepi.io.FileUtil;
 import genepi.riskscore.io.Chunk;
 import genepi.riskscore.io.PGSCatalog;
+import genepi.riskscore.io.formats.RiskScoreFormatFactory.RiskScoreFormat;
 import genepi.riskscore.tasks.ApplyScoreTask;
 import groovy.text.SimpleTemplateEngine;
 import htsjdk.samtools.util.StopWatch;
@@ -344,6 +345,14 @@ public class ImputationPipeline {
 			task.setVcfFilename(output.getImputedVcfFilename());
 			task.setChunk(scoreChunk);
 			task.setRiskScoreFilenames(scores);
+
+			for (String file : scores) {
+				String autoFormat = file + ".format";
+				if (new File(autoFormat).exists()) {
+					task.setRiskScoreFormat(file, RiskScoreFormat.MAPPING_FILE);
+				}
+			}
+
 			task.setOutputReportFilename(output.getScoreFilename() + ".json");
 			task.setOutput(output.getScoreFilename());
 
