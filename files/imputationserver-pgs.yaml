@@ -10,7 +10,11 @@ installation:
   - import:
       source: ${app_local_folder}/bin
       target: ${app_hdfs_folder}/bin
- 
+
+  - import:
+      source: ${app_local_folder}/references
+      target: ${app_hdfs_folder}/references
+
 workflow:
 
   setups:
@@ -31,28 +35,38 @@ workflow:
       params: $mafFile
       output: ${qcreport}.html
       generates: $qcreport
-      
-#end            
+
+#end
 
   onFailure:
     name: Send Notification on Failure
     jar: imputationserver.jar
     classname: genepi.imputationserver.steps.FailureNotification
-    
+
 #if($mode == "imputation" || $mode == "phasing")
 
   steps:
-  
+
     - name: Pre-phasing and Imputation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.Imputation
       generates: $local $outputimputation $logfile $hadooplogs
       binaries: ${app_hdfs_folder}/bin
 
+    - name: Preparing TRACE jobs
+      jar: imputationserver.jar
+      classname: genepi.imputationserver.steps.ancestry.TraceBatchGenerator
+
+    - name: Estimate ancestry
+      jar: imputationserver.jar
+      classname: genepi.imputationserver.steps.ancestry.TraceStep
+      binaries: ${app_hdfs_folder}/bin
+      references: ${app_hdfs_folder}/references
+
     - name: Data Compression and Encryption
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.CompressionEncryption
-      
+
 #end
 
   inputs:
@@ -72,8 +86,8 @@ workflow:
        value: hg19
        values:
          hg19: GRCh37/hg19
-         hg38: GRCh38/hg38     
-       details: Please note that the final SNP coordinates always match the reference build.        
+         hg38: GRCh38/hg38
+       details: Please note that the final SNP coordinates always match the reference build.
 
      - id: r2Filter
        description: rsq Filter
@@ -93,7 +107,7 @@ workflow:
        values:
          eagle: Eagle v2.4 (phased output)
          no_phasing: No phasing
-  
+
      - id: population
        description: Population
        type: list
@@ -101,13 +115,13 @@ workflow:
           bind: refpanel
           property: populations
           category: RefPanel
-                
+
      - id: mode
        description: Mode
        type: list
        value: imputation
        values:
-          qconly: Quality Control Only 
+          qconly: Quality Control Only
           imputation: Quality Control & Imputation
           phasing: Quality Control & Phasing Only
 
@@ -120,7 +134,7 @@ workflow:
          true: yes
          false: no
        visible: true
-       
+
      - id: meta
        description: Generate Meta-imputation file
        type: checkbox
@@ -128,7 +142,7 @@ workflow:
        values:
          true: yes
          false: no
-       visible: true   
+       visible: true
 
      - id: myseparator0
        type: separator
@@ -144,6 +158,34 @@ workflow:
        required: false
        category: PGSPanel
 
+     - id: reference
+       description: Reference panel
+       type: list
+       value: HGDP_238_chr22
+       values:
+         HGDP_238_chr22: HGDP_238_chr22
+
+     - id: dim
+       description: Number of principal components to compute
+       type: number
+       value: 3
+       required: true
+       visible: false
+
+     - id: dim_high
+       description: Number of principal components for projection
+       type: number
+       value: 20
+       required: true
+       visible: false
+
+     - id: batch_size
+       description: Number of study individuals in single batch job
+       type: number
+       value: 50
+       required: true
+       visible: false
+
      - id: myseparator
        type: separator
 
@@ -156,12 +198,12 @@ workflow:
      - id: check1
        description: I will not attempt to re-identify or contact research participants.
        type: terms_checkbox
-       
+
      - id: check2
        description: I will report any inadvertent data release, security breach or other data management incident of which I become aware.
-       type: terms_checkbox   
+       type: terms_checkbox
 
-         
+
   outputs:
 
     - id: qcreport
@@ -179,7 +221,7 @@ workflow:
       mergeOutput: true
       removeHeader: false
       zip: false
-       
+
     - id: chunksDir
       description: Actual chunk files
       type: local-folder
@@ -211,7 +253,7 @@ workflow:
       zip: false
       removeHeader: false
       mergeOutput: false
-      
+
     - id: outputScores
       description: Score
       type: hdfs-folder
@@ -220,20 +262,20 @@ workflow:
       zip: zip
       removeHeader: false
       mergeOutput: true
-      
+
 
     - id: local
       description: Imputation Results
       type: local-folder
       download: true
       temp: true
-             
+
     - id: logfile
       description: Logs
       type: local-folder
       download: true
       temp: false
-           
+
     - id: hadooplogs
       description: Hadoop Task Logs
       type: local-folder
@@ -241,3 +283,21 @@ workflow:
       temp: false
       autoExport: true
       adminOnly: true
+
+    - id: trace_batches
+      description: List of LASER batch jobs for study individuals
+      type: hdfs-folder
+      download: false
+      temp: true
+
+    - id: study_pc
+      description: Study PC coordinates
+      type: hdfs-folder
+      download: false
+      temp: true
+
+    - id: study_population
+      description: Study Predicted Population
+      type: hdfs-folder
+      download: false
+      temp: true

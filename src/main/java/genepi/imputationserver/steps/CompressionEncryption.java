@@ -26,11 +26,14 @@ import genepi.imputationserver.util.PgsPanel;
 import genepi.io.FileUtil;
 import genepi.io.text.LineWriter;
 import genepi.riskscore.io.MetaFile;
+import genepi.riskscore.io.OutputFile;
 import genepi.riskscore.io.ReportFile;
+import genepi.riskscore.io.SamplesFile;
 import genepi.riskscore.tasks.CreateHtmlReportTask;
 import genepi.riskscore.tasks.MergeReportTask;
 import genepi.riskscore.tasks.MergeScoreTask;
 import lukfor.progress.TaskService;
+import lukfor.progress.tasks.Task;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
@@ -284,6 +287,7 @@ public class CompressionEncryption extends WorkflowStep {
 				String outputFileScores = FileUtil.path(temp2, "scores.txt");
 				String outputFileReports = FileUtil.path(temp2, "report.json");
 				String outputFileHtml = FileUtil.path(localOutput, "scores.html");
+				String samples = FileUtil.path(localOutput, "samples.txt");
 
 				// disable ansi
 				TaskService.setAnsiSupport(false);
@@ -317,8 +321,26 @@ public class CompressionEncryption extends WorkflowStep {
 				htmlReportTask.setShowCommand(false);
 				htmlReportTask.setReport(report);
 				htmlReportTask.setOutput(outputFileHtml);
-				TaskService.run(htmlReportTask);
 
+				htmlReportTask.setData(new OutputFile(outputFileScores));				
+				if (new File(samples).exists()) {
+					context.println("Loading predicted populations from " + samples + ".");
+					SamplesFile samplesFile = new SamplesFile(samples);
+					samplesFile.buildIndex();
+					htmlReportTask.setSamples(samplesFile);
+				}
+
+				List<Task> runningTasks = TaskService.run(htmlReportTask);
+				for (Task runningTask : runningTasks) {
+					if (!runningTask.getStatus().isSuccess()) {
+						System.out.println("Creating report failed: " + runningTask.getStatus().getThrowable());
+						runningTask.getStatus().getThrowable().printStackTrace();
+						return false;
+					}
+				}
+
+				
+				
 				context.println("Created html report " + outputFileHtml + ".");
 
 				String fileName = "scores.zip";
