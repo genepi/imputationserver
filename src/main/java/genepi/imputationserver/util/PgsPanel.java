@@ -31,6 +31,9 @@ public class PgsPanel {
 			if (map.containsKey("build")) {
 				panel.build = map.get("build").toString();
 			}
+			if (map.containsKey("meta")) {
+				panel.meta = map.get("meta").toString();
+			}
 			if (map.containsKey("scores")) {
 				List<String> list = (List<String>) map.get("scores");
 				panel.scores = list;
