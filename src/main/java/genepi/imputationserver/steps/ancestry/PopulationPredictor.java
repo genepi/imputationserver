@@ -12,7 +12,7 @@ import genepi.io.table.writer.CsvTableWriter;
 
 public class PopulationPredictor {
 
-	private static final String LABEL_UNKNOWN = "unknown";
+	private static final String LABEL_UNKNOWN = "Unknown";
 
 	private String studyFile = null;
 
