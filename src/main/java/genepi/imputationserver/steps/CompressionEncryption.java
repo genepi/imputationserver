@@ -1,6 +1,8 @@
 package genepi.imputationserver.steps;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -285,7 +287,7 @@ public class CompressionEncryption extends WorkflowStep {
 				}
 
 				String outputFileScores = FileUtil.path(temp2, "scores.txt");
-				String outputFileReports = FileUtil.path(temp2, "report.json");
+				String outputFileReports = FileUtil.path(localOutput, "report.json");
 				String outputFileHtml = FileUtil.path(localOutput, "scores.html");
 				String samples = FileUtil.path(localOutput, "samples.txt");
 
@@ -310,8 +312,11 @@ public class CompressionEncryption extends WorkflowStep {
 						: FileUtil.path(folder, "pgs-catalog.json");
 
 				if (new File(metaFilename).exists()) {
+					context.println("Loading meta file from " + metaFilename + ".");
 					MetaFile metaFile = MetaFile.load(metaFilename);
 					report.mergeWithMeta(metaFile);
+				} else {
+					context.println("Warning: Meta file " + metaFilename + " not found.");
 				}
 
 				CreateHtmlReportTask htmlReportTask = new CreateHtmlReportTask();
@@ -322,7 +327,7 @@ public class CompressionEncryption extends WorkflowStep {
 				htmlReportTask.setReport(report);
 				htmlReportTask.setOutput(outputFileHtml);
 
-				htmlReportTask.setData(new OutputFile(outputFileScores));				
+				htmlReportTask.setData(new OutputFile(outputFileScores));
 				if (new File(samples).exists()) {
 					context.println("Loading predicted populations from " + samples + ".");
 					SamplesFile samplesFile = new SamplesFile(samples);
@@ -333,14 +338,15 @@ public class CompressionEncryption extends WorkflowStep {
 				List<Task> runningTasks = TaskService.run(htmlReportTask);
 				for (Task runningTask : runningTasks) {
 					if (!runningTask.getStatus().isSuccess()) {
-						System.out.println("Creating report failed: " + runningTask.getStatus().getThrowable());
-						runningTask.getStatus().getThrowable().printStackTrace();
+
+						StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						runningTask.getStatus().getThrowable().printStackTrace(pw);
+						context.endTask("Html Report failed: " + sw.toString(), WorkflowContext.ERROR);
 						return false;
 					}
 				}
 
-				
-				
 				context.println("Created html report " + outputFileHtml + ".");
 
 				String fileName = "scores.zip";
@@ -357,7 +363,10 @@ public class CompressionEncryption extends WorkflowStep {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			context.endTask("Data export failed: " + e.getMessage(), WorkflowContext.ERROR);
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			context.endTask("Data export failed: " + sw.toString(), WorkflowContext.ERROR);
 			return false;
 		}
 
