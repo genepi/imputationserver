@@ -1,6 +1,7 @@
 package genepi.imputationserver.steps;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -37,7 +38,6 @@ import genepi.riskscore.tasks.MergeScoreTask;
 import lukfor.progress.TaskService;
 import lukfor.progress.tasks.Task;
 import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.AesKeyStrength;
 import net.lingala.zip4j.model.enums.CompressionLevel;
@@ -54,6 +54,7 @@ public class CompressionEncryption extends WorkflowStep {
 		String output = context.get("outputimputation");
 		String outputScores = context.get("outputScores");
 		String localOutput = context.get("local");
+		String pgsOutput = context.get("pgs_output");
 		String aesEncryptionValue = context.get("aesEncryption");
 		String meta = context.get("meta");
 		String mode = context.get("mode");
@@ -259,8 +260,8 @@ public class CompressionEncryption extends WorkflowStep {
 
 				context.println("Exporting PGS scores...");
 
-				String temp2 = FileUtil.path(localOutput, "temp2");
-				FileUtil.createDirectory(temp2);
+				String scoresFolder = FileUtil.path(context.getLocalTemp(), "scores");
+				FileUtil.createDirectory(scoresFolder);
 
 				List<String> scoreList = HdfsUtil.getFiles(outputScores);
 
@@ -273,7 +274,7 @@ public class CompressionEncryption extends WorkflowStep {
 				for (String score : scoreList) {
 
 					String filename = FileUtil.getFilename(score);
-					String localPath = FileUtil.path(temp2, filename);
+					String localPath = FileUtil.path(scoresFolder, filename);
 					HdfsUtil.get(score, localPath);
 
 					if (score.endsWith(".json")) {
@@ -286,10 +287,15 @@ public class CompressionEncryption extends WorkflowStep {
 
 				}
 
-				String outputFileScores = FileUtil.path(temp2, "scores.txt");
-				String outputFileReports = FileUtil.path(localOutput, "report.json");
-				String outputFileHtml = FileUtil.path(localOutput, "scores.html");
-				String samples = FileUtil.path(localOutput, "samples.txt");
+				String outputFileScores = FileUtil.path(context.getLocalTemp(), "scores.txt");
+				String outputFileReports = FileUtil.path(context.getLocalTemp(), "report.json");
+				String outputFileHtml = FileUtil.path(pgsOutput, "scores.html");
+
+				String extendedHtmlFolder = FileUtil.path(context.getLocalTemp(), "report");
+				FileUtil.createDirectory(extendedHtmlFolder);
+				String outputFileExtendedHtml = FileUtil.path(extendedHtmlFolder, "scores.html");
+
+				String samples = FileUtil.path(pgsOutput, "samples.txt");
 
 				// disable ansi
 				TaskService.setAnsiSupport(false);
@@ -299,6 +305,13 @@ public class CompressionEncryption extends WorkflowStep {
 				mergeScore.setOutput(outputFileScores);
 				TaskService.run(mergeScore);
 
+				String fileName = "scores.zip";
+				String filePath = FileUtil.path(pgsOutput, fileName);
+				File file = new File(filePath);
+				createEncryptedZipFile(file, new File(outputFileScores), password, aesEncryption);
+
+				context.println("Exported PGS scores to " + fileName + ".");
+
 				MergeReportTask mergeReport = new MergeReportTask();
 				mergeReport.setInputs(chunksReports);
 				mergeReport.setOutput(outputFileReports);
@@ -306,10 +319,8 @@ public class CompressionEncryption extends WorkflowStep {
 
 				ReportFile report = mergeReport.getResult();
 
-				String folder = getFolder(CompressionEncryption.class);
-
 				String metaFilename = pgsPanel.getMeta() != null ? pgsPanel.getMeta()
-						: FileUtil.path(folder, "pgs-catalog.json");
+						: FileUtil.path(workingDirectory, "pgs-catalog.json");
 
 				if (new File(metaFilename).exists()) {
 					context.println("Loading meta file from " + metaFilename + ".");
@@ -319,44 +330,26 @@ public class CompressionEncryption extends WorkflowStep {
 					context.println("Warning: Meta file " + metaFilename + " not found.");
 				}
 
-				CreateHtmlReportTask htmlReportTask = new CreateHtmlReportTask();
-				htmlReportTask.setApplicationName("");
-				htmlReportTask
-						.setVersion("PGS Server Beta <small>(" + ImputationPipeline.PIPELINE_VERSION + ")</small>");
-				htmlReportTask.setShowCommand(false);
-				htmlReportTask.setReport(report);
-				htmlReportTask.setOutput(outputFileHtml);
+				CreateHtmlReportTask htmlReport = createReport(outputFileHtml, outputFileScores, samples, report,
+						"default", false);
+				CreateHtmlReportTask htmlExtendedReport = createReport(outputFileExtendedHtml, outputFileScores,
+						samples, report, "multi-page", true);
 
-				htmlReportTask.setData(new OutputFile(outputFileScores));
-				if (new File(samples).exists()) {
-					context.println("Loading predicted populations from " + samples + ".");
-					SamplesFile samplesFile = new SamplesFile(samples);
-					samplesFile.buildIndex();
-					htmlReportTask.setSamples(samplesFile);
-				}
-
-				List<Task> runningTasks = TaskService.run(htmlReportTask);
+				List<Task> runningTasks = TaskService.run(htmlReport, htmlExtendedReport);
 				for (Task runningTask : runningTasks) {
 					if (!runningTask.getStatus().isSuccess()) {
-
-						StringWriter sw = new StringWriter();
-						PrintWriter pw = new PrintWriter(sw);
-						runningTask.getStatus().getThrowable().printStackTrace(pw);
-						context.endTask("Html Report failed: " + sw.toString(), WorkflowContext.ERROR);
+						context.endTask("Html Report failed: " + runningTask.getStatus().getThrowable(),
+								WorkflowContext.ERROR);
 						return false;
 					}
 				}
 
-				context.println("Created html report " + outputFileHtml + ".");
+				String fileNameReport = "scores.report.zip";
+				File fileReport = new File(FileUtil.path(pgsOutput, fileNameReport));
+				createEncryptedZipFileFromFolder(fileReport, new File(extendedHtmlFolder), password, aesEncryption);
 
-				String fileName = "scores.zip";
-				String filePath = FileUtil.path(localOutput, fileName);
-				File file = new File(filePath);
-				createEncryptedZipFile(file, new File(outputFileScores), password, aesEncryption);
+				context.println("Created reports " + outputFileHtml + " and " + fileReport.getPath() + ".");
 
-				context.println("Exported PGS scores to " + fileName + ".");
-
-				FileUtil.deleteDirectory(temp2);
 			}
 
 			context.endTask("Exported data.", WorkflowContext.OK);
@@ -417,8 +410,27 @@ public class CompressionEncryption extends WorkflowStep {
 
 	}
 
+	private CreateHtmlReportTask createReport(String outputFileHtml, String outputFileScores, String samples,
+			ReportFile report, String template, boolean showDistribution) throws IOException, Exception {
+		CreateHtmlReportTask task = new CreateHtmlReportTask();
+		task.setApplicationName("");
+		task.setVersion("PGS Server Beta <small>(" + ImputationPipeline.PIPELINE_VERSION + ")</small>");
+		task.setShowCommand(false);
+		task.setReport(report);
+		task.setOutput(outputFileHtml);
+		task.setData(new OutputFile(outputFileScores));
+		task.setTemplate(template);
+		task.setShowDistribution(showDistribution);
+		if (new File(samples).exists()) {
+			SamplesFile samplesFile = new SamplesFile(samples);
+			samplesFile.buildIndex();
+			task.setSamples(samplesFile);
+		}
+		return task;
+	}
+
 	public void createEncryptedZipFile(File file, List<File> files, String password, boolean aesEncryption)
-			throws ZipException {
+			throws IOException {
 		ZipParameters param = new ZipParameters();
 		param.setEncryptFiles(true);
 		param.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
@@ -432,14 +444,32 @@ public class CompressionEncryption extends WorkflowStep {
 
 		ZipFile zipFile = new ZipFile(file, password.toCharArray());
 		zipFile.addFiles(files, param);
-
+		zipFile.close();
 	}
 
 	public void createEncryptedZipFile(File file, File source, String password, boolean aesEncryption)
-			throws ZipException {
+			throws IOException {
 		List<File> files = new Vector<File>();
 		files.add(source);
 		createEncryptedZipFile(file, files, password, aesEncryption);
+	}
+
+	public void createEncryptedZipFileFromFolder(File file, File folder, String password, boolean aesEncryption)
+			throws IOException {
+		ZipParameters param = new ZipParameters();
+		param.setEncryptFiles(true);
+		param.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
+
+		if (aesEncryption) {
+			param.setEncryptionMethod(EncryptionMethod.AES);
+			param.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
+			param.setCompressionMethod(CompressionMethod.DEFLATE);
+			param.setCompressionLevel(CompressionLevel.NORMAL);
+		}
+
+		ZipFile zipFile = new ZipFile(file, password.toCharArray());
+		zipFile.addFolder(folder);
+		zipFile.close();
 	}
 
 }

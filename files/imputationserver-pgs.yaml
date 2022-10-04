@@ -53,11 +53,7 @@ workflow:
       generates: $local $outputimputation $logfile $hadooplogs
       binaries: ${app_hdfs_folder}/bin
 
-    - name: Preparing TRACE jobs
-      jar: imputationserver.jar
-      classname: genepi.imputationserver.steps.ancestry.TraceBatchGenerator
-
-    - name: Estimate ancestry
+    - name: Ancestry Estimation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.ancestry.TraceStep
       binaries: ${app_hdfs_folder}/bin
@@ -159,7 +155,7 @@ workflow:
        category: PGSPanel
 
      - id: reference
-       description: Reference panel
+       description: Reference Populations
        type: list
        value: HGDP_238_chr22
        values:
@@ -266,6 +262,12 @@ workflow:
 
     - id: local
       description: Imputation Results
+      type: local-folder
+      download: true
+      temp: true
+
+    - id: pgs_output
+      description: PGS Results
       type: local-folder
       download: true
       temp: true

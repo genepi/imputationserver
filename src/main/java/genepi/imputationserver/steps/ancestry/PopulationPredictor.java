@@ -60,7 +60,7 @@ public class PopulationPredictor {
 		System.out.println(
 				"Loaded " + maxPcs + " PCs for " + samples.size() + "/" + samplesIndex.size() + " reference samples.");
 
-		CsvTableWriter writer = new CsvTableWriter(output, '\t');
+		CsvTableWriter writer = new CsvTableWriter(output, '\t', false);
 		String[] columns = new String[4 + maxPcs];
 		columns[0] = "sample";
 		columns[1] = "population";
