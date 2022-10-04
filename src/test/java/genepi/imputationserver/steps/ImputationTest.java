@@ -1569,6 +1569,9 @@ public class ImputationTest {
 		context.setOutput("local", file.getAbsolutePath() + "/local");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/local");
 
+		context.setOutput("pgs_output", file.getAbsolutePath() + "/pgs_output");
+		FileUtil.createDirectory(file.getAbsolutePath() + "/pgs_output");
+		
 		context.setOutput("logfile", file.getAbsolutePath() + "/logfile");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/logfile");
 
