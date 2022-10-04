@@ -792,7 +792,7 @@ public class ImputationTest {
 		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
 		assertEquals(0, resultScore);
 
-		zipFile = new ZipFile("test-data/tmp/local/scores.zip", PASSWORD.toCharArray());
+		zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/expected.txt", ',');
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
@@ -884,7 +884,7 @@ public class ImputationTest {
 		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
 		assertEquals(0, resultScore);
 
-		zipFile = new ZipFile("test-data/tmp/local/scores.zip", PASSWORD.toCharArray());
+		zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/expected.txt", ',');
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
