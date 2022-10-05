@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 import cloudgene.sdk.internal.IExternalWorkspace;
 import cloudgene.sdk.internal.WorkflowContext;
@@ -78,7 +79,8 @@ public class CompressionEncryption extends WorkflowStep {
 		if (jobConfig.exists()) {
 			store.load(jobConfig);
 		} else {
-			context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
+			context.println(
+					"Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
 		}
 
 		String notification = "no";
@@ -191,7 +193,7 @@ public class CompressionEncryption extends WorkflowStep {
 				}
 
 				if (sanityCheck.equals("yes") && lastChromosome) {
-					context.log("Run tabix on chromosome " + name + "...");
+					context.println("Run tabix on chromosome " + name + "...");
 					Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
 					tabix.setSilent(false);
 					tabix.setParams("-f", dosageOutput);
@@ -199,7 +201,7 @@ public class CompressionEncryption extends WorkflowStep {
 						context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
 						return false;
 					}
-					context.log("Tabix done.");
+					context.println("Tabix done.");
 				}
 
 				// create zip file
@@ -209,12 +211,12 @@ public class CompressionEncryption extends WorkflowStep {
 				createEncryptedZipFile(file, files, password, aesEncryption);
 
 				// add checksum to hash file
-				context.log("Creating file checksum for " + filePath);
+				context.println("Creating file checksum for " + filePath);
 				long checksumStart = System.currentTimeMillis();
 				String checksum = FileChecksum.HashFile(new File(filePath), FileChecksum.Algorithm.MD5);
 				writer.write(checksum + " " + fileName);
 				long checksumEnd = (System.currentTimeMillis() - checksumStart) / 1000;
-				context.log("File checksum for " + filePath + " created in " + checksumEnd + " seconds.");
+				context.println("File checksum for " + filePath + " created in " + checksumEnd + " seconds.");
 
 				// delete temp dir
 				FileUtil.deleteDirectory(temp);
@@ -225,17 +227,17 @@ public class CompressionEncryption extends WorkflowStep {
 
 					long start = System.currentTimeMillis();
 
-					context.log("External Workspace '" + externalWorkspace.getName() + "' found");
+					context.println("External Workspace '" + externalWorkspace.getName() + "' found");
 
-					context.log("Start file upload: " + filePath);
+					context.println("Start file upload: " + filePath);
 
 					String url = externalWorkspace.upload("local", file);
 
 					long end = (System.currentTimeMillis() - start) / 1000;
 
-					context.log("Upload finished in  " + end + " sec. File Location: " + url);
+					context.println("Upload finished in  " + end + " sec. File Location: " + url);
 
-					context.log("Add " + localOutput + " to custom download");
+					context.println("Add " + localOutput + " to custom download");
 
 					String size = FileUtils.byteCountToDisplaySize(file.length());
 
@@ -243,10 +245,10 @@ public class CompressionEncryption extends WorkflowStep {
 
 					FileUtil.deleteFile(filePath);
 
-					context.log("File deleted: " + filePath);
+					context.println("File deleted: " + filePath);
 
 				} else {
-					context.log("No external Workspace set.");
+					context.println("No external Workspace set.");
 				}
 			}
 
@@ -312,10 +314,14 @@ public class CompressionEncryption extends WorkflowStep {
 
 				context.println("Exported PGS scores to " + fileName + ".");
 
+				context.println("Merge report files...");
+
 				MergeReportTask mergeReport = new MergeReportTask();
 				mergeReport.setInputs(chunksReports);
 				mergeReport.setOutput(outputFileReports);
 				TaskService.run(mergeReport);
+
+				context.println("Merged report files to " + outputFileReports);
 
 				ReportFile report = mergeReport.getResult();
 
@@ -338,6 +344,8 @@ public class CompressionEncryption extends WorkflowStep {
 				List<Task> runningTasks = TaskService.run(htmlReport, htmlExtendedReport);
 				for (Task runningTask : runningTasks) {
 					if (!runningTask.getStatus().isSuccess()) {
+						context.println("Html Report failed: "
+								+ ExceptionUtils.getStackTrace(runningTask.getStatus().getThrowable()));
 						context.endTask("Html Report failed: " + runningTask.getStatus().getThrowable(),
 								WorkflowContext.ERROR);
 						return false;
@@ -355,11 +363,7 @@ public class CompressionEncryption extends WorkflowStep {
 			context.endTask("Exported data.", WorkflowContext.OK);
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			context.endTask("Data export failed: " + sw.toString(), WorkflowContext.ERROR);
+			context.endTask("Data export failed: " + ExceptionUtils.getStackTrace(e), WorkflowContext.ERROR);
 			return false;
 		}
 
@@ -393,6 +397,7 @@ public class CompressionEncryption extends WorkflowStep {
 					context.ok("We have sent an email to <b>" + mail + "</b> with the password.");
 					return true;
 				} catch (Exception e) {
+					context.println("Data compression failed: " + ExceptionUtils.getStackTrace(e));
 					context.error("Data compression failed: " + e.getMessage());
 					return false;
 				}
