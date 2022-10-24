@@ -41,8 +41,40 @@ import net.lingala.zip4j.model.enums.CompressionLevel;
 import net.lingala.zip4j.model.enums.CompressionMethod;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+
 public class CompressionEncryption extends WorkflowStep {
 
+    private class BatchRunner implements Callable<String>{
+	private WorkflowContext context;
+	private LineWriter writer;
+	private String tempdir;
+	private String password;
+	private List<String> chroms;
+	
+	public BatchRunner(WorkflowContext context,LineWriter writer,String tempdir,String password,List<String> chroms){
+	    this.context=context;
+	    this.writer=writer;
+	    this.password=password;
+	    this.tempdir=tempdir;
+	    this.chroms=chroms;
+	}
+	
+	@Override
+	public String call() throws Exception {
+	    List<String> res=new ArrayList<String>();
+	    for (String c:chroms){
+		zipEncryptChr(context,c,writer,password,tempdir);
+		res.add(c);
+	    }
+	    return "Chromosomes "+String.join(", ",res)+" finished";
+	}
+    }
+    
     @Override
     public boolean run(WorkflowContext context) {
 	int nthreads=11;
@@ -76,32 +108,49 @@ public class CompressionEncryption extends WorkflowStep {
 	    LineWriter writer = new LineWriter(FileUtil.path(localOutput,"results.md5"));
 	    String temp = FileUtil.path(localOutput,"temp");
 	    FileUtil.createDirectory(temp);
-	    List<Thread> threads=new ArrayList<Thread>();
-	    final String pwd=password;
-	    for (int i=0;i<chr_batches.size();i++){
-		final List<String> L=chr_batches.get(i);
-		Thread x=new Thread(){
-			@Override
-			public void run(){
-			    for (String c:L){
-				try{
-				    zipEncryptChr(context,c,writer,pwd,temp);
-				}catch(Exception e){
-				    //throw e;
-				}
-			    }
-			}};
-		threads.add(x);
-	    }
-	    for(Thread t:threads)
-		t.start();
-	    for(Thread t:threads)
-		t.join();	
+	    
 	    //--------------------------
+	    
+	    // List<Thread> threads=new ArrayList<Thread>();
+	    // final String pwd=password;
+	    // for (int i=0;i<chr_batches.size();i++){
+	    // 	final List<String> L=chr_batches.get(i);
+	    // 	Thread x=new Thread(){
+	    // 		@Override
+	    // 		public void run(){
+	    // 		    for (String c:L){
+	    // 			try{
+	    // 			    zipEncryptChr(context,c,writer,pwd,temp);
+	    // 			}catch(Exception e){
+	    // 			    //throw e;
+	    // 			}
+	    // 		    }
+	    // 		}};
+	    // 	threads.add(x);
+	    // }
+	    // for(Thread t:threads)
+	    // 	t.start();
+	    // for(Thread t:threads)
+	    // 	t.join();
+
+	    //--------------------------
+
+	    ExecutorService pool=Executors.newFixedThreadPool(chr_batches.size());
+	    List<Callable<String>> callables=new ArrayList<Callable<String>> ();
+	    for (int i=0;i<chr_batches.size();i++)
+		callables.add(new BatchRunner(context,writer,temp,password,chr_batches.get(i)));
+	    List<Future<String>> res=pool.invokeAll(callables);
+	    for (Future<String> r:res)
+		context.log(r.get());
+	    pool.shutdown();
+	    if (!pool.awaitTermination(60L,TimeUnit.SECONDS))
+		context.log("Pool did not terminate");
+	    //--------------------------
+	    
 	    FileUtil.deleteDirectory(temp);
 	    writer.close();
 	    HdfsUtil.delete(output);
-	    context.endTask("Exported data.", WorkflowContext.OK);
+	    context.endTask("Exported data", WorkflowContext.OK);
 	} catch (Exception e) {
 	    e.printStackTrace();
 	    context.endTask("Data export failed: " + e.getMessage(), WorkflowContext.ERROR);
@@ -563,7 +612,6 @@ public class CompressionEncryption extends WorkflowStep {
 	}
 
 	// merge all dosage files
-
 	String dosageOutput;
 	if (phasingOnly) {
 	    dosageOutput = FileUtil.path(tempdir, "chr" + cname + ".phased.vcf.gz");
