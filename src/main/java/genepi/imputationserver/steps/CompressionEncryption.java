@@ -97,8 +97,14 @@ public class CompressionEncryption extends WorkflowStep {
 	    store.load(jobConfig);
 	else
 	    context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Using default values.");
-	if (store.getString("export.threads") != null && !store.getString("export.threads").equals(""))
-	    nthreads=Integer.parseInt(store.getString("export.threads"));
+	if (store.getString("export.threads") != null && !store.getString("export.threads").equals("")){
+	    try{
+		nthreads=Integer.parseInt(store.getString("export.threads"));
+	    }
+	    catch (NumberFormatException e){
+		e.printStackTrace();
+	    }
+	}
 
 	if (nthreads==1)
 	    context.log("Export: using 1 thread");
@@ -107,7 +113,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 	try {
 	    //--------------------------
-	    context.beginTask("Export data...");
+	    context.beginTask("Export data ...");
 	    List<String> folders = HdfsUtil.getDirectories(output);
 	    ImputationResults imputationResults = new ImputationResults(folders, phasingOnly);
 	    Map<String, ImputedChromosome> imputedChromosomes = imputationResults.getChromosomes();
@@ -158,7 +164,8 @@ public class CompressionEncryption extends WorkflowStep {
 		context.log(r.get());
 	    pool.shutdown();
 	    if (!pool.awaitTermination(60L,TimeUnit.SECONDS))
-		context.log("Pool did not terminate");
+		context.log("Thread pool did not terminate");
+	    
 	    //--------------------------
 	    
 	    FileUtil.deleteDirectory(temp);
@@ -344,5 +351,348 @@ public class CompressionEncryption extends WorkflowStep {
 	    synchronized (this) {context.log("No external Workspace set.");}
 	}	    
     }
+
+    //----------------------------------------------------------------------------
+
+    // @Override
+    // public boolean run(WorkflowContext context) {
+
+    // 	String workingDirectory = getFolder(CompressionEncryption.class);
+
+    // 	String output = context.get("outputimputation");
+    // 	String outputScores = context.get("outputScores");
+    // 	String localOutput = context.get("local");
+    // 	String aesEncryptionValue = context.get("aesEncryption");
+    // 	String meta = context.get("meta");
+    // 	String mode = context.get("mode");
+    // 	String password = context.get("password");
+
+    // 	PgsPanel pgsPanel = PgsPanel.loadFromProperties(context.getData("pgsPanel"));
+
+    // 	boolean phasingOnly = false;
+    // 	if (mode != null && mode.equals("phasing")) {
+    // 	    phasingOnly = true;
+    // 	}
+
+    // 	boolean mergeMetaFiles = !phasingOnly && (meta != null && meta.equals("yes"));
+
+    // 	boolean aesEncryption = (aesEncryptionValue != null && aesEncryptionValue.equals("yes"));
+
+    // 	// read config if mails should be sent
+    // 	String folderConfig = getFolder(CompressionEncryption.class);
+    // 	File jobConfig = new File(FileUtil.path(folderConfig, "job.config"));
+    // 	DefaultPreferenceStore store = new DefaultPreferenceStore();
+    // 	if (jobConfig.exists()) {
+    // 	    store.load(jobConfig);
+    // 	} else {
+    // 	    context.log("Configuration file '" + jobConfig.getAbsolutePath() + "' not available. Use default values.");
+    // 	}
+
+    // 	String notification = "no";
+    // 	if (store.getString("minimac.sendmail") != null && !store.getString("minimac.sendmail").equals("")) {
+    // 	    notification = store.getString("minimac.sendmail");
+    // 	}
+
+    // 	String serverUrl = "https://imputationserver.sph.umich.edu";
+    // 	if (store.getString("server.url") != null && !store.getString("server.url").isEmpty()) {
+    // 	    serverUrl = store.getString("server.url");
+    // 	}
+
+    // 	String sanityCheck = "yes";
+    // 	if (store.getString("sanitycheck") != null && !store.getString("sanitycheck").equals("")) {
+    // 	    sanityCheck = store.getString("sanitycheck");
+    // 	}
+
+    // 	if (password == null || (password != null && password.equals("auto"))) {
+    // 	    password = PasswordCreator.createPassword();
+    // 	}
+
+    // 	try {
+
+    // 	    context.beginTask("Export data...");
+
+    // 	    // get sorted directories
+    // 	    List<String> folders = HdfsUtil.getDirectories(output);
+
+    // 	    ImputationResults imputationResults = new ImputationResults(folders, phasingOnly);
+    // 	    Map<String, ImputedChromosome> imputedChromosomes = imputationResults.getChromosomes();
+
+    // 	    Set<String> chromosomes = imputedChromosomes.keySet();
+    // 	    boolean lastChromosome = false;
+    // 	    int index = 0;
+
+    // 	    String checksumFilename = FileUtil.path(localOutput, "results.md5");
+    // 	    LineWriter writer = new LineWriter(checksumFilename);
+
+    // 	    for (String name : chromosomes) {
+
+    // 		index++;
+
+    // 		if (index == chromosomes.size()) {
+    // 		    lastChromosome = true;
+    // 		}
+
+    // 		ImputedChromosome imputedChromosome = imputedChromosomes.get(name);
+
+    // 		context.println("Export and merge chromosome " + name);
+
+    // 		// create temp dir
+    // 		String temp = FileUtil.path(localOutput, "temp");
+    // 		FileUtil.createDirectory(temp);
+
+    // 		// output files
+
+    // 		ArrayList<File> files = new ArrayList<File>();
+
+    // 		// merge info files
+    // 		if (!phasingOnly) {
+    // 		    String infoOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
+    // 		    FileMerger.mergeAndGzInfo(imputedChromosome.getInfoFiles(), infoOutput);
+    // 		    files.add(new File(infoOutput));
+    // 		}
+
+    // 		// merge all dosage files
+
+    // 		String dosageOutput;
+    // 		if (phasingOnly) {
+    // 		    dosageOutput = FileUtil.path(temp, "chr" + name + ".phased.vcf.gz");
+    // 		} else {
+    // 		    dosageOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
+    // 		}
+    // 		files.add(new File(dosageOutput));
+
+    // 		MergedVcfFile vcfFile = new MergedVcfFile(dosageOutput);
+    // 		vcfFile.addHeader(context, imputedChromosome.getHeaderFiles());
+
+    // 		for (String file : imputedChromosome.getDataFiles()) {
+    // 		    context.println("Read file " + file);
+    // 		    vcfFile.addFile(HdfsUtil.open(file));
+    // 		    HdfsUtil.delete(file);
+    // 		}
+
+    // 		vcfFile.close();
+
+    // 		// merge all meta files
+    // 		if (mergeMetaFiles) {
+
+    // 		    context.println("Merging meta files...");
+
+    // 		    String dosageMetaOutput = FileUtil.path(temp, "chr" + name + ".empiricalDose.vcf.gz");
+    // 		    MergedVcfFile vcfFileMeta = new MergedVcfFile(dosageMetaOutput);
+
+    // 		    String headerMetaFile = imputedChromosome.getHeaderMetaFiles().get(0);
+    // 		    context.println("Use header from file " + headerMetaFile);
+
+    // 		    vcfFileMeta.addFile(HdfsUtil.open(headerMetaFile));
+
+    // 		    for (String file : imputedChromosome.getDataMetaFiles()) {
+    // 			context.println("Read file " + file);
+    // 			vcfFileMeta.addFile(HdfsUtil.open(file));
+    // 			HdfsUtil.delete(file);
+    // 		    }
+    // 		    vcfFileMeta.close();
+
+    // 		    context.println("Meta files merged.");
+
+    // 		    files.add(new File(dosageMetaOutput));
+    // 		}
+
+    // 		if (sanityCheck.equals("yes") && lastChromosome) {
+    // 		    context.log("Run tabix on chromosome " + name + "...");
+    // 		    Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
+    // 		    tabix.setSilent(false);
+    // 		    tabix.setParams("-f", dosageOutput);
+    // 		    if (tabix.execute() != 0) {
+    // 			context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
+    // 			return false;
+    // 		    }
+    // 		    context.log("Tabix done.");
+    // 		}
+
+    // 		// create zip file
+    // 		String fileName = "chr_" + name + ".zip";
+    // 		String filePath = FileUtil.path(localOutput, fileName);
+    // 		File file = new File(filePath);
+    // 		createEncryptedZipFile(file, files, password, aesEncryption);
+
+    // 		// add checksum to hash file
+    // 		context.log("Creating file checksum for " + filePath);
+    // 		long checksumStart = System.currentTimeMillis();
+    // 		String checksum = FileChecksum.HashFile(new File(filePath), FileChecksum.Algorithm.MD5);
+    // 		writer.write(checksum + " " + fileName);
+    // 		long checksumEnd = (System.currentTimeMillis() - checksumStart) / 1000;
+    // 		context.log("File checksum for " + filePath + " created in " + checksumEnd + " seconds.");
+
+    // 		// delete temp dir
+    // 		FileUtil.deleteDirectory(temp);
+
+    // 		IExternalWorkspace externalWorkspace = context.getExternalWorkspace();
+
+    // 		if (externalWorkspace != null) {
+
+    // 		    long start = System.currentTimeMillis();
+
+    // 		    context.log("External Workspace '" + externalWorkspace.getName() + "' found");
+
+    // 		    context.log("Start file upload: " + filePath);
+
+    // 		    String url = externalWorkspace.upload("local", file);
+
+    // 		    long end = (System.currentTimeMillis() - start) / 1000;
+
+    // 		    context.log("Upload finished in  " + end + " sec. File Location: " + url);
+
+    // 		    context.log("Add " + localOutput + " to custom download");
+
+    // 		    String size = FileUtils.byteCountToDisplaySize(file.length());
+
+    // 		    context.addDownload("local", fileName, size, url);
+
+    // 		    FileUtil.deleteFile(filePath);
+
+    // 		    context.log("File deleted: " + filePath);
+
+    // 		} else {
+    // 		    context.log("No external Workspace set.");
+    // 		}
+    // 	    }
+
+    // 	    writer.close();
+
+    // 	    // delete temporary files
+    // 	    HdfsUtil.delete(output);
+
+    // 	    // Export calculated risk scores
+    // 	    if (pgsPanel != null) {
+
+    // 		context.println("Exporting PGS scores...");
+
+    // 		String temp2 = FileUtil.path(localOutput, "temp2");
+    // 		FileUtil.createDirectory(temp2);
+
+    // 		List<String> scoreList = HdfsUtil.getFiles(outputScores);
+
+    // 		String[] chunksScores = new String[scoreList.size() / 2];
+    // 		String[] chunksReports = new String[scoreList.size() / 2];
+
+    // 		int chunksScoresCount = 0;
+    // 		int chunksReportsCount = 0;
+
+    // 		for (String score : scoreList) {
+
+    // 		    String filename = FileUtil.getFilename(score);
+    // 		    String localPath = FileUtil.path(temp2, filename);
+    // 		    HdfsUtil.get(score, localPath);
+
+    // 		    if (score.endsWith(".json")) {
+    // 			chunksReports[chunksReportsCount] = localPath;
+    // 			chunksReportsCount++;
+    // 		    } else {
+    // 			chunksScores[chunksScoresCount] = localPath;
+    // 			chunksScoresCount++;
+    // 		    }
+
+    // 		}
+
+    // 		String outputFileScores = FileUtil.path(temp2, "scores.txt");
+    // 		String outputFileReports = FileUtil.path(temp2, "report.json");
+    // 		String outputFileHtml = FileUtil.path(localOutput, "scores.html");
+
+    // 		// disable ansi
+    // 		TaskService.setAnsiSupport(false);
+
+    // 		MergeScoreTask mergeScore = new MergeScoreTask();
+    // 		mergeScore.setInputs(chunksScores);
+    // 		mergeScore.setOutput(outputFileScores);
+    // 		TaskService.run(mergeScore);
+
+    // 		MergeReportTask mergeReport = new MergeReportTask();
+    // 		mergeReport.setInputs(chunksReports);
+    // 		mergeReport.setOutput(outputFileReports);
+    // 		TaskService.run(mergeReport);
+
+    // 		ReportFile report = mergeReport.getResult();
+
+    // 		String folder = getFolder(CompressionEncryption.class);
+
+    // 		MetaFile metaFile = MetaFile.load(FileUtil.path(folder, "pgs-catalog.json"));
+    // 		report.mergeWithMeta(metaFile);
+
+    // 		CreateHtmlReportTask htmlReportTask = new CreateHtmlReportTask();
+    // 		htmlReportTask.setApplicationName("");
+    // 		htmlReportTask.setVersion("PGS Server Beta <small>(" +  ImputationPipeline.PIPELINE_VERSION + ")</small>");
+    // 		htmlReportTask.setShowCommand(false);
+    // 		htmlReportTask.setReport(report);
+    // 		htmlReportTask.setOutput(outputFileHtml);
+    // 		TaskService.run(htmlReportTask);
+
+    // 		context.println("Created html report " + outputFileHtml + ".");
+
+    // 		String fileName = "scores.zip";
+    // 		String filePath = FileUtil.path(localOutput, fileName);
+    // 		File file = new File(filePath);
+    // 		createEncryptedZipFile(file, new File(outputFileScores), password, aesEncryption);
+
+    // 		context.println("Exported PGS scores to " + fileName + ".");
+
+    // 		FileUtil.deleteDirectory(temp2);
+    // 	    }
+
+    // 	    context.endTask("Exported data.", WorkflowContext.OK);
+
+    // 	} catch (Exception e) {
+    // 	    e.printStackTrace();
+    // 	    context.endTask("Data export failed: " + e.getMessage(), WorkflowContext.ERROR);
+    // 	    return false;
+    // 	}
+
+    // 	// submit counters!
+    // 	context.submitCounter("samples");
+    // 	context.submitCounter("genotypes");
+    // 	context.submitCounter("chromosomes");
+    // 	context.submitCounter("runs");
+    // 	// submit panel and phasing method counters
+    // 	String reference = context.get("refpanel");
+    // 	String phasing = context.get("phasing");
+    // 	context.submitCounter("refpanel_" + reference);
+    // 	context.submitCounter("phasing_" + phasing);
+    // 	context.submitCounter("23andme-input");
+
+    // 	// send email
+    // 	if (notification.equals("yes")) {
+
+    // 	    Object mail = context.getData("cloudgene.user.mail");
+    // 	    Object name = context.getData("cloudgene.user.name");
+
+    // 	    if (mail != null) {
+
+    // 		String subject = "Job " + context.getJobId() + " is complete.";
+    // 		String message = "Dear " + name + ",\nthe password for the imputation results is: " + password
+    // 		    + "\n\nThe results can be downloaded from " + serverUrl + "/start.html#!jobs/"
+    // 		    + context.getJobId() + "/results";
+
+    // 		try {
+    // 		    context.sendMail(subject, message);
+    // 		    context.ok("We have sent an email to <b>" + mail + "</b> with the password.");
+    // 		    return true;
+    // 		} catch (Exception e) {
+    // 		    context.error("Data compression failed: " + e.getMessage());
+    // 		    return false;
+    // 		}
+
+    // 	    } else {
+    // 		context.error("No email address found. Please enter your email address (Account -> Profile).");
+    // 		return false;
+    // 	    }
+
+    // 	} else {
+    // 	    context.ok(
+    // 		       "Email notification is disabled. All results are encrypted with password <b>" + password + "</b>");
+    // 	    return true;
+    // 	}
+    // }
+    
+    //----------------------------------------------------------------------------
+
 
 }
