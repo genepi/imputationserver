@@ -14,7 +14,6 @@ import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.VcfFile;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
 import genepi.imputationserver.util.DefaultPreferenceStore;
-import genepi.imputationserver.util.ImputationParameters;
 import genepi.imputationserver.util.PgsPanel;
 import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
@@ -70,6 +69,11 @@ public class InputValidation extends WorkflowStep {
 		int chunkSize = 20000000;
 		if (store.getString("chunksize") != null) {
 			chunkSize = Integer.parseInt(store.getString("chunksize"));
+		}
+
+		int minSamples = 0;
+		if (store.getString("samples.min") != null) {
+			minSamples = Integer.parseInt(store.getString("samples.min"));
 		}
 
 		int maxSamples = 0;
@@ -166,6 +170,11 @@ public class InputValidation extends WorkflowStep {
 						return false;
 					}
 
+					if (noSamples < minSamples && minSamples != 0) {
+						context.endTask("At least " + minSamples + " samples must be uploaded.", WorkflowContext.ERROR);
+						return false;
+					}
+
 					if (noSamples > maxSamples && maxSamples != 0) {
 
 						String contactName = store.getString("contact.name");
@@ -193,6 +202,22 @@ public class InputValidation extends WorkflowStep {
 						context.endTask("Your upload data contains chromosome '" + vcfFile.getRawChromosome()
 								+ "'. This is not a valid hg38 encoding. Please ensure that your input data is build hg38 and chromosome is encoded as 'chr"
 								+ vcfFile.getChromosome() + "'.", WorkflowContext.ERROR);
+						return false;
+					}
+
+					if (pgsPanel != null) {
+						if (!panel.getBuild().equals(pgsPanel.getBuild())) {
+							context.endTask(
+									"The build version of the selected reference panel (" + panel.getBuild()
+											+ ") and scores (" + pgsPanel.getBuild() + ") does not match.",
+									WorkflowContext.ERROR);
+							return false;
+						}
+					}
+
+					if (phasing != null && phasing.equals("beagle") && panel.getRefBeagle() == null) {
+						context.endTask("Beagle is currently not supported for reference panel '" + reference + "'",
+								WorkflowContext.ERROR);
 						return false;
 					}
 

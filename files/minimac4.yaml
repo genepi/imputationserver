@@ -39,9 +39,10 @@ workflow:
     jar: imputationserver.jar
     classname: genepi.imputationserver.steps.FailureNotification
 
+#if($mode == "imputation" || $mode == "phasing")
+
   steps:
 
-#if($mode == "imputation" || $mode == "phasing")
     - name: Pre-phasing and Imputation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.Imputation

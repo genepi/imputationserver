@@ -7,7 +7,6 @@
 	<artifactId>imputationserver</artifactId>
 	<version>1.7.0-rc2</version>
 	<packaging>jar</packaging>
-
 	<name>University of Michigan Imputation Server</name>
 	<url>http://maven.apache.org</url>
 
@@ -77,11 +76,12 @@
 									<include>org.xerial.snappy:snappy-java:*:*</include>
 									<include>org.xerial:xerial-core:*:*</include>
 									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
-									<include>org.codehaus.groovy:groovy-all:*:*</include>
+									<include>org.codehaus.groovy:groovy:*:*</include>
+									<include>org.codehaus.groovy:groovy-templates:*:*</include>
 									<include>lukfor:pgs-calc:*:*</include>
 									<include>com.github.lukfor:magic-progress:*:*</include>
 									<include>com.github.lukfor:magic-reports:*:*</include>
-									<include>com.samskivert:jmustache:*:*</include>
+									<include>io.marioslab.basis:template:*:*</include>
 									<include>com.google.code.gson:gson:*:*</include>
 									<include>com.github.tommyettinger:blazingchain:*:*</include>
 									<include>net.sf.opencsv:opencsv:*:*</include>
@@ -142,7 +142,7 @@
 							</descriptors>
 						</configuration>
 					</execution>
-					
+
 					<execution>
 						<id>create-assembly-imputationserver-pgs</id>
 						<phase>package</phase>
@@ -156,7 +156,7 @@
 								<descriptor>src/main/assembly/imputationserver-pgs.xml</descriptor>
 							</descriptors>
 						</configuration>
-					</execution>					
+					</execution>
 				</executions>
 			</plugin>
 
@@ -217,7 +217,7 @@
 			<artifactId>genepi-io</artifactId>
 			<version>1.2.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>genepi</groupId>
 			<artifactId>genepi-hadoop</artifactId>
@@ -290,14 +290,20 @@
 
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy</artifactId>
+			<version>3.0.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-templates</artifactId>
 			<version>3.0.9</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>lukfor</groupId>
 			<artifactId>pgs-calc</artifactId>
-			<version>0.9.12</version>
+			<version>1.4.0-beta7</version>
 		</dependency>
 
 	</dependencies>

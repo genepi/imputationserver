@@ -1,7 +1,10 @@
 package genepi.imputationserver.tools;
 
+import java.util.List;
+
 import genepi.base.Tool;
 import genepi.imputationserver.steps.vcf.VcfLiftOverFast;
+import genepi.io.text.LineWriter;
 
 public class VcfLiftOverTool extends Tool {
 
@@ -30,9 +33,17 @@ public class VcfLiftOverTool extends Tool {
 		String chain = getValue("chain").toString();
 
 		try {
-			VcfLiftOverFast.liftOver(input, output, chain, "./");
+			
+			List<String> excludes = VcfLiftOverFast.liftOver(input, output, chain, "./");
 
+			LineWriter writer = new LineWriter(output + ".excluded");
+			for (String exclude: excludes) {
+				writer.write(exclude);
+			}
+			writer.close();
+			
 			return 0;
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return 1;

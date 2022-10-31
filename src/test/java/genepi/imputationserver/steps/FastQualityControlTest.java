@@ -47,7 +47,7 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Monomorphic sites: 331"));
 
 	}
-	
+
 	public void testQcStatisticAllChunksExcluded() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -332,7 +332,6 @@ public class FastQualityControlTest extends TestCase {
 
 	}
 
-	
 	@Test
 	public void testChrXInvalidAlleles() throws IOException, ZipException {
 
@@ -348,9 +347,9 @@ public class FastQualityControlTest extends TestCase {
 
 		assertTrue(result);
 		assertTrue(context.hasInMemory("Invalid alleles: 190"));
-		
+
 	}
-	
+
 	@Test
 	public void testChrXMixedGenotypes() throws IOException, ZipException {
 
@@ -368,7 +367,7 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Chromosome X nonPAR region includes > 10 % mixed genotypes."));
 
 	}
-	
+
 	@Test
 	public void testChrXPloidyError() throws IOException, ZipException {
 
@@ -386,8 +385,7 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("ChrX nonPAR region includes ambiguous samples"));
 
 	}
-	
-	
+
 	@Test
 	public void testAlleleFrequencyCheckWithWrongPopulation() {
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -408,11 +406,10 @@ public class FastQualityControlTest extends TestCase {
 		// check statistics
 		assertTrue(context.hasInMemory("Population 'afr' is not supported by reference panel 'hapmap2'."));
 	}
-	
+
 	@Test
 	public void testAlleleFrequencyCheckWithNoSamplesForPopulation() {
-		
-		
+
 		String configFolder = "test-data/configs/hapmap-3chr";
 		String inputFolder = "test-data/data/simulated-chip-3chr-imputation";
 
@@ -430,7 +427,7 @@ public class FastQualityControlTest extends TestCase {
 		// check statistics
 		assertTrue(context.hasInMemory("[WARN] Skip allele frequency check."));
 	}
-	
+
 	class FastQualityControlMock extends FastQualityControl {
 
 		private String folder;
@@ -475,12 +472,12 @@ public class FastQualityControlTest extends TestCase {
 		context.setOutput("chunkFileDir", file.getAbsolutePath());
 		context.setOutput("statisticDir", file.getAbsolutePath());
 		context.setOutput("chunksDir", file.getAbsolutePath());
-		context.setConfig("binaries",ImputationTest. BINARIES_HDFS);
+		context.setConfig("binaries", ImputationTest.BINARIES_HDFS);
 
 		return context;
 
 	}
-	
+
 	public void testQcStatisticsAllowStrandFlips() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
@@ -500,7 +497,7 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Remaining sites in total: 117,498"));
 
 	}
-	
+
 	public void testQcStatisticsDontAllowStrandFlips() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
@@ -518,10 +515,11 @@ public class FastQualityControlTest extends TestCase {
 		// check statistics
 		assertTrue(context.hasInMemory("Excluded sites in total: 3,058"));
 		assertTrue(context.hasInMemory("Remaining sites in total: 117,498"));
-		assertTrue(context.hasInMemory("<b>Error:</b> More than -1 obvious strand flips have been detected. Please check strand. Imputation cannot be started!"));
+		assertTrue(context.hasInMemory(
+				"<b>Error:</b> More than -1 obvious strand flips have been detected. Please check strand. Imputation cannot be started!"));
 
 	}
-	
+
 	public void testQcStatisticsFilterOverlap() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
@@ -537,10 +535,11 @@ public class FastQualityControlTest extends TestCase {
 		run(context, qcStats);
 
 		// check statistics
-		assertTrue(context.hasInMemory("<b>Warning:</b> 36 Chunk(s) excluded: reference overlap < 99.0% (see [NOT AVAILABLE] for details)"));
+		assertTrue(context.hasInMemory(
+				"<b>Warning:</b> 36 Chunk(s) excluded: reference overlap < 99.0% (see [NOT AVAILABLE] for details)"));
 
 	}
-	
+
 	public void testQcStatisticsFilterMinSnps() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-3chr";
@@ -556,7 +555,8 @@ public class FastQualityControlTest extends TestCase {
 		run(context, qcStats);
 
 		// check statistics
-		assertTrue(context.hasInMemory("<b>Warning:</b> 2 Chunk(s) excluded: < 1000 SNPs (see [NOT AVAILABLE]  for details)."));
+		assertTrue(context
+				.hasInMemory("<b>Warning:</b> 2 Chunk(s) excluded: < 1000 SNPs (see [NOT AVAILABLE]  for details)."));
 
 	}
 
@@ -575,10 +575,11 @@ public class FastQualityControlTest extends TestCase {
 		run(context, qcStats);
 
 		// check statistics
-		assertTrue(context.hasInMemory("<b>Warning:</b> 36 Chunk(s) excluded: at least one sample has a call rate < 101.0% (see [NOT AVAILABLE] for details)"));
+		assertTrue(context.hasInMemory(
+				"<b>Warning:</b> 36 Chunk(s) excluded: at least one sample has a call rate < 101.0% (see [NOT AVAILABLE] for details)"));
 
 	}
-	
+
 	@Test
 	public void testChr23PipelineLifting() throws IOException, ZipException {
 
@@ -604,9 +605,8 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 8,973"));
 		assertTrue(context.hasInMemory("[MESSAGE] [WARN] Excluded sites in total: 18,076"));
 
-
 	}
-	
+
 	@Test
 	public void testChrXPipelineLifting() throws IOException, ZipException {
 
@@ -632,9 +632,8 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Alternative allele frequency > 0.5 sites: 8,973"));
 		assertTrue(context.hasInMemory("[MESSAGE] [WARN] Excluded sites in total: 18,076"));
 
-
 	}
-	
+
 	public void testRegionImputationSimple() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -653,7 +652,7 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Remaining sites in total: 1"));
 
 	}
-	
+
 	public void testRegionImputationComplex() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr1";
@@ -672,5 +671,27 @@ public class FastQualityControlTest extends TestCase {
 		assertTrue(context.hasInMemory("Remaining sites in total: 2"));
 
 	}
-	
+
+	@Test
+	public void testMinimalNumberOfSnps() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-phased-one-chunk";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setInput("phasing", "");
+
+		// run qc to create chunkfile
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+		boolean result = run(context, qcStats);
+
+		assertFalse(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 2"));
+		assertTrue(context.hasInMemory("Remaining chunk(s): 0"));
+
+		FileUtil.deleteDirectory("test-data/tmp");
+
+	}
+
 }
