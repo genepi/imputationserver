@@ -877,7 +877,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
 
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
 		assertEquals(snpInInfo, file.getNoSnps());
 
 		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", score1, "--out", "test-data/tmp/expected.txt" };
