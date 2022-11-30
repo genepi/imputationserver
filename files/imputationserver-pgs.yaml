@@ -145,26 +145,28 @@ workflow:
 
      - id: info2
        type: info
-       description: <b>PGS Calculation</b> (optional)<br><small class="text-muted">Please select a collection of polygenic scores to enable on the fly PGS calculation.</small>
+       description: <b>PGS Calculation</b><br><small class="text-muted">Please select a collection of polygenic scores to enable on the fly PGS calculation.</small>
 
 
      - id: pgsPanel
        description: Scores
        type: app_list
-       required: false
+       required: true
        category: PGSPanel
 
      - id: reference
        description: Reference Populations
        type: list
-       value: HGDP_238_chr22
+       required: true       
+       value: HGDP_938_genotyped
        values:
-         HGDP_238_chr22: HGDP_238_chr22
+         HGDP_938_genotyped: Worldwide (HGDP)
+         HGDP_938_imputed: Worldwide (imputed HGDP)
 
      - id: dim
        description: Number of principal components to compute
        type: number
-       value: 3
+       value: 10
        required: true
        visible: false
 
