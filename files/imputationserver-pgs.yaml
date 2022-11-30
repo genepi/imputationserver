@@ -21,13 +21,12 @@ workflow:
     - name: Input Validation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.InputValidation
-      type: weblog
 
     - name: Quality Control
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.FastQualityControl
       generates: $mafFile $chunkFileDir $statisticDir
-      type: weblog
+
 
 #if( $population != "mixed")
 
@@ -36,7 +35,6 @@ workflow:
       params: $mafFile
       output: ${qcreport}.html
       generates: $qcreport
-      type: weblog
 
 #end
 
@@ -54,19 +52,16 @@ workflow:
       classname: genepi.imputationserver.steps.Imputation
       generates: $local $outputimputation $logfile $hadooplogs
       binaries: ${app_hdfs_folder}/bin
-      type: weblog
 
     - name: Ancestry Estimation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.ancestry.TraceStep
       binaries: ${app_hdfs_folder}/bin
       references: ${app_hdfs_folder}/references
-      type: weblog
 
     - name: Data Compression and Encryption
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.CompressionEncryption
-      type: weblog
 
 #end
 

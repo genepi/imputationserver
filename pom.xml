@@ -64,6 +64,34 @@
 								</transformer>
 							</transformers>
 
+							<artifactSet>
+								<includes>
+									<include>genepi:genepi-io:*:*</include>
+									<include>genepi:genepi-hadoop:*:*</include>
+									<include>com.github.samtools:htsjdk:*:*</include>
+									<include>org.apache.commons:commons-math3:*:*</include>
+									<include>net.lingala.zip4j:zip4j*:*</include>
+									<include>commons-compress:commons-compress:*:*</include>
+									<include>commons-logging:commons-logging:*:*</include>
+									<include>commons-cli:commons-cli:*:*</include>
+									<include>commons-lang:commons-lang:*:*</include>
+									<include>com.esotericsoftware.yamlbeans:yamlbeans:*:*</include>
+									<include>org.xerial.snappy:snappy-java:*:*</include>
+									<include>org.xerial:xerial-core:*:*</include>
+									<include>org.codehaus.plexus:plexus-classworlds:*:*</include>
+									<include>org.codehaus.groovy:groovy:*:*</include>
+									<include>org.codehaus.groovy:groovy-templates:*:*</include>
+									<include>lukfor:pgs-calc:*:*</include>
+									<include>com.github.lukfor:magic-progress:*:*</include>
+									<include>com.github.lukfor:magic-reports:*:*</include>
+									<include>io.marioslab.basis:template:*:*</include>
+									<include>com.google.code.gson:gson:*:*</include>
+									<include>com.github.tommyettinger:blazingchain:*:*</include>
+									<include>net.sf.opencsv:opencsv:*:*</include>
+								</includes>
+							</artifactSet>
+
+
 						</configuration>
 					</execution>
 				</executions>
@@ -165,7 +193,7 @@
 		<dependency>
 			<groupId>cloudgene</groupId>
 			<artifactId>cloudgene-java-sdk</artifactId>
-			<version>1.2.0</version>
+			<version>1.0.2</version>
 		</dependency>
 
 		<dependency>
