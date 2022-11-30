@@ -1,25 +1,23 @@
 package genepi.imputationserver.steps;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
 import genepi.imputationserver.steps.ancestry.TraceStep;
 import genepi.imputationserver.steps.vcf.VcfFileUtil;
+import genepi.imputationserver.util.TestCluster;
 import genepi.imputationserver.util.WorkflowTestContext;
 import genepi.io.FileUtil;
-import genepi.io.text.LineReader;
-import htsjdk.samtools.util.CloseableIterator;
-import htsjdk.variant.variantcontext.VariantContext;
-import htsjdk.variant.vcf.VCFFileReader;
-import junit.framework.TestCase;
-import net.lingala.zip4j.exception.ZipException;
 
-public class TraceStepTest extends TestCase {
+public class TraceStepTest {
 
 	public static final boolean VERBOSE = true;
 
@@ -27,6 +25,17 @@ public class TraceStepTest extends TestCase {
 	
 	public static final String REFERENCES_HDFS = "references";
 
+	@BeforeClass
+	public static void setUp() throws Exception {
+		TestCluster.getInstance().start();
+	}
+
+	@AfterClass
+	public static void tearDown() throws Exception {
+		TestCluster.getInstance().stop();
+	}
+
+	@Test
 	public void testTraceStep() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr20";
@@ -40,13 +49,13 @@ public class TraceStepTest extends TestCase {
 
 		// create step instance
 		WorkflowStep step = new TraceStepMock(configFolder);
-
 		// run and test
 		boolean result = run(context, step);
 
 		assertTrue(result);
 	}
 
+	@Test
 	public void testTraceStepHg38() throws IOException {
 
 		String configFolder = "test-data/configs/hapmap-chr20";
@@ -107,7 +116,7 @@ public class TraceStepTest extends TestCase {
 		context.setVerbose(VERBOSE);
 		context.setInput("files", folder);
 		context.setInput("build", build);
-		context.setInput("batch_size", "5");
+		context.setInput("batch_size", "20");
 		context.setInput("dim", "3");
 		context.setInput("dim_high", "20");
 		context.setInput("reference", "HGDP_238_chr22");
@@ -139,6 +148,7 @@ public class TraceStepTest extends TestCase {
 	private void importReferences(String folder) {
 		System.out.println("Import References to " + REFERENCES_HDFS);
 		String[] files = FileUtil.getFiles(folder, "*.*");
+		HdfsUtil.delete(REFERENCES_HDFS);
 		for (String file : files) {
 			String target = HdfsUtil.path(REFERENCES_HDFS, FileUtil.getFilename(file));
 			System.out.println("  Import " + file + " to " + target);
@@ -149,6 +159,7 @@ public class TraceStepTest extends TestCase {
 	private void importBinaries(String folder) {
 		System.out.println("Import Binaries to " + BINARIES_HDFS);
 		String[] files = FileUtil.getFiles(folder, "*.*");
+		HdfsUtil.delete(BINARIES_HDFS);
 		for (String file : files) {
 			String target = HdfsUtil.path(BINARIES_HDFS, FileUtil.getFilename(file));
 			System.out.println("  Import " + file + " to " + target);
