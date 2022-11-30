@@ -131,7 +131,7 @@ public class TraceStepTest {
 		context.setConfig("binaries", BINARIES_HDFS);
 
 		context.setHdfsTemp("hdfs-temp");
-		FileUtil.deleteDirectory("hdfs-temp");
+		HdfsUtil.delete("hdfs-temp");
 		HdfsUtil.createDirectory("hdfs-temp");
 
 		context.setOutput("trace_batches", "trace_batches");
