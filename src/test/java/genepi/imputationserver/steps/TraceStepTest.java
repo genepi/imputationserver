@@ -130,8 +130,9 @@ public class TraceStepTest {
 		context.setConfig("references", REFERENCES_HDFS);
 		context.setConfig("binaries", BINARIES_HDFS);
 
-		context.setHdfsTemp("minimac-temp");
-		HdfsUtil.createDirectory(context.getHdfsTemp());
+		context.setHdfsTemp("hdfs-temp");
+		FileUtil.deleteDirectory("hdfs-temp");
+		HdfsUtil.createDirectory("hdfs-temp");
 
 		context.setOutput("trace_batches", "trace_batches");
 		FileUtil.deleteDirectory("trace_batches");
