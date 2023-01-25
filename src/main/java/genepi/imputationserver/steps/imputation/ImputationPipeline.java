@@ -345,6 +345,7 @@ public class ImputationPipeline {
 			task.setVcfFilename(output.getImputedVcfFilename());
 			task.setChunk(scoreChunk);
 			task.setRiskScoreFilenames(scores);
+			task.setFixStrandFlips(true);
 
 			for (String file : scores) {
 				String autoFormat = file + ".format";
