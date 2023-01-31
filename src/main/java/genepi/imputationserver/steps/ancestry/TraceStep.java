@@ -45,7 +45,7 @@ public class TraceStep extends WorkflowStep {
 			estimateAncestries(context);
 			return true;
 		} else {
-			return false;
+			return true;
 		}
 	}
 
@@ -117,7 +117,7 @@ public class TraceStep extends WorkflowStep {
 			String mergedFile = FileUtil.path(context.getLocalTemp(), "study.merged.vcf.gz");
 
 			if (!checkDataAndMerge(context, files, mergedFile)) {
-				return true;
+				return false;
 			}
 
 			context.beginTask("Preparing TRACE jobs");
