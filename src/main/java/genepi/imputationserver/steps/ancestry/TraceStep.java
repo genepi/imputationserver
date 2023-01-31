@@ -197,7 +197,11 @@ public class TraceStep extends WorkflowStep {
 
 			context.endTask(message, WorkflowContext.OK);
 
-			// TODO: check and abort when to much missings?
+			if (result.getFound() <= 100) {
+				context.error(
+						"Number of variants shared with reference is too small (&le;100).\nPlease, check if input data are correct or try to use another ancestry reference panel.");
+				return false;
+			}
 
 			return true;
 
