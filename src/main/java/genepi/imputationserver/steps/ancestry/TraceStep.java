@@ -23,6 +23,7 @@ import cloudgene.sdk.internal.WorkflowContext;
 import cloudgene.sdk.internal.WorkflowStep;
 import genepi.hadoop.HdfsUtil;
 import genepi.imputationserver.steps.FastQualityControl;
+import genepi.imputationserver.steps.ancestry.TraceInputValidation.TraceInputValidationResult;
 import genepi.imputationserver.steps.fastqc.ITask;
 import genepi.imputationserver.steps.fastqc.ITaskProgressListener;
 import genepi.imputationserver.steps.fastqc.LiftOverTask;
@@ -110,18 +111,21 @@ public class TraceStep extends WorkflowStep {
 
 			}
 
+			String mergedFile = FileUtil.path(context.getLocalTemp(), "study.merged.vcf.gz");
+
+			if (!checkDataAndMerge(context, files, mergedFile)) {
+				return false;
+			}
+
 			context.beginTask("Preparing TRACE jobs");
 
 			FileSystem hdfs = FileSystem.get(HdfsUtil.getConfiguration());
 
-			// put all vcfs in hdfs folder
-			for (String file : files) {
-				context.log("Put file " + file);
-				HdfsUtil.put(file, HdfsUtil.path(vcfHdfsDir, FileUtil.getFilename(file)));
-			}
+			context.log("Put file " + mergedFile);
+			HdfsUtil.put(mergedFile, HdfsUtil.path(vcfHdfsDir, "study.merged.vcf.gz"));
 
 			// read number of samples from first vcf file
-			VcfFile vcfFile = VcfFileUtil.load(files[0], 200000, false);
+			VcfFile vcfFile = VcfFileUtil.load(mergedFile, 200000, false);
 
 			int nIndividuals = vcfFile.getNoSamples();
 			int batch = 0;
@@ -168,6 +172,40 @@ public class TraceStep extends WorkflowStep {
 		context.error("Execution failed. Please, contact administrator.");
 
 		return false;
+	}
+
+	public boolean checkDataAndMerge(WorkflowContext context, String[] files, String mergedFile) {
+
+		try {
+
+			context.beginTask("Input Validation");
+
+			String reference = context.get("reference");
+			String referencesHdfsDir = context.getConfig("references");
+
+			String referenceSites = FileUtil.path(context.getLocalTemp(), "reference.site");
+			HdfsUtil.get(referencesHdfsDir + "/" + reference + ".site", referenceSites);
+
+			TraceInputValidation validation = new TraceInputValidation();
+
+			TraceInputValidationResult result = validation.mergeAndCheckSites(files, referenceSites, mergedFile);
+
+			String message = "Loaded " + result.getTotal() + " variants" + "\n" + "Variants with different alleles: "
+					+ result.getAlleleMissmatch() + "\n" + "Variants with allele switches: "
+					+ result.getAlleleSwitches() + "\n" + "Variants not found in reference: " + result.getNotFound()
+					+ "\n" + "Overlapping variants used by LASER: " + result.getFound();
+
+			context.endTask(message, WorkflowContext.OK);
+
+			// TODO: check and abort when to much missings?
+
+			return true;
+
+		} catch (IOException e) {
+			context.error("Input Validation failed: " + e);
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public boolean estimateAncestries(WorkflowContext context) {
