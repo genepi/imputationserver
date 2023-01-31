@@ -37,10 +37,13 @@ public class TraceStep extends WorkflowStep {
 
 	public static String BUILD = "hg19";
 
+	public static final int MIN_VARIANTS = 100;
+
 	@Override
 	public boolean run(WorkflowContext context) {
 		if (prepareTraceJobs(context)) {
-			return estimateAncestries(context);
+			estimateAncestries(context);
+			return true;
 		} else {
 			return false;
 		}
@@ -114,7 +117,7 @@ public class TraceStep extends WorkflowStep {
 			String mergedFile = FileUtil.path(context.getLocalTemp(), "study.merged.vcf.gz");
 
 			if (!checkDataAndMerge(context, files, mergedFile)) {
-				return false;
+				return true;
 			}
 
 			context.beginTask("Preparing TRACE jobs");
@@ -197,9 +200,9 @@ public class TraceStep extends WorkflowStep {
 
 			context.endTask(message, WorkflowContext.OK);
 
-			if (result.getFound() <= 100) {
-				context.error(
-						"Number of variants shared with reference is too small (&le;100).\nPlease, check if input data are correct or try to use another ancestry reference panel.");
+			if (result.getFound() <= MIN_VARIANTS) {
+				context.error("Number of variants shared with reference is too small (&le;" + MIN_VARIANTS
+						+ ").\nPlease, check if input data are correct or try to use another ancestry reference panel.");
 				return false;
 			}
 
