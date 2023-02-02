@@ -1,7 +1,7 @@
 id: imputationserver-beagle
 name: Genotype Imputation supporting Beagle (Minimac4)
 description: This is the new Michigan Imputation Server Pipeline using <a href="https://github.com/statgen/Minimac4">Minimac4</a>. Documentation can be found <a href="http://imputationserver.readthedocs.io/en/latest/">here</a>.<br><br>If your input data is <b>GRCh37/hg19</b> please ensure chromosomes are encoded without prefix  (e.g. <b>20</b>).<br>If your input data is <b>GRCh38hg38</b> please ensure chromosomes are encoded with prefix 'chr' (e.g. <b>chr20</b>).
-version: 1.6.10
+version: 1.7.1
 website: https://imputationserver.readthedocs.io
 category:
 
@@ -10,7 +10,7 @@ installation:
   - import:
       source: ${app_local_folder}/bin
       target: ${app_hdfs_folder}/bin
- 
+
 workflow:
 
   setups:
@@ -31,18 +31,18 @@ workflow:
       params: $mafFile
       output: ${qcreport}.html
       generates: $qcreport
-      
-#end            
+
+#end
 
   onFailure:
     name: Send Notification on Failure
     jar: imputationserver.jar
     classname: genepi.imputationserver.steps.FailureNotification
-    
+
 #if($mode == "imputation" || $mode == "phasing")
 
   steps:
-  
+
     - name: Pre-phasing and Imputation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.Imputation
@@ -71,8 +71,8 @@ workflow:
        value: hg19
        values:
          hg19: GRCh37/hg19
-         hg38: GRCh38/hg38     
-       details: Please note that the final SNP coordinates always match the reference build.        
+         hg38: GRCh38/hg38
+       details: Please note that the final SNP coordinates always match the reference build.
 
      - id: r2Filter
        description: rsq Filter
@@ -92,7 +92,7 @@ workflow:
        values:
          beagle: Beagle v5.1
          no_phasing: No phasing
-  
+
      - id: population
        description: Population
        type: list
@@ -100,13 +100,13 @@ workflow:
           bind: refpanel
           property: populations
           category: RefPanel
-                
+
      - id: mode
        description: Mode
        type: list
        value: imputation
        values:
-          qconly: Quality Control Only 
+          qconly: Quality Control Only
           imputation: Quality Control & Imputation
           phasing: Quality Control & Phasing Only
 
@@ -128,7 +128,7 @@ workflow:
        values:
          true: yes
          false: no
-       visible: true   
+       visible: true
 
      - id: myseparator
        type: separator
@@ -142,12 +142,12 @@ workflow:
      - id: check1
        description: I will not attempt to re-identify or contact research participants.
        type: terms_checkbox
-       
+
      - id: check2
        description: I will report any inadvertent data release, security breach or other data management incident of which I become aware.
-       type: terms_checkbox   
+       type: terms_checkbox
 
-         
+
   outputs:
 
     - id: qcreport
@@ -165,7 +165,7 @@ workflow:
       mergeOutput: true
       removeHeader: false
       zip: false
-       
+
     - id: chunksDir
       description: Actual chunk files
       type: local-folder
@@ -203,13 +203,13 @@ workflow:
       type: local-folder
       download: true
       temp: true
-             
+
     - id: logfile
       description: Logs
       type: local-folder
       download: true
       temp: false
-           
+
     - id: hadooplogs
       description: Hadoop Task Logs
       type: local-folder
