@@ -24,7 +24,7 @@ import lukfor.progress.tasks.Task;
 
 public class ImputationPipeline {
 
-	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.6.10";
+	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.7.0-pgs";
 
 	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
 
@@ -345,7 +345,11 @@ public class ImputationPipeline {
 			task.setVcfFilename(output.getImputedVcfFilename());
 			task.setChunk(scoreChunk);
 			task.setRiskScoreFilenames(scores);
-
+			
+			//TODO: enable fix-strand-flips
+			//task.setFixStrandFlips(true);
+			//task.setRemoveAmbiguous(true);
+			
 			for (String file : scores) {
 				String autoFormat = file + ".format";
 				if (new File(autoFormat).exists()) {

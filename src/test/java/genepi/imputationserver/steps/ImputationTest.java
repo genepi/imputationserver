@@ -792,7 +792,7 @@ public class ImputationTest {
 		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
 		assertEquals(0, resultScore);
 
-		zipFile = new ZipFile("test-data/tmp/local/scores.zip", PASSWORD.toCharArray());
+		zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/expected.txt", ',');
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
@@ -884,7 +884,7 @@ public class ImputationTest {
 		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
 		assertEquals(0, resultScore);
 
-		zipFile = new ZipFile("test-data/tmp/local/scores.zip", PASSWORD.toCharArray());
+		zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
 		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/expected.txt", ',');
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
@@ -1569,6 +1569,9 @@ public class ImputationTest {
 		context.setOutput("local", file.getAbsolutePath() + "/local");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/local");
 
+		context.setOutput("pgs_output", file.getAbsolutePath() + "/pgs_output");
+		FileUtil.createDirectory(file.getAbsolutePath() + "/pgs_output");
+		
 		context.setOutput("logfile", file.getAbsolutePath() + "/logfile");
 		FileUtil.createDirectory(file.getAbsolutePath() + "/logfile");
 
