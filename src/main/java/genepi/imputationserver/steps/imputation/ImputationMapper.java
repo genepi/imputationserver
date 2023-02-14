@@ -153,7 +153,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			mapBeagleFilename = cache.getFile(mapBeagle);
 		}
 
-		String minimacCommand = cache.getFile("Minimac4");
+		String minimacCommand = cache.getFile("minimac4");
 		String eagleCommand = cache.getFile("eagle");
 		String beagleCommand = cache.getFile("beagle.jar");
 		String tabixCommand = cache.getFile("tabix");
