@@ -364,8 +364,7 @@ public class InputValidation extends WorkflowStep {
 
 							} else {
 
-								context.updateTask("Import " + url2 + " failed: " + importer.getErrorMessage(),
-										WorkflowContext.ERROR);
+								context.updateTask("Import " + url2 + " failed.", WorkflowContext.ERROR);
 
 								return false;
 
@@ -381,8 +380,7 @@ public class InputValidation extends WorkflowStep {
 						}
 
 					} catch (Exception e) {
-						context.updateTask("Import File(s) " + url2 + " failed: " + e.toString(),
-								WorkflowContext.ERROR);
+						context.updateTask("Import File(s) " + url2 + " failed.", WorkflowContext.ERROR);
 
 						return false;
 					}
