@@ -8,7 +8,6 @@ import java.util.Vector;
 
 import cloudgene.sdk.internal.WorkflowContext;
 import cloudgene.sdk.internal.WorkflowStep;
-import genepi.hadoop.importer.IImporter;
 import genepi.hadoop.importer.ImporterFactory;
 import genepi.imputationserver.steps.imputation.ImputationPipeline;
 import genepi.imputationserver.steps.vcf.VcfFile;
@@ -327,70 +326,10 @@ public class InputValidation extends WorkflowStep {
 
 			if (ImporterFactory.needsImport(context.get(input))) {
 
-				context.beginTask("Importing files...");
+				context.log("URL-based uploads are no longer supported. Please use direct file uploads instead.");
+				context.error("URL-based uploads are no longer supported. Please use direct file uploads instead.");
 
-				String[] urlList = context.get(input).split(";")[0].split("\\s+");
-
-				String username = "";
-				if (context.get(input).split(";").length > 1) {
-					username = context.get(input).split(";")[1];
-				}
-
-				String password = "";
-				if (context.get(input).split(";").length > 2) {
-					password = context.get(input).split(";")[2];
-				}
-
-				for (String url2 : urlList) {
-
-					String url = url2 + ";" + username + ";" + password;
-					String target = FileUtil.path(context.getLocalTemp(), "importer", input);
-					FileUtil.createDirectory(target);
-					context.println("Import to local workspace " + target + "...");
-
-					try {
-
-						context.updateTask("Import " + url2 + "...", WorkflowContext.RUNNING);
-						context.log("Import " + url2 + "...");
-						IImporter importer = ImporterFactory.createImporter(url, target);
-
-						if (importer != null) {
-
-							boolean successful = importer.importFiles("vcf.gz");
-
-							if (successful) {
-
-								context.setInput(input, target);
-
-							} else {
-
-								context.updateTask("Import " + url2 + " failed: " + importer.getErrorMessage(),
-										WorkflowContext.ERROR);
-
-								return false;
-
-							}
-
-						} else {
-
-							context.updateTask("Import " + url2 + " failed: Protocol not supported",
-									WorkflowContext.ERROR);
-
-							return false;
-
-						}
-
-					} catch (Exception e) {
-						context.updateTask("Import File(s) " + url2 + " failed: " + e.toString(),
-								WorkflowContext.ERROR);
-
-						return false;
-					}
-
-				}
-
-				context.updateTask("File Import successful. ", WorkflowContext.OK);
-
+				return false;
 			}
 
 		}
