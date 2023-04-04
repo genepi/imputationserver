@@ -326,8 +326,8 @@ public class InputValidation extends WorkflowStep {
 
 			if (ImporterFactory.needsImport(context.get(input))) {
 
-				context.updateTask("URL-based uploads are no longer supported. Please use direct file uploads instead.",
-						WorkflowContext.ERROR);
+				context.log("URL-based uploads are no longer supported. Please use direct file uploads instead.");
+				context.error("URL-based uploads are no longer supported. Please use direct file uploads instead.");
 
 				return false;
 			}
