@@ -91,6 +91,11 @@ public class InputValidation extends WorkflowStep {
 
 		boolean phased = true;
 
+		if (!new File(files).exists()) {
+			context.endTask("No input folder specified.", WorkflowContext.ERROR);
+			return false;
+		}
+		
 		String[] vcfFiles = FileUtil.getFiles(files, "*.vcf.gz$|*.vcf$");
 
 		if (vcfFiles.length == 0) {
