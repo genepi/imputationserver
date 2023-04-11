@@ -83,7 +83,19 @@ public class FastQualityControl extends WorkflowStep {
 			return false;
 		}
 
+		File dir = new File(inputFiles);
+
+		if (!dir.exists()) {
+			context.error("No input folder specified.");
+			return false;
+		}
+
 		String[] vcfFilenames = FileUtil.getFiles(inputFiles, "*.vcf.gz$|*.vcf$");
+
+		if (vcfFilenames.length == 0) {
+			context.error("No input files found.");
+			return false;
+		}
 
 		Arrays.sort(vcfFilenames);
 
