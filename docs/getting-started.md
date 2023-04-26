@@ -32,12 +32,7 @@ Our server offers genotype imputation from different reference panels. The most 
 
 More details about all available reference panels can be found [here](/reference-panels/).
 
-### Input files
-
-VCF files can be uploaded either from your local disk or by specifying a remote sftp / HTTPS location. In both cases, several files or several locations can be selected at once. Please make sure that all files fulfill the [requirements](/prepare-your-data).
-
-
-#### Upload VCF files from your computer
+### Upload VCF files from your computer
 
 When using the file upload, data is uploaded from your local file system to Michigan Imputation Server. By clicking on **Select Files** an open dialog appears where you can select your VCF files:
 
@@ -48,26 +43,11 @@ After you have confirmed your choice, all selected files are listed in the submi
 
 ![](images/upload-data02.png)
 
-
-#### Import VCF files via SFTP
-
-An other convenient way to use your data is by importing it directly from a remote SSH server. This can be achieved by selecting **Secure File Transfer Protocol (SFTP)**.
-
-After clicking on the **Import Files** button, a new dialog appears where you can enter your SFTP credentials and the URLs of your files or folders. A URL consists of the server address followed by the full Unix path. A path can be either point to a folder or to a file. Several paths can be specified in consecutive lines.
-
-![](images/upload-data03.png)
+Please make sure that all files fulfill the [requirements](/prepare-your-data).
 
 
 !!! important
-    Be sure that your SFTP server is **not in a private network** and you are able to establish a connection from outside.
-
-#### Import VCF files via HTTPS
-
-Data can also be imported by using HTTP(S) link. This can be achieved by selecting **URLs (HTTP)**.
-
-After clicking on the **Add URLs** button, a new dialog appears where you can add the links.
-
-![](images/upload-data04.png)		
+    Since version 1.7.2 URL-based uploads (sftp and http) are no longer supported. Please use direct file uploads instead. 
 
 ### Build
 Please select the build of your data. Currently the options **hg19** and **hg38** are supported. Michigan Imputation Server automatically updates the genome positions (liftOver) of your data. All reference panels except TOPMed are based on hg19 coordinates.
