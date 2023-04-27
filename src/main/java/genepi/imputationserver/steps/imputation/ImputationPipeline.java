@@ -24,7 +24,7 @@ import lukfor.progress.tasks.Task;
 
 public class ImputationPipeline {
 
-	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.7.2";
+	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.7.3";
 
 	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
 
