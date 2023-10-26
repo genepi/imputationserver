@@ -299,7 +299,7 @@
 		<dependency>
 			<groupId>lukfor</groupId>
 			<artifactId>pgs-calc</artifactId>
-			<version>1.5.4</version>
+			<version>1.5.5</version>
 		</dependency>
 
 	</dependencies>
