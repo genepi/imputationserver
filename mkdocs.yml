@@ -14,6 +14,15 @@ pages:
   - Docker: docker.md
   - Create Reference Panels: create-reference-panels.md
 - Workshops:
+  - ASHG2023:
+    - Overview: workshops/ASHG2023.md
+    - "Session 1: Imputation and the Server": workshops/ASHG2023/Session1.md
+    - "Session 2: Run a job, Data Preparation and Data Download": workshops/ASHG2023/Session2.md
+    - "Session 3: Performing GWAS using imputed data": workshops/ASHG2023/Session3.md
+    - "Session 4: Imputation Bot and PGS Server": workshops/ASHG2023/Session4.md
+    - "Session 5: HLA Imputation": workshops/ASHG2023/Session5.md
+    - "Session 6: TOPMed Imputation Server": workshops/ASHG2023/Session6.md
+ 
   - ASHG2022:
     - Overview: workshops/ASHG2022.md
     - "Session 1: Imputation and the Server": workshops/ASHG2022/Session1.md
