@@ -1,7 +1,7 @@
 site_name: Michigan Imputation Server
 theme: readthedocs
 
-pages:
+nav:
 - Home: index.md
 - Getting Started: getting-started.md
 - Data Preparation: prepare-your-data.md
