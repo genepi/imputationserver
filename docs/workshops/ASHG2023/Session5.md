@@ -1,1 +1,1 @@
-**Workshop ASHG2022 > Session 5: HLA Imputation**
+**Workshop ASHG2023 > Session 5: HLA Imputation**

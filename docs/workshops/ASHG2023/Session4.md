@@ -1,4 +1,4 @@
-**Workshop ASHG2022 > Session 4: Imputation Bot and PGS Server**
+**Workshop ASHG2023 > Session 4: Imputation Bot and PGS Server**
 
 # Imputation Bot Tutorial
 

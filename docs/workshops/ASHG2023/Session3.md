@@ -1,1 +1,1 @@
-**Workshop ASHG2022 > Session 3: Performing GWAS using imputed data**
+**Workshop ASHG2023 > Session 3: Performing GWAS using imputed data**

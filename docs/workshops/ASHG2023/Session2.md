@@ -1,4 +1,4 @@
-**Workshop ASHG2022 > Session 2: Run a job, Data Preparation and Data Download**
+**Workshop ASHG2023 > Session 2: Run a job, Data Preparation and Data Download**
 
 # Welcome
 

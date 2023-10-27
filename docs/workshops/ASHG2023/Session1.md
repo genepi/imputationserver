@@ -1,4 +1,4 @@
-**Workshop ASHG2022  > Session 1: Imputation and the Server**
+**Workshop ASHG2023  > Session 1: Imputation and the Server**
 
 # Server Links
 

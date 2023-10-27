@@ -1,1 +1,1 @@
-**Workshop ASHG2022 > Session 6: The TOPMed Imputation Server**
+**Workshop ASHG2023 > Session 6: The TOPMed Imputation Server**
