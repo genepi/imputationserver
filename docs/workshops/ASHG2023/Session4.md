@@ -1,7 +1,7 @@
 **Workshop ASHG2023 > Session 4: nf-gwas, Imputation Bot and PGS Server**
 
 # nf-gwas Report
-- [nf-gwas Report](https://htmlpreview.github.io/?https://github.com/genepi/imputationserver-ashg/blob/main/files/index.html)
+You can download a nf-gwas test report from [here]((https://github.com/genepi/imputationserver-ashg/raw/main/files/nf-gwas-example.zip)). Please unzip the file and open the index.html file.
 
 # Imputation Bot Tutorial
 
