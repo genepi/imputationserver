@@ -1,4 +1,7 @@
-**Workshop ASHG2023 > Session 4: Imputation Bot and PGS Server**
+**Workshop ASHG2023 > Session 4: nf-gwas, Imputation Bot and PGS Server**
+
+# nf-gwas Report
+- [nf-gwas Report](https://htmlpreview.github.io/?https://github.com/genepi/imputationserver-ashg/blob/main/files/index.html)
 
 # Imputation Bot Tutorial
 
