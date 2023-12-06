@@ -24,9 +24,10 @@ import lukfor.progress.tasks.Task;
 
 public class ImputationPipeline {
 
-	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.7.5";
 
-	public static final String IMPUTATION_VERSION = "minimac4-1.0.2";
+	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.8.0-beta4";
+
+	public static final String IMPUTATION_VERSION = "minimac-v4.1.6";
 
 	public static final String BEAGLE_VERSION = "beagle.18May20.d20.jar";
 
@@ -48,7 +49,11 @@ public class ImputationPipeline {
 
 	private int minimacWindow;
 
+	private int minimacDecay;
+
 	private int phasingWindow;
+
+	private double minR2;
 
 	private String refFilename;
 
@@ -288,6 +293,16 @@ public class ImputationPipeline {
 	public boolean imputeVCF(VcfChunkOutput output)
 			throws InterruptedException, IOException, CompilationFailedException {
 
+		// create tabix index
+		Command tabix = new Command(tabixCommand);
+		tabix.setSilent(false);
+		tabix.setParams(output.getPhasedVcfFilename());
+		System.out.println("Command: " + tabix.getExecutedCommand());
+		if (tabix.execute() != 0) {
+			System.out.println("Error during index creation: " + tabix.getStdOut());
+			return false;
+		}
+
 		String chr = "";
 		if (build.equals("hg38")) {
 			chr = "chr" + output.getChromosome();
@@ -306,6 +321,8 @@ public class ImputationPipeline {
 		binding.put("chr", chr);
 		binding.put("unphased", false);
 		binding.put("mapMinimac", mapMinimac);
+		binding.put("minR2", minR2);
+		binding.put("decay", minimacDecay);
 
 		String[] params = createParams(minimacParams, binding);
 
@@ -345,11 +362,11 @@ public class ImputationPipeline {
 			task.setVcfFilename(output.getImputedVcfFilename());
 			task.setChunk(scoreChunk);
 			task.setRiskScoreFilenames(scores);
-			
-			//TODO: enable fix-strand-flips
-			//task.setFixStrandFlips(true);
-			//task.setRemoveAmbiguous(true);
-			
+
+			// TODO: enable fix-strand-flips
+			// task.setFixStrandFlips(true);
+			// task.setRemoveAmbiguous(true);
+
 			for (String file : scores) {
 				String autoFormat = file + ".format";
 				if (new File(autoFormat).exists()) {
@@ -472,6 +489,15 @@ public class ImputationPipeline {
 
 	public void setMapBeagleFilename(String mapBeagleFilename) {
 		this.mapBeagleFilename = mapBeagleFilename;
+	}
+
+	public void setMinR2(double minR2) {
+		this.minR2 = minR2;
+	}
+
+	public void setDecay(int decay) {
+		this.minimacDecay = decay;
+
 	}
 
 }

@@ -1,7 +1,7 @@
 panels:
 
   - id: hapmap2
-    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.msav
     legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
@@ -13,7 +13,7 @@ panels:
       mixed: Mixed
       
   - id: hrc-fake
-    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.msav
     legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
@@ -25,7 +25,7 @@ panels:
       mixed: Mixed
           
   - id: phase3-fake
-    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.msav
     legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
@@ -45,7 +45,7 @@ panels:
       mixed: Mixed     
       
   - id: TOPMedfreeze6-fake
-    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.msav
     legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
@@ -66,7 +66,7 @@ panels:
       
         
   - id: hapmap2-region-simple
-    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.msav
     legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf
@@ -79,7 +79,7 @@ panels:
     range: 1:565111-752566   
     
   - id: hapmap2-region-complex
-    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.m3vcf.gz
+    hdfs: ref-panels/hapmap_r22.chr$chr.CEU.hg19.msav
     legend: ref-panels/hapmap_r22.chr$chr.CEU.hg19_impute.legend.gz
     mapEagle: ref-panels/genetic_map_hg19_chr1.txt
     refEagle: ref-panels/hapmap_r22.eagle/hapmap_r22.chr$chr.CEU.hg19.recode.bcf

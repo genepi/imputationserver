@@ -5,11 +5,8 @@
 
 	<groupId>genepi</groupId>
 	<artifactId>imputationserver</artifactId>
-
-	<version>1.7.5</version>
-
+	<version>1.8.0-beta4</version>
 	<packaging>jar</packaging>
-
 	<name>University of Michigan Imputation Server</name>
 	<url>http://maven.apache.org</url>
 

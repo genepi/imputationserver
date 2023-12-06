@@ -117,7 +117,6 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		String referenceName = parameters.get(ImputationJob.REF_PANEL);
 		imputationParameters.setPhasing(phasingEngine);
 		imputationParameters.setReferencePanelName(referenceName);
-		imputationParameters.setMinR2(minR2);
 		imputationParameters.setPhasingRequired(phasingRequired);
 
 		// get cached files
@@ -153,11 +152,11 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			mapBeagleFilename = cache.getFile(mapBeagle);
 		}
 
-		String minimacCommand = cache.getFile("Minimac4");
+		String minimacCommand = cache.getFile("minimac4");
 		String eagleCommand = cache.getFile("eagle");
 		String beagleCommand = cache.getFile("beagle.jar");
 		String tabixCommand = cache.getFile("tabix");
-		
+
 		// create temp directory
 		DefaultPreferenceStore store = new DefaultPreferenceStore(context.getConfiguration());
 		folder = store.getString("minimac.tmp");
@@ -182,9 +181,9 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				String formatFile = cache.getFile(name + ".format");
 				if (formatFile != null) {
 					// create symbolic link to format file. they have to be in the same folder
-					Files.createSymbolicLink(Paths.get(FileUtil.path(folder,name)), Paths.get(localFilename));
-					Files.createSymbolicLink(Paths.get(FileUtil.path(folder,name+".format")), Paths.get(formatFile));
-					scores[i] = FileUtil.path(folder,name);
+					Files.createSymbolicLink(Paths.get(FileUtil.path(folder, name)), Paths.get(localFilename));
+					Files.createSymbolicLink(Paths.get(FileUtil.path(folder, name + ".format")), Paths.get(formatFile));
+					scores[i] = FileUtil.path(folder, name);
 				}
 			}
 			System.out.println("Loaded " + scores.length + " score files from distributed cache");
@@ -212,6 +211,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		int phasingWindow = Integer.parseInt(store.getString("phasing.window"));
 
 		int window = Integer.parseInt(store.getString("minimac.window"));
+		int decay = Integer.parseInt(store.getString("minimac.decay"));
 
 		String minimacParams = store.getString("minimac.command");
 		String eagleParams = store.getString("eagle.command");
@@ -226,6 +226,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		pipeline.setPhasingWindow(phasingWindow);
 		pipeline.setBuild(build);
 		pipeline.setMinimacWindow(window);
+		pipeline.setMinR2(minR2);
+		pipeline.setDecay(decay);
 
 	}
 
@@ -289,16 +291,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 				statistics.setImportTime((end - start) / 1000);
 
 			} else {
-				if (imputationParameters.getMinR2() > 0) {
-					// filter by r2
-					String filteredInfoFilename = outputChunk.getInfoFilename() + "_filtered";
-					filterInfoFileByR2(outputChunk.getInfoFilename(), filteredInfoFilename,
-							imputationParameters.getMinR2());
-					HdfsUtil.put(filteredInfoFilename, HdfsUtil.path(output, chunk + ".info"));
 
-				} else {
-					HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
-				}
+				HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
 
 				long start = System.currentTimeMillis();
 

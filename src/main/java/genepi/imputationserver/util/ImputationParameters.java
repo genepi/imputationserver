@@ -6,8 +6,6 @@ public class ImputationParameters {
 
 	private String referencePanelName;
 
-	private double minR2;
-
 	private String phasing;
 
 	private boolean phasingRequired;
@@ -18,14 +16,6 @@ public class ImputationParameters {
 
 	public void setReferencePanelName(String referencePanelName) {
 		this.referencePanelName = referencePanelName;
-	}
-
-	public double getMinR2() {
-		return minR2;
-	}
-
-	public void setMinR2(double minR2) {
-		this.minR2 = minR2;
 	}
 
 	public String getPhasing() {

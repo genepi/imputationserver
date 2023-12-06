@@ -315,7 +315,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
 
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
 		assertEquals(snpInInfo, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
@@ -358,10 +358,10 @@ public class ImputationTest {
 
 		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
 		VCFHeader header = reader.getFileHeader();
-		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
-		assertEquals(ImputationPipeline.EAGLE_VERSION, header.getOtherHeaderLine("phasing").getValue());
-		assertEquals(ImputationPipeline.IMPUTATION_VERSION, header.getOtherHeaderLine("imputation").getValue());
-		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
+		assertEquals("hapmap2", header.getOtherHeaderLine("mis_panel").getValue());
+		assertEquals(ImputationPipeline.EAGLE_VERSION, header.getOtherHeaderLine("mis_phasing").getValue());
+		assertEquals(ImputationPipeline.IMPUTATION_VERSION, header.getOtherHeaderLine("mis_imputation").getValue());
+		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("mis_pipeline").getValue());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -404,10 +404,10 @@ public class ImputationTest {
 
 		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
 		VCFHeader header = reader.getFileHeader();
-		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
-		assertEquals(ImputationPipeline.BEAGLE_VERSION, header.getOtherHeaderLine("phasing").getValue());
-		assertEquals(ImputationPipeline.IMPUTATION_VERSION, header.getOtherHeaderLine("imputation").getValue());
-		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
+		assertEquals("hapmap2", header.getOtherHeaderLine("mis_panel").getValue());
+		assertEquals(ImputationPipeline.BEAGLE_VERSION, header.getOtherHeaderLine("mis_phasing").getValue());
+		assertEquals(ImputationPipeline.IMPUTATION_VERSION, header.getOtherHeaderLine("mis_imputation").getValue());
+		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("mis_pipeline").getValue());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -451,9 +451,9 @@ public class ImputationTest {
 
 		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.phased.vcf.gz"), false);
 		VCFHeader header = reader.getFileHeader();
-		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
-		assertEquals(ImputationPipeline.EAGLE_VERSION, header.getOtherHeaderLine("phasing").getValue());
-		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
+		assertEquals("hapmap2", header.getOtherHeaderLine("mis_panel").getValue());
+		assertEquals(ImputationPipeline.EAGLE_VERSION, header.getOtherHeaderLine("mis_phasing").getValue());
+		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("mis_pipeline").getValue());
 
 		FileUtil.deleteDirectory("test-data/tmp");
 
@@ -497,9 +497,9 @@ public class ImputationTest {
 
 		VCFFileReader reader = new VCFFileReader(new File("test-data/tmp/chr20.dose.vcf.gz"), false);
 		VCFHeader header = reader.getFileHeader();
-		assertEquals("hapmap2", header.getOtherHeaderLine("panel").getValue());
-		assertEquals("n/a", header.getOtherHeaderLine("phasing").getValue());
-		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("pipeline").getValue());
+		assertEquals("hapmap2", header.getOtherHeaderLine("mis_panel").getValue());
+		assertEquals("n/a", header.getOtherHeaderLine("mis_phasing").getValue());
+		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("mis_pipeline").getValue());
 
 		// FileUtil.deleteDirectory("test-data/tmp");
 
@@ -611,7 +611,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
 
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
 		assertEquals(snpInInfo, file.getNoSnps());
 
 		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", "PGS000018,PGS000027", "--out",
@@ -704,7 +704,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
 
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
 		assertEquals(snpInInfo, file.getNoSnps());
 
 		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", score1, "--out", "test-data/tmp/expected.txt" };
@@ -962,7 +962,7 @@ public class ImputationTest {
 		// TODO: update SNPS_WITH_R2_BELOW_05
 		assertTrue(TOTAL_REFPANEL_CHR20_B37 > file.getNoSnps());
 
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz") - 1;
+		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
 		assertEquals(snpInInfo, file.getNoSnps());
 
 		FileUtil.deleteDirectory("test-data/tmp");
@@ -973,7 +973,12 @@ public class ImputationTest {
 		LineReader reader = new LineReader(filename);
 		int lines = 0;
 		while (reader.next()) {
-			lines++;
+
+			String line = reader.get();
+			{
+				if (!line.startsWith("#"))
+					lines++;
+			}
 		}
 		return lines;
 	}
@@ -1001,12 +1006,12 @@ public class ImputationTest {
 
 			String line = reader.get();
 
-			if (!line.startsWith("SNP")) {
-				String snp = line.split("\t")[0];
-				if (Integer.valueOf(snp.split(":")[1]) <= pos) {
+			if (!line.startsWith("#")) {
+				String snp = line.split("\\s+")[1];
+				if (Integer.valueOf(snp) <= pos) {
 					return false;
 				}
-				pos = Integer.valueOf(snp.split(":")[1]);
+				pos = Integer.valueOf(snp);
 			}
 
 		}
@@ -1081,7 +1086,7 @@ public class ImputationTest {
 
 		// subtract header
 		int infoCount = getLineCount("test-data/tmp/chr20.info.gz");
-		assertEquals(infoCount - 1, file.getNoSnps());
+		assertEquals(infoCount, file.getNoSnps());
 		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
