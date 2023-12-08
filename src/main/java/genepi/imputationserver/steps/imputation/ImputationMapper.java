@@ -292,7 +292,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			}
 
 			// push results only if not in PGS mode
-			if (scores == null) {
+			else if (scores == null) {
 
 				HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
 
