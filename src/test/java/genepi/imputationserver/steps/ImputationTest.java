@@ -99,7 +99,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -150,7 +150,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -501,7 +501,7 @@ public class ImputationTest {
 		assertEquals("n/a", header.getOtherHeaderLine("mis_phasing").getValue());
 		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("mis_pipeline").getValue());
 
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -601,27 +601,9 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		ZipFile zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
 		zipFile.extractAll("test-data/tmp");
-
-		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
-
-		assertEquals("20", file.getChromosome());
-		assertEquals(51, file.getNoSamples());
-		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
-
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
-		assertEquals(snpInInfo, file.getNoSnps());
-
-		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", "PGS000018,PGS000027", "--out",
-				"test-data/tmp/expected.txt" };
-		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
-		assertEquals(0, resultScore);
-
-		zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
-		zipFile.extractAll("test-data/tmp");
-		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/expected.txt", ',');
+		CsvTableReader readerExpected = new CsvTableReader("test-data/data/pgs/expected.txt", ',');
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
 
 		while (readerExpected.next() && readerActual.next()) {
@@ -634,7 +616,8 @@ public class ImputationTest {
 		// check if html report file exisits
 		new File("test-data/tmp/local/scores.html").exists();
 
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
+		zipFile.close();
 
 	}
 
@@ -773,7 +756,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_SNPS_INPUT - SNPS_MONOMORPHIC, file.getNoSnps());
 
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 

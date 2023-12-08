@@ -289,7 +289,10 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 				statistics.setImportTime((end - start) / 1000);
 
-			} else {
+			}
+
+			// push results only if not in PGS mode
+			if (scores == null) {
 
 				HdfsUtil.put(outputChunk.getInfoFilename(), HdfsUtil.path(output, chunk + ".info"));
 
@@ -321,9 +324,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 				System.out.println("Time filter and put: " + (end - start) + " ms");
 
-			}
-
-			if (scores != null) {
+			} else {
 
 				HdfsUtil.put(outputChunk.getScoreFilename(), HdfsUtil.path(outputScores, chunk + ".scores.txt"));
 				HdfsUtil.put(outputChunk.getScoreFilename() + ".json",
