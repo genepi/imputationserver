@@ -24,7 +24,6 @@ import lukfor.progress.tasks.Task;
 
 public class ImputationPipeline {
 
-
 	public static final String PIPELINE_VERSION = "michigan-imputationserver-1.8.0";
 
 	public static final String IMPUTATION_VERSION = "minimac-v4.1.6";
@@ -73,7 +72,7 @@ public class ImputationPipeline {
 
 	private String phasingEngine = "";
 
-	private String[] scores;
+	private String scores;
 
 	private ImputationStatistic statistic = new ImputationStatistic();
 
@@ -177,7 +176,7 @@ public class ImputationPipeline {
 			return false;
 		}
 
-		if (scores != null && scores.length >= 0) {
+		if (scores != null) {
 
 			System.out.println("  Starting PGS calculation '" + scores + "'...");
 
@@ -347,7 +346,7 @@ public class ImputationPipeline {
 		String cacheDir = new File(output.getScoreFilename()).getParent();
 		PGSCatalog.CACHE_DIR = cacheDir;
 
-		if (scores == null || scores.length == 0) {
+		if (scores == null) {
 			System.out.println("PGS calcuation failed. No score files set. ");
 			return false;
 		}
@@ -361,25 +360,17 @@ public class ImputationPipeline {
 			ApplyScoreTask task = new ApplyScoreTask();
 			task.setVcfFilename(output.getImputedVcfFilename());
 			task.setChunk(scoreChunk);
-			task.setRiskScoreFilenames(scores);
+			task.setRiskScoreFilenames(new String[] { scores });
 
 			// TODO: enable fix-strand-flips
 			// task.setFixStrandFlips(true);
 			// task.setRemoveAmbiguous(true);
-
-			for (String file : scores) {
-				String autoFormat = file + ".format";
-				if (new File(autoFormat).exists()) {
-					task.setRiskScoreFormat(file, RiskScoreFormat.MAPPING_FILE);
-				}
-			}
 
 			task.setOutputReportFilename(output.getScoreFilename() + ".json");
 			task.setOutput(output.getScoreFilename());
 
 			TaskService.setAnsiSupport(false);
 			List<Task> runningTasks = TaskService.run(task);
-
 			for (Task runningTask : runningTasks) {
 				if (!runningTask.getStatus().isSuccess()) {
 					System.out.println("PGS-Calc failed: " + runningTask.getStatus().getThrowable());
@@ -459,7 +450,7 @@ public class ImputationPipeline {
 		this.phasingOnly = phasingOnly;
 	}
 
-	public void setScores(String[] scores) {
+	public void setScores(String scores) {
 		this.scores = scores;
 	}
 

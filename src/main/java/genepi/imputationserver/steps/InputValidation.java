@@ -232,7 +232,7 @@ public class InputValidation extends WorkflowStep {
 							+ (phased ? "phased" : "unphased") + "\n" + "Build: " + (build == null ? "hg19" : build)
 							+ "\n" + "Reference Panel: " + reference + " (" + panel.getBuild() + ")" + "\n"
 							+ "Population: " + population + "\n" + "Phasing: " + phasing + "\n" + "Mode: " + mode
-							+ (pgsPanel != null ? "\n" + "PGS-Calculation: " + pgsPanel.getScores().size() + " scores"
+							+ (pgsPanel != null ? "\n" + "PGS-Calculation: " + FileUtil.getFilename(pgsPanel.getScores()) + " file loaded"
 									: "");
 
 					if (r2Filter != null && !r2Filter.isEmpty() && !r2Filter.equals("0")) {

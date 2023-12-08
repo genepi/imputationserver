@@ -124,9 +124,9 @@ public class Imputation extends ParallelHadoopJobStep {
 			}
 		}
 		if (pgsPanel != null) {
-			context.println("  PGS: " + pgsPanel.getScores().size() + " scores");
+			context.println("  PGS: " + FileUtil.getFilename(pgsPanel.getScores()));
 		} else {
-			context.println("  PGS: no scores selected");
+			context.println("  PGS: no score file selected");
 		}
 
 		// execute one job per chromosome

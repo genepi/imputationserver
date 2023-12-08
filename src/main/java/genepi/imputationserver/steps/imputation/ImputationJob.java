@@ -2,7 +2,6 @@ package genepi.imputationserver.steps.imputation;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.io.Text;
@@ -44,7 +43,7 @@ public class ImputationJob extends HadoopJob {
 
 	public static final String PHASING_ENGINE = "PHASING_ENGINE";
 
-	public static final String SCORES = "SCORES";
+	public static final String SCORE_FILE = "SCORES";
 
 	private String refPanelHdfs;
 
@@ -62,7 +61,7 @@ public class ImputationJob extends HadoopJob {
 
 	private String binariesHDFS;
 
-	private List<String> scores;
+	private String scores;
 
 	public ImputationJob(String name, Log log) {
 		super(name, log);
@@ -168,20 +167,24 @@ public class ImputationJob extends HadoopJob {
 			}
 		}
 
-		// add scores to cache3
+		// add scores to cache
 		if (scores != null) {
-			log.info("Add " + scores.size() + " scores to distributed cache...");
-			for (String score : scores) {
-				if (HdfsUtil.exists(score)) {
-					cache.addFile(score);
-					if (HdfsUtil.exists(score + ".format")) {
-						cache.addFile(score + ".format");
-					}
-				} else {
-					log.info("PGS score file '" + score + "' not found.");
-					throw new IOException("PGS score file '" + score + "' not found.");
+			log.info("Add " + scores + " scores to distributed cache...");
+			if (HdfsUtil.exists(scores)) {
+				cache.addFile(scores);
+				if (HdfsUtil.exists(scores + ".info")) {
+					log.info("Add " + scores + ".info to distributed cache...");
+					cache.addFile(scores + ".info");
 				}
+				if (HdfsUtil.exists(scores + ".tbi")) {
+					log.info("Add " + scores + ".tbi to distributed cache...");
+					cache.addFile(scores + ".tbi");
+				}
+			} else {
+				log.info("PGS score file '" + scores + "' not found.");
+				throw new IOException("PGS score file '" + scores + "' not found.");
 			}
+
 			log.info("All scores added to distributed cache.");
 		}
 
@@ -283,10 +286,8 @@ public class ImputationJob extends HadoopJob {
 		set(PHASING_ENGINE, phasing);
 	}
 
-	public void setScores(List<String> scores) {
-
-		String scoresNames = scores.stream().collect(Collectors.joining(","));
-		set(SCORES, scoresNames);
+	public void setScores(String scores) {
+		set(SCORE_FILE, scores);
 		this.scores = scores;
 	}
 

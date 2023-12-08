@@ -33,7 +33,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private String outputScores;
 
-	private String[] scores;
+	private String scores;
 
 	private String refFilename = "";
 
@@ -168,28 +168,27 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		}
 
 		// scores
-		String scoresFilenames = parameters.get(ImputationJob.SCORES);
-		if (scoresFilenames != null) {
-			String[] filenames = scoresFilenames.split(",");
-			scores = new String[filenames.length];
-			for (int i = 0; i < scores.length; i++) {
-				String filename = filenames[i];
-				String name = FileUtil.getFilename(filename);
-				String localFilename = cache.getFile(name);
-				scores[i] = localFilename;
-				// check if score file has format file
-				String formatFile = cache.getFile(name + ".format");
-				if (formatFile != null) {
-					// create symbolic link to format file. they have to be in the same folder
-					Files.createSymbolicLink(Paths.get(FileUtil.path(folder, name)), Paths.get(localFilename));
-					Files.createSymbolicLink(Paths.get(FileUtil.path(folder, name + ".format")), Paths.get(formatFile));
-					scores[i] = FileUtil.path(folder, name);
-				}
+		String scoresFilename = parameters.get(ImputationJob.SCORE_FILE);
+		if (scoresFilename != null) {
+			String name = FileUtil.getFilename(scoresFilename);
+			String localFilename = cache.getFile(name);
+			scores = localFilename;
+			// check if score file has info and tbi file
+			String infoFile = cache.getFile(name + ".info");
+			String tbiFile = cache.getFile(name + ".tbi");
+			if (infoFile != null && tbiFile != null) {
+				// create symbolic link to format file. they have to be in the same folder
+				Files.createSymbolicLink(Paths.get(FileUtil.path(folder, name)), Paths.get(localFilename));
+				Files.createSymbolicLink(Paths.get(FileUtil.path(folder, name + ".info")), Paths.get(infoFile));
+				Files.createSymbolicLink(Paths.get(FileUtil.path(folder, name + ".tbi")), Paths.get(tbiFile));
+				scores = FileUtil.path(folder, name);
+			} else {
+				throw new IOException("*info or *tbi file not available");
 			}
-			System.out.println("Loaded " + scores.length + " score files from distributed cache");
+			System.out.println("Loaded " + FileUtil.getFilename(scoresFilename) + " from distributed cache");
 
 		} else {
-			System.out.println("No scores files et.");
+			System.out.println("No scores file set.");
 		}
 
 		// create symbolic link --> index file is in the same folder as data

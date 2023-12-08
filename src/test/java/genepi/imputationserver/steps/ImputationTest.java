@@ -551,25 +551,25 @@ public class ImputationTest {
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// import scores into hdfs
-		String score1 = PGSCatalog.getFilenameById("PGS000018");
-		String score2 = PGSCatalog.getFilenameById("PGS000027");
+		String targetScores = HdfsUtil.path("scores-hdfs", "scores.txt.gz");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz", targetScores);
 
-		String targetScore1 = HdfsUtil.path("scores-hdfs", "PGS000018.txt.gz");
-		HdfsUtil.put(score1, targetScore1);
+		String targetIndex = HdfsUtil.path("scores-hdfs", "scores.txt.gz.tbi");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.tbi", targetIndex);
 
-		String targetScore2 = HdfsUtil.path("scores-hdfs", "PGS000027.txt.gz");
-		HdfsUtil.put(score2, targetScore2);
+		String targetInfo = HdfsUtil.path("scores-hdfs", "scores.txt.gz.info");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.info", targetInfo);
+
+		String targetJson = HdfsUtil.path("scores-hdfs", "scores.json");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.json", targetJson);
 
 		// create workflow context and set scores
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setOutput("outputScores", "cloudgene2-hdfs");
 
 		Map<String, Object> pgsPanel = new HashMap<String, Object>();
-		List<String> scores = new Vector<String>();
-		scores.add("PGS000018.txt.gz");
-		scores.add("PGS000027.txt.gz");
-		pgsPanel.put("location", "scores-hdfs");
-		pgsPanel.put("scores", scores);
+		pgsPanel.put("scores", targetScores);
+		pgsPanel.put("meta", targetJson);
 		pgsPanel.put("build", "hg19");
 		context.setData("pgsPanel", pgsPanel);
 
@@ -634,7 +634,7 @@ public class ImputationTest {
 		// check if html report file exisits
 		new File("test-data/tmp/local/scores.html").exists();
 
-		FileUtil.deleteDirectory("test-data/tmp");
+		// FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 

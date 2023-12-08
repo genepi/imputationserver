@@ -1,0 +1,127 @@
+{
+  "PGS000018": {
+    "id": "PGS000018",
+    "trait": "Coronary artery disease",
+    "efo": [
+      {
+        "id": "EFO_0001645",
+        "label": "coronary artery disease",
+        "description": "Narrowing of the coronary arteries due to fatty deposits inside the arterial walls. The diagnostic criteria may include documented history of any of the following: documented coronary artery stenosis greater than or equal to 50% (by cardiac catheterization or other modality of direct imaging of the coronary arteries); previous coronary artery bypass surgery (CABG); previous percutaneous coronary intervention (PCI); previous myocardial infarction. (ACC) [NCIT: C26732]",
+        "url": "http://www.ebi.ac.uk/efo/EFO_0001645"
+      }
+    ],
+    "populations": {
+      "items": {
+        "MAE": {
+          "name": "MAE",
+          "count": -1,
+          "percentage": 0.509,
+          "color": "eeeeee",
+          "label": "Multi-Ancestry (including Europeans)"
+        },
+        "EUR": {
+          "name": "EUR",
+          "count": -1,
+          "percentage": 0.37,
+          "color": "#0099E6",
+          "label": "European"
+        },
+        "SAS": {
+          "name": "SAS",
+          "count": -1,
+          "percentage": 0.067,
+          "color": "#F90026",
+          "label": "South Asian"
+        },
+        "AMR": {
+          "name": "AMR",
+          "count": -1,
+          "percentage": 0.011,
+          "color": "#800080",
+          "label": "Hispanic or Latin American"
+        },
+        "EAS": {
+          "name": "EAS",
+          "count": -1,
+          "percentage": 0.03,
+          "color": "#FF99E6",
+          "label": "East Asian"
+        },
+        "AFR": {
+          "name": "AFR",
+          "count": -1,
+          "percentage": 0.008,
+          "color": "#FF6600",
+          "label": "African"
+        },
+        "GME": {
+          "name": "GME",
+          "count": -1,
+          "percentage": 0.006,
+          "color": "#DBEE06",
+          "label": "Greater Middle Eastern"
+        }
+      },
+      "total": 382026
+    },
+    "publication": {
+      "date": "2018-10-01",
+      "journal": "J Am Coll Cardiol",
+      "firstauthor": "Inouye M",
+      "doi": "10.1016/j.jacc.2018.07.079"
+    },
+    "variants": 1745179,
+    "repository": "PGS-Catalog",
+    "link": "https://www.pgscatalog.org/score/PGS000018",
+    "samples": 382026
+  },
+
+  "PGS000027": {
+    "id": "PGS000027",
+    "trait": "Body Mass Index",
+    "efo": [
+      {
+        "id": "EFO_0004340",
+        "label": "body mass index",
+        "description": "An indicator of body density as determined by the relationship of BODY WEIGHT to BODY HEIGHT. BMI\u003dweight (kg)/height squared (m2). BMI correlates with body fat (ADIPOSE TISSUE). Their relationship varies with age and gender. For adults, BMI falls into these categories: below 18.5 (underweight); 18.5-24.9 (normal); 25.0-29.9 (overweight); 30.0 and above (obese). (National Center for Health Statistics, Centers for Disease Control and Prevention)",
+        "url": "http://www.ebi.ac.uk/efo/EFO_0004340"
+      }
+    ],
+    "populations": {
+      "items": {
+        "EUR": {
+          "name": "EUR",
+          "count": -1,
+          "percentage": 0.991,
+          "color": "#0099E6",
+          "label": "European"
+        },
+        "AMR": {
+          "name": "AMR",
+          "count": -1,
+          "percentage": 0.005,
+          "color": "#800080",
+          "label": "Hispanic or Latin American"
+        },
+        "AFR": {
+          "name": "AFR",
+          "count": -1,
+          "percentage": 0.004,
+          "color": "#FF6600",
+          "label": "African"
+        }
+      },
+      "total": 238944
+    },
+    "publication": {
+      "date": "2019-04-01",
+      "journal": "Cell",
+      "firstauthor": "Khera AV",
+      "doi": "10.1016/j.cell.2019.03.028"
+    },
+    "variants": 2100302,
+    "repository": "PGS-Catalog",
+    "link": "https://www.pgscatalog.org/score/PGS000027",
+    "samples": 238944
+  }
+}
