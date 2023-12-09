@@ -309,7 +309,7 @@ public class ImputationJob extends HadoopJob {
 	}
 
 	public void setIncludeScoreFilenameHDFS(String includeScoreFilenameHDFS) {
-		set(INCLUDE_SCORE_FILE, scores);
+		set(INCLUDE_SCORE_FILE, includeScoreFilenameHDFS);
 		this.includeScoreFilenameHDFS = includeScoreFilenameHDFS;
 	}
 }
