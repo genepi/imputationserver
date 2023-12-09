@@ -35,6 +35,8 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private String scores;
 
+	private String includeScoresFilename = null;
+
 	private String refFilename = "";
 
 	private String mapMinimacFilename;
@@ -187,6 +189,14 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			}
 			System.out.println("Loaded " + FileUtil.getFilename(scoresFilename) + " from distributed cache");
 
+			String hdfsIncludeScoresFilename = parameters.get(ImputationJob.INCLUDE_SCORE_FILE);
+			if (hdfsIncludeScoresFilename != null){
+				String includeScoresName = FileUtil.getFilename(hdfsIncludeScoresFilename);
+				includeScoresFilename = cache.getFile(includeScoresName);
+			}
+
+
+
 		} else {
 			System.out.println("No scores file set.");
 		}
@@ -263,6 +273,7 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 			pipeline.setPhasingEngine(phasingEngine);
 			pipeline.setPhasingOnly(phasingOnly);
 			pipeline.setScores(scores);
+			pipeline.setIncludeScoreFilename(includeScoresFilename);
 
 			boolean succesful = pipeline.execute(chunk, outputChunk);
 			ImputationStatistic statistics = pipeline.getStatistic();

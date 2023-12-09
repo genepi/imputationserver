@@ -70,6 +70,7 @@
       "firstauthor": "Inouye M",
       "doi": "10.1016/j.jacc.2018.07.079"
     },
+    "categories": ["Cardiovascular disease"],
     "variants": 1745179,
     "repository": "PGS-Catalog",
     "link": "https://www.pgscatalog.org/score/PGS000018",
@@ -119,6 +120,7 @@
       "firstauthor": "Khera AV",
       "doi": "10.1016/j.cell.2019.03.028"
     },
+    "categories": ["Body measurement"],
     "variants": 2100302,
     "repository": "PGS-Catalog",
     "link": "https://www.pgscatalog.org/score/PGS000027",

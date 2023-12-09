@@ -66,6 +66,8 @@ public class ImputationPipeline {
 
 	private String mapBeagleFilename = "";
 
+	private String includeScoreFilename = null;
+
 	private String build = "hg19";
 
 	private boolean phasingOnly;
@@ -361,6 +363,9 @@ public class ImputationPipeline {
 			task.setVcfFilename(output.getImputedVcfFilename());
 			task.setChunk(scoreChunk);
 			task.setRiskScoreFilenames(new String[] { scores });
+			if (includeScoreFilename != null && !includeScoreFilename.isEmpty()){
+				task.setIncludeScoreFilename(includeScoreFilename);
+			}
 
 			// TODO: enable fix-strand-flips
 			// task.setFixStrandFlips(true);
@@ -413,6 +418,10 @@ public class ImputationPipeline {
 
 	public void setRefBeagleFilename(String refBeagleFilename) {
 		this.refBeagleFilename = refBeagleFilename;
+	}
+
+	public void setIncludeScoreFilename(String includeScoreFilename) {
+		this.includeScoreFilename = includeScoreFilename;
 	}
 
 	public void setMinimacCommand(String minimacCommand, String minimacParams) {

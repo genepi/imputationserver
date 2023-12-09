@@ -622,6 +622,84 @@ public class ImputationTest {
 	}
 
 	@Test
+	public void testPipelineWithEagleAndScoresAndCategory() throws IOException, ZipException {
+
+		String configFolder = "test-data/configs/hapmap-chr20";
+		String inputFolder = "test-data/data/chr20-unphased";
+
+		// import scores into hdfs
+		String targetScores = HdfsUtil.path("scores-hdfs", "scores.txt.gz");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz", targetScores);
+
+		String targetIndex = HdfsUtil.path("scores-hdfs", "scores.txt.gz.tbi");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.tbi", targetIndex);
+
+		String targetInfo = HdfsUtil.path("scores-hdfs", "scores.txt.gz.info");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.info", targetInfo);
+
+		String targetJson = HdfsUtil.path("scores-hdfs", "scores.json");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.json", targetJson);
+
+		// create workflow context and set scores
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+		context.setOutput("outputScores", "cloudgene2-hdfs");
+
+		Map<String, Object> pgsPanel = new HashMap<String, Object>();
+		pgsPanel.put("scores", targetScores);
+		pgsPanel.put("meta", targetJson);
+		pgsPanel.put("build", "hg19");
+		context.setData("pgsPanel", pgsPanel);
+		context.setInput("pgsCategory","Body measurement"); //only PGS000027
+
+		// run qc to create chunkfile
+
+		InputValidation inputValidation = new InputValidationMock(configFolder);
+		// run and test
+		boolean result = run(context, inputValidation);
+		assertTrue(result);
+
+		QcStatisticsMock qcStats = new QcStatisticsMock(configFolder);
+		result = run(context, qcStats);
+
+		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
+
+		// add panel to hdfs
+		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
+		// importMinimacMap("test-data/B38_MAP_FILE.map");
+		importBinaries("files/bin");
+
+		// run imputation
+		ImputationMinimac3Mock imputation = new ImputationMinimac3Mock(configFolder);
+		result = run(context, imputation);
+		assertTrue(result);
+
+		// run export
+		CompressionEncryptionMock export = new CompressionEncryptionMock("files");
+		result = run(context, export);
+		assertTrue(result);
+
+		ZipFile zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
+		zipFile.extractAll("test-data/tmp");
+		CsvTableReader readerExpected = new CsvTableReader("test-data/data/pgs/expected.txt", ',');
+		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
+		assertEquals(2, readerActual.getColumns().length); //only sample and PGS000027
+
+		while (readerExpected.next() && readerActual.next()) {
+			assertEquals(readerExpected.getDouble("PGS000027"), readerActual.getDouble("PGS000027"), 0.00001);
+		}
+		readerExpected.close();
+		readerActual.close();
+
+		// check if html report file exisits
+		new File("test-data/tmp/local/scores.html").exists();
+
+		FileUtil.deleteDirectory("test-data/tmp");
+		zipFile.close();
+
+	}
+
+	@Test
 	public void testPipelineWithEagleAndScoresAndFormat() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chr20";

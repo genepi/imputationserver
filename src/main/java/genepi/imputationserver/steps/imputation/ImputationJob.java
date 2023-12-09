@@ -45,6 +45,8 @@ public class ImputationJob extends HadoopJob {
 
 	public static final String SCORE_FILE = "SCORES";
 
+	public static final String INCLUDE_SCORE_FILE = "INCLUDE_SCORE_FILE";
+
 	private String refPanelHdfs;
 
 	private String logFilename;
@@ -62,6 +64,8 @@ public class ImputationJob extends HadoopJob {
 	private String binariesHDFS;
 
 	private String scores;
+
+	private String includeScoreFilenameHDFS;
 
 	public ImputationJob(String name, Log log) {
 		super(name, log);
@@ -185,6 +189,15 @@ public class ImputationJob extends HadoopJob {
 				throw new IOException("PGS score file '" + scores + "' not found.");
 			}
 
+			if (includeScoreFilenameHDFS != null){
+				if (HdfsUtil.exists(includeScoreFilenameHDFS)) {
+					cache.addFile(includeScoreFilenameHDFS);
+				} else {
+					log.info("Include score file '" + scores + "' not found.");
+					throw new IOException("Include score file '" + scores + "' not found.");
+				}
+			}
+
 			log.info("All scores added to distributed cache.");
 		}
 
@@ -295,4 +308,8 @@ public class ImputationJob extends HadoopJob {
 		this.binariesHDFS = binariesHDFS;
 	}
 
+	public void setIncludeScoreFilenameHDFS(String includeScoreFilenameHDFS) {
+		set(INCLUDE_SCORE_FILE, scores);
+		this.includeScoreFilenameHDFS = includeScoreFilenameHDFS;
+	}
 }

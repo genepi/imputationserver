@@ -154,6 +154,14 @@ workflow:
        required: true
        category: PGSPanel
 
+     - id: pgsCategory
+       description: Trait Category
+       type: list
+       values:
+         bind: pgsPanel
+         property: categories
+         category: PGSPanel
+
      - id: reference
        description: Reference Populations
        type: list

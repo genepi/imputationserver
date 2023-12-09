@@ -19,6 +19,7 @@ import genepi.imputationserver.util.RefPanel;
 import genepi.imputationserver.util.RefPanelList;
 import genepi.io.FileUtil;
 import genepi.io.text.LineReader;
+import genepi.riskscore.commands.FilterMetaCommand;
 
 public class Imputation extends ParallelHadoopJobStep {
 
@@ -63,6 +64,7 @@ public class Imputation extends ParallelHadoopJobStep {
 		String mode = context.get("mode");
 		String phasing = context.get("phasing");
 		PgsPanel pgsPanel = PgsPanel.loadFromProperties(context.getData("pgsPanel"));
+		String pgsCategory = context.get("pgsCategory");
 
 		String r2Filter = context.get("r2Filter");
 		if (r2Filter == null) {
@@ -123,8 +125,27 @@ public class Imputation extends ParallelHadoopJobStep {
 				context.println("    " + entry.getKey() + "/" + entry.getValue());
 			}
 		}
+
+		String includeScoreFilenameHdfs = null;
 		if (pgsPanel != null) {
 			context.println("  PGS: " + FileUtil.getFilename(pgsPanel.getScores()));
+
+			if (pgsCategory != null) {
+				String includeScoreFilename = FileUtil.path(context.getLocalTemp(), "include-scores.txt");
+				FilterMetaCommand filter = new FilterMetaCommand();
+				filter.setCategory(pgsCategory);
+				filter.setMeta(pgsPanel.getMeta());
+				filter.setOut(includeScoreFilename);
+				int result = 0;
+				try {
+					result = filter.call();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+				includeScoreFilenameHdfs = HdfsUtil.path(context.getHdfsTemp(), "include-scores.txt");
+				HdfsUtil.put(includeScoreFilename, includeScoreFilenameHdfs);
+			}
+
 		} else {
 			context.println("  PGS: no score file selected");
 		}
@@ -229,6 +250,9 @@ public class Imputation extends ParallelHadoopJobStep {
 				}
 
 				if (pgsPanel != null) {
+					if (includeScoreFilenameHdfs != null) {
+						job.setIncludeScoreFilenameHDFS(includeScoreFilenameHdfs);
+					}
 					job.setScores(pgsPanel.getScores());
 				}
 				job.setRefPanel(reference);
