@@ -560,16 +560,13 @@ public class ImputationTest {
 		String targetInfo = HdfsUtil.path("scores-hdfs", "scores.txt.gz.info");
 		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.info", targetInfo);
 
-		String targetJson = HdfsUtil.path("scores-hdfs", "scores.json");
-		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.json", targetJson);
-
 		// create workflow context and set scores
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setOutput("outputScores", "cloudgene2-hdfs");
 
 		Map<String, Object> pgsPanel = new HashMap<String, Object>();
 		pgsPanel.put("scores", targetScores);
-		pgsPanel.put("meta", targetJson);
+		pgsPanel.put("meta", "test-data/data/pgs/test-scores.chr20.json");
 		pgsPanel.put("build", "hg19");
 		context.setData("pgsPanel", pgsPanel);
 
@@ -637,16 +634,13 @@ public class ImputationTest {
 		String targetInfo = HdfsUtil.path("scores-hdfs", "scores.txt.gz.info");
 		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.info", targetInfo);
 
-		String targetJson = HdfsUtil.path("scores-hdfs", "scores.json");
-		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.json", targetJson);
-
 		// create workflow context and set scores
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setOutput("outputScores", "cloudgene2-hdfs");
 
 		Map<String, Object> pgsPanel = new HashMap<String, Object>();
 		pgsPanel.put("scores", targetScores);
-		pgsPanel.put("meta", targetJson);
+		pgsPanel.put("meta", "test-data/data/pgs/test-scores.chr20.json");
 		pgsPanel.put("build", "hg19");
 		context.setData("pgsPanel", pgsPanel);
 		context.setInput("pgsCategory","Body measurement"); //only PGS000027
