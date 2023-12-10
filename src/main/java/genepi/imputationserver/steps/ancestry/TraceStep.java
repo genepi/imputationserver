@@ -288,11 +288,11 @@ public class TraceStep extends WorkflowStep {
 
 			return true;
 
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException | ClassNotFoundException | URISyntaxException e) {
 			context.error("An internal server error occurred while launching Hadoop job.\n" + exceptionToString(e));
 		}
 
-		context.error("Execution failed. Please, contact administrator.");
+        context.error("Execution failed. Please, contact administrator.");
 		return false;
 	}
 
