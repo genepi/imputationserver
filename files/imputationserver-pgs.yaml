@@ -108,11 +108,9 @@ workflow:
 
      - id: population
        description: Population
-       type: list
-       values:
-          bind: refpanel
-          property: populations
-          category: RefPanel
+       value: mixed
+       type: text
+       visible: false
 
      - id: mode
        description: Mode
