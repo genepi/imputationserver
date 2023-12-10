@@ -364,41 +364,4 @@ public class ImputationMapper extends Mapper<LongWritable, Text, Text, Text> {
 		}
 	}
 
-	public void filterInfoFileByR2(String input, String output, double minR2) throws IOException {
-
-		LineReader readerInfo = new LineReader(input);
-		LineWriter writerInfo = new LineWriter(output);
-
-		readerInfo.next();
-		String header = readerInfo.get();
-
-		// find index for Rsq
-		String[] headerTiles = header.split("\t");
-		int index = -1;
-		for (int i = 0; i < headerTiles.length; i++) {
-			if (headerTiles[i].equals("Rsq")) {
-				index = i;
-			}
-		}
-
-		writerInfo.write(header);
-
-		while (readerInfo.next()) {
-			String line = readerInfo.get();
-			String[] tiles = line.split("\t");
-			String value = tiles[index];
-			try {
-				double r2 = Double.parseDouble(value);
-				if (r2 > minR2) {
-					writerInfo.write(line);
-				}
-			} catch (NumberFormatException e) {
-				writerInfo.write(line);
-			}
-		}
-
-		readerInfo.close();
-		writerInfo.close();
-
-	}
 }
