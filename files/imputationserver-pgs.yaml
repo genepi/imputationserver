@@ -53,11 +53,13 @@ workflow:
       generates: $local $outputimputation $logfile $hadooplogs
       binaries: ${app_hdfs_folder}/bin
 
+#if( $reference != "disabled")
     - name: Ancestry Estimation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.ancestry.TraceStep
       binaries: ${app_hdfs_folder}/bin
       references: ${app_hdfs_folder}/references
+#end
 
     - name: Data Compression and Encryption
       jar: imputationserver.jar
@@ -164,14 +166,15 @@ workflow:
          category: PGSPanel
 
      - id: reference
-       description: Reference Populations
+       description: Ancestry Estimation
        type: list
        required: true
-       value: HGDP_938_genotyped
+       value: disabled
        values:
+         disabled: "Disabled"
          HGDP_938_genotyped: Worldwide (HGDP)
-         HGDP_938_imputed: Worldwide (imputed HGDP)
-       visible: false
+         #HGDP_938_imputed: Worldwide (imputed HGDP)
+       visible: true
 
      - id: dim
        description: Number of principal components to compute
