@@ -401,11 +401,15 @@ public class CompressionEncryption extends WorkflowStep {
 
 				try {
 					context.sendMail(subject, message);
-					context.ok("We have sent an email to <b>" + mail + "</b> with the password.");
+					if (pgsPanel == null) {
+						context.ok("We have sent an email to <b>" + mail + "</b> with the password.");
+					} else {
+						context.ok("We have sent a notification email to <b>" + mail + "</b>.");
+					}
 					return true;
 				} catch (Exception e) {
-					context.println("Data compression failed: " + ExceptionUtils.getStackTrace(e));
-					context.error("Data compression failed: " + e.getMessage());
+					context.println("Sending notification email failed: " + ExceptionUtils.getStackTrace(e));
+					context.error("Sending notification email failed: " + e.getMessage());
 					return false;
 				}
 
