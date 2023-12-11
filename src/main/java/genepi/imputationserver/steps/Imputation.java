@@ -130,7 +130,7 @@ public class Imputation extends ParallelHadoopJobStep {
 		if (pgsPanel != null) {
 			context.println("  PGS: " + FileUtil.getFilename(pgsPanel.getScores()));
 
-			if (pgsCategory != null) {
+			if (pgsCategory != null && !pgsCategory.isEmpty() && !pgsCategory.equals("all")) {
 				String includeScoreFilename = FileUtil.path(context.getLocalTemp(), "include-scores.txt");
 				FilterMetaCommand filter = new FilterMetaCommand();
 				filter.setCategory(pgsCategory);
