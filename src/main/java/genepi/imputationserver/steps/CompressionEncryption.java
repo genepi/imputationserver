@@ -104,8 +104,9 @@ public class CompressionEncryption extends WorkflowStep {
 
 		try {
 
+			context.beginTask("Export data...");
+
 			if (pgsPanel == null) {
-				context.beginTask("Export data...");
 
 				// get sorted directories
 				List<String> folders = HdfsUtil.getDirectories(output);
@@ -310,7 +311,7 @@ public class CompressionEncryption extends WorkflowStep {
 				String fileName = "scores.zip";
 				String filePath = FileUtil.path(pgsOutput, fileName);
 				File file = new File(filePath);
-				createEncryptedZipFile(file, new File(outputFileScores), password, aesEncryption);
+				createZipFileFromFolder(file, new File(outputFileScores));
 
 				context.println("Exported PGS scores to " + fileName + ".");
 
@@ -354,7 +355,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				String fileNameReport = "scores.report.zip";
 				File fileReport = new File(FileUtil.path(pgsOutput, fileNameReport));
-				createEncryptedZipFileFromFolder(fileReport, new File(extendedHtmlFolder), password, aesEncryption);
+				createZipFileFromFolder(fileReport, new File(extendedHtmlFolder));
 
 				context.println("Created reports " + outputFileHtml + " and " + fileReport.getPath() + ".");
 
@@ -476,5 +477,12 @@ public class CompressionEncryption extends WorkflowStep {
 		zipFile.addFolder(folder);
 		zipFile.close();
 	}
+
+	public void createZipFileFromFolder(File file, File folder) throws IOException {
+		ZipFile zipFile = new ZipFile(file);
+		zipFile.addFolder(folder);
+		zipFile.close();
+	}
+
 
 }

@@ -598,7 +598,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
+		ZipFile zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip");
 		zipFile.extractAll("test-data/tmp");
 		CsvTableReader readerExpected = new CsvTableReader("test-data/data/pgs/expected.txt", ',');
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
@@ -673,7 +673,7 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
+		ZipFile zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip");
 		zipFile.extractAll("test-data/tmp");
 		CsvTableReader readerExpected = new CsvTableReader("test-data/data/pgs/expected.txt", ',');
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
