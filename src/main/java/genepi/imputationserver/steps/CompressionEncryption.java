@@ -386,12 +386,18 @@ public class CompressionEncryption extends WorkflowStep {
 			Object mail = context.getData("cloudgene.user.mail");
 			Object name = context.getData("cloudgene.user.name");
 
-			if (mail != null) {
+			if (mail != null && !mail.toString().isEmpty()) {
 
 				String subject = "Job " + context.getJobId() + " is complete.";
-				String message = "Dear " + name + ",\nthe password for the imputation results is: " + password
-						+ "\n\nThe results can be downloaded from " + serverUrl + "/start.html#!jobs/"
-						+ context.getJobId() + "/results";
+				String message = "";
+				if (pgsPanel == null) {
+					message = "Dear " + name + ",\nthe password for the imputation results is: " + password
+							+ "\n\nThe results can be downloaded from " + serverUrl + "/start.html#!jobs/"
+							+ context.getJobId() + "/results";
+				} else {
+					message = "Dear " + name + ",\nThe results can be downloaded from " + serverUrl + "/start.html#!jobs/"
+							+ context.getJobId() + "/results";
+				}
 
 				try {
 					context.sendMail(subject, message);
@@ -404,8 +410,13 @@ public class CompressionEncryption extends WorkflowStep {
 				}
 
 			} else {
-				context.error("No email address found. Please enter your email address (Account -> Profile).");
-				return false;
+				if (pgsPanel == null) {
+					context.error("No email address found. Please enter your email address (Account -> Profile).");
+					return false;
+				} else {
+					context.ok("PGS report created successfully.");
+					return true;
+				}
 			}
 
 		} else {
