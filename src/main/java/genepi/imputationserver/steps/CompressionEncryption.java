@@ -311,7 +311,7 @@ public class CompressionEncryption extends WorkflowStep {
 				String fileName = "scores.zip";
 				String filePath = FileUtil.path(pgsOutput, fileName);
 				File file = new File(filePath);
-				createZipFileFromFolder(file, new File(outputFileScores));
+				createZipFile(file, new File(outputFileScores));
 
 				context.println("Exported PGS scores to " + fileName + ".");
 
@@ -355,7 +355,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				String fileNameReport = "scores.report.zip";
 				File fileReport = new File(FileUtil.path(pgsOutput, fileNameReport));
-				createZipFileFromFolder(fileReport, new File(extendedHtmlFolder));
+				createZipFile(fileReport, new File(extendedHtmlFolder));
 
 				context.println("Created reports " + outputFileHtml + " and " + fileReport.getPath() + ".");
 
@@ -489,9 +489,13 @@ public class CompressionEncryption extends WorkflowStep {
 		zipFile.close();
 	}
 
-	public void createZipFileFromFolder(File file, File folder) throws IOException {
+	public void createZipFile(File file, File folder) throws IOException {
 		ZipFile zipFile = new ZipFile(file);
-		zipFile.addFolder(folder);
+		if (folder.isFile()){
+			zipFile.addFile(folder);
+		} else {
+			zipFile.addFolder(folder);
+		}
 		zipFile.close();
 	}
 
