@@ -128,7 +128,7 @@ public class TraceStep extends WorkflowStep {
 			HdfsUtil.put(mergedFile, HdfsUtil.path(vcfHdfsDir, "study.merged.vcf.gz"));
 
 			// read number of samples from first vcf file
-			VcfFile vcfFile = VcfFileUtil.load(mergedFile, 200000, false);
+			VcfFile vcfFile = VcfFileUtil.load(files[0], 200000, false);
 
 			int nIndividuals = vcfFile.getNoSamples();
 			int batch = 0;
