@@ -3,12 +3,21 @@ theme: readthedocs
 
 nav:
 - Home: index.md
-- Getting Started: getting-started.md
-- Data Preparation: prepare-your-data.md
-- Reference Panels: reference-panels.md
-- Pipeline Overview: pipeline.md
-- Security: data-sensitivity.md
-- FAQ: faq.md
+- Genotype Imputation:
+  - Getting Started: getting-started.md
+  - Data Preparation: prepare-your-data.md
+  - Reference Panels: reference-panels.md
+  - Pipeline Overview: pipeline.md
+  - Security: data-sensitivity.md
+  - FAQ: faq.md
+- Polygenic Score Calculation:
+    - Getting Started: pgs/getting-started.md
+    - Interactive Report: pgs/report.md
+    - Output Files: pgs/output-files.md
+    - Reference Panels: pgs/reference-panels.md
+    - Available Scores: pgs/scores.md
+    - Pipeline Overview: pgs/pipeline.md
+    - FAQ: pgs/faq.md
 - Developer Documentation:
   - API: api.md
   - Docker: docker.md
