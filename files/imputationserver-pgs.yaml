@@ -1,8 +1,10 @@
 id: imputationserver-pgs
-name: Genotype Imputation (PGS Calc Integration)
-description: This is the new Michigan Imputation Server Pipeline using <a href="https://github.com/statgen/Minimac4">Minimac4</a>. Documentation can be found <a href="http://imputationserver.readthedocs.io/en/latest/">here</a>.<br><br>If your input data is <b>GRCh37/hg19</b> please ensure chromosomes are encoded without prefix  (e.g. <b>20</b>).<br>If your input data is <b>GRCh38hg38</b> please ensure chromosomes are encoded with prefix 'chr' (e.g. <b>chr20</b>).
+name: Polygenic Score Calculation
+description: "You can upload genotyped data and the application imputes your genotypes, performs ancestry estimation and finally calculates Polygenic Risk Scores.<br><br>No dataset at hand? No problem, download our example dataset: <a href=\"https://imputationserver.sph.umich.edu/downloads/50-samples.zip\" class=\"btn btn-sm btn-secondary\" style=\"color:#ffffff !important\"><i class=\"fa fa-file\"></i> 50-samples.zip</a><br><br>"
+
+
 version: 1.8.0
-website: https://imputationserver.readthedocs.io
+website: https://imputationserver.readthedocs.io/en/latest/pgs/getting-started
 category:
 
 installation:
@@ -53,11 +55,13 @@ workflow:
       generates: $local $outputimputation $logfile $hadooplogs
       binaries: ${app_hdfs_folder}/bin
 
+#if( $reference != "disabled")
     - name: Ancestry Estimation
       jar: imputationserver.jar
       classname: genepi.imputationserver.steps.ancestry.TraceStep
       binaries: ${app_hdfs_folder}/bin
       references: ${app_hdfs_folder}/references
+#end
 
     - name: Data Compression and Encryption
       jar: imputationserver.jar
@@ -95,6 +99,7 @@ workflow:
          0.1: 0.1
          0.2: 0.2
          0.3: 0.3
+       visible: false
 
      - id: phasing
        description: Phasing
@@ -103,14 +108,13 @@ workflow:
        values:
          eagle: Eagle v2.4 (phased output)
          no_phasing: No phasing
+       visible: false
 
      - id: population
        description: Population
-       type: list
-       values:
-          bind: refpanel
-          property: populations
-          category: RefPanel
+       value: mixed
+       type: text
+       visible: false
 
      - id: mode
        description: Mode
@@ -120,6 +124,7 @@ workflow:
           qconly: Quality Control Only
           imputation: Quality Control & Imputation
           phasing: Quality Control & Phasing Only
+       visible: false
 
      - id: aesEncryption
        description: AES 256 encryption
@@ -129,7 +134,7 @@ workflow:
        values:
          true: yes
          false: no
-       visible: true
+       visible: false
 
      - id: meta
        description: Generate Meta-imputation file
@@ -138,7 +143,7 @@ workflow:
        values:
          true: yes
          false: no
-       visible: true
+       visible: false
 
      - id: myseparator0
        type: separator
@@ -154,14 +159,24 @@ workflow:
        required: true
        category: PGSPanel
 
+     - id: pgsCategory
+       description: Trait Category
+       type: list
+       values:
+         bind: pgsPanel
+         property: categories
+         category: PGSPanel
+
      - id: reference
-       description: Reference Populations
+       description: Ancestry Estimation
        type: list
        required: true
-       value: HGDP_938_genotyped
+       value: disabled
        values:
+         disabled: "Disabled"
          HGDP_938_genotyped: Worldwide (HGDP)
-         HGDP_938_imputed: Worldwide (imputed HGDP)
+         #HGDP_938_imputed: Worldwide (imputed HGDP)
+       visible: true
 
      - id: dim
        description: Number of principal components to compute

@@ -1,8 +1,6 @@
 package genepi.imputationserver.util;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import genepi.hadoop.HdfsUtil;
 
@@ -14,7 +12,7 @@ public class PgsPanel {
 
 	private String meta = null;
 
-	private List<String> scores = new Vector<>();
+	private String scores = null;
 
 	private PgsPanel() {
 
@@ -35,8 +33,7 @@ public class PgsPanel {
 				panel.meta = map.get("meta").toString();
 			}
 			if (map.containsKey("scores")) {
-				List<String> list = (List<String>) map.get("scores");
-				panel.scores = list;
+				panel.scores = map.get("scores").toString();
 				return panel;
 			} else {
 				return null;
@@ -47,11 +44,8 @@ public class PgsPanel {
 
 	}
 
-	public List<String> getScores() {
-		List<String> scoresPath = new Vector<String>();
-		for (String score : scores) {
-			scoresPath.add(HdfsUtil.path(location, score));
-		}
+	public String getScores() {
+		String scoresPath = HdfsUtil.path(scores);
 		return scoresPath;
 	}
 

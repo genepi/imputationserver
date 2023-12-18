@@ -99,7 +99,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -150,7 +150,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_REFPANEL_CHR20_B37 + ONLY_IN_INPUT, file.getNoSnps());
 
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -501,7 +501,7 @@ public class ImputationTest {
 		assertEquals("n/a", header.getOtherHeaderLine("mis_phasing").getValue());
 		assertEquals(ImputationPipeline.PIPELINE_VERSION, header.getOtherHeaderLine("mis_pipeline").getValue());
 
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 
@@ -551,25 +551,22 @@ public class ImputationTest {
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// import scores into hdfs
-		String score1 = PGSCatalog.getFilenameById("PGS000018");
-		String score2 = PGSCatalog.getFilenameById("PGS000027");
+		String targetScores = HdfsUtil.path("scores-hdfs", "scores.txt.gz");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz", targetScores);
 
-		String targetScore1 = HdfsUtil.path("scores-hdfs", "PGS000018.txt.gz");
-		HdfsUtil.put(score1, targetScore1);
+		String targetIndex = HdfsUtil.path("scores-hdfs", "scores.txt.gz.tbi");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.tbi", targetIndex);
 
-		String targetScore2 = HdfsUtil.path("scores-hdfs", "PGS000027.txt.gz");
-		HdfsUtil.put(score2, targetScore2);
+		String targetInfo = HdfsUtil.path("scores-hdfs", "scores.txt.gz.info");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.info", targetInfo);
 
 		// create workflow context and set scores
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setOutput("outputScores", "cloudgene2-hdfs");
 
 		Map<String, Object> pgsPanel = new HashMap<String, Object>();
-		List<String> scores = new Vector<String>();
-		scores.add("PGS000018.txt.gz");
-		scores.add("PGS000027.txt.gz");
-		pgsPanel.put("location", "scores-hdfs");
-		pgsPanel.put("scores", scores);
+		pgsPanel.put("scores", targetScores);
+		pgsPanel.put("meta", "test-data/data/pgs/test-scores.chr20.json");
 		pgsPanel.put("build", "hg19");
 		context.setData("pgsPanel", pgsPanel);
 
@@ -601,27 +598,9 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		ZipFile zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip");
 		zipFile.extractAll("test-data/tmp");
-
-		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
-
-		assertEquals("20", file.getChromosome());
-		assertEquals(51, file.getNoSamples());
-		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
-
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
-		assertEquals(snpInInfo, file.getNoSnps());
-
-		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", "PGS000018,PGS000027", "--out",
-				"test-data/tmp/expected.txt" };
-		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
-		assertEquals(0, resultScore);
-
-		zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
-		zipFile.extractAll("test-data/tmp");
-		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/expected.txt", ',');
+		CsvTableReader readerExpected = new CsvTableReader("test-data/data/pgs/expected.txt", ',');
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
 
 		while (readerExpected.next() && readerActual.next()) {
@@ -635,37 +614,36 @@ public class ImputationTest {
 		new File("test-data/tmp/local/scores.html").exists();
 
 		FileUtil.deleteDirectory("test-data/tmp");
+		zipFile.close();
 
 	}
 
 	@Test
-	public void testPipelineWithEagleAndScoresAndFormat() throws IOException, ZipException {
+	public void testPipelineWithEagleAndScoresAndCategory() throws IOException, ZipException {
 
 		String configFolder = "test-data/configs/hapmap-chr20";
 		String inputFolder = "test-data/data/chr20-unphased";
 
 		// import scores into hdfs
-		String score1 = "test-data/data/prsweb/PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt";
-		String format1 = "test-data/data/prsweb/PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt.format";
+		String targetScores = HdfsUtil.path("scores-hdfs", "scores.txt.gz");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz", targetScores);
 
-		String targetScore1 = HdfsUtil.path("scores-hdfs", "PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt");
-		HdfsUtil.put(score1, targetScore1);
+		String targetIndex = HdfsUtil.path("scores-hdfs", "scores.txt.gz.tbi");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.tbi", targetIndex);
 
-		String targetFormat1 = HdfsUtil.path("scores-hdfs",
-				"PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt.format");
-		HdfsUtil.put(format1, targetFormat1);
+		String targetInfo = HdfsUtil.path("scores-hdfs", "scores.txt.gz.info");
+		HdfsUtil.put("test-data/data/pgs/test-scores.chr20.txt.gz.info", targetInfo);
 
 		// create workflow context and set scores
 		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
 		context.setOutput("outputScores", "cloudgene2-hdfs");
 
 		Map<String, Object> pgsPanel = new HashMap<String, Object>();
-		List<String> scores = new Vector<String>();
-		scores.add("PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS.txt");
-		pgsPanel.put("location", "scores-hdfs");
-		pgsPanel.put("scores", scores);
+		pgsPanel.put("scores", targetScores);
+		pgsPanel.put("meta", "test-data/data/pgs/test-scores.chr20.json");
 		pgsPanel.put("build", "hg19");
 		context.setData("pgsPanel", pgsPanel);
+		context.setInput("pgsCategory","Body measurement"); //only PGS000027
 
 		// run qc to create chunkfile
 
@@ -678,6 +656,7 @@ public class ImputationTest {
 		result = run(context, qcStats);
 
 		assertTrue(result);
+		assertTrue(context.hasInMemory("Remaining sites in total: 7,735"));
 
 		// add panel to hdfs
 		importRefPanel(FileUtil.path(configFolder, "ref-panels"));
@@ -694,31 +673,14 @@ public class ImputationTest {
 		result = run(context, export);
 		assertTrue(result);
 
-		ZipFile zipFile = new ZipFile("test-data/tmp/local/chr_20.zip", PASSWORD.toCharArray());
+		ZipFile zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip");
 		zipFile.extractAll("test-data/tmp");
-
-		VcfFile file = VcfFileUtil.load("test-data/tmp/chr20.dose.vcf.gz", 100000000, false);
-
-		assertEquals("20", file.getChromosome());
-		assertEquals(51, file.getNoSamples());
-		assertEquals(true, file.isPhased());
-		assertEquals(TOTAL_REFPANEL_CHR20_B37, file.getNoSnps());
-
-		int snpInInfo = getLineCount("test-data/tmp/chr20.info.gz");
-		assertEquals(snpInInfo, file.getNoSnps());
-
-		String[] args = { "test-data/tmp/chr20.dose.vcf.gz", "--ref", score1, "--out", "test-data/tmp/expected.txt" };
-		int resultScore = new CommandLine(new ApplyScoreCommand()).execute(args);
-		assertEquals(0, resultScore);
-
-		zipFile = new ZipFile("test-data/tmp/pgs_output/scores.zip", PASSWORD.toCharArray());
-		zipFile.extractAll("test-data/tmp");
-		CsvTableReader readerExpected = new CsvTableReader("test-data/tmp/expected.txt", ',');
+		CsvTableReader readerExpected = new CsvTableReader("test-data/data/pgs/expected.txt", ',');
 		CsvTableReader readerActual = new CsvTableReader("test-data/tmp/scores.txt", ',');
+		assertEquals(2, readerActual.getColumns().length); //only sample and PGS000027
 
 		while (readerExpected.next() && readerActual.next()) {
-			assertEquals(readerExpected.getDouble("PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS"),
-					readerActual.getDouble("PRSWEB_PHECODE153_CRC-Huyghe_PT_UKB_20200608_WEIGHTS"), 0.00001);
+			assertEquals(readerExpected.getDouble("PGS000027"), readerActual.getDouble("PGS000027"), 0.00001);
 		}
 		readerExpected.close();
 		readerActual.close();
@@ -727,6 +689,7 @@ public class ImputationTest {
 		new File("test-data/tmp/local/scores.html").exists();
 
 		FileUtil.deleteDirectory("test-data/tmp");
+		zipFile.close();
 
 	}
 
@@ -773,7 +736,7 @@ public class ImputationTest {
 		assertEquals(true, file.isPhased());
 		assertEquals(TOTAL_SNPS_INPUT - SNPS_MONOMORPHIC, file.getNoSnps());
 
-		// FileUtil.deleteDirectory("test-data/tmp");
+		FileUtil.deleteDirectory("test-data/tmp");
 
 	}
 

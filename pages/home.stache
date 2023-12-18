@@ -2,15 +2,15 @@
 	<div class="container">
 		<h1 class="jumbotron-heading">Michigan Imputation Server</h1>
 		<p class="lead text-center">
-			Free Next-Generation Genotype Imputation Service
+			Free Next-Generation Genotype Imputation Platform
 		</p>
-		<% if(!loggedIn) {%>
+		{{#is(loggedIn, false)}}
 			<p>
 				<br>
-				<a class="btn btn-lg btn-success" href="/#!pages/register">Sign up now</a>&nbsp;
-				<a class="btn btn-lg btn-outline-light" href="/#!pages/login">Login</a>
+				<a class="btn btn-lg btn-success" href="./#!pages/register">Sign up now</a>&nbsp;
+				<a class="btn btn-lg btn-outline-light" href="./#!pages/login">Login</a>
 			</p>
-			<% } %>
+		{{/is}}
 
 	</div>
 </div>
@@ -22,20 +22,83 @@
 		<div class="row justify-content-center text-center ">
 			<div class="col-md-3 text-center">
 				<p>
-					<span class="lead" style="font-size: 200%;"><%= counter.attr('complete.chromosomes') ? (Math.round(counter.attr('complete.chromosomes') / 22.0 /1000.0/1000.0 * 10) / 10).toLocaleString() : '0'%> M</span><br>Imputed Genomes
+					<span class="lead" style="font-size: 200%;">{{div(counter.complete.chromosomes, 22000000)}}M</span><br>Imputed Genomes
 				</p>
 			</div>
 			<div class="col-md-3 text-center">
 				<p>
-					<span class="lead" style="font-size: 200%;"><%= Math.round(counter.attr('users')).toLocaleString() %></span><br>Registerd Users
+					<span class="lead" style="font-size: 200%;">{{counter.users}}</span><br>Registered Users
 				</p>
 			</div>
 			<div class="col-md-3 text-center">
 				<p>
-					<span class="lead" style="font-size: 200%;">> 100</span><br>Published GWAS
+					<span class="lead" style="font-size: 200%;">{{#counter.running.runs}}{{.}}{{else}}0{{/counter.running.runs}}</span><br>Running Jobs
 				</p>
 			</div>
 		</div>
+	</div>
+</div>
+
+<!-- Get your own Description -->
+
+<div class="py-5 bg-light">
+	<div class="container">
+
+		<div class="card-deck mb-3 text-center ">
+			<div class="card box-shadow">
+				<div class="card-body">
+				    <h4>Genotype Imputation</h4>
+				    <hr>
+                    <p style="height: 120px;">
+                        You can upload genotyping data and the application imputes your genotypes against different reference panels.
+                    </p>
+                    <p>
+                        {{#is(loggedIn, false)}}
+                            <a class="btn btn-success" href="./#!pages/login"><i class="fa fa-play"></i> Run</a>
+                        {{ else }}
+                               <a class="btn btn-success" href="./#!run/minimac4"><i class="fa fa-play"></i> Run</a>
+                        {{/is}}
+                        &nbsp; <a class="btn btn-light" href="https://imputationserver.readthedocs.io/en/latest/getting-started/" target="_blank"><i class="fa fa-book"></i> Learn more</a>
+                    </p>
+
+				</div>
+			</div>
+			<div class="card box-shadow">
+				<div class="card-body">
+				    <h4>HLA Imputation</h4>
+				    <hr>
+				    <p style="height: 120px;">
+				        Enables accurate prediction of human leukocyte antigen (HLA) genotypes from your uploaded genotyping data using multi-ancestry reference panels.
+				    </p>
+                    <p>
+                        {{#is(loggedIn, false)}}
+                            <a class="btn btn-success" href="./#!pages/login"><i class="fa fa-play"></i> Run</a>
+                        {{ else }}
+                               <a class="btn btn-success" href="./#!run/imputationserver-hla"><i class="fa fa-play"></i> Run</a>
+                        {{/is}}
+                        &nbsp; <a class="btn btn-light" href="https://imputationserver.readthedocs.io/en/latest/getting-started/" target="_blank"><i class="fa fa-book"></i> Learn more</a>
+                    </p>
+				</div>
+			</div>
+			<div class="card box-shadow">
+				<div class="card-body">
+				    <h4>Polygenic Score Calculation</h4>
+                        <hr>
+                        <p style="height: 120px;">
+                            You can upload genotyping data and the application imputes your genotypes, performs ancestry estimation and finally calculates Polygenic Risk Scores.
+                        </p>
+                        <p>
+                            {{#is(loggedIn, false)}}
+                                <a class="btn btn-success" href="./#!pages/login"><i class="fa fa-play"></i> Run</a>
+                            {{ else }}
+                                   <a class="btn btn-success" href="./#!run/imputationserver2-pgs"><i class="fa fa-play"></i> Run</a>
+                            {{/is}}
+                            &nbsp; <a class="btn btn-light" href="https://imputationserver.readthedocs.io/en/latest/pgs/getting-started/" target="_blank"><i class="fa fa-book"></i> Learn more</a>
+                        </p>
+				</div>
+			</div>
+		</div>
+
 	</div>
 </div>
 
@@ -43,14 +106,39 @@
 <!-- News and Logos -->
 <div class="py-5 bg-light">
 	<div class="container  ">
+
+		<h2 class="text-center pb-5">Latest News</h2>
+
 		<div class="card ">
 			<div class="card-body">
 				<div class="container">
 					<div class="row">
 						<div class="col-md-8">
-							<h5 style="padding-top: 10px; padding-bottom: 0px; margin-bottom: 10px;">Latest News</h5>
-							<hr style="padding-top: 0px; margin-top: 0px;">
+                            <p>
+                                <small class="text-muted"><i class="far fa-calendar-alt"></i> 21 May 2021</small><br>
+                                We have increased the max sample size to 110k.
+                            </p>
 							<p>
+                                <small class="text-muted"><i class="far fa-calendar-alt"></i> 15 April 2021</small><br>
+                                Update to new framework completed! Currently, max sample size will be limited to 25k, but we expect to lift this limitation in the next few weeks.
+                            </p>
+                            <p>
+                                <small class="text-muted"><i class="far fa-calendar-alt"></i> 18 March 2020</small><br>
+                                Due to coronavirus-related impacts support may be slower than usual. If you haven't heard back from us after a week or so, feel free to e-mail again to check on the status of things. Take care!
+                            <p>
+                                <small class="text-muted"><i class="far fa-calendar-alt"></i> 07 November 2019</small><br>
+                                Updated MIS to v1.2.4! Major improvements: Minimac4 for imputation, improved chrX support, QC check right after upload, better documentation. Checkout out our <a href="https://github.com/genepi/imputationserver" target="_blank">GitHub repository</a> for further information.
+                            </p>
+                            <p>
+                                <small class="text-muted"><i class="far fa-calendar-alt"></i> 17 October 2019</small><br>
+                                Michigan Imputation Server at ASHG19. All information is available <a href="https://imputationserver.sph.umich.edu/ashg19/" target="_blank">here</a>.
+                            </p>
+
+							<p>
+                                <small class="text-muted"><i class="far fa-calendar-alt"></i> 27 November 2018</small><br>
+                                Redesigned user interface to improve user experience.
+                            </p>
+                            <p>
 								<small class="text-muted"><i class="far fa-calendar-alt"></i> 27 June 2017</small><br>
 								Updated pipeline to v1.0.2. Release notes can be found <a href="https://github.com/genepi/imputationserver/releases/tag/1.0.2" target="_blank">here</a>.
 							</p>
@@ -59,16 +147,12 @@
 								Imputation server paper is out now: <a href="http://www.nature.com/ng/journal/v48/n10/full/ng.3656.html" target="_blank">Das et al., Nature Genetics 2016</a>
 							</p>
 							<p>
-								<small class="text-muted"><i class="far fa-calendar-alt"></i> 14 June 2016</small><br>
-								Supporting <a target="_blank" href="https://github.com/seppinho/23andme-tools.git">23andMe input format</a>.
-							</p>
-							<p>
 								<small class="text-muted"><i class="far fa-calendar-alt"></i> 19 April 2016</small><br>
 								Updated <a target="_blank" href="http://www.haplotype-reference-consortium.org/">HRC Panel (r1.1)</a> available.
 							</p>
 							<p>
 								<small class="text-muted"><i class="far fa-calendar-alt"></i> 12 January 2016</small><br>
-								New Reference Panel (<a target="_blank" href="/#!pages/caapa">CAAPA</a>) available.
+								New Reference Panel (<a target="_blank" href="./#!pages/caapa">CAAPA</a>) available.
 							</p>
 							<p>
 								<small class="text-muted"><i class="far fa-calendar-alt"></i> 24 April 2015</small><br>
@@ -80,7 +164,9 @@
 						<div class="col-md-4">
 
 							<a class="twitter-timeline" href="https://twitter.com/umimpute" data-widget-id="593759360838414337">Tweets by @umimpute</a>
-							<% !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs"); %>
+							<script>
+							!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
+							</script>
 
 
 						</div>
@@ -103,19 +189,19 @@
 		<div class="card-deck text-center ">
 			<div class="card box-shadow">
 				<div class="card-body">
-					<p><img src="/static/images/up-cloud.png" width="105px"></p>
+					<p><img src="./static/images/up-cloud.png" width="105px"></p>
 					<b>Upload your genotypes</b> to our server located in Michigan.<br> All interactions with the server are <b>secured</b>.
 				</div>
 			</div>
 			<div class="card box-shadow">
 				<div class="card-body">
-					<p><img src="/static/images/impute.png" width="105px"></p>
+					<p><img src="./static/images/impute.png" width="105px"></p>
 					<b>Choose a reference panel</b>. We will take care of pre-phasing and imputation.
 				</div>
 			</div>
 			<div class="card box-shadow">
 				<div class="card-body">
-					<p><img src="/static/images/down-cloud.png" width="105px"></p>
+					<p><img src="./static/images/down-cloud.png" width="105px"></p>
 					<b>Download the results</b>.<br>All results are encrypted with a one-time password. After 7 days, all results are deleted from our server.
 				</div>
 			</div>
@@ -127,7 +213,7 @@
 <div class="py-5 bg-light">
 	<div class="container">
 
-		<h2 class="text-center pb-5 ">Up to date and <b><u>accurate</u></b> reference panels</h2>
+		<h2 class="text-center pb-5 ">Wide-range of reference panels supported</h2>
 
 		<div class="card-deck  text-center ">
 			<div class="card " style="border-top-color: #76c2af; border-top-width: 5px;">
@@ -183,17 +269,17 @@
 			<div class="card box-shadow">
 				<div class="card-body">
 					<p style="text-align: center">
-						<img src="/static/images/hosting.png" style="width: 105px;">
+						<a href="https://github.com/genepi/imputationserver" target="_blank"><img src="./static/images/github.png" style="width: 105px;"></a>
 					</p>
 
-					Imputation Server is <b>open source</b> and easy to install on your own <b>Hadoop cluster</b>.
+					Imputation Server is <a href="https://github.com/genepi/imputationserver" target="_blank"><b>open source</b></a> and easy to install on your own <b>Hadoop cluster</b> or use <a href="https://imputationserver.readthedocs.io/en/latest/docker/" target="_blank"><b>Docker</b></a>.
 
 				</div>
 			</div>
 			<div class="card box-shadow">
 				<div class="card-body">
 					<p style="text-align: center">
-						<img src="/static/images/secure.png" style="width: 105px;">
+						<img src="./static/images/secure.png" style="width: 105px;">
 					</p>
 
 					Host your own confidential reference panels in a <b>secure</b> and <b>private</b> environment.
@@ -203,7 +289,7 @@
 			<div class="card box-shadow">
 				<div class="card-body">
 					<p style="text-align: center">
-						<img src="/static/images/control.png" style="width: 105px;">
+						<img src="./static/images/control.png" style="width: 105px;">
 					</p>
 
 					You have <b>full control</b> about the service. <a href="mailto:cfuchsb@umich.edu"> Write us</a> to get more information.

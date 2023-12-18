@@ -106,159 +106,160 @@ public class CompressionEncryption extends WorkflowStep {
 
 			context.beginTask("Export data...");
 
-			// get sorted directories
-			List<String> folders = HdfsUtil.getDirectories(output);
+			if (pgsPanel == null) {
 
-			ImputationResults imputationResults = new ImputationResults(folders, phasingOnly);
-			Map<String, ImputedChromosome> imputedChromosomes = imputationResults.getChromosomes();
+				// get sorted directories
+				List<String> folders = HdfsUtil.getDirectories(output);
 
-			Set<String> chromosomes = imputedChromosomes.keySet();
-			boolean lastChromosome = false;
-			int index = 0;
+				ImputationResults imputationResults = new ImputationResults(folders, phasingOnly);
+				Map<String, ImputedChromosome> imputedChromosomes = imputationResults.getChromosomes();
 
-			String checksumFilename = FileUtil.path(localOutput, "results.md5");
-			LineWriter writer = new LineWriter(checksumFilename);
+				Set<String> chromosomes = imputedChromosomes.keySet();
+				boolean lastChromosome = false;
+				int index = 0;
 
-			for (String name : chromosomes) {
+				String checksumFilename = FileUtil.path(localOutput, "results.md5");
+				LineWriter writer = new LineWriter(checksumFilename);
 
-				index++;
+				for (String name : chromosomes) {
 
-				if (index == chromosomes.size()) {
-					lastChromosome = true;
-				}
+					index++;
 
-				ImputedChromosome imputedChromosome = imputedChromosomes.get(name);
+					if (index == chromosomes.size()) {
+						lastChromosome = true;
+					}
 
-				context.println("Export and merge chromosome " + name);
+					ImputedChromosome imputedChromosome = imputedChromosomes.get(name);
 
-				// create temp dir
-				String temp = FileUtil.path(localOutput, "temp");
-				FileUtil.createDirectory(temp);
+					context.println("Export and merge chromosome " + name);
 
-				// output files
+					// create temp dir
+					String temp = FileUtil.path(localOutput, "temp");
+					FileUtil.createDirectory(temp);
 
-				ArrayList<File> files = new ArrayList<File>();
+					// output files
 
-				// merge info files
-				if (!phasingOnly) {
-					String infoOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
-					FileMerger.mergeAndGzInfo(imputedChromosome.getInfoFiles(), infoOutput);
-					files.add(new File(infoOutput));
-				}
+					ArrayList<File> files = new ArrayList<File>();
 
-				// merge all dosage files
+					// merge info files
+					if (!phasingOnly) {
+						String infoOutput = FileUtil.path(temp, "chr" + name + ".info.gz");
+						FileMerger.mergeAndGzInfo(imputedChromosome.getInfoFiles(), infoOutput);
+						files.add(new File(infoOutput));
+					}
 
-				String dosageOutput;
-				if (phasingOnly) {
-					dosageOutput = FileUtil.path(temp, "chr" + name + ".phased.vcf.gz");
-				} else {
-					dosageOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
-				}
-				files.add(new File(dosageOutput));
+					// merge all dosage files
 
-				MergedVcfFile vcfFile = new MergedVcfFile(dosageOutput);
-				vcfFile.addHeader(context, imputedChromosome.getHeaderFiles());
+					String dosageOutput;
+					if (phasingOnly) {
+						dosageOutput = FileUtil.path(temp, "chr" + name + ".phased.vcf.gz");
+					} else {
+						dosageOutput = FileUtil.path(temp, "chr" + name + ".dose.vcf.gz");
+					}
+					files.add(new File(dosageOutput));
 
-				for (String file : imputedChromosome.getDataFiles()) {
-					context.println("Read file " + file);
-					vcfFile.addFile(HdfsUtil.open(file));
-					HdfsUtil.delete(file);
-				}
+					MergedVcfFile vcfFile = new MergedVcfFile(dosageOutput);
+					vcfFile.addHeader(context, imputedChromosome.getHeaderFiles());
 
-				vcfFile.close();
-
-				// merge all meta files
-				if (mergeMetaFiles) {
-
-					context.println("Merging meta files...");
-
-					String dosageMetaOutput = FileUtil.path(temp, "chr" + name + ".empiricalDose.vcf.gz");
-					MergedVcfFile vcfFileMeta = new MergedVcfFile(dosageMetaOutput);
-
-					String headerMetaFile = imputedChromosome.getHeaderMetaFiles().get(0);
-					context.println("Use header from file " + headerMetaFile);
-
-					vcfFileMeta.addFile(HdfsUtil.open(headerMetaFile));
-
-					for (String file : imputedChromosome.getDataMetaFiles()) {
+					for (String file : imputedChromosome.getDataFiles()) {
 						context.println("Read file " + file);
-						vcfFileMeta.addFile(HdfsUtil.open(file));
+						vcfFile.addFile(HdfsUtil.open(file));
 						HdfsUtil.delete(file);
 					}
-					vcfFileMeta.close();
 
-					context.println("Meta files merged.");
+					vcfFile.close();
 
-					files.add(new File(dosageMetaOutput));
-				}
+					// merge all meta files
+					if (mergeMetaFiles) {
 
-				if (sanityCheck.equals("yes") && lastChromosome) {
-					context.println("Run tabix on chromosome " + name + "...");
-					Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
-					tabix.setSilent(false);
-					tabix.setParams("-f", dosageOutput);
-					if (tabix.execute() != 0) {
-						context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
-						return false;
+						context.println("Merging meta files...");
+
+						String dosageMetaOutput = FileUtil.path(temp, "chr" + name + ".empiricalDose.vcf.gz");
+						MergedVcfFile vcfFileMeta = new MergedVcfFile(dosageMetaOutput);
+
+						String headerMetaFile = imputedChromosome.getHeaderMetaFiles().get(0);
+						context.println("Use header from file " + headerMetaFile);
+
+						vcfFileMeta.addFile(HdfsUtil.open(headerMetaFile));
+
+						for (String file : imputedChromosome.getDataMetaFiles()) {
+							context.println("Read file " + file);
+							vcfFileMeta.addFile(HdfsUtil.open(file));
+							HdfsUtil.delete(file);
+						}
+						vcfFileMeta.close();
+
+						context.println("Meta files merged.");
+
+						files.add(new File(dosageMetaOutput));
 					}
-					context.println("Tabix done.");
+
+					if (sanityCheck.equals("yes") && lastChromosome) {
+						context.println("Run tabix on chromosome " + name + "...");
+						Command tabix = new Command(FileUtil.path(workingDirectory, "bin", "tabix"));
+						tabix.setSilent(false);
+						tabix.setParams("-f", dosageOutput);
+						if (tabix.execute() != 0) {
+							context.endTask("Error during index creation: " + tabix.getStdOut(), WorkflowContext.ERROR);
+							return false;
+						}
+						context.println("Tabix done.");
+					}
+
+					// create zip file
+					String fileName = "chr_" + name + ".zip";
+					String filePath = FileUtil.path(localOutput, fileName);
+					File file = new File(filePath);
+					createEncryptedZipFile(file, files, password, aesEncryption);
+
+					// add checksum to hash file
+					context.println("Creating file checksum for " + filePath);
+					long checksumStart = System.currentTimeMillis();
+					String checksum = FileChecksum.HashFile(new File(filePath), FileChecksum.Algorithm.MD5);
+					writer.write(checksum + " " + fileName);
+					long checksumEnd = (System.currentTimeMillis() - checksumStart) / 1000;
+					context.println("File checksum for " + filePath + " created in " + checksumEnd + " seconds.");
+
+					// delete temp dir
+					FileUtil.deleteDirectory(temp);
+
+					IExternalWorkspace externalWorkspace = context.getExternalWorkspace();
+
+					if (externalWorkspace != null) {
+
+						long start = System.currentTimeMillis();
+
+						context.println("External Workspace '" + externalWorkspace.getName() + "' found");
+
+						context.println("Start file upload: " + filePath);
+
+						String url = externalWorkspace.upload("local", file);
+
+						long end = (System.currentTimeMillis() - start) / 1000;
+
+						context.println("Upload finished in  " + end + " sec. File Location: " + url);
+
+						context.println("Add " + localOutput + " to custom download");
+
+						String size = FileUtils.byteCountToDisplaySize(file.length());
+
+						context.addDownload("local", fileName, size, url);
+
+						FileUtil.deleteFile(filePath);
+
+						context.println("File deleted: " + filePath);
+
+					} else {
+						context.println("No external Workspace set.");
+					}
 				}
 
-				// create zip file
-				String fileName = "chr_" + name + ".zip";
-				String filePath = FileUtil.path(localOutput, fileName);
-				File file = new File(filePath);
-				createEncryptedZipFile(file, files, password, aesEncryption);
+				writer.close();
 
-				// add checksum to hash file
-				context.println("Creating file checksum for " + filePath);
-				long checksumStart = System.currentTimeMillis();
-				String checksum = FileChecksum.HashFile(new File(filePath), FileChecksum.Algorithm.MD5);
-				writer.write(checksum + " " + fileName);
-				long checksumEnd = (System.currentTimeMillis() - checksumStart) / 1000;
-				context.println("File checksum for " + filePath + " created in " + checksumEnd + " seconds.");
-
-				// delete temp dir
-				FileUtil.deleteDirectory(temp);
-
-				IExternalWorkspace externalWorkspace = context.getExternalWorkspace();
-
-				if (externalWorkspace != null) {
-
-					long start = System.currentTimeMillis();
-
-					context.println("External Workspace '" + externalWorkspace.getName() + "' found");
-
-					context.println("Start file upload: " + filePath);
-
-					String url = externalWorkspace.upload("local", file);
-
-					long end = (System.currentTimeMillis() - start) / 1000;
-
-					context.println("Upload finished in  " + end + " sec. File Location: " + url);
-
-					context.println("Add " + localOutput + " to custom download");
-
-					String size = FileUtils.byteCountToDisplaySize(file.length());
-
-					context.addDownload("local", fileName, size, url);
-
-					FileUtil.deleteFile(filePath);
-
-					context.println("File deleted: " + filePath);
-
-				} else {
-					context.println("No external Workspace set.");
-				}
-			}
-
-			writer.close();
-
-			// delete temporary files
-			HdfsUtil.delete(output);
-
-			// Export calculated risk scores
-			if (pgsPanel != null) {
+				// delete temporary files
+				HdfsUtil.delete(output);
+			} else {
+				// Export calculated risk scores
 
 				context.println("Exporting PGS scores...");
 
@@ -310,7 +311,7 @@ public class CompressionEncryption extends WorkflowStep {
 				String fileName = "scores.zip";
 				String filePath = FileUtil.path(pgsOutput, fileName);
 				File file = new File(filePath);
-				createEncryptedZipFile(file, new File(outputFileScores), password, aesEncryption);
+				createZipFile(file, new File(outputFileScores));
 
 				context.println("Exported PGS scores to " + fileName + ".");
 
@@ -354,7 +355,7 @@ public class CompressionEncryption extends WorkflowStep {
 
 				String fileNameReport = "scores.report.zip";
 				File fileReport = new File(FileUtil.path(pgsOutput, fileNameReport));
-				createEncryptedZipFileFromFolder(fileReport, new File(extendedHtmlFolder), password, aesEncryption);
+				createZipFile(fileReport, new File(extendedHtmlFolder));
 
 				context.println("Created reports " + outputFileHtml + " and " + fileReport.getPath() + ".");
 
@@ -385,26 +386,41 @@ public class CompressionEncryption extends WorkflowStep {
 			Object mail = context.getData("cloudgene.user.mail");
 			Object name = context.getData("cloudgene.user.name");
 
-			if (mail != null) {
+			if (mail != null && !mail.toString().isEmpty()) {
 
 				String subject = "Job " + context.getJobId() + " is complete.";
-				String message = "Dear " + name + ",\nthe password for the imputation results is: " + password
-						+ "\n\nThe results can be downloaded from " + serverUrl + "/start.html#!jobs/"
-						+ context.getJobId() + "/results";
+				String message = "";
+				if (pgsPanel == null) {
+					message = "Dear " + name + ",\nthe password for the imputation results is: " + password
+							+ "\n\nThe results can be downloaded from " + serverUrl + "/start.html#!jobs/"
+							+ context.getJobId() + "/results";
+				} else {
+					message = "Dear " + name + ",\nThe results can be downloaded from " + serverUrl + "/start.html#!jobs/"
+							+ context.getJobId() + "/results";
+				}
 
 				try {
 					context.sendMail(subject, message);
-					context.ok("We have sent an email to <b>" + mail + "</b> with the password.");
+					if (pgsPanel == null) {
+						context.ok("We have sent an email to <b>" + mail + "</b> with the password.");
+					} else {
+						context.ok("We have sent a notification email to <b>" + mail + "</b>.");
+					}
 					return true;
 				} catch (Exception e) {
-					context.println("Data compression failed: " + ExceptionUtils.getStackTrace(e));
-					context.error("Data compression failed: " + e.getMessage());
+					context.println("Sending notification email failed: " + ExceptionUtils.getStackTrace(e));
+					context.error("Sending notification email failed: " + e.getMessage());
 					return false;
 				}
 
 			} else {
-				context.error("No email address found. Please enter your email address (Account -> Profile).");
-				return false;
+				if (pgsPanel == null) {
+					context.error("No email address found. Please enter your email address (Account -> Profile).");
+					return false;
+				} else {
+					context.ok("PGS report created successfully.");
+					return true;
+				}
 			}
 
 		} else {
@@ -476,5 +492,16 @@ public class CompressionEncryption extends WorkflowStep {
 		zipFile.addFolder(folder);
 		zipFile.close();
 	}
+
+	public void createZipFile(File file, File folder) throws IOException {
+		ZipFile zipFile = new ZipFile(file);
+		if (folder.isFile()){
+			zipFile.addFile(folder);
+		} else {
+			zipFile.addFolder(folder);
+		}
+		zipFile.close();
+	}
+
 
 }

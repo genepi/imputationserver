@@ -128,7 +128,7 @@ public class TraceStep extends WorkflowStep {
 			HdfsUtil.put(mergedFile, HdfsUtil.path(vcfHdfsDir, "study.merged.vcf.gz"));
 
 			// read number of samples from first vcf file
-			VcfFile vcfFile = VcfFileUtil.load(mergedFile, 200000, false);
+			VcfFile vcfFile = VcfFileUtil.load(files[0], 200000, false);
 
 			int nIndividuals = vcfFile.getNoSamples();
 			int batch = 0;
@@ -168,8 +168,9 @@ public class TraceStep extends WorkflowStep {
 			return true;
 
 		} catch (IOException e) {
-			context.error("An internal server error occured.");
-			e.printStackTrace();
+
+			context.error("An internal server error occurred.\n" + exceptionToString(e));
+
 		}
 
 		context.error("Execution failed. Please, contact administrator.");
@@ -209,8 +210,7 @@ public class TraceStep extends WorkflowStep {
 			return true;
 
 		} catch (IOException e) {
-			context.error("Input Validation failed: " + e);
-			e.printStackTrace();
+			context.error("Input Validation failed:\n" + exceptionToString(e));
 			return false;
 		}
 	}
@@ -288,21 +288,11 @@ public class TraceStep extends WorkflowStep {
 
 			return true;
 
-		} catch (IOException e) {
-			context.error("An internal server error occured while launching Hadoop job.");
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			context.error("An internal server error occured while launching Hadoop job.");
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			context.error("An internal server error occured while launching Hadoop job.");
-			e.printStackTrace();
-		} catch (URISyntaxException e) {
-			context.error("An internal server error occured while launching Hadoop job.");
-			e.printStackTrace();
+		} catch (IOException | InterruptedException | ClassNotFoundException | URISyntaxException e) {
+			context.error("An internal server error occurred while launching Hadoop job.\n" + exceptionToString(e));
 		}
 
-		context.error("Execution failed. Please, contact administrator.");
+        context.error("Execution failed. Please, contact administrator.");
 		return false;
 	}
 
@@ -326,37 +316,43 @@ public class TraceStep extends WorkflowStep {
 			}
 			return results;
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 			TaskResults result = new TaskResults();
 			result.setSuccess(false);
 			result.setMessage(e.getMessage());
-			StringWriter s = new StringWriter();
-			e.printStackTrace(new PrintWriter(s));
-			context.println("Task '" + task.getName() + "' failed.\nException:" + s.toString());
+			context.println("Task '" + task.getName() + "' failed.\nException:" + exceptionToString(e));
 			context.endTask(e.getMessage(), WorkflowContext.ERROR);
 			return result;
 		} catch (Exception e) {
-			e.printStackTrace();
 			TaskResults result = new TaskResults();
 			result.setSuccess(false);
 			result.setMessage(e.getMessage());
-			StringWriter s = new StringWriter();
-			e.printStackTrace(new PrintWriter(s));
-			context.println("Task '" + task.getName() + "' failed.\nException:" + s.toString());
+			context.println("Task '" + task.getName() + "' failed.\nException:" + exceptionToString(e));
 			context.endTask(task.getName() + " failed.", WorkflowContext.ERROR);
 			return result;
 		} catch (Error e) {
-			e.printStackTrace();
 			TaskResults result = new TaskResults();
 			result.setSuccess(false);
 			result.setMessage(e.getMessage());
-			StringWriter s = new StringWriter();
-			e.printStackTrace(new PrintWriter(s));
-			context.println("Task '" + task.getName() + "' failed.\nException:" + s.toString());
+			context.println("Task '" + task.getName() + "' failed.\nException:" + exceptionToString(e));
 			context.endTask(task.getName() + " failed.", WorkflowContext.ERROR);
 			return result;
 		}
 
 	}
 
+	private static String exceptionToString(Exception e) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		return sw.toString();
+	}
+
+	private static String exceptionToString(Error e) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		return sw.toString();
+	}
+
 }
+
