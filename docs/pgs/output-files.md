@@ -1,6 +1,7 @@
 # Output Files
 
-The Polygenic Score Calculation Results CSV file provides Polygenic Score (PGS) values for different samples and associated identifiers. This documentation outlines the format of the CSV file and provides guidance on interpreting the data.
+The Polygenic Score Calculation Results CSV file provides Polygenic Score (PGS) values for different samples and associated identifiers. 
+Users can leverage this CSV file to analyze and compare Polygenic Score values across different samples. The data facilitates the investigation of genetic associations and their impact on specific traits or conditions.
 
 ## CSV Format
 
@@ -35,8 +36,3 @@ sample1, -4.485780284301654, 4.119604924228042, 0.0, -4.485780284301654
 
 - Polygenic Score values are provided as floating-point numbers.
 - The absence of values (e.g., `0.0`) indicates a lack of Polygenic Score information for a particular identifier in a given sample.
-
-## Usage
-
-Researchers and users can leverage this CSV file to analyze and compare Polygenic Score values across different samples. The data facilitates the investigation of genetic associations and their impact on specific traits or conditions.
-For more information on Polygenic Score Calculation and the interpretation of results, refer to the relevant documentation and research papers associated with the Polygenic Score Calculation extension on ImputationServer.

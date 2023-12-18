@@ -15,6 +15,8 @@ An activation email will be sent to the provided address. Once your email addres
 
 **Please note that the extension can also be used with a username without an email. However, without an email, notifications are not sent, and access to genotyped data may be limited.**
 
+No dataset at hand? No problem, download our example dataset to test the PGS extension: [50-samples.zip](https://imputationserver.sph.umich.edu/downloads/50-samples.zip).
+
 
 When incorporating the Polygenic Score Calculation extension in your research, please cite the following papers:
 
@@ -62,7 +64,7 @@ Please make sure that all files fulfill the [requirements](/prepare-your-data).
 Since version 1.7.2 URL-based uploads (sftp and http) are no longer supported. Please use direct file uploads instead.
 
 ### Build
-Please select the build of your data. Currently the options **hg19** and **hg38** are supported. Michigan Imputation Server automatically updates the genome positions (liftOver) of your data. All reference panels except TOPMed are based on hg19 coordinates.
+Please select the build of your data. Currently the options **hg19** and **hg38** are supported. Michigan Imputation Server automatically updates the genome positions (liftOver) of your data. All reference panels are based on hg19 coordinates.
 
 ### Scores and Trait Category
 
@@ -74,7 +76,7 @@ More details about all available PGS repositories can be found [here](/pgs/score
 
 ### Ancestry Estimation
 
-You can enable ancestry estimation by selecting a reference population used to classify your uploaded samples. Currently, we support the H...
+You can enable ancestry estimation by selecting a reference population used to classify your uploaded samples. Currently, we support a worldwide panel based on HGDP.
 
 ## Start Polygenic Score Calculation
 
