@@ -15,7 +15,7 @@ An activation email will be sent to the provided address. Once your email addres
 
 **Please note that the extension can also be used with a username without an email. However, without an email, notifications are not sent, and access to genotyped data may be limited.**
 
-No dataset at hand? No problem, download our example dataset to test the PGS extension: [50-samples.zip](https://imputationserver.sph.umich.edu/downloads/50-samples.zip).
+No dataset at hand? No problem, download our example dataset to test the PGS extension: [50-samples.zip](https://imputationserver.sph.umich.edu/resources/50-samples.zip).
 
 
 When incorporating the Polygenic Score Calculation extension in your research, please cite the following papers:
