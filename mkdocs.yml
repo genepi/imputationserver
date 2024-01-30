@@ -12,6 +12,7 @@ nav:
   - FAQ: faq.md
 - Polygenic Score Calculation:
     - Getting Started: pgs/getting-started.md
+    - Step-by-Step Tutorial: pgs/tutorial.md
     - Interactive Report: pgs/report.md
     - Output Files: pgs/output-files.md
     - Reference Panels: pgs/reference-panels.md
