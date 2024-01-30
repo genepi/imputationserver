@@ -400,7 +400,7 @@ public class FastQualityControl extends WorkflowStep {
 			StringWriter s = new StringWriter();
 			e.printStackTrace(new PrintWriter(s));
 			context.println("Task '" + task.getName() + "' failed.\nException:" + s.toString());
-			context.endTask(task.getName() + " failed.", WorkflowContext.ERROR);
+			context.endTask(e.getMessage(), WorkflowContext.ERROR);
 			return result;
 		} catch (Error e) {
 			e.printStackTrace();
@@ -410,7 +410,7 @@ public class FastQualityControl extends WorkflowStep {
 			StringWriter s = new StringWriter();
 			e.printStackTrace(new PrintWriter(s));
 			context.println("Task '" + task.getName() + "' failed.\nException:" + s.toString());
-			context.endTask(task.getName() + " failed.", WorkflowContext.ERROR);
+			context.endTask(e.getMessage(), WorkflowContext.ERROR);
 			return result;
 		}
 
