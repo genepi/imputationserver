@@ -1,11 +1,15 @@
 # Testing Imputationserver PGS: Step by Step
 
-Imputationserver PGS requires a login to access the Polygenic Risk Score (PGS) calculation service.
-Users have the flexibility to create this login either with or without providing an email address.
-
-This login is crucial to maintain the security and privacy of any uploaded human genotype data.
 
 To test Imputationserver PGS, please execute the following steps:
+
+**0. Signup and create a login**
+Imputationserver PGS requires a login to access the Polygenic Risk Score (PGS) calculation service.
+This login is crucial to maintain the security and privacy of any uploaded human genotype data.
+
+Users have the flexibility to create this login either with or **without providing an email address**.
+
+Please visit the [signup](https://imputationserver.sph.umich.edu/index.html#!pages/register) page and proceed to create a login.
 
 **1. Download the Example Dataset:**
 Start by downloading the example dataset provided for testing the PGS extension. You can obtain the dataset by clicking on the following link: [50-samples.zip](https://imputationserver.sph.umich.edu/resources/50-samples.zip).
