@@ -519,6 +519,47 @@ public class FastQualityControlTest extends TestCase {
 				"<b>Error:</b> More than -1 obvious strand flips have been detected. Please check strand. Imputation cannot be started!"));
 
 	}
+	
+	public void testQcStatisticsAllowAlleleSwitches() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation-switches";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		// check statistics
+		
+		assertTrue(context.hasInMemory("Excluded sites in total: 2,967"));
+		assertTrue(context.hasInMemory("Allele switch: 118,209"));
+	}
+	
+	public void testQcStatisticsDontAllowAlleleSwitches() throws IOException {
+
+		String configFolder = "test-data/configs/hapmap-3chr";
+		String inputFolder = "test-data/data/simulated-chip-3chr-imputation-switches";
+
+		// create workflow context
+		WorkflowTestContext context = buildContext(inputFolder, "hapmap2-qcfilter-alleleswitches");
+
+		// create step instance
+		FastQualityControlMock qcStats = new FastQualityControlMock(configFolder);
+
+		// run and test
+		boolean result = run(context, qcStats);
+
+		// check statistics
+		
+		assertTrue(context.hasInMemory("Excluded sites in total: 2,967"));
+		assertTrue(context.hasInMemory("Allele switch: 118,209"));
+		assertTrue(context.hasInMemory("<b>Error:</b> More than 33 allele switches have been detected. Instructions to solve this issue can be found in our documentation. Imputation cannot be started! "));
+	}
 
 	public void testQcStatisticsFilterOverlap() throws IOException {
 
