@@ -558,7 +558,7 @@ public class FastQualityControlTest extends TestCase {
 		
 		assertTrue(context.hasInMemory("Excluded sites in total: 2,967"));
 		assertTrue(context.hasInMemory("Allele switch: 118,209"));
-		assertTrue(context.hasInMemory("<b>Error:</b> More than 33 allele switches have been detected. Instructions to solve this issue can be found in our documentation. Imputation cannot be started! "));
+		assertTrue(context.hasInMemory("<b>Error:</b> More than 33 allele switches have been detected. Instructions to solve this issue can be found in our documentation. Imputation cannot be started!"));
 	}
 
 	public void testQcStatisticsFilterOverlap() throws IOException {
