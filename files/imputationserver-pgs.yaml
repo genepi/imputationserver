@@ -70,7 +70,7 @@ workflow:
   inputs:
 
      - id: refpanel
-       description: Reference Panel (<a href="https://imputationserver.sph.umich.edu/start.html#!pages/refpanels" target="_blank">Details</a>)
+       description: Reference Panel (<a href="https://imputationserver.readthedocs.io/en/latest/pgs/reference-panels/" target="_blank">Details</a>)
        type: app_list
        category: RefPanel
 
