@@ -44,7 +44,7 @@ Our PGS extension offers genotype imputation from different reference panels. Th
 - 1000 Genomes Phase 1 (Version 3)
 - HapMap 2
 
-More details about all available reference panels can be found [here](/pgs/reference-panels/).
+More details about all available reference panels can be found [here](https://imputationserver.readthedocs.io/en/latest/pgs/reference-panels/).
 
 ### Upload VCF files from your computer
 
