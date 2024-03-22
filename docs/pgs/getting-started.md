@@ -27,7 +27,7 @@ When incorporating the Polygenic Score Calculation extension in your research, p
 ## Setting up your first Polygenic Score Calculation job
 
 1. [Log in](https://imputationserver.sph.umich.edu/index.html#!pages/login) with your credentials and navigate to the **Run** tab to initiate a new Polygenic Score Calculation job.
-2. Please click on **"Polygenic Score calculation"** and the submission dialog appears.
+2. Please click on **"Polygenic Score Calculation"** and the submission dialog appears.
 3. The submission dialog allows you to specify job properties.
 
 ![](images/submit-job01.png)
@@ -44,7 +44,7 @@ Our PGS extension offers genotype imputation from different reference panels. Th
 - 1000 Genomes Phase 1 (Version 3)
 - HapMap 2
 
-More details about all available reference panels can be found [here](/pgs/reference-panels/).
+More details about all available reference panels can be found [here](reference-panels/). If you are unsure which reference panel to use, the "1000 Genomes Phase 3 (Version 5)" reference panel is multi-ancestry and has high coverage with available scores. However, if your uploaded data is European only, the HRC reference panel could be the better choice, as it enables the imputation of rare European-specific variants.
 
 ### Upload VCF files from your computer
 
@@ -62,6 +62,10 @@ Please make sure that all files fulfill the [requirements](/prepare-your-data).
 
 !!! important
 Since version 1.7.2 URL-based uploads (sftp and http) are no longer supported. Please use direct file uploads instead.
+
+### rsq Filter
+The filter ensures that only variants with an imputation quality (rsq) greater than the specified value are included in the polygenic risk score calculation. Setting the value to 0 disables the filter. Default value: 0.3.
+
 
 ### Build
 Please select the build of your data. Currently the options **hg19** and **hg38** are supported. Michigan Imputation Server automatically updates the genome positions (liftOver) of your data. All reference panels are based on hg19 coordinates.
