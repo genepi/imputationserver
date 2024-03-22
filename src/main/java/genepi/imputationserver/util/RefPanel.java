@@ -13,6 +13,7 @@ import genepi.hadoop.HdfsUtil;
 
 public class RefPanel {
 
+	public static final String ALLELE_SWITCHES = String.valueOf(Integer.MAX_VALUE);
 	public static final String STRAMD_FLIPS = "100";
 	public static final String SAMPLE_CALL_RATE = "0.5";
 	public static final String MIN_SNPS = "3";
@@ -57,6 +58,7 @@ public class RefPanel {
 		defaultQcFilter.put("sampleCallrate", SAMPLE_CALL_RATE);
 		defaultQcFilter.put("mixedGenotypeschrX", CHR_X_MIXED_GENOTYPES);
 		defaultQcFilter.put("strandFlips", STRAMD_FLIPS);
+		defaultQcFilter.put("alleleSwitches", ALLELE_SWITCHES);
 	}
 
 	public String getId() {

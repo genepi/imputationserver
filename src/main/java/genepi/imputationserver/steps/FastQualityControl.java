@@ -189,6 +189,7 @@ public class FastQualityControl extends WorkflowStep {
 		double sampleCallrate = panel.getQcFilterByKey("sampleCallrate");
 		double mixedGenotypesChrX = panel.getQcFilterByKey("mixedGenotypeschrX");
 		int strandFlips = (int) (panel.getQcFilterByKey("strandFlips"));
+		int alleleSwitches = (int) (panel.getQcFilterByKey("alleleSwitches"));
 		String ranges = panel.getRange();
 
 		if (ranges != null) {
@@ -331,6 +332,15 @@ public class FastQualityControl extends WorkflowStep {
 		else if (task.getStrandFlipSimple() + task.getStrandFlipAndAlleleSwitch() > strandFlips) {
 			text.append("<br><b>Error:</b> More than " + strandFlips
 					+ " obvious strand flips have been detected. Please check strand. Imputation cannot be started!");
+			context.error(text.toString());
+
+			return false;
+		}
+
+		// Check if too many allele switches are detected
+		else if (task.getAlleleSwitch() > alleleSwitches) {
+			text.append("<br><b>Error:</b> More than " + alleleSwitches
+					+ " allele switches have been detected. Imputation cannot be started!");
 			context.error(text.toString());
 
 			return false;

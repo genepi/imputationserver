@@ -44,7 +44,7 @@ Our PGS extension offers genotype imputation from different reference panels. Th
 - 1000 Genomes Phase 1 (Version 3)
 - HapMap 2
 
-More details about all available reference panels can be found [here](reference-panels/). If you are unsure which reference panel to use, the "1000 Genomes Phase 3 (Version 5)" reference panel is multi-ancestry and has high coverage with available scores. However, if your uploaded data is European only, the HRC reference panel could be the better choice, as it enables the imputation of rare European-specific variants.
+More details about all available reference panels can be found [here](https://imputationserver.readthedocs.io/en/latest/pgs/reference-panels/. If you are unsure which reference panel to use, the "1000 Genomes Phase 3 (Version 5)" reference panel is multi-ancestry and has high coverage with available scores. However, if your uploaded data is European only, the HRC reference panel could be the better choice, as it enables the imputation of rare European-specific variants.
 
 ### Upload VCF files from your computer
 

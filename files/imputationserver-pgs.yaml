@@ -1,9 +1,7 @@
 id: imputationserver-pgs
 name: Polygenic Score Calculation
 description: "You can upload genotyped data and the application imputes your genotypes, performs ancestry estimation and finally calculates Polygenic Risk Scores.<br><br>No dataset at hand? No problem, download our example dataset: <a href=\"https://imputationserver.sph.umich.edu/resources/50-samples.zip\" class=\"btn btn-sm btn-secondary\" style=\"color:#ffffff !important\"><i class=\"fa fa-file\"></i> 50-samples.zip</a><br><br>"
-
-
-version: 2.0.0-beta1
+version: 2.0.0
 website: https://imputationserver.readthedocs.io/en/latest/pgs/getting-started
 category:
 
@@ -72,7 +70,7 @@ workflow:
   inputs:
 
      - id: refpanel
-       description: Reference Panel (<a href="https://imputationserver.sph.umich.edu/start.html#!pages/refpanels" target="_blank">Details</a>)
+       description: Reference Panel (<a href="https://imputationserver.readthedocs.io/en/latest/pgs/reference-panels/" target="_blank">Details</a>)
        type: app_list
        category: RefPanel
 

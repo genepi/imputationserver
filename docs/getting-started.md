@@ -30,7 +30,7 @@ Our server offers genotype imputation from different reference panels. The most 
 - CAAPA - African American Panel
 - HapMap 2
 
-More details about all available reference panels can be found [here](/reference-panels/).
+More details about all available reference panels can be found [here](https://imputationserver.readthedocs.io/en/latest/reference-panels/).
 
 ### Upload VCF files from your computer
 

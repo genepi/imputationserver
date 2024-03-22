@@ -9,10 +9,22 @@ Since data is transfered to our server located in Michigan, a wide array of secu
 - After imputation is finished, the data uploader has 7 days to use an encrypted connection to get results back.
 - The complete source code is available in a [public Github repository](https://github.com/genepi/imputationserver/tree/qc-refactoring).
 
-
 ## Who has access?
 
 To upload and download data, users must register with a unique e-mail address and strong password. Each user can only download imputation results for samples that they have themselves uploaded; no other imputation server users will be able to access your data.
+
+## Cookies
+ 
+We value your privacy and are committed to transparency regarding the use of cookies on our website. Below, we outline our cookie policy to provide you with clarity and assurance.
+
+### What are cookies?
+Cookies are small text files that are placed on your device when you visit a website. They serve various purposes, including enhancing user experience, facilitating website functionality, and analyzing website traffic.
+
+### How do we use cookies?
+We use cookies only for the purpose of facilitating login functionality. These cookies help us recognize your device and authenticate your access to our platform securely. We do not track any personal information or analyze user activities through cookies.
+
+### Why do we use cookies?
+Cookies are essential for providing seamless login experiences to our users. By storing authentication information, cookies enable you to access your account efficiently without the need for repetitive login procedures. We respect your privacy and limit cookie usage exclusively to login purposes.
 
 
 ## What security or firewalls protect access?
