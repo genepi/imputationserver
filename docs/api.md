@@ -1,5 +1,8 @@
 # API Reference
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+
 The REST APIs provide programmatic ways to submit new jobs and to download data from Michigan Imputation Server. It identifies users using authentication tokens, responses are provided in JSON format.
 
 

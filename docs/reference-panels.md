@@ -1,5 +1,8 @@
 # Reference Panels
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+
 Our server offers imputation from the following reference panels:
 
 

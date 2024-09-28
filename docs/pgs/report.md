@@ -1,5 +1,8 @@
 # Interactive Report
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+    
 The created report contains a list of all scores, where each score has a different color based on its coverage. The color green indicates that the coverage is very high and nearly all SNPs from the score were also found in the imputed dataset. The color red indicates that very few SNPs were found and the coverage is therefore low.
 
 ![report.png](images/report-01.png)

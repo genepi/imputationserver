@@ -1,5 +1,8 @@
 # Scores
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+    
 We support currently the following PGS repositories out of the box:
 
 ## PGS-Catalog

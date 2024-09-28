@@ -1,5 +1,8 @@
 # Data Security
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+
 Since data is transfered to our server located in Michigan, a wide array of security measures are in force:
 
 - The complete interaction with the server is secured with HTTPS.

@@ -1,5 +1,8 @@
 # Frequently Asked Questions
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+    
 ## Can I use the Polygenic Score Calculation extension without an email address?
 Yes, the extension can also be used with a username without an email. However, without an email, notifications are not sent, and access to genotyped data may be limited.
 

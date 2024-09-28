@@ -1,5 +1,8 @@
 # Contact
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+
 The complete Michigan Imputation Server source code is available on [GitHub](https://github.com/genepi/imputationserver). Feel free to create issues and pull requests. Before contacting us, please have a look at the [FAQ page](/faq) first. 
 
 Please contact [Christian Fuchsberger](mailto:cfuchsb@umich.edu) in case of other problems.

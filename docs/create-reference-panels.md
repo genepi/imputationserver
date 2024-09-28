@@ -1,5 +1,8 @@
 # Create a Reference Panel
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+
 This tutorial will help you to create your own reference panel and integrate it into Michigan Imputation Server. 
 
 ## Required Software

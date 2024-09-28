@@ -1,5 +1,8 @@
 # Output Files
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+    
 The Polygenic Score Calculation Results CSV file provides Polygenic Score (PGS) values for different samples and associated identifiers. 
 Users can leverage this CSV file to analyze and compare Polygenic Score values across different samples. The data facilitates the investigation of genetic associations and their impact on specific traits or conditions.
 

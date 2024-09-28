@@ -1,5 +1,8 @@
 #  Polygenic Score Calculation
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
+
 We provide an easy to use and user-friendly web interface to apply thousands of published polygenic risk scores to imputed genotypes in an efficient way.
 By extending the popular Michigan Imputation Server the module integrates it seamless into the existing imputation workflow and enables users without knowledge in that field to take advantage of this method.
 The graphical report includes all meta-data about the scores in a single place and helps users to understand and screen thousands of scores in an easy and intuitive way.

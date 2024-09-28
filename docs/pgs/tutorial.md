@@ -1,5 +1,7 @@
 # Testing Imputationserver PGS: Step by Step
 
+!!! warning "Deprecated Documentation"
+    ⚠️ This documentation is deprecated and is no longer maintained. The latest documentation can be found at [**Michigan Imputation Server 2**](https://genepi.github.io/michigan-imputationserver/).
 
 To test Imputationserver PGS, please execute the following steps:
 
